@@ -58,6 +58,10 @@ public:
     /// STRATA_SPEC_COST: a round time far above what is known for that width (the first use of a width captures its graph; a stalled
     /// round) counts as a tenth of a sample, so one capture cannot price a width out of use.  Off: the cost EMA as it always was.
     void set_robust(bool on) { robust_ = on; }
+    /// STRATA_SPEC_COST_FROZEN=1 (Strata+ P2, deterministic cost mode): the round costs stay what seed_costs() put in
+    /// (STRATA_SPEC_COST_TABLE); measured round times are not learned.  Lets an A/B (or the offline replay) compare
+    /// policies on one fixed cost table, free of timing noise.  Acceptance statistics are still learned.
+    void set_frozen_costs(bool on) { frozen_ = on; }
 
     /// COST-AWARE MTP WINDOW (STRATA_SPEC_COST=1): the MTP chain is drafted one step at a time; after draft j (probability p_j)
     ///   E_j = 1 + q_0 + .. + q_j,  q_i = prod_{k<=i} a(p_k)   a() = the acceptance measured for MTP drafts of that probability
@@ -92,6 +96,7 @@ private:
     std::array<double, kBuckets> cok_{}, cbad_{};          // chained lookup drafts, the same (reached rounds only)
     double rounds_ = 0;                                    // rounds observed so far
     bool robust_ = false;
+    bool frozen_ = false;                                  // set_frozen_costs()
     double clamp_sample(int t, double ms) const;
     static constexpr int kPBuckets = 8;
     std::array<double, kPBuckets> pa_ok_{}, pa_n_{};       // MTP drafts reached / accepted by probability bucket (decayed)

@@ -11180,6 +11180,8 @@ int main(int argc, char** argv) {
         strata::spec::DraftPolicy::ChainState chain_st;
         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
         policy.set_robust(spec_cost);
+        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
+        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
         if (spec_cost && use_mtp)
             mtp.set_chain_rule([&](int idx, float pj) {
                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
@@ -16445,6 +16447,8 @@ int main(int argc, char** argv) {
             }
         }
         policy.set_robust(spec_cost);
+        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
+        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
         if (spec_cost && use_mtp)
             mtp.set_chain_rule([&](int idx, float pj) {
                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
