@@ -6,6 +6,7 @@
 //   3. lookup drafts that are always accepted are taken, and the window grows with them;
 //   4. match-length buckets learn separately (short matches failing does not stop long ones);
 //   5. the policy never proposes a window beyond its cap.
+#include <cmath>
 #include "strata/spec/draft_policy.hpp"
 
 #include <cstdio>
@@ -113,6 +114,32 @@ int main() {
         check(probes > 0 && probes <= 3 && spaced,
               "chain: stale full size is re-probed despite a profitable shorter chain");
         check(probes > 0 && confident, "chain: stale re-probes retain the MTP confidence gate");
+    }
+    {   // Strata+ P2: frozen costs stay at the seeded table
+        strata::spec::DraftPolicy p(6);
+        const double tab[6] = {20.0, 26.0, 32.0, 38.0, 44.0, 50.0};
+        p.seed_costs(tab, 6, 6.0);
+        p.set_frozen_costs(true);
+        for (int i = 0; i < 50; ++i) p.observe(false, 4, 2, 0, 500.0);
+        check(p.cost_ms(4) == 38.0, "frozen: measured round times do not move the seeded cost");
+    }
+    {   // Strata+ P3: counterfactual lookup feedback moves q like played rounds; censored MTP samples are dropped
+        strata::spec::DraftPolicy a(6), b(6);
+        for (int i = 0; i < 40; ++i) {
+            a.observe(true, 6, 1, 8, 30.0);
+            b.observe_counterfactual(true, 6, 1, true, 8);
+        }
+        check(std::abs(a.lookup_rate(8) - b.lookup_rate(8)) < 1e-12, "counterfactual: lookup sample == played sample");
+        strata::spec::DraftPolicy c(6);
+        const double before = c.lookup_rate(30);
+        for (int i = 0; i < 40; ++i) c.observe_counterfactual(true, 6, 2, false, 30);   // censored at a+1 = 3, no failure seen
+        check(c.lookup_rate(30) > before, "counterfactual: censored lookup successes raise q");
+        strata::spec::DraftPolicy d(6);
+        d.observe_counterfactual(false, 4, 1, false, 0);   // MTP censored at 1 < 3: unknown outcome, ignored
+        const strata::spec::DraftPolicy::Pick pk = d.choose(4, 3, 30);
+        strata::spec::DraftPolicy e(6);
+        const strata::spec::DraftPolicy::Pick pe = e.choose(4, 3, 30);
+        check(pk.lookup == pe.lookup && pk.t == pe.t, "counterfactual: a censored MTP sample changes nothing");
     }
     std::printf(g_fail ? "FAIL\n" : "PASS\n");
     return g_fail ? 1 : 0;

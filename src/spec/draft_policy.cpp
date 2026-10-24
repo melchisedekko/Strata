@@ -172,6 +172,21 @@ void DraftPolicy::observe(bool lookup, int t, int accepted, int match, double ro
     }
 }
 
+void DraftPolicy::observe_counterfactual(bool lookup, int t, int accepted, bool failure_seen, int match) {
+    t = std::clamp(t, 1, kMaxT);
+    accepted = std::clamp(accepted, 0, t - 1);
+    if (lookup) {
+        const int b = bucket(match);
+        ok_[b] = kDecay * ok_[b] + accepted;
+        bad_[b] = kDecay * bad_[b] + (failure_seen ? 1.0 : 0.0);
+        return;
+    }
+    if (!failure_seen && accepted < t - 1) return;   // censored before the end of the window: E[tokens] unknown
+    const double got = accepted + 1.0;
+    mtp_tok_[t] = mtp_n_[t] > 0 ? (1.0 - kTokAlpha) * mtp_tok_[t] + kTokAlpha * got : got;
+    mtp_n_[t] += 1.0;
+}
+
 namespace {
 int p_bucket(double p) {
     const int b = (int) (p * 8.0);

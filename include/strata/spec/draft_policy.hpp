@@ -36,6 +36,13 @@ public:
     Pick choose(int t_mtp, int lookup_k, int match) const;
     /// After the round: the window it used, the drafts accepted, and the round's time (verify + commit + draft).
     void observe(bool lookup, int t, int accepted, int match, double round_ms);
+    /// Strata+ P3 (full-information feedback, zero cost): after the round, the source NOT taken is scored against the
+    /// a+1 tokens the target committed.  `accepted` = how many of its first t-1 drafts equal those tokens; when it
+    /// matched all the known ones its failure is not seen (`failure_seen` false, a censored sample).  A lookup sample
+    /// updates the match-bucket acceptance exactly as observe() does (no cost: no window of it ran); an MTP sample is
+    /// used only when uncensored.  Without this call the policy learns only the arm it plays (bandit feedback): once
+    /// lookup's q drops below the MTP's, lookup is not tried again until the probes, and q never recovers.
+    void observe_counterfactual(bool lookup, int t, int accepted, bool failure_seen, int match);
 
     /// --lookup-chain: how many of `k_avail` lookup tokens to append after an MTP window of `t_mtp` tokens whose
     /// drafts all hold with probability `p_mtp` (estimated from the draft layer's own probabilities): the k with the

@@ -11179,6 +11179,8 @@ int main(int argc, char** argv) {
         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
         strata::spec::DraftPolicy::ChainState chain_st;
         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
+        // Strata+ P3: full-information feedback for DraftPolicy (score the arm not played on the committed tokens)
+        const bool cf_feedback = [] { const char* v = std::getenv("STRATA_SPEC_CF"); return v != nullptr && v[0] == '1'; }();
         policy.set_robust(spec_cost);
         // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
         if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
@@ -14890,15 +14892,20 @@ int main(int argc, char** argv) {
                 }
                 if (first_window) T = merge_T > 0 ? merge_T : 1;
                 std::copy(dprob.begin(), dprob.begin() + (std::ptrdiff_t) std::min<size_t>(dprob.size(), 8), dwin_s.begin());
+                const int T_plan_mtp = T;   // Strata+ P3: the MTP window choose() compared against
                 const bool merged = first_window && merge_T > 0;   // the prompt's last tokens and the first token
                 // a repeat of earlier context (prompt lookup) where the MTP's own first guess agrees: the policy takes it
                 // when its expected tokens per ms, from the measured acceptance and window costs, beat the MTP window's
                 bool from_sfx = false;
                 int sfx_match = 0;
+                int cf_k = 0;   // Strata+ P3: the gated lookup proposal not taken (scored after the round)
+                std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
+                for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
                 if (o.suffix_draft > 0 && !first_window) {
                     const int k = sfx.propose(S - 1, sbuf.data());
                     sfx_match = sfx.last_match();
                     if (k > 0 && (!use_mtp || sbuf[0] == drafts[0])) {
+                        cf_k = k;
                         const strata::spec::DraftPolicy::Pick pk = policy.choose(T, k, sfx_match);
                         if (pk.lookup) { T = pk.t; from_sfx = true; }
                     }
@@ -15190,6 +15197,16 @@ int main(int argc, char** argv) {
                     return 1;
                 }
                 if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin_s.data(), T_mtp - 1, a);
+                // Strata+ P3: the arm not played, scored on the a+1 committed tokens outv[0..a] (censored there)
+                if (cf_feedback && timed_round && !eos && chain_n == 0 && cf_k > 0) {
+                    const bool other_is_lookup = !from_sfx;
+                    const int t_other = other_is_lookup ? std::min(cf_k, S - 1) + 1 : std::clamp(T_plan_mtp, 1, S_mtp);
+                    int acc = 0;
+                    while (acc < t_other - 1 && acc <= a &&
+                           (other_is_lookup ? sbuf[(size_t) acc] : cf_mtp[(size_t) acc]) == outv[(size_t) acc]) ++acc;
+                    const bool fail_seen = acc < t_other - 1 && acc <= a;
+                    policy.observe_counterfactual(other_is_lookup, t_other, acc, fail_seen, sfx_match);
+                }
                 if (timed_round && !eos && chain_n == 0)
                     policy.observe(from_sfx, T, a, sfx_match,
                                    std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
