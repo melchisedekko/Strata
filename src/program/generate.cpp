@@ -87,6 +87,7 @@
 #include "strata/program/message_boundary.hpp"
 #include "strata/spec/draft_policy.hpp"
 #include "strata/spec/draft_source.hpp"
+#include "strata/spec/pool_source.hpp"   // Strata+ P4
 #include "strata/spec/suffix_drafter.hpp"
 #include "strata/spec/spec_start.hpp"
 #include "strata/program/batch_groups.hpp"
@@ -1093,6 +1094,9 @@ void extra_sources_reset() {
 void extra_sources_append(const int32_t* t, size_t n) {
     for (auto& src : strata::spec::extra_draft_sources()) src->append(t, n);
 }
+// Strata+ P4: the extra sources (a registered persistent pool) see the context whenever one is registered, not only
+// with --lookup-chain - the pool is also offered to the main lookup arm (see the serve loop's lookup proposal)
+bool extra_sources_on(int lookup_chain) { return lookup_chain > 0 || !strata::spec::extra_draft_sources().empty(); }
 
 bool parse_i64_list(const char* s, std::vector<int64_t>& out, std::string& err) {
     out.clear();
@@ -11175,6 +11179,7 @@ int main(int argc, char** argv) {
         // --pipeline-windows 2 loads the drafter with 8 rows: the serial loop's chain keeps its own length
         else if (use_mtp && mtp.max_t() > S_mtp) mtp.set_max_drafts(S_mtp - 1);
         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
+        strata::spec::register_pool_from_env();   // Strata+ P4: STRATA_LOOKUP_POOL=<cap>[,<gate>], once per process
         strata::spec::DraftPolicy policy(S);   // MTP or lookup window, learned over the whole process
         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
         strata::spec::DraftPolicy::ChainState chain_st;
@@ -14181,13 +14186,14 @@ int main(int argc, char** argv) {
                 sfx.reset();
                 for (int64_t t : ids) sfx.append((int32_t) t);
             }
-            if (o.lookup_chain > 0) {
+            if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
                 extra_sources_reset();
                 for (int64_t t : ids) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
             }
             bool first_window = true;
             int64_t produced_n = 0, sfx_windows = 0, sfx_drafts = 0, sfx_ok = 0;
             int64_t chain_windows = 0, chain_drafts = 0, chain_ok = 0;   // --lookup-chain's own counts
+            int64_t pool_windows = 0;   // Strata+ P4: lookup proposals taken from the pool (not the request's text)
             int64_t t2_rej[8] = {}, t2_hit[8] = {};   // STRATA_MTP_TOP2: rejections inside the MTP drafts by depth, runner-up hits
             int64_t dp_tested[8] = {}, dp_ok[8] = {};   // STRATA_SPEC_DEPTH=1: MTP drafts tested / accepted by depth
             std::vector<int32_t> cbuf((size_t) S, 0), ctail;
@@ -14902,8 +14908,17 @@ int main(int argc, char** argv) {
                 std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
                 for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
                 if (o.suffix_draft > 0 && !first_window) {
-                    const int k = sfx.propose(S - 1, sbuf.data());
-                    sfx_match = sfx.last_match();
+                    int k = 0;
+                    if (strata::spec::extra_draft_sources().empty()) {
+                        k = sfx.propose(S - 1, sbuf.data());
+                        sfx_match = sfx.last_match();
+                    } else {   // Strata+ P4: the request's own text and the pool; the longer match wins (ties: own)
+                        int psrc = -1;
+                        const int nt = chain_tail(sfx, nullptr, 0, ctail);
+                        k = strata::spec::propose_from_sources(lookup_src, ctail.data(), nt, 0, S - 1, 1, sbuf.data(),
+                                                               &sfx_match, &psrc);
+                        if (psrc > 0) ++pool_windows;
+                    }
                     if (k > 0 && (!use_mtp || sbuf[0] == drafts[0])) {
                         cf_k = k;
                         const strata::spec::DraftPolicy::Pick pk = policy.choose(T, k, sfx_match);
@@ -15163,7 +15178,7 @@ int main(int argc, char** argv) {
                     strata::core::progress_beat();
                     ++produced_n;
                     if (sfx_on) sfx.append(outv[(size_t) i]);
-                    if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
+                    if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
                     eos = std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
                 }
                 std::fflush(stdout);
@@ -15672,6 +15687,8 @@ int main(int argc, char** argv) {
             if (o.lookup_chain > 0)
                 std::fprintf(stderr, "strata serve: lookup chain: %lld of %lld windows, %lld of %lld chained drafts accepted\n",
                              (long long) chain_windows, (long long) dec_windows, (long long) chain_ok, (long long) chain_drafts);
+            if (!strata::spec::extra_draft_sources().empty())   // Strata+ P4
+                std::fprintf(stderr, "strata serve: lookup pool: %lld lookup proposals from the pool\n", (long long) pool_windows);
             if (std::getenv("STRATA_SPEC_DEPTH") != nullptr)
                 std::fprintf(stderr, "strata serve: spec depth: accepted/tested %lld/%lld %lld/%lld %lld/%lld %lld/%lld %lld/%lld\n",
                              (long long) dp_ok[0], (long long) dp_tested[0], (long long) dp_ok[1], (long long) dp_tested[1],
@@ -16445,6 +16462,7 @@ int main(int argc, char** argv) {
         const int S_mtp = o.mtp_max_t > 0 ? std::min(o.mtp_max_t, o.spec) : o.spec;
         if (use_mtp && S_mtp < o.spec) mtp.set_max_drafts(S_mtp - 1);
         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
+        strata::spec::register_pool_from_env();   // Strata+ P4 (here the pool sees context; the lookup arm is the serve loop's)
         strata::spec::DraftPolicy policy(o.spec);   // MTP or lookup window (see draft_policy.hpp)
         strata::spec::DraftPolicy::ChainState chain_st;
         int chain_rows = 1;   // STRATA_SPEC_COST: the window the cost-aware rule kept in the MTP chain just drafted
@@ -16482,7 +16500,7 @@ int main(int argc, char** argv) {
             for (int64_t t : o.tokens) sfx.append((int32_t) t);
             for (int64_t t : produced) sfx.append((int32_t) t);
         }
-        if (o.lookup_chain > 0) {
+        if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
             extra_sources_reset();
             for (int64_t t : o.tokens) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
             for (int64_t t : produced) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
@@ -16702,7 +16720,7 @@ int main(int argc, char** argv) {
             for (int i = 0; i <= a && (int64_t) produced.size() < max_new && !eos; ++i) {
                 produced.push_back(outv[(size_t) i]);
                 if (sfx_on) sfx.append(outv[(size_t) i]);
-                if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
+                if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
                 eos = o.stop_eos && std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
                 if (!follow.empty()) { follow_differ += fdiff[(size_t) i]; ++follow_emitted; }
             }
