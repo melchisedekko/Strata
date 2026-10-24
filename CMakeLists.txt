@@ -1532,7 +1532,7 @@ endif()
 #     features, and the fallback exists for tests, exactly as P2.S3 specifies.
 # Plan v0.3 P6: speculation components that need no GPU.
 add_library(strata_spec STATIC src/spec/suffix_drafter.cpp src/spec/controller.cpp src/spec/draft_policy.cpp
-            src/spec/draft_source.cpp src/spec/pool_source.cpp)
+            src/spec/draft_source.cpp src/spec/pool_source.cpp src/spec/joint_gate.cpp)
 target_include_directories(strata_spec PUBLIC include)
 if(STRATA_BUILD_TESTS)
   add_executable(arch_defaults_test src/core/arch_defaults_test.cpp src/core/arch_defaults.cpp)
@@ -1553,6 +1553,9 @@ if(STRATA_BUILD_TESTS)
   add_executable(pool_source_test src/spec/pool_source_test.cpp)
   target_link_libraries(pool_source_test PRIVATE strata_spec)
   add_test(NAME pool_source_test COMMAND pool_source_test)
+  add_executable(joint_gate_test src/spec/joint_gate_test.cpp)
+  target_link_libraries(joint_gate_test PRIVATE strata_spec)
+  add_test(NAME joint_gate_test COMMAND joint_gate_test)
   add_executable(spec_start_test src/spec/spec_start_test.cpp)
   target_include_directories(spec_start_test PRIVATE include)
   add_test(NAME spec_start_test COMMAND spec_start_test)
