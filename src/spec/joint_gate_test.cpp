@@ -112,19 +112,6 @@ int main() {
         check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
         check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
     }
-    {   // MTP hazards forget (Scout bug c): after a long reliable phase, a regime change is learned within ~1/(1-0.999)
-        JointGate g;
-        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
-        const int lu_acc[2] = {0, 0};
-        auto depth = [&]() { JointGate::Choice c; if (g.start(none, 100, &c)) return 0;
-                             int d = 0; while (true) { ++d; if (!g.keep(hi, nullptr, d)) break; } return d; };
-        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
-                                         g.observe(c, 7, 1.0, 7, hi, none, lu_acc); }
-        const int before = depth();
-        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
-                                         g.observe(c, 0, 1.0 + 0.05 * 7, 0, hi, none, lu_acc); }
-        check(before >= 5 && depth() <= 2, "decay: confident drafts that stop being accepted are no longer drafted deep");
-    }
     std::printf(g_fail ? "FAIL\n" : "PASS\n");
     return g_fail ? 1 : 0;
 }

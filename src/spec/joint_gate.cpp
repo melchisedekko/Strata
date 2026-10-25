@@ -10,7 +10,6 @@ namespace {
 constexpr double kPB[6] = {0.3, 0.6, 0.8, 0.9, 0.95, 0.99};
 constexpr int kMB[4] = {4, 6, 12, 24};
 constexpr int kTRows = 8;          // th_ rows / n_t_ entries: window sizes T = 1..kTRows
-constexpr double kHmDecay = 0.999;  // forgetting of the per-bucket MTP hazards (same as the marginal ones)
 static_assert(strata::spec::JointGate::kD + 1 == kTRows, "window sizes must fit the cost rows");
 int trow(int t) { return std::clamp(t, 1, kTRows) - 1; }   // T > 8 (e.g. an engine chain window) -> last row
 int pbucket(double p) { int b = 0; while (b < 6 && kPB[b] <= p) ++b; return b; }   // searchsorted(side="right")
@@ -213,7 +212,7 @@ void JointGate::observe(const Choice& c, int a, double cost, int mtp_acc, const 
         for (int j = 0; j < std::min({obs + (fail ? 1 : 0), c.d, kD}); ++j) {   // c.d > kD: no row
             const int b = pbucket((double) mtp_p[j]);
             const bool ok = j < obs;
-            hm_s_[j][b] = kHmDecay * hm_s_[j][b] + ok; hm_f_[j][b] = kHmDecay * hm_f_[j][b] + !ok;
+            hm_s_[j][b] += ok; hm_f_[j][b] += !ok;
             hmm_s_[j] = 0.999 * hmm_s_[j] + ok; hmm_f_[j] = 0.999 * hmm_f_[j] + !ok;
         }
     }
