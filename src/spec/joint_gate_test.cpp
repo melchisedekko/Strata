@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 
 namespace {
 bool g_fail = false;
@@ -17,7 +18,9 @@ int main() {
     using strata::spec::JointGate;
     const JointGate::Lookup none[2] = {};
     {   // confident MTP chains on a flat verify cost are drafted deep; unconfident ones stop early
-        JointGate g;
+        // (written for the full window: explicit tmax=8 since the default became arm A, tmax=5)
+        JointGate::Options o8; o8.tmax = 8;
+        JointGate g(o8);
         const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
         const float lo[7] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
         for (int r = 0; r < 300; ++r) {   // learn: hi chains accept fully, lo chains fail at once; flat cost 1.0
@@ -111,6 +114,39 @@ int main() {
         check(JointGate::remaining(100, 10, 4096, 200) == 89, "rem: max_new bound");
         check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
         check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
+    }
+    {   // arm A = the defaults (Strata Lead decision 25/10/2026): tmax=5, skip, prompt lookup only, no conf_stop
+        const JointGate::Options d;
+        check(d.tmax == 5 && d.skip && d.mtp && !d.conf_stop && d.use_src[0] && !d.use_src[1],
+              "defaults = arm A: tmax=5, skip, mtp, lookup only, no conf_stop");
+        JointGate g;
+        check(g.tmax() == 5, "JointGate() has tmax 5");
+        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
+        JointGate::Lookup lu[2] = {{7, 40, 1}, {}};
+        const int lu_acc[2] = {7, 0};
+        int maxt = 0, maxd = 0, maxlt = 0;   // klu = lookup PROPOSAL length (cost term), not the window
+        for (int r = 0; r < 300; ++r) {   // flat cost, everything accepted: the widest allowed window wins
+            JointGate::Choice c;
+            const bool look = r % 3 == 0;
+            if (!g.start(look ? lu : none, 100, &c)) {
+                int dd = 0;
+                while (true) { ++dd; if (!g.keep(hi, nullptr, dd)) break; }
+                maxd = std::max(maxd, dd);
+                c = g.finish(hi, dd, look ? lu : none);
+            }
+            maxt = std::max(maxt, c.t); maxd = std::max(maxd, c.d);
+            if (c.src == JointGate::kLookup) maxlt = std::max(maxlt, c.t);
+            g.observe(c, c.t - 1, 1.0, 7, hi, look ? lu : none, lu_acc);
+        }
+        check(maxt == 5 && maxd <= 4 && maxlt >= 2 && maxlt <= 5, "arm A: windows (MTP and lookup) reach T=5, never more; d<=4");
+        unsetenv("STRATA_SPEC_JOINT");
+        const bool off = !JointGate::enabled_from_env();
+        setenv("STRATA_SPEC_JOINT", "0", 1);
+        const bool zero = !JointGate::enabled_from_env();
+        setenv("STRATA_SPEC_JOINT", "1", 1);
+        const bool on = JointGate::enabled_from_env();
+        unsetenv("STRATA_SPEC_JOINT");
+        check(off && zero && on, "STRATA_SPEC_JOINT: unset/0 -> off (DraftPolicy), 1 -> on");
     }
     std::printf(g_fail ? "FAIL\n" : "PASS\n");
     return g_fail ? 1 : 0;

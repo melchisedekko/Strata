@@ -16,6 +16,19 @@
 // RLS on one-hot(T) + rho_mtp*d + rho_lu*k (optimistic prior, monotone in T); frozen() keeps the seeded table.
 // SCOPE: single sequence only (CLI and the --serve GEN loop, where DraftPolicy runs).  The batch path (batch_step /
 // BGEN) uses one MTP draft per slot and never calls DraftPolicy or this gate: no effect on parallel > 1 serving.
+// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
+//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
+//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
+//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
+//     llama.cpp); none is an AMD measurement.
+//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
+//     0.06-0.15; vs k=3, no cell clearly worse.
+//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
+//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
+//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
+// DEFAULTS = arm A: tmax=5 (windows T<=5, d<=4), skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard
+// decay.  STRATA_SPEC_JOINT=1 (enabled_from_env()) selects this gate with Options() as is; without the variable nothing
+// changes (DraftPolicy, upstream 7dd5cf18 behaviour).  Engine wiring in generate.cpp: see docs/strataplus_joint_gate.md.
 #pragma once
 #include <array>
 #include <cstdint>
@@ -30,7 +43,7 @@ public:
         bool use_src[kSrc] = {true, false};
         bool mtp = true, skip = true, conf_stop = false;
         double gamma = 0.5, eta = 0.35;
-        int tmax = 8;
+        int tmax = 5;   // arm A (Strata Lead decision); arm B (tmax=8) is round 2, needs a new holdout then AMD
     };
     struct Lookup { int k = 0, match = 0, agree = -1; };   // agree: first lookup draft == first MTP draft (-1 unknown)
     enum Src { kNone = 0, kMtp = 1, kLookup = 2, kPool = 3 };
@@ -60,6 +73,9 @@ public:
     /// `rem` for start(): tokens still allowed after the next one, bounded by max_new AND by the context window (the
     /// engine stops when p + T > max_context; max_context <= 0 = no context bound).  Never negative.
     static int remaining(int max_new, int produced, int max_context, int pos);
+    /// STRATA_SPEC_JOINT=1: use this gate (with the arm-A defaults of Options()) instead of DraftPolicy.  Unset or any
+    /// other value: false, DraftPolicy as upstream.
+    static bool enabled_from_env();
     double cost_pred(int t, int d, int k) const;   // t clamped to 1..8
     int tmax() const { return o_.tmax; }
 

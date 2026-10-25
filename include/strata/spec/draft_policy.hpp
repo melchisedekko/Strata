@@ -13,6 +13,19 @@
 // and takes the lookup window only when its best E/cost beats the MTP's by `margin`. Costs are the measured round
 // times per window size (EMA; sizes not seen yet are scaled from seen ones by a prior shape), so the policy adapts
 // to the machine and the context length. It only chooses which drafts to verify: the output is unchanged.
+//
+// Strata+ (local): with STRATA_SPEC_JOINT=1 the JointGate (joint_gate.hpp, arm A: tmax=5) takes this policy's place;
+// without it this class runs unchanged (upstream 7dd5cf18).
+// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
+//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
+//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
+//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
+//     llama.cpp); none is an AMD measurement.
+//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
+//     0.06-0.15; vs k=3, no cell clearly worse.
+//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
+//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
+//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
 #pragma once
 
 #include <array>

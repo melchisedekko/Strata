@@ -1,6 +1,23 @@
 # Strata+ P5 — joint source+depth gate: engine wiring (DESIGN, not compiled)
 
 
+## Final local configuration (Strata Lead decision, 25/10/2026): arm A
+
+`STRATA_SPEC_JOINT=1` selects JointGate with `JointGate::Options()` as is = **arm A**: tmax=5 (windows T<=5, d<=4),
+skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard decay (frozen_params_v3.json, sha256 37bf1996...).
+`JointGate::enabled_from_env()` reads the variable; without it nothing changes (DraftPolicy, upstream 7dd5cf18).
+C++ defaults == replay GateV2(tmax=5, skip=True) round by round (replay/tests/test_arm_a_default_parity.py: tune
+tf_d7 x P1/P2/P4 x rho band + 0.26 x cost V1/V2, and the synthetic domains; nothing tuned on the holdout).
+
+**LIMITS**
+- Single sequence only (CLI and the --serve GEN loop). batch_step / BGEN does not use DraftPolicy: no effect for parallel > 1.
+- tok/s are ESTIMATED by the replay on a CPU proxy (Qwen3.5-2B Q4_K_M), not AMD measurements.
+- Holdout v1.1: vs the default a gain in all three domains in the rho band 0.06-0.15; vs k=3 no cell clearly worse.
+- Vs STRATA_SPEC_COST=1, chat: no gain and one cell clearly worse (chat, P1, rho 0.0791: -1.4% [-2.8; -0.2]). This agrees
+  with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
+- Holdout v1.1 is used: any future comparison needs a new holdout.
+- The engine wiring below (generate.cpp) is still a DESIGN: not written/compiled here (CUDA headers).
+
 **Scope (Strata Lead decision): single sequence only.**  JointGate / gate_v2 replaces DraftPolicy where DraftPolicy
 runs: the CLI generation loop and the GEN loop of `--serve` (one request served alone).  The batch path
 (`batch_step`, `BGEN <slot>`, generate.cpp ~11519 at 7dd5cf18) does not call DraftPolicy: each slot verifies 2 rows

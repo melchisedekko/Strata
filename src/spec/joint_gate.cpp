@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 
 namespace strata::spec {
 
@@ -23,6 +24,11 @@ void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
 }  // namespace
 
 JointGate::JointGate() : JointGate(Options()) {}
+
+bool JointGate::enabled_from_env() {
+    const char* v = std::getenv("STRATA_SPEC_JOINT");
+    return v != nullptr && v[0] == '1';
+}
 
 JointGate::JointGate(const Options& o) : o_(o) {
     o_.tmax = std::clamp(o_.tmax, 1, kD + 1);   // expect()/th_ have room for T <= kD + 1 = 8 only
