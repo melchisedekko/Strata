@@ -518,7 +518,7 @@ private:
     std::vector<unsigned long long> prof_h_;
     double prof_sum_[2][kProfPer] = {};   // [GDN / QSA layers][stage]
     int64_t prof_windows_ = 0;
-    double prof_t_sum_[::strata::kernels::kVerifyMaxT + 1][2][kProfPer] = {};   // the same per window size T (1..8), for profile_by_t_report   // STRATA+ P-T12 measure: [9] -> [kVerifyMaxT + 1]
+    double prof_t_sum_[::strata::kernels::kVerifyMaxT + 1][2][kProfPer] = {};   // the same per window size T (1..kVerifyMaxT), for profile_by_t_report   // STRATA+ P-T12 measure: [9] -> [kVerifyMaxT + 1]; v2: commento 1..8 -> 1..kVerifyMaxT
     int64_t prof_t_win_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
     bool rs_on_ = false;                      // STRATA_ROUTE_STATS
     unsigned long long* rs_dev_ = nullptr;    // [9 T][n_layers][8 rows]: experts of row r that no earlier row of the window routed to

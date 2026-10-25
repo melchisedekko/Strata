@@ -850,6 +850,7 @@ __device__ __forceinline__ float chunk_dot(uint2 cb, const int* xw, float dw, fl
 // Gate/up: a block = GU_ROWS rows of ONE group.  The group's activations (each entry's token row of x_q8_0 and
 // its fp32 scales) are staged once into shared memory as aligned words; each warp then walks its rows, loading
 // each lane's code chunks once and dotting them with every entry.
+template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
 __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long long* __restrict__ grp_ptr,
                                                          const int32_t* __restrict__ grp_start,
                                                          const int32_t* __restrict__ n_groups,
@@ -857,11 +858,11 @@ __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long lon
                                                          const uint8_t* __restrict__ x_q8_0,
                                                          const float* __restrict__ x_scales,
                                                          float* __restrict__ gate_up, int cap_entries) {
-    __shared__ int xs_q[GMAX][H / 4];          // the entries' int8 activations as words (2560 B each)
-    __shared__ float xs_d[GMAX][H / 32];
+    __shared__ int xs_q[GM][H / 4];          // the entries' int8 activations as words (2560 B each); STRATA+ P-T12 measure v2: GMAX -> GM
+    __shared__ float xs_d[GM][H / 32];   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int g = blockIdx.y;
     if (g >= *n_groups) return;
-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
+    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
     for (int i = t; i < ne * (H / 32); i += blockDim.x) {
         const int k = i / (H / 32), c = i - k * (H / 32);
@@ -912,6 +913,7 @@ __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long lon
 
 // Down: a block = D_ROWS rows of ONE group; the entries' quantized intermediates staged once.  A down row is 20
 // chunks, so lanes 0..19 each hold one chunk, as in the per-entry kernel.
+template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
 __global__ void __launch_bounds__(256) down_grouped_kernel(const unsigned long long* __restrict__ grp_ptr,
                                                            const int32_t* __restrict__ grp_start,
                                                            const int32_t* __restrict__ n_groups,
@@ -919,11 +921,11 @@ __global__ void __launch_bounds__(256) down_grouped_kernel(const unsigned long l
                                                            const uint8_t* __restrict__ h_q8_0,
                                                            const float* __restrict__ h_scales,
                                                            float* __restrict__ out) {
-    __shared__ int hs_q[GMAX][FF / 4];
-    __shared__ float hs_d[GMAX][FF / 32];
+    __shared__ int hs_q[GM][FF / 4];   // STRATA+ P-T12 measure v2: GMAX -> GM
+    __shared__ float hs_d[GM][FF / 32];   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int g = blockIdx.y;
     if (g >= *n_groups) return;
-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
+    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
     for (int i = t; i < ne * (FF / 32); i += blockDim.x) {
         const int k = i / (FF / 32), c = i - k * (FF / 32);
@@ -985,6 +987,7 @@ __device__ __forceinline__ void stage_chunk(const uint8_t* __restrict__ xb, floa
     xs_dh[i] = make_int2(__float_as_int(dx), hx);
 }
 
+template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
 __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long long* __restrict__ grp_ptr,
                                                            const int32_t* __restrict__ grp_start,
                                                            const int32_t* __restrict__ n_groups,
@@ -993,18 +996,18 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
                                                            const float* __restrict__ x_scales,
                                                            float* __restrict__ gate_up, int cap_entries) {
     constexpr int NC = H / 32;
-    __shared__ int xs_w[8 * GMAX * NC];          // 20 KB: word j of entry k's chunk c at [j][k * NC + c]
-    __shared__ int2 xs_dh[GMAX * NC];            // 5 KB: (dx as bits, hx)
+    __shared__ int xs_w[8 * GM * NC];          // 20 KB: word j of entry k's chunk c at [j][k * NC + c]; STRATA+ P-T12 measure v2: GMAX -> GM
+    __shared__ int2 xs_dh[GM * NC];            // 5 KB: (dx as bits, hx); STRATA+ P-T12 measure v2: GMAX -> GM
     const int g = blockIdx.y;
     if (g >= *n_groups) return;
-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
+    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
     for (int i = t; i < ne * NC; i += blockDim.x) {
         const int k = i / NC, c = i - k * NC;
         const int tok = ent_tok[e0 + k];
         const uint8_t* xb = x_q8_0 + (size_t) tok * (size_t) NC * 34 + (size_t) c * 34;
         const float dx = x_scales ? x_scales[(size_t) tok * NC + c] : f16_ld(xb);
-        stage_chunk<GMAX * NC>(xb, dx, xs_w, xs_dh, i);
+        stage_chunk<GM * NC>(xb, dx, xs_w, xs_dh, i);   // STRATA+ P-T12 measure v2: GMAX -> GM
     }
     __syncthreads();
     const uint8_t* blob = (const uint8_t*) grp_ptr[g];
@@ -1034,7 +1037,7 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
                 const int at = k * NC + c;
                 int X[8];
 #pragma unroll
-                for (int j = 0; j < 8; ++j) X[j] = xs_w[j * (GMAX * NC) + at];
+                for (int j = 0; j < 8; ++j) X[j] = xs_w[j * (GM * NC) + at];   // STRATA+ P-T12 measure v2: GMAX -> GM
                 const int2 dh = xs_dh[at];
                 const float dx = __int_as_float(dh.x);
                 acc0 += dw0[q] * dx * (float) (chunk_s(m0[q], X) - dh.y);
@@ -1051,6 +1054,7 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
     }
 }
 
+template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
 __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long long* __restrict__ grp_ptr,
                                                              const int32_t* __restrict__ grp_start,
                                                              const int32_t* __restrict__ n_groups,
@@ -1059,17 +1063,17 @@ __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long
                                                              const float* __restrict__ h_scales,
                                                              float* __restrict__ out) {
     constexpr int NC = FF / 32;
-    __shared__ int hs_w[8 * GMAX * NC];
-    __shared__ int2 hs_dh[GMAX * NC];
+    __shared__ int hs_w[8 * GM * NC];   // STRATA+ P-T12 measure v2: GMAX -> GM
+    __shared__ int2 hs_dh[GM * NC];   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int g = blockIdx.y;
     if (g >= *n_groups) return;
-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
+    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
     for (int i = t; i < ne * NC; i += blockDim.x) {
         const int k = i / NC, c = i - k * NC;
         const uint8_t* xb = h_q8_0 + (size_t) (e0 + k) * (size_t) NC * 34 + (size_t) c * 34;
         const float dx = h_scales ? h_scales[(size_t) (e0 + k) * NC + c] : f16_ld(xb);
-        stage_chunk<GMAX * NC>(xb, dx, hs_w, hs_dh, i);
+        stage_chunk<GM * NC>(xb, dx, hs_w, hs_dh, i);   // STRATA+ P-T12 measure v2: GMAX -> GM
     }
     __syncthreads();
     const uint8_t* blob = (const uint8_t*) grp_ptr[g];
@@ -1093,7 +1097,7 @@ __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long
                 const int at = k * NC + c;
                 int X[8];
 #pragma unroll
-                for (int j = 0; j < 8; ++j) X[j] = hs_w[j * (GMAX * NC) + at];
+                for (int j = 0; j < 8; ++j) X[j] = hs_w[j * (GM * NC) + at];   // STRATA+ P-T12 measure v2: GMAX -> GM
                 const int2 dh = hs_dh[at];
                 const float dx = __int_as_float(dh.x);
                 acc0 += dw0 * dx * (float) (chunk_s(m0, X) - dh.y);
@@ -1168,9 +1172,13 @@ void moe_group_resident(const int32_t* ids, int n, int k_per_tok, const uint8_t*
 
 void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start, const int32_t* n_groups,
                     const int32_t* ent_dst, const int32_t* ent_tok, int64_t cap_groups, int64_t cap_entries,
-                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream) {
+                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream,
+                    int max_group) {   // STRATA+ P-T12 measure v2
     if (cap_groups <= 0 || cap_entries <= 0) return;
     cudaStream_t cs = (cudaStream_t) stream;
+    // STRATA+ P-T12 measure v2: a group holds at most one entry per token, so a call of <= 8 tokens fits the
+    // GMAX = 8 instances of 7dd5cf1; 0 (unknown: the parity harness) keeps GMAX
+    const bool g8 = max_group >= 1 && max_group <= 8;
     const uint64_t gu_bytes = ((uint64_t) cap_entries * (uint64_t) (2 * FF) * 4 + 15) & ~15ull;
     const uint64_t q8_bytes = ((uint64_t) cap_entries * (uint64_t) (FF / 32) * 34 + 15) & ~15ull;
     float* gate_up = (float*) scratch;
@@ -1180,11 +1188,15 @@ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start,
     {
         const dim3 grid((unsigned) (2 * FF / GU_ROWS), (unsigned) cap_groups);
         if (fast)
-            gu_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
-                                                      gate_up, (int) cap_entries);
+            if (g8) gu_grouped_t_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
+                                                                 gate_up, (int) cap_entries);   // STRATA+ P-T12 measure v2
+            else gu_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
+                                                           gate_up, (int) cap_entries);
         else
-            gu_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
-                                                    (int) cap_entries);
+            if (g8) gu_grouped_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
+                                                               (int) cap_entries);   // STRATA+ P-T12 measure v2
+            else gu_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
+                                                         (int) cap_entries);
         check("moe_grouped_s2/gu", stream);
     }
     // #783 PR-k (stuchapin909): SwiGLU and the scaled Q8_0 quantize of its result in one kernel (gate_up still gets the
@@ -1222,9 +1234,11 @@ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start,
         const dim3 grid((unsigned) (H / D_ROWS), (unsigned) cap_groups);
         const float* hs = x_scales != nullptr ? h_scales : nullptr;
         if (fast)
-            down_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
+            if (g8) down_grouped_t_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);   // STRATA+ P-T12 measure v2
+            else down_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
         else
-            down_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
+            if (g8) down_grouped_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);   // STRATA+ P-T12 measure v2
+            else down_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
         check("moe_grouped_s2/down", stream);
     }
 }

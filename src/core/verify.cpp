@@ -2100,7 +2100,7 @@ bool Verifier::record_window(int T, cudaStream_t cs, std::string& err) {
                                       nat_xq_ + (size_t) tb * (N / 32) * 36, hit_scratch_, dst_buf, cs, gy);
             } else {
                 moe_grouped_s2(gp, gs, gn, p_dst, p_tok, cap, cap, hit_xq_ + (size_t) tb * (N / 32) * 34,
-                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs);
+                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs, n);   // STRATA+ P-T12 measure v2: n token
             }
         };
         bool hits_in_combine = false;

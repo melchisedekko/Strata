@@ -2793,6 +2793,12 @@ int main(int argc, char** argv) {
         }
         }
     }
+    // STRATA+ P-T12 measure v2: --serve (con o senza --mtp) ha ancora array per slot/finestra a 8 (verify.hpp batch,
+    // generate.cpp dwin_s / t2_rej / slots): fuori perimetro, si esce prima di qualunque allocazione o query al device
+    if (o.serve) {
+        std::fprintf(stderr, "build di misura P-T12: --serve non supportato (array batch a 8), usare solo la CLI\n");
+        return 2;
+    }
 #if defined(STRATA_USE_HIP)
     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
@@ -16756,10 +16762,11 @@ int main(int argc, char** argv) {
             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
                 if (t_cycle_n[i] > 0) std::printf(" T%zu:%.2f(n=%lld)", i, t_cycle_ms[i] / (double) t_cycle_n[i], (long long) t_cycle_n[i]);
             std::printf("\n");
-            std::printf("%-24s", "window CPU miss/round");   // STRATA+ P-T12 measure: stessi round della riga sopra
+            // STRATA+ P-T12 measure: stessi round della riga sopra; v2: somma per round su tutti i layer, formato senza spazi
+            std::printf("%-24s", "window CPU miss/round (sum over all layers; ent = entries/round, all layers; rmiss/rnomiss = rounds with/without a miss):");
             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
                 if (t_cycle_n[i] > 0)
-                    std::printf(" T%zu:%.2f(entries=%.2f, rounds miss=%lld no-miss=%lld)", i,
+                    std::printf(" T%zu:%.2f(ent=%.2f,rmiss=%lld,rnomiss=%lld)", i,   // STRATA+ P-T12 measure v2
                                 (double) t_cycle_miss[i] / (double) t_cycle_n[i], (double) t_cycle_ent[i] / (double) t_cycle_n[i],
                                 (long long) t_cycle_rmiss[i], (long long) (t_cycle_n[i] - t_cycle_rmiss[i]));
             std::printf("\n");
