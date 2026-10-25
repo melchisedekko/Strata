@@ -3019,7 +3019,7 @@ void fused_gr_persist_init() {
         return finite && rel < 1e-4 ? 0 : 2;
     };
     int max_t = 0;
-    for (int T = 1; T <= kFusedGrMaxT && ok; ++T) {
+    for (int T = 1; T <= kGrBaseMaxT && ok; ++T) {   // STRATA+ P-T12 measure v3 (C7): kernel_t covers 1..8 (nullptr above), as 7dd5cf1's 1..kFusedGrMaxT = 8
         const int r = check(T);
         if (r == 1) ++timeouts; else if (r == 2) { bad_t = T; ok = false; }
         if (r != 0) break;
