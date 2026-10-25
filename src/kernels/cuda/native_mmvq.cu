@@ -826,7 +826,7 @@ __global__ void native_small_mmvq_kernel(const Weight* __restrict__ w,
 // row) value is accumulated over kbx in the same order, summed across warps in the same order and reduced with
 // the same warp tree as the ncols = 1 kernel, so every column is BITWISE equal to a single-column call on that
 // column (checked by bench/micro/native_mmvq_multi.cpp). The ncols = 1 kernels are untouched.
-constexpr int MAX_NCOLS = 8;
+constexpr int MAX_NCOLS = 12;   // STRATA+ P-T12 measure: 8 -> 12
 
 // Each format splits its dot product into `load` (everything that depends only on the weight block: codes,
 // unpacked scales, block scale) and `apply` (the activation loads and the original *_impl expression). `load` runs
@@ -1516,7 +1516,11 @@ void launch_multi(const void* weights, const void* x_q8_1, float* y, int n_in, i
         case 6: launch_multi_n<F, 6>(weights, x_q8_1, y, n_in, n_out, s); break;
         case 7: launch_multi_n<F, 7>(weights, x_q8_1, y, n_in, n_out, s); break;
         case 8: launch_multi_n<F, 8>(weights, x_q8_1, y, n_in, n_out, s); break;
-        default: throw std::invalid_argument("native MMVQ multi-column launch requires 2 <= ncols <= 8");
+        case 9: launch_multi_n<F, 9>(weights, x_q8_1, y, n_in, n_out, s); break;     // STRATA+ P-T12 measure
+        case 10: launch_multi_n<F, 10>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
+        case 11: launch_multi_n<F, 11>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
+        case 12: launch_multi_n<F, 12>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
+        default: throw std::invalid_argument("native MMVQ multi-column launch requires 2 <= ncols <= 12");   // STRATA+ P-T12 measure
     }
 }
 
@@ -1797,7 +1801,7 @@ void validate_shape(int n_in, int ncols, int block_elems = Q8K) {
     if (n_in <= 0 || n_in % block_elems != 0) {
         throw std::invalid_argument("native MMVQ requires n_in > 0 and divisible by its block element count");
     }
-    if (ncols < 1 || ncols > MAX_NCOLS) throw std::invalid_argument("native MMVQ requires 1 <= ncols <= 8");
+    if (ncols < 1 || ncols > MAX_NCOLS) throw std::invalid_argument("native MMVQ requires 1 <= ncols <= 12");   // STRATA+ P-T12 measure
 }
 void validate_pointer(const void* p) {
     if (!p || reinterpret_cast<std::uintptr_t>(p) % 4 != 0) {
@@ -2051,6 +2055,7 @@ bool q8_packed_shape(int n_in, int n_out) {   // the shapes native_q8_0_packed_k
 }
 
 bool q8_packed_mmvq(const void* weights, const void* x_q8_1, float* y, int n_in, int n_out, int ncols, void* stream) {
+    if (ncols > 8) return false;   // STRATA+ P-T12 measure: il packed ha ncols <= 8, oltre resta il layout GGUF
     auto& registry = q8_packed_registry();
 #if !defined(__HIPCC__)
     if (q8_sm60_on() && !registry.empty()) {
@@ -2203,6 +2208,7 @@ void q6_packed_launch(const Q6Packed& w, const Q81Block* x, float* y, cudaStream
 }
 
 bool q6_packed_mmvq(const void* weights, const void* x_q8_1, float* y, int n_in, int n_out, int ncols, void* stream) {
+    if (ncols > 8) return false;   // STRATA+ P-T12 measure: il packed ha ncols <= 8, oltre resta il layout GGUF
     auto& registry = q6_packed_registry();
     if (registry.empty() || g_q6_bypass || (ncols > 1 && !g_multi_exact)) return false;
     const auto found = registry.find(weights);

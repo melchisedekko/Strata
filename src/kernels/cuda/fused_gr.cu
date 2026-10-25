@@ -214,6 +214,7 @@ struct GrMulti {
     float* xn;
     int T;
 };
+static_assert(sizeof(GrMulti) <= 4096, "GrMulti is passed by value: kernel parameters are limited to 4 KB");   // STRATA+ P-T12 measure
 
 
 // S26 STRATA_QFUSE=1: the q8_1 image of `mixed`, written by the up kernels below. A q8_1 block is 32 columns and an
@@ -2176,7 +2177,10 @@ void launch_q8(const GrMulti& m, float* scratch, cudaStream_t st, unsigned long 
         case 5: launch_q8_t<5>(m, part, ssg, st, stamp_buf, stamp_i0); break;
         case 6: launch_q8_t<6>(m, part, ssg, st, stamp_buf, stamp_i0); break;
         case 7: launch_q8_t<7>(m, part, ssg, st, stamp_buf, stamp_i0); break;
-        default: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;
+        case 8: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;   // STRATA+ P-T12 measure: era il default (troncava T > 8)
+        default:   // STRATA+ P-T12 measure: guardia, STRATA_HC_Q8 non supporta T > 8
+            std::fprintf(stderr, "STRATA measurement patch: fused_gr STRATA_HC_Q8 path called with T=%d > 8\n", m.T);
+            std::exit(1);
     }
 }
 

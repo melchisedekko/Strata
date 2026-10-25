@@ -27,6 +27,7 @@
 #include "strata/core/layer.hpp"
 #include "strata/core/session.hpp"
 #include "strata/kernels/sampler.hpp"
+#include "strata/kernels/verify_kernels.hpp"   // STRATA+ P-T12 measure: kVerifyMaxT per gli array sotto
 
 #include <cuda_runtime.h>
 
@@ -517,8 +518,8 @@ private:
     std::vector<unsigned long long> prof_h_;
     double prof_sum_[2][kProfPer] = {};   // [GDN / QSA layers][stage]
     int64_t prof_windows_ = 0;
-    double prof_t_sum_[9][2][kProfPer] = {};   // the same per window size T (1..8), for profile_by_t_report
-    int64_t prof_t_win_[9] = {};
+    double prof_t_sum_[::strata::kernels::kVerifyMaxT + 1][2][kProfPer] = {};   // the same per window size T (1..8), for profile_by_t_report   // STRATA+ P-T12 measure: [9] -> [kVerifyMaxT + 1]
+    int64_t prof_t_win_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
     bool rs_on_ = false;                      // STRATA_ROUTE_STATS
     unsigned long long* rs_dev_ = nullptr;    // [9 T][n_layers][8 rows]: experts of row r that no earlier row of the window routed to
     int64_t rs_win_[9] = {};
@@ -533,7 +534,7 @@ private:
     float* ple_val_ = nullptr;
     int last_t_ = 0;
     int64_t last_pos0_ = 0;
-    int32_t last_tokens_[8] = {};
+    int32_t last_tokens_[::strata::kernels::kVerifyMaxT] = {};   // STRATA+ P-T12 measure: [8] -> [kVerifyMaxT]
     int64_t n_vocab_ = 0;
     cudaStream_t cs_ = nullptr;
     cudaStream_t sh_cs_ = nullptr;
@@ -544,9 +545,9 @@ private:
     cudaStream_t df_side_[2] = {};
     cudaEvent_t df_fork_ = nullptr;
     cudaEvent_t df_join_[2] = {};
-    cudaGraphExec_t exec_[9] = {};
-    cudaGraphExec_t exec_nr_[9] = {};   // #871: the doorbell variant of a stage that is all-resident otherwise
-    bool launched_[9] = {}, launched_nr_[9] = {};   ///< this graph has been launched once (early_ple_flag: a cold first launch raises the PLE flag first)
+    cudaGraphExec_t exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
+    cudaGraphExec_t exec_nr_[::strata::kernels::kVerifyMaxT + 1] = {};   // #871: the doorbell variant of a stage that is all-resident otherwise   // STRATA+ P-T12 measure
+    bool launched_[::strata::kernels::kVerifyMaxT + 1] = {}, launched_nr_[::strata::kernels::kVerifyMaxT + 1] = {};   ///< this graph has been launched once (early_ple_flag: a cold first launch raises the PLE flag first)   // STRATA+ P-T12 measure
     // fork 34a35db (STRATA_SIDE_MIXER=1): the GDN gates and the QSA indexer on a branch of the window's graph beside the
     // mixer's projections, joined before the recurrence / the attention
     cudaStream_t side_ = nullptr;
@@ -613,7 +614,7 @@ private:
     void set_plan_slot(int grp);
     bool split_ = false;   // opt-in (--spec-split): exact but slower, see the overlap study
     std::function<bool(cudaStream_t, std::string&)> pre_launch_;   // set_pre_launch
-    int groups_[9] = {};
+    int groups_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
     float* h_ymiss_ = nullptr;   float* m_ymiss_ = nullptr;     // T * k * n_embd
 
     // device

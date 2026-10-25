@@ -65,7 +65,7 @@ void fused_gr_quantize_q8_0(const uint16_t* bf16, uint8_t* out, int64_t n_blocks
 /// once for all of them.  `a[t]` is token t's arguments (its own R, pending write, lo, rs, inject, mixed; the four
 /// weight pointers and eps must be the same for every t); `xn_scratch` is n_tok * hc * n_embd floats.  Every
 /// token's outputs are bitwise `fused_gr_read(a[t])`.
-constexpr int kFusedGrMaxT = 8;
+constexpr int kFusedGrMaxT = 12;   // STRATA+ P-T12 measure: 8 -> 12 (verify.cpp FusedGrArgs fa[kFusedGrMaxT] riempito per t < T)
 /// Returns true when it also wrote the q8_1 images (every token's q8_mixed set and this read supports it).
 bool fused_gr_read_multi(const FusedGrArgs* a, int n_tok, float* xn_scratch, void* stream,
                          unsigned long long* stamp_buf = nullptr, int stamp_i0 = 0);

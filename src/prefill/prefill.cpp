@@ -3857,7 +3857,7 @@ bool Prefill::run_impl(const int64_t* tokens, int64_t n, int64_t pos0, std::stri
                                 ++nstream;
                                 // a blob the CPU reads from RAM: page-locked, or any other that is not assembled into a
                                 // short-lived buffer (the arena's unpinned part, the mapped experts.bin's pages)
-                                if (c <= strata::kernels::cpu::MAXT && (m.src->pinned(l, e) || !m.src->transient(l, e)))
+                                if (c <= 8 && (m.src->pinned(l, e) || !m.src->transient(l, e)))   // STRATA+ P-T12 measure: era cpu::MAXT (ora 12), il prefill resta a 8
                                     cand.emplace_back(c, e);
                             }
                             std::sort(cand.begin(), cand.end());

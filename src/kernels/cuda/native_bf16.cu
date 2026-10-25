@@ -295,12 +295,12 @@ bool bf16_gemv_fp32_mmvf_multi_aux(const float* x, int64_t ldx, const uint16_t* 
 void bf16_gemv_fp32_mmvf_multi(const float* x, int64_t ldx, const uint16_t* w, float* y, int64_t ldy,
                                int64_t n_in, int64_t n_out, int n_tok, void* stream) {
     if (n_tok == 1 && ldy >= n_out) { bf16_gemv_fp32_mmvf(x, w, y, n_in, n_out, stream); return; }
-    if (n_tok < 1 || n_tok > 8 || n_in <= 0 || (n_in & 1) != 0 || n_out <= 0 || (ldx & 1) != 0 || x == nullptr ||
+    if (n_tok < 1 || n_tok > 12 || n_in <= 0 || (n_in & 1) != 0 || n_out <= 0 || (ldx & 1) != 0 || x == nullptr ||   // STRATA+ P-T12 measure: 8 -> 12
         w == nullptr || y == nullptr || (reinterpret_cast<uintptr_t>(x) & 7u) != 0)
-        throw std::invalid_argument("bf16_gemv_fp32_mmvf_multi: 1..8 rows, even n_in/ldx, aligned pointers");
+        throw std::invalid_argument("bf16_gemv_fp32_mmvf_multi: 1..12 rows, even n_in/ldx, aligned pointers");   // STRATA+ P-T12 measure
     const cudaStream_t st = (cudaStream_t) stream;
     static const bool rows = [] { const char* v = std::getenv("STRATA_MMVF_ROWS"); return v && v[0] == '1'; }();
-    if (rows && n_out >= 64) {
+    if (rows && n_out >= 64 && n_tok <= 8) {   // STRATA+ P-T12 measure: launch_rows ha NT <= 8, oltre il kernel multi
         const int ni = (int) n_in, no = (int) n_out;
         switch (mmvf_block_size(n_in)) {
             case 32: launch_rows<32>(x, ldx, w, y, ldy, ni, no, n_tok, st); break;
@@ -325,6 +325,8 @@ void bf16_gemv_fp32_mmvf_multi(const float* x, int64_t ldx, const uint16_t* w, f
         case 4: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 4, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
         case 5: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 5, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
         case 6: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 6, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
+        case 9: case 10: case 11: case 12: /* STRATA+ P-T12 measure: 9..12 righe */ \
+            launch_pdl(bf16_f32_mmvf_multi_kernel<N, 12, false>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
         default: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 8, false>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
     } break
     switch (mmvf_block_size(n_in)) {
