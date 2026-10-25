@@ -1,5 +1,14 @@
 # Strata+ P5 — joint source+depth gate: engine wiring (DESIGN, not compiled)
 
+
+**Scope (Strata Lead decision): single sequence only.**  JointGate / gate_v2 replaces DraftPolicy where DraftPolicy
+runs: the CLI generation loop and the GEN loop of `--serve` (one request served alone).  The batch path
+(`batch_step`, `BGEN <slot>`, generate.cpp ~11519 at 7dd5cf18) does not call DraftPolicy: each slot verifies 2 rows
+(the token + ONE MTP draft from its `slot_mtp`, `draft(2, ...)`).  So this patch changes nothing for batched serving and
+any gain measured for gate_v2 holds for requests served alone, NOT for a server with parallel > 1.  Extending the
+batch path (more than 2 rows per slot, a per-slot pool) is follow-up H2b (after gate_v2, needs a GPU); a persistent
+pool for requests served alone is H2a (paused until session traces exist).
+
 `strata::spec::JointGate` (include/strata/spec/joint_gate.hpp) is compiled and unit-tested
 (src/spec/joint_gate_test.cpp) and is decision-for-decision identical to the replay's GateV2
 (replay/tests/test_joint_gate_parity.py: 60 configurations, every round identical).  Its wiring into the serve loop
@@ -8,7 +17,7 @@ built here.  Proposed wiring, behind `STRATA_SPEC_JOINT=1` (DraftPolicy stays th
 
 1. Next-round drafting happens at the end of a round (`mtp.draft(...)`, generate.cpp ~15193 at 7dd5cf18).  Before it,
    the lookup proposal for the next round is already computable (sfx has the committed tokens): call
-   `sfx.propose` / `propose_from_sources` (pool, P4) there, and `gate.start(lu, max_new - produced_n - 1, &c)`.
+   `sfx.propose` / `propose_from_sources` (pool, P4) there, and `gate.start(lu, JointGate::remaining(max_new, produced_n, o.max_context, p), &c)` (bounded by the context window too: the engine stops at `p + T > max_context`).
    - `start()` true: skip `mtp.draft` (d = 0); the next round verifies the lookup window `c.t` (or T = 1).
    - false: draft with `mtp.set_chain_rule([&](int idx, float pj) { probs[idx] = pj; return gate.keep(probs, ent, idx + 1); })`
      (the same hook `keep_draft` uses for STRATA_SPEC_COST; `ent` = the optional per-draft entropy of log_format D11,

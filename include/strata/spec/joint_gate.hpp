@@ -14,6 +14,8 @@
 //                  the a+1 committed tokens.
 // Objective: Dinkelbach E[a+1] - lambda*C, lambda = decayed tokens/cost of the rounds played.  Cost model: online
 // RLS on one-hot(T) + rho_mtp*d + rho_lu*k (optimistic prior, monotone in T); frozen() keeps the seeded table.
+// SCOPE: single sequence only (CLI and the --serve GEN loop, where DraftPolicy runs).  The batch path (batch_step /
+// BGEN) uses one MTP draft per slot and never calls DraftPolicy or this gate: no effect on parallel > 1 serving.
 #pragma once
 #include <array>
 #include <cstdint>
@@ -50,7 +52,16 @@ public:
                  const int lu_acc[kSrc]);
     double lambda() const { return lam_n_ / lam_c_; }
     void set_frozen(bool on) { frozen_ = on; }
-    double cost_pred(int t, int d, int k) const;
+    /// Seed the cost model with a measured table (STRATA_SPEC_COST_TABLE): s(T) for T = 1..8 in units of one plain
+    /// step, the per-draft MTP cost and the per-token lookup cost in the same units, and the step cost `unit` (e.g. ms)
+    /// that converts them to observed costs.  With set_frozen(true) the gate then plans on exactly this table (before,
+    /// frozen kept the 1+0.15(T-1) prior scaled by the first sample).  Without frozen the RLS starts from it.
+    void seed_costs(const double s_by_t[8], double rho_mtp, double rho_lu, double unit);
+    /// `rem` for start(): tokens still allowed after the next one, bounded by max_new AND by the context window (the
+    /// engine stops when p + T > max_context; max_context <= 0 = no context bound).  Never negative.
+    static int remaining(int max_new, int produced, int max_context, int pos);
+    double cost_pred(int t, int d, int k) const;   // t clamped to 1..8
+    int tmax() const { return o_.tmax; }
 
 private:
     void lu_haz(int s, int match, int ag, double h[kD]) const;

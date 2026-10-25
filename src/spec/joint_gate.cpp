@@ -9,6 +9,10 @@ namespace strata::spec {
 namespace {
 constexpr double kPB[6] = {0.3, 0.6, 0.8, 0.9, 0.95, 0.99};
 constexpr int kMB[4] = {4, 6, 12, 24};
+constexpr int kTRows = 8;          // th_ rows / n_t_ entries: window sizes T = 1..kTRows
+constexpr double kHmDecay = 0.999;  // forgetting of the per-bucket MTP hazards (same as the marginal ones)
+static_assert(strata::spec::JointGate::kD + 1 == kTRows, "window sizes must fit the cost rows");
+int trow(int t) { return std::clamp(t, 1, kTRows) - 1; }   // T > 8 (e.g. an engine chain window) -> last row
 int pbucket(double p) { int b = 0; while (b < 6 && kPB[b] <= p) ++b; return b; }   // searchsorted(side="right")
 int mbucket(int m) { int b = 0; while (b < 4 && kMB[b] <= m) ++b; return b; }
 void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
@@ -22,6 +26,7 @@ void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
 JointGate::JointGate() : JointGate(Options()) {}
 
 JointGate::JointGate(const Options& o) : o_(o) {
+    o_.tmax = std::clamp(o_.tmax, 1, kD + 1);   // expect()/th_ have room for T <= kD + 1 = 8 only
     const double pri[7] = {0.15, 0.45, 0.7, 0.85, 0.92, 0.97, 0.99};
     for (int j = 0; j < kD; ++j) {
         for (int b = 0; b < 7; ++b) { hm_s_[j][b] = pri[b] * 2; hm_f_[j][b] = (1 - pri[b]) * 2; }
@@ -36,13 +41,14 @@ JointGate::JointGate(const Options& o) : o_(o) {
 }
 
 double JointGate::cost_pred(int t, int d, int k) const {
-    const double v = th_[(size_t) (t - 1)] + th_[8] * d + th_[9] * k;
+    const double v = th_[(size_t) trow(t)] + th_[8] * d + th_[9] * k;
     return std::max(1e-3, v) * (scale_ > 0 ? scale_ : 1.0);
 }
 
 void JointGate::cost_update(int t, int d, int k, double c) {
+    const int r = trow(t);
     double x[10] = {};
-    x[t - 1] = 1; x[8] = d; x[9] = k;
+    x[r] = 1; x[8] = d; x[9] = k;
     double xt = 0; for (int i = 0; i < 10; ++i) xt += th_[(size_t) i] * x[i];
     if (!(scale_ > 0)) scale_ = c / std::max(1e-3, xt);
     if (frozen_) return;
@@ -55,7 +61,7 @@ void JointGate::cost_update(int t, int d, int k, double c) {
     for (int i = 0; i < 10; ++i) th_[(size_t) i] += g[i] * (y - xt);
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 10; ++j) P_[i][j] = (P_[i][j] - g[i] * Px[j]) / lam;
-    n_t_[t - 1] += 1;
+    n_t_[(size_t) r] += 1;
     // per-token draft/lookup costs are >= 0: lookup rows (d=0, k>0) otherwise let r_lu absorb a T-row error
     th_[8] = std::max(th_[8], 0.0); th_[9] = std::max(th_[9], 0.0);
     // monotone in T only for rows with < 3 samples: clamping a measured row to a still-unlearned neighbour froze it
@@ -76,6 +82,19 @@ void JointGate::cost_update(int t, int d, int k, double c) {
         if (u > 0) line = std::max(line, th_[(size_t) u - 1]);
         th_[(size_t) u] = std::min(th_[(size_t) u], line);
     }
+}
+
+void JointGate::seed_costs(const double s_by_t[kTRows], double rho_mtp, double rho_lu, double unit) {
+    for (int t = 0; t < kTRows; ++t) th_[(size_t) t] = s_by_t[t];
+    th_[8] = std::max(0.0, rho_mtp); th_[9] = std::max(0.0, rho_lu);
+    scale_ = unit > 0 ? unit : 1.0;
+    for (int t = 0; t < kTRows; ++t) n_t_[(size_t) t] = 3;   // seeded rows count as measured (no prior clamps)
+}
+
+int JointGate::remaining(int max_new, int produced, int max_context, int pos) {
+    int rem = max_new - produced - 1;
+    if (max_context > 0) rem = std::min(rem, max_context - pos - 1);
+    return std::max(rem, 0);
 }
 
 void JointGate::lu_haz(int s, int match, int ag, double h[kD]) const {
@@ -136,7 +155,7 @@ bool JointGate::start(const Lookup lu[kSrc], int rem, Choice* out) {
     }
     double hm[kD], em[kD + 1];
     mtp_haz(nullptr, 0, hm);
-    const int ne = expect(hm, std::min(o_.tmax - 1, rem), em);   // tmax - 1 <= kD
+    const int ne = expect(hm, std::min({o_.tmax - 1, rem, kD}), em);   // tmax clamped to kD + 1 in the constructor
     double vm = -1e300;
     for (int k = 1; k < ne; ++k) vm = std::max(vm, em[k] - lam * cost_pred(k + 1, k, klu_));
     if (o_.skip && bl && vl >= vm && vl > v0) {
@@ -191,10 +210,10 @@ void JointGate::observe(const Choice& c, int a, double cost, int mtp_acc, const 
     if (c.d > 0) {
         int obs; bool fail;
         censored(mtp_acc, c.d, a, &obs, &fail);
-        for (int j = 0; j < std::min(obs + (fail ? 1 : 0), c.d); ++j) {
+        for (int j = 0; j < std::min({obs + (fail ? 1 : 0), c.d, kD}); ++j) {   // c.d > kD: no row
             const int b = pbucket((double) mtp_p[j]);
             const bool ok = j < obs;
-            hm_s_[j][b] += ok; hm_f_[j][b] += !ok;
+            hm_s_[j][b] = kHmDecay * hm_s_[j][b] + ok; hm_f_[j][b] = kHmDecay * hm_f_[j][b] + !ok;
             hmm_s_[j] = 0.999 * hmm_s_[j] + ok; hmm_f_[j] = 0.999 * hmm_f_[j] + !ok;
         }
     }
