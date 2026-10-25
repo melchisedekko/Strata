@@ -55,7 +55,27 @@ void JointGate::cost_update(int t, int d, int k, double c) {
     for (int i = 0; i < 10; ++i) th_[(size_t) i] += g[i] * (y - xt);
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 10; ++j) P_[i][j] = (P_[i][j] - g[i] * Px[j]) / lam;
-    for (int t2 = 1; t2 < 8; ++t2) th_[(size_t) t2] = std::max(th_[(size_t) t2], th_[(size_t) t2 - 1]);
+    n_t_[t - 1] += 1;
+    // per-token draft/lookup costs are >= 0: lookup rows (d=0, k>0) otherwise let r_lu absorb a T-row error
+    th_[8] = std::max(th_[8], 0.0); th_[9] = std::max(th_[9], 0.0);
+    // monotone in T only for rows with < 3 samples: clamping a measured row to a still-unlearned neighbour froze it
+    for (int t2 = 1; t2 < 8; ++t2)
+        if (n_t_[t2] < 3) th_[(size_t) t2] = std::max(th_[(size_t) t2], th_[(size_t) t2 - 1]);
+    // a window size tried < 3 times costs at most the line through its tried neighbours (extended past the widest
+    // tried size): a prior scaled by the first sample cannot price a size out for good (it is never measured otherwise)
+    for (int u = 0; u < 8; ++u) {
+        if (n_t_[u] >= 3) continue;
+        int lo1 = -1, lo2 = -1, hi = -1;
+        for (int v = 0; v < u; ++v) if (n_t_[v] >= 3) { lo2 = lo1; lo1 = v; }
+        for (int v = 7; v > u; --v) if (n_t_[v] >= 3) hi = v;
+        int a, b;
+        if (lo1 >= 0 && hi >= 0) { a = lo1; b = hi; }
+        else if (lo2 >= 0) { a = lo2; b = lo1; }
+        else continue;
+        double line = th_[(size_t) a] + (th_[(size_t) b] - th_[(size_t) a]) * (u - a) / (double) (b - a);
+        if (u > 0) line = std::max(line, th_[(size_t) u - 1]);
+        th_[(size_t) u] = std::min(th_[(size_t) u], line);
+    }
 }
 
 void JointGate::lu_haz(int s, int match, int ag, double h[kD]) const {

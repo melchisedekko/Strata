@@ -65,6 +65,7 @@ private:
     std::array<double, 10> th_{};
     double P_[10][10] = {};
     double scale_ = 0.0;   // 0: not set yet
+    std::array<double, 8> n_t_{};   // samples per window size
     bool frozen_ = false;
     double lam_n_ = 1.0, lam_c_ = 1.0;
     // the round in progress
