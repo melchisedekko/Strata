@@ -1,0 +1,640 @@
+"""Replay simulator v2 (piano v2 §5-§7): walks per-position candidate arrays (synth2 / postprocess) with a policy,
+cost = profile (s(T), rho_mtp, rho_lu) in units of one T=1 step. Oracles O_round, O_DP, depth oracle. Metrics M1-M5.
+Strata's own DraftPolicy / SuffixDrafter are the production C++ via ctypes (native.py)."""
+from __future__ import annotations
+import json, math, os
+import numpy as np
+from .native import NativeDraftPolicy
+from .synth2 import DMAX
+
+STEP_MS = 20.51          # P2 base step (code estimate) used only to put costs in the ms range DraftPolicy expects
+
+# ------------------------------------------------------------------------------------------------ cost profiles
+S_P1 = [1.0, 1.75, 2.4, 3.05, 3.70, 4.35, 5.00, 5.65]   # verify.hpp L10-11 (T<=4), linear extrapolation beyond
+S_FLAT = [1.0] * 8
+S_LIN = [float(t) for t in range(1, 9)]
+
+
+class Profile:
+    def __init__(self, name, s, rho_mtp, rho_lu, label):
+        self.name, self.s, self.rho_mtp, self.rho_lu, self.label = name, list(s), rho_mtp, rho_lu, label
+
+    def cost(self, T, d_mtp, k_lu):
+        return self.s[T - 1] + self.rho_mtp * d_mtp + self.rho_lu * k_lu
+
+
+def s_alpha(alpha):
+    return [1.0 + alpha * (t - 1) for t in range(1, 9)]
+
+
+def p2_s():
+    """P2 (code estimate, generate.cpp/verify cost notes): per-row marginal ~0.30 of a step for small T."""
+    return [1.0, 1.30, 1.60, 1.90, 2.20, 2.50, 2.80, 3.10]
+
+
+P4_LABEL = "misurato su CPU, modello denso, non AMD (PROVVISORIO: possibile sovrapposizione con altri processi)"
+
+
+def load_p4(path="/workspace/strata-plus/traces/cost_p4_cpu.json", variant="mid"):
+    """P4 = MEASURED by Strata Bench (dense 2B proxy on CPU, NOT AMD), log_format.md D12. Provisional (measured while
+    other jobs ran). variant: mid = medians; lo = lower IC95 of s(T) and rho_mtp; hi = upper IC95 of both."""
+    if not os.path.exists(path):
+        return None
+    j = json.load(open(path))
+    s, rm = list(j["s"]), j.get("rho_mtp", 0.059)
+    if variant != "mid":
+        m = next(iter(j.get("models", {}).values()), {})
+        k = 0 if variant == "lo" else 1
+        if "s_ci95" in m:
+            s = [c[k] for c in m["s_ci95"]]
+        if "rho_mtp_ci95" in m:
+            rm = m["rho_mtp_ci95"][k]
+    n0 = len(s)
+    while len(s) < 8:                                  # extrapolate with the last measured slope, flagged
+        s.append(s[-1] + (s[-1] - s[-2] if len(s) > 1 else 0.5))
+    name = "P4" if variant == "mid" else "P4-" + variant
+    return Profile(name, s[:8], rm, j.get("rho_lu", 0.001),
+                   P4_LABEL + ("" if variant == "mid" else ", estremo IC95 %s" % variant) +
+                   (" (s extrapolated beyond T=%d)" % n0 if n0 < 8 else ""))
+
+
+def base_profiles(rho_lu=0.001):
+    out = [Profile("P1", S_P1, 0.059, rho_lu, "code estimate (verify.hpp L10-11; T>4 extrapolated)"),
+           Profile("P2", p2_s(), 0.059, rho_lu, "code estimate (marginal 0.30/row)"),
+           Profile("B-flat", S_FLAT, 0.059, rho_lu, "bound (memory-bound limit)"),
+           Profile("B-lin", S_LIN, 0.059, rho_lu, "bound (compute-bound limit)")]
+    p4 = load_p4()
+    if p4 is not None:
+        out.append(p4)
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ walk
+def acc_of(q, i, src, T):
+    if src == "none" or T <= 1:
+        return 0
+    a = {"mtp": q["mtp_acc"], "lk": q["lk_acc"], "pl": q["pl_acc"]}[src][i]
+    return int(min(a, T - 1, q["n"] - i - 1))
+
+
+def walk(policy, reqs, prof):
+    """Returns per-request stats rows (dicts)."""
+    rows = []
+    for q in reqs:
+        policy.begin(q)
+        n, i = q["n"], 0
+        st = dict(domain=q["domain"], req=q["req"], session=q["session"], N=n, C=0.0, R=0, rows=0, waste=0,
+                  slots=0, dm=0, reach=np.zeros(DMAX, int), hit=np.zeros(DMAX, int), src={"none": 0, "mtp": 0, "lk": 0, "pl": 0})
+        while i < n:
+            src, T, d, klu = policy.act(q, i, prof)
+            T = max(1, min(T, n - i)) if src != "none" else 1
+            a = acc_of(q, i, src, T)
+            c = prof.cost(T, d, klu)
+            st["C"] += c; st["R"] += 1; st["rows"] += T; st["waste"] += T - 1 - a; st["slots"] += T - 1; st["dm"] += d
+            st["src"][src] += 1
+            for j in range(T - 1):
+                st["reach"][j] += 1
+                if a >= j + 1:
+                    st["hit"][j] += 1
+            policy.update(q, i, (src, T, d, klu), a, c)
+            i += a + 1
+        rows.append(st)
+    return rows
+
+
+# ------------------------------------------------------------------------------------------------ oracles
+def options(q, i, prof, srcs=("mtp", "lk", "pl"), tmax=8):
+    """[(src,T,d,klu,a,cost)] available at position i (perfect knowledge)."""
+    n = q["n"]
+    out = [("none", 1, 0, 0, 0, prof.cost(1, 0, 0))]
+    for T in range(2, min(tmax, n - i) + 1):
+        if "mtp" in srcs:
+            out.append(("mtp", T, T - 1, 0, acc_of(q, i, "mtp", T), prof.cost(T, T - 1, 0)))
+        for s, kk in (("lk", "lk_k"), ("pl", "pl_k")):
+            if s in srcs and q[kk][i] >= T - 1:
+                out.append((s, T, 0, int(q[kk][i]), acc_of(q, i, s, T), prof.cost(T, 0, int(q[kk][i]))))
+    return out
+
+
+def oracle_dp(q, prof, srcs=("mtp", "lk", "pl")):
+    n = q["n"]
+    Vv = np.zeros(n + 1)
+    for i in range(n - 1, -1, -1):
+        Vv[i] = min(c + Vv[min(n, i + a + 1)] for (_, _, _, _, a, c) in options(q, i, prof, srcs))
+    return Vv[0]
+
+
+def oracle_round(q, prof, srcs=("mtp", "lk", "pl")):
+    n, i, C = q["n"], 0, 0.0
+    while i < n:
+        best = max(options(q, i, prof, srcs), key=lambda o: (o[4] + 1) / o[5])
+        C += best[5]; i += best[4] + 1
+    return C
+
+
+# ------------------------------------------------------------------------------------------------ policies
+class Policy:
+    name = "?"
+
+    def begin(self, q):
+        pass
+
+    def update(self, q, i, act, a, c):
+        pass
+
+
+class NoSpec(Policy):
+    name = "nospec"
+
+    def act(self, q, i, prof):
+        return "none", 1, 0, 0
+
+
+class MtpFixed(Policy):
+    def __init__(self, T=4):
+        self.T, self.name = T, "mtp_fixed_k%d" % (T - 1)
+
+    def act(self, q, i, prof):
+        return "mtp", self.T, self.T - 1, 0
+
+
+class StrataCurrent(Policy):
+    """Production DraftPolicy (ctypes) wired as the serve loop: S=6, S_mtp=4, MTP drafts computed every round (the
+    lookup gate needs drafts[0]); lookup propose(S-1) gated on sbuf[0]==drafts[0]; choose(T_mtp, k, match).
+    spec_cost=True: STRATA_SPEC_COST=1 (keep_draft chain rows, robust, observe_probs).  use_pool: lookup source is the
+    persistent pool instead of the per-request drafter (H2 baseline wiring).  lookup=False: MTP depth only (H4)."""
+
+    def __init__(self, spec_cost=False, lookup=True, src="lk", S=6, S_mtp=4, name=None):
+        self.spec_cost, self.lookup, self.srcname, self.S, self.S_mtp = spec_cost, lookup, src, S, S_mtp
+        self.pol = NativeDraftPolicy(S)
+        self.pol.robust = spec_cost
+        self.name = name or ("strata_cost" if spec_cost else "strata_current") + ("" if lookup else "_mtponly") + \
+            ("_pool" if src == "pl" else "")
+
+    def act(self, q, i, prof):
+        p = self.pol
+        p.set_context(q["n_prompt"] + i)
+        if self.spec_cost:
+            T, kd = p.mtp_chain_rows([float(x) for x in q["mtp_p"][i]], self.S_mtp)
+        else:
+            T, kd = self.S_mtp, self.S_mtp - 1
+        self._T_mtp = T
+        klu = 0
+        if self.lookup:
+            kk = int(q[self.srcname + "_k"][i]); klu = kk
+            ag = int(q["agree" if self.srcname == "lk" else "agree_pl"][i])
+            if kk > 0 and ag >= 1:
+                k = min(kk, self.S - 1)
+                look, t = p.choose(T, k, int(q[self.srcname + "_m"][i]))
+                if look:
+                    self._lk = (True, int(q[self.srcname + "_m"][i]))
+                    return self.srcname, t, kd, klu
+        self._lk = (False, 0)
+        return "mtp", T, kd, klu
+
+    def update(self, q, i, act, a, c):
+        src, T, d, klu = act
+        ms = c * STEP_MS
+        if src in ("lk", "pl"):
+            self.pol.observe(True, T, a, self._lk[1], ms)
+        else:
+            self.pol.observe(False, T, a, 0, ms)
+            if self.spec_cost:
+                self.pol.observe_probs([float(x) for x in q["mtp_p"][i]], self._T_mtp - 1, a)
+
+
+class Specu(Policy):
+    """Simple-rule baseline requested by Strata Lead ('euristica Specu'): if the lookup has a match, verify the long
+    lookup draft (up to min(k_lookup, kmax_lu)); otherwise shallow MTP with adaptive depth k in 1..kmax_mtp, driven by
+    an EMA of accepted MTP drafts (k = clip(round(ema)+1)). No MTP drafting on lookup rounds (decided before drafting)."""
+
+    def __init__(self, kmax_lu=7, kmax_mtp=3, beta=0.2, ema0=2.0, name=None):
+        self.kl, self.km, self.beta, self.ema0 = kmax_lu, kmax_mtp, beta, ema0
+        self.name = name or "specu"
+        self.ema = ema0
+
+    def begin(self, q):
+        pass                                   # EMA persists across requests, like a server-side heuristic
+
+    def act(self, q, i, prof):
+        kk = int(q["lk_k"][i])
+        if kk > 0:
+            k = min(kk, self.kl)
+            return "lk", k + 1, 0, kk
+        k = int(min(self.km, max(1, round(self.ema) + 1)))
+        self._k = k
+        return "mtp", k + 1, k, 0
+
+    def update(self, q, i, act, a, c):
+        if act[0] == "mtp":
+            # censored: a == k means "at least k"; push up so depth can grow
+            self.ema = (1 - self.beta) * self.ema + self.beta * (a + (0.5 if a >= act[1] - 1 else 0.0))
+
+
+class SpecuC(Policy):
+    """Variant (c) of the 'euristica Specu' (Strata Lead, 25/10): the lookup is used only if the n-gram suffix match is
+    at least `min_match` tokens long (q["lk_m"], production SuffixDrafter match length). Draft length on lookup rounds:
+    factor=None -> min(k_lookup, kmax_lu) as Specu; factor=f -> SuffixDecoding/Arctic-Inference style
+    min(k_lookup, kmax_lu, max(1, floor(f * match_len))) (max_spec_factor; min_token_prob not available for lookup: omitted).
+    Otherwise shallow adaptive MTP exactly as Specu (k in 1..kmax_mtp, EMA beta, persists across requests)."""
+
+    def __init__(self, min_match=3, factor=None, kmax_lu=7, kmax_mtp=3, beta=0.2, ema0=2.0, name=None):
+        self.mm, self.f, self.kl, self.km, self.beta, self.ema = min_match, factor, kmax_lu, kmax_mtp, beta, ema0
+        self.name = name or "specu_c_m%d_%s" % (min_match, "fix" if factor is None else "f%g" % factor)
+
+    def begin(self, q):
+        pass
+
+    def act(self, q, i, prof):
+        kk = int(q["lk_k"][i]); m = int(q["lk_m"][i])
+        if kk > 0 and m >= self.mm:
+            k = min(kk, self.kl)
+            if self.f is not None:
+                k = min(k, max(1, int(math.floor(self.f * m))))
+            return "lk", k + 1, 0, kk
+        k = int(min(self.km, max(1, round(self.ema) + 1)))
+        return "mtp", k + 1, k, 0
+
+    def update(self, q, i, act, a, c):
+        if act[0] == "mtp":
+            self.ema = (1 - self.beta) * self.ema + self.beta * (a + (0.5 if a >= act[1] - 1 else 0.0))
+
+
+class SpecuCost(Policy):
+    """INFORMATIONAL hybrid (not requested): Specu's long-lookup-on-match rule, but on no-match rounds the MTP depth of
+    STRATA_SPEC_COST=1 (native DraftPolicy chain rows, robust) instead of the EMA. Shows where Specu's loss comes from."""
+
+    def __init__(self, kmax_lu=7, name="specu_costdepth"):
+        self.kl, self.name = kmax_lu, name
+        self.inner = StrataCurrent(spec_cost=True, lookup=False)
+
+    def begin(self, q):
+        self.inner.begin(q)
+
+    def act(self, q, i, prof):
+        kk = int(q["lk_k"][i])
+        if kk > 0:
+            return "lk", min(kk, self.kl) + 1, 0, kk
+        return self.inner.act(q, i, prof)
+
+    def update(self, q, i, act, a, c):
+        if act[0] == "mtp":
+            self.inner.update(q, i, act, a, c)
+
+
+P3_LIB = os.path.join(os.path.dirname(__file__), "..", "native", "libstrata_spec_capi_p3.so")
+
+
+class StrataCurrentCF(StrataCurrent):
+    """PATCHED production DraftPolicy (patches P2+P3 compiled into libstrata_spec_capi_p3.so): the serve-loop wiring
+    plus the P3 hook - after each round the arm not played is scored on the a+1 committed tokens (censored)."""
+
+    def __init__(self, spec_cost=False, **kw):
+        super().__init__(spec_cost=spec_cost, **kw)
+        self.pol = NativeDraftPolicy(self.S, libpath=P3_LIB)
+        self.pol.robust = spec_cost
+        self.name = ("strata_cost" if spec_cost else "strata_current") + "_cf"
+
+    def act(self, q, i, prof):
+        r = super().act(q, i, prof)
+        kk = int(q["lk_k"][i])
+        self._cf_k = kk if (kk > 0 and int(q["agree"][i]) >= 1) else 0
+        return r
+
+    def update(self, q, i, act, a, c):
+        super().update(q, i, act, a, c)
+        if self._cf_k <= 0:
+            return
+        src = act[0]
+        other_lookup = src != "lk"
+        t_other = min(self._cf_k, self.S - 1) + 1 if other_lookup else self._T_mtp
+        acc_true = int(q["lk_acc"][i] if other_lookup else q["mtp_acc"][i])
+        acc = min(acc_true, t_other - 1, a + 1)
+        fail = acc < t_other - 1 and acc <= a
+        self.pol.observe_counterfactual(other_lookup, t_other, acc, fail, int(q["lk_m"][i]))
+
+
+def censored(acc_true, k_alt, a):
+    known = a + 1
+    if acc_true < min(k_alt, known):
+        return acc_true, True
+    return min(acc_true, k_alt, known), False
+
+
+PB = np.array([0.3, 0.6, 0.8, 0.9, 0.95, 0.99])
+MB = np.array([4, 6, 12, 24])
+
+
+class CostRLS:
+    """Online cost model C ~ v[T] + r_mtp*d + r_lu*k (RLS, forgetting). Never sees costs of actions not taken."""
+
+    def __init__(self, lam=0.999):
+        self.m = 10
+        self.th = np.array([1.0 + 0.15 * t for t in range(8)] + [0.05, 0.001])   # optimistic prior: untried depths get tried
+        self.P = np.eye(self.m) * 1.0
+        self.P[8, 8] = 0.01; self.P[9, 9] = 1e-4
+        self.lam, self.scale = lam, None
+        self.n = np.zeros(8)
+
+    def x(self, T, d, k):
+        v = np.zeros(self.m); v[min(max(T, 1), 8) - 1] = 1; v[8] = d; v[9] = k   # T > 8 -> last row (P5 fix a)
+        return v
+
+    def pred(self, T, d, k):
+        return max(1e-3, float(self.th @ self.x(T, d, k))) * (self.scale or 1.0)
+
+    def update(self, T, d, k, c):
+        if self.scale is None:
+            self.scale = c / max(1e-3, float(self.th @ self.x(T, d, k)))
+        x = self.x(T, d, k); y = c / self.scale
+        Px = self.P @ x
+        g = Px / (self.lam + x @ Px)
+        self.th = self.th + g * (y - x @ self.th)
+        self.P = (self.P - np.outer(g, Px)) / self.lam
+        self.n[min(max(T, 1), 8) - 1] += 1
+        # per-token draft/lookup costs are >= 0: lookup rows (d=0, k>0) otherwise let r_lu absorb a T-row error
+        self.th[8] = max(self.th[8], 0.0); self.th[9] = max(self.th[9], 0.0)
+        # untried rows: keep the verify part monotone in T
+        # (only rows with < 3 samples: clamping a measured row to a still-unlearned neighbour froze it at the prior)
+        for t in range(1, 8):
+            if self.n[t] < 3 and self.th[t] < self.th[t - 1]:
+                self.th[t] = self.th[t - 1]
+        # ... and optimistic: a window size tried < 3 times costs at most the line through its tried neighbours
+        # (extended past the widest tried size), so a prior scaled by the first sample cannot price it out for good
+        tried = [t for t in range(8) if self.n[t] >= 3]
+        for t in range(8):
+            if self.n[t] >= 3 or not tried:
+                continue
+            lo = [u for u in tried if u < t]; hi = [u for u in tried if u > t]
+            if lo and hi:
+                a, b = lo[-1], hi[0]
+            elif len(lo) >= 2:
+                a, b = lo[-2], lo[-1]
+            else:
+                continue
+            line = self.th[a] + (self.th[b] - self.th[a]) * (t - a) / (b - a)
+            self.th[t] = min(self.th[t], max(line, self.th[t - 1] if t > 0 else line))
+
+
+class GateV2(Policy):
+    """MAIN candidate (H1+H4 merged): one gate chooses source (none / MTP / lookup [/ pool]) and MTP depth.
+    - Lookup-first: if the lookup option already dominates the MTP prior value, MTP drafting is skipped (d=0).
+    - Otherwise MTP drafts are computed one at a time; after each draft the gate knows its top-1 prob (and the
+      MTP/lookup agreement after draft 1) and stops drafting when the best extension no longer pays:
+      Dinkelbach objective E[a+1] - lam*C with lam = running tokens/cost.
+    - Acceptance: hazards h_mtp[j, p-bucket], h_lu[src, match-bucket, agree, j]; full-information updates with the
+      engine-visible CENSORED counterfactual (both sources' drafts vs the a+1 committed tokens).
+    - conf_stop: H4 variant with an AdaEDL-style stop (1 - sqrt(gamma*H_j) < eta) instead of the value test.
+    """
+
+    def __init__(self, srcs=("lk",), mtp=True, skip=True, conf_stop=False, gamma=0.5, eta=0.35, tmax=8, name=None):
+        tmax = min(max(int(tmax), 1), DMAX + 1)   # P5 fix (a): window sizes T <= DMAX + 1 = 8 only
+        self.srcs, self.mtp, self.skip, self.conf_stop, self.gamma, self.eta, self.tmax = srcs, mtp, skip, conf_stop, gamma, eta, tmax
+        pri = np.array([0.15, 0.45, 0.7, 0.85, 0.92, 0.97, 0.99])
+        self.hm_s = np.tile(pri * 2, (DMAX, 1)); self.hm_f = np.tile((1 - pri) * 2, (DMAX, 1))
+        self.hmm_s = np.full(DMAX, 1.2); self.hmm_f = np.full(DMAX, 0.8)          # marginal (draft not yet computed)
+        self.hl_s = np.full((2, 5, 3, 3), 1.2); self.hl_f = np.full((2, 5, 3, 3), 0.8)
+        self.cost = CostRLS()
+        self.lam_n, self.lam_c = 1.0, 1.0
+        self.name = name or ("gate_v2" + ("_pool" if "pl" in srcs and "lk" in srcs else "_poolonly" if "pl" in srcs else
+                                          "_nolookup" if not srcs else "") + ("" if mtp else "_nomtp") +
+                             ("" if skip else "_noskip") + ("_conf" if conf_stop else ""))
+
+    # --- helpers
+    def lam(self):
+        return self.lam_n / self.lam_c
+
+    def _lu_haz(self, s, m, ag):
+        mb = int(np.searchsorted(MB, m, side="right"))
+        return [self.hl_s[s, mb, ag, min(j, 2)] / (self.hl_s[s, mb, ag, min(j, 2)] + self.hl_f[s, mb, ag, min(j, 2)])
+                for j in range(DMAX)]
+
+    def _mtp_haz(self, probs):
+        """hazards for drafts j=0..DMAX-1: known probs -> bucketed, else marginal"""
+        out = []
+        for j in range(DMAX):
+            if j < len(probs):
+                b = int(np.searchsorted(PB, probs[j], side="right"))
+                out.append(self.hm_s[j, b] / (self.hm_s[j, b] + self.hm_f[j, b]))
+            elif probs:
+                # draft not computed yet: assume it inherits the last known draft's confidence bucket (MTP
+                # confidence is persistent along a chain); the cell's prior is optimistic, so depth gets explored
+                b = int(np.searchsorted(PB, probs[-1], side="right"))
+                out.append(self.hm_s[j, b] / (self.hm_s[j, b] + self.hm_f[j, b]))
+            else:
+                out.append(self.hmm_s[j] / (self.hmm_s[j] + self.hmm_f[j]))
+        return out
+
+    @staticmethod
+    def _expect(h, kmax):
+        """E[a+1] for verifying k=0..kmax drafts with hazards h: list"""
+        e, surv, out = 1.0, 1.0, [1.0]
+        for j in range(kmax):
+            surv *= h[j]; e += surv; out.append(e)
+        return out
+
+    def _best_lookup(self, q, i, d, ag_known, lam, rem):
+        best = None
+        for s in self.srcs:
+            si = 0 if s == "lk" else 1
+            kk = int(q[s + "_k"][i])
+            if kk <= 0:
+                continue
+            ag = 2 if not ag_known else (1 if q["agree" if s == "lk" else "agree_pl"][i] >= 1 else 0)
+            h = self._lu_haz(si, int(q[s + "_m"][i]), ag)
+            E = self._expect(h, min(kk, self.tmax - 1, rem))
+            for k in range(1, len(E)):
+                v = E[k] - lam * self.cost.pred(k + 1, d, self._klu(q, i))
+                if best is None or v > best[0]:
+                    best = (v, s, k + 1)
+        return best
+
+    def _klu(self, q, i):
+        return sum(int(q[s + "_k"][i]) for s in self.srcs)
+
+    # --- act
+    def act(self, q, i, prof):
+        lam = self.lam(); rem = q["n"] - i - 1
+        klu = self._klu(q, i)
+        v0 = 1.0 - lam * self.cost.pred(1, 0, klu)
+        best = ("none", 1, 0, v0)
+        bl = self._best_lookup(q, i, 0, False, lam, rem) if self.srcs else None
+        if not self.mtp or rem <= 0:
+            if bl and bl[0] > best[3]:
+                return bl[1], bl[2], 0, klu
+            return "none", 1, 0, klu
+        hm = self._mtp_haz([])
+        Em = self._expect(hm, min(self.tmax - 1, rem))
+        vm_prior = max(Em[k] - lam * self.cost.pred(k + 1, k, klu) for k in range(1, len(Em)))
+        if self.skip and bl and bl[0] >= vm_prior and bl[0] > v0:
+            return bl[1], bl[2], 0, klu
+        # sequential MTP drafting
+        probs, d = [], 0
+        kmax = min(DMAX, self.tmax - 1, rem)
+        while d < kmax:
+            probs.append(float(q["mtp_p"][i][d])); d += 1
+            if self.conf_stop:
+                H = q["mtp_ent"][i][d - 1]
+                if np.isnan(H):     # no entropy logged (e.g. proxy G2): fall back to 1 - p as the uncertainty
+                    H = -math.log(max(1e-6, probs[-1]))
+                if 1 - math.sqrt(self.gamma * H) < self.eta:
+                    break
+                continue
+            if d >= kmax:
+                break
+            h = self._mtp_haz(probs)
+            E = self._expect(h, kmax)
+            now = max(E[k] - lam * self.cost.pred(k + 1, d, klu) for k in range(0, d + 1))
+            ahead = max(E[k] - lam * self.cost.pred(k + 1, k, klu) for k in range(d + 1, kmax + 1))
+            if ahead <= now:
+                break
+        h = self._mtp_haz(probs)
+        E = self._expect(h, d)
+        cand = [("mtp", k + 1, E[k] - lam * self.cost.pred(k + 1, d, klu)) for k in range(1, d + 1)]
+        cand.append(("none", 1, 1.0 - lam * self.cost.pred(1, d, klu)))
+        bl = self._best_lookup(q, i, d, True, lam, rem) if self.srcs else None
+        if bl:
+            cand.append((bl[1], bl[2], bl[0]))
+        s, T, _ = max(cand, key=lambda x: x[2])
+        self._probs = probs
+        return s, T, d, klu
+
+    # --- learn
+    def update(self, q, i, act, a, c):
+        src, T, d, klu = act
+        self.cost.update(T, d, klu, c)
+        self.lam_n = 0.995 * self.lam_n + (a + 1); self.lam_c = 0.995 * self.lam_c + c
+        # MTP hazards from drafts actually computed (censored at a+1 committed tokens)
+        if d > 0:
+            obs, fail = censored(int(q["mtp_acc"][i]), d, a)
+            for j in range(min(obs + (1 if fail else 0), d, DMAX)):
+                b = int(np.searchsorted(PB, q["mtp_p"][i][j], side="right"))
+                ok = j < obs
+                self.hm_s[j, b] += ok; self.hm_f[j, b] += (not ok)
+                self.hmm_s[j] = 0.999 * self.hmm_s[j] + ok; self.hmm_f[j] = 0.999 * self.hmm_f[j] + (not ok)
+        for s in self.srcs:
+            kk = int(q[s + "_k"][i])
+            if kk <= 0:
+                continue
+            si = 0 if s == "lk" else 1
+            mb = int(np.searchsorted(MB, int(q[s + "_m"][i]), side="right"))
+            obs, fail = censored(int(q[s + "_acc"][i]), min(kk, DMAX), a)
+            ags = [2] + ([1 if q["agree" if s == "lk" else "agree_pl"][i] >= 1 else 0] if d > 0 else [])
+            for ag in ags:
+                for j in range(min(obs + (1 if fail else 0), kk)):
+                    ok = j < obs
+                    jb = min(j, 2)
+                    self.hl_s[si, mb, ag, jb] = 0.998 * self.hl_s[si, mb, ag, jb] + ok
+                    self.hl_f[si, mb, ag, jb] = 0.998 * self.hl_f[si, mb, ag, jb] + (not ok)
+
+
+class GateV2Native(Policy):
+    """The C++ JointGate of patch P5 (libstrata_spec_capi_p3.so), driven exactly like GateV2: the replay links
+    the code proposed for the engine; GateV2 (Python) is the control (parity: tests/test_joint_gate_parity.py)."""
+    _SRC = {0: "none", 1: "mtp", 2: "lk", 3: "pl"}
+    _ISRC = {"none": 0, "mtp": 1, "lk": 2, "pl": 3}
+
+    def __init__(self, srcs=("lk",), mtp=True, skip=True, conf_stop=False, gamma=0.5, eta=0.35, tmax=8, name=None):
+        import ctypes as C
+        from .native import lib
+        self.L = L = lib(P3_LIB)
+        ip, fp = C.POINTER(C.c_int), C.POINTER(C.c_float)
+        L.jg_new.restype = C.c_void_p
+        L.jg_new.argtypes = [C.c_int] * 5 + [C.c_double, C.c_double, C.c_int]
+        L.jg_free.argtypes = [C.c_void_p]
+        L.jg_act.argtypes = [C.c_void_p, C.c_int, ip, fp, fp, ip]
+        L.jg_observe.argtypes = [C.c_void_p, ip, C.c_int, C.c_double, C.c_int, fp, ip, ip]
+        self.C = C
+        self.h = L.jg_new(int("lk" in srcs), int("pl" in srcs), int(mtp), int(skip), int(conf_stop), gamma, eta, tmax)
+        self.srcs = srcs
+        self.name = name or GateV2(srcs, mtp, skip, conf_stop).name + "_native"
+
+    def __del__(self):
+        try:
+            self.L.jg_free(self.h)
+        except Exception:
+            pass
+
+    def _arrs(self, q, i):
+        C = self.C
+        lu = (C.c_int * 6)(int(q["lk_k"][i]), int(q["lk_m"][i]), 1 if q["agree"][i] >= 1 else 0,
+                           int(q["pl_k"][i]) if "pl_k" in q else 0, int(q["pl_m"][i]) if "pl_m" in q else 0,
+                           1 if ("agree_pl" in q and q["agree_pl"][i] >= 1) else 0)
+        p = (C.c_float * DMAX)(*[float(x) for x in q["mtp_p"][i]])
+        ent = (C.c_float * DMAX)(*[float(x) for x in q["mtp_ent"][i]])
+        return lu, p, ent
+
+    def act(self, q, i, prof):
+        C = self.C
+        lu, p, ent = self._arrs(q, i)
+        out = (C.c_int * 4)()
+        self.L.jg_act(self.h, int(q["n"] - i - 1), lu, p, ent, out)
+        self._io = (lu, p)
+        return self._SRC[out[0]], out[1], out[2], out[3]
+
+    def update(self, q, i, act, a, c):
+        C = self.C
+        lu, p = self._io
+        ch = (C.c_int * 4)(self._ISRC[act[0]], act[1], act[2], act[3])
+        la = (C.c_int * 2)(int(q["lk_acc"][i]), int(q["pl_acc"][i]) if "pl_acc" in q else 0)
+        self.L.jg_observe(self.h, ch, int(a), float(c), int(q["mtp_acc"][i]), p, lu, la)
+
+
+
+class HybridH(Policy):
+    """EXPLORATORY hybrid 'H' (Specu/Strata Lead, 25/10): lookup only if the suffix match is >= min_match (draft length
+    min(k_lookup, kmax_lu) or SuffixDecoding-style min(k_lookup, kmax_lu, floor(f*match))), decided BEFORE MTP drafting
+    (d=0 on lookup rounds); otherwise source none/MTP and MTP depth decided by gate_v2 (JointGate) without lookup source.
+    The inner gate observes every round (cost model and lambda learn from lookup rounds too)."""
+
+    def __init__(self, min_match=3, factor=None, tmax=8, kmax_lu=7, name=None):
+        self.mm, self.f, self.kl, self.tmax = min_match, factor, kmax_lu, tmax
+        self.inner = GateV2(srcs=(), tmax=tmax)
+        self.name = name or "hybrid_m%d_%s_t%d" % (min_match, "fix" if factor is None else "f%g" % factor, tmax)
+
+    def begin(self, q):
+        self.inner.begin(q)
+
+    def act(self, q, i, prof):
+        kk = int(q["lk_k"][i]); m = int(q["lk_m"][i])
+        if kk > 0 and m >= self.mm:
+            k = min(kk, self.kl)
+            if self.f is not None:
+                k = min(k, max(1, int(math.floor(self.f * m))))
+            return "lk", k + 1, 0, kk
+        src, T, d, _ = self.inner.act(q, i, prof)
+        return src, T, d, kk
+
+    def update(self, q, i, act, a, c):
+        src, T, d, kk = act
+        self.inner.update(q, i, (src, T, d, 0), a, c)
+
+class MtpAdaEDL(GateV2):
+    def __init__(self, gamma=0.5, eta=0.35):
+        super().__init__(srcs=(), conf_stop=True, gamma=gamma, eta=eta, name="mtp_adaedl")
+
+
+# ------------------------------------------------------------------------------------------------ metrics
+def summarize(rows, prof):
+    N = sum(r["N"] for r in rows); C = sum(r["C"] for r in rows); R = sum(r["R"] for r in rows)
+    slots = sum(r["slots"] for r in rows); waste = sum(r["waste"] for r in rows)
+    reach = sum(r["reach"] for r in rows); hit = sum(r["hit"] for r in rows)
+    src = {k: sum(r["src"][k] for r in rows) for k in ("none", "mtp", "lk", "pl")}
+    return dict(N=N, C=C, R=R, tps=N / C, speedup=N * prof.s[0] / C, AL=N / R, wasted=waste / max(1, slots),
+                p_pos=[float(hit[j] / reach[j]) if reach[j] else None for j in range(DMAX)],
+                dm_per_round=sum(r["dm"] for r in rows) / R, src_share={k: v / R for k, v in src.items()})
+
+
+def boot_ratio(a_rows, b_rows, clusters, B=2000, seed=0):
+    """IC95 of tps(b)/tps(a) - 1 (paired, cluster bootstrap over `clusters`)."""
+    rng = np.random.default_rng(seed)
+    keys = sorted(set(clusters)); idx = {k: [] for k in keys}
+    for j, k in enumerate(clusters):
+        idx[k].append(j)
+    Na = np.array([r["N"] for r in a_rows]); Ca = np.array([r["C"] for r in a_rows]); Cb = np.array([r["C"] for r in b_rows])
+    groups = [np.array(idx[k]) for k in keys]
+    gN = np.array([Na[g].sum() for g in groups]); gCa = np.array([Ca[g].sum() for g in groups]); gCb = np.array([Cb[g].sum() for g in groups])
+    pt = gCa.sum() / gCb.sum() - 1
+    s = rng.integers(0, len(groups), (B, len(groups)))
+    v = gCa[s].sum(1) / gCb[s].sum(1) - 1
+    return float(pt), float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))

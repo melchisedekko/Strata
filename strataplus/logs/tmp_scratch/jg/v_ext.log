@@ -1,0 +1,10 @@
+full A worse band 0 ctrl 0
+full B worse band 0 ctrl 0
+full B_vs_A band better/neutral/worse [21, 21, 3]
+halfB A worse band 0 ctrl 0
+halfB B worse band 0 ctrl 0
+halfB B_vs_A band better/neutral/worse [19, 24, 2]
+halfA A worse band 0 ctrl 0
+halfA B worse band 0 ctrl 0
+halfA B_vs_A band better/neutral/worse [22, 23, 0]
+{'A_maxT': 5, 'A_share_T8': 0.0, 'A_share_T_ge9': 0.0, 'B_maxT': 8, 'B_share_T8': 0.18653729533050334, 'B_share_T_ge9': 0.0}

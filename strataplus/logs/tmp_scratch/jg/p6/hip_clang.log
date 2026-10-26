@@ -1,0 +1,785 @@
+clang++-17: warning: /workspace/strata-policy/patchwork: 'linker' input unused [-Wunused-command-line-argument]
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:32:
+/workspace/strata-policy/patchwork/include/strata/core/expert_source.hpp:1267:13: warning: 'reads' overrides a member function but is not marked 'override' [-Winconsistent-missing-override]
+ 1267 |     int64_t reads() const { return reads_.load(std::memory_order_relaxed); }
+      |             ^
+/workspace/strata-policy/patchwork/include/strata/core/expert_source.hpp:203:21: note: overridden virtual function is here
+  203 |     virtual int64_t reads() const { return 0; }
+      |                     ^
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:38:
+/workspace/strata-policy/patchwork/include/strata/core/on_device.hpp:17:38: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   17 |     ~OnDevice() { if (previous >= 0) cudaSetDevice(previous); }
+      |                                      ^~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:110:23: note: expanded from macro 'cudaSetDevice'
+  110 | #define cudaSetDevice hipSetDevice
+      |                       ^~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:51:51: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   51 |         if (cudaGetDevice(&cur) != cudaSuccess) { cudaGetLastError(); return nullptr; }
+      |                                                   ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:58:63: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   58 |             if (cudaEventSynchronize(sl.ev) != cudaSuccess) { cudaGetLastError(); return nullptr; }
+      |                                                               ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:61:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   61 |             if (sl.p) { cudaFreeHost(sl.p); sl.p = nullptr; sl.cap = 0; }   // idle: its last copy was waited for above
+      |                         ^~~~~~~~~~~~ ~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:64:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   64 |                 cudaGetLastError();
+      |                 ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:71:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   71 |             cudaGetLastError();
+      |             ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:91:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+   91 |         cudaGetLastError();                // no event: the copy is waited for here instead
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:123:51: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  123 |         if (cudaGetDevice(&cur) != cudaSuccess) { cudaGetLastError(); return false; }
+      |                                                   ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:130:67: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  130 |                 if (cudaEventSynchronize(sl.ev) != cudaSuccess) { cudaGetLastError(); return false; }
+      |                                                                   ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:133:29: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  133 |                 if (sl.p) { cudaFreeHost(sl.p); sl.p = nullptr; sl.cap = 0; }
+      |                             ^~~~~~~~~~~~ ~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:136:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  136 |                     cudaGetLastError();
+      |                     ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:143:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  143 |                 cudaGetLastError();
+      |                 ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:153:38: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  153 |             if (sl.pending && sl.ev) cudaEventSynchronize(sl.ev);
+      |                                      ^~~~~~~~~~~~~~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:44:30: note: expanded from macro 'cudaEventSynchronize'
+   44 | #define cudaEventSynchronize hipEventSynchronize
+      |                              ^~~~~~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:154:24: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  154 |             if (sl.ev) cudaEventDestroy(sl.ev);
+      |                        ^~~~~~~~~~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:38:26: note: expanded from macro 'cudaEventDestroy'
+   38 | #define cudaEventDestroy hipEventDestroy
+      |                          ^~~~~~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:155:23: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  155 |             if (sl.p) cudaFreeHost(sl.p);
+      |                       ^~~~~~~~~~~~ ~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:158:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+  158 |         cudaGetLastError();
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:1611:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 1611 |     cudaMemGetInfo(&free_b, &total_b);
+      |     ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:1714:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 1714 |             cudaFreeHost(p);
+      |             ^~~~~~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2114:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2114 |         cudaFreeHost(h);
+      |         ^~~~~~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2118:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2118 |     cudaMemcpyAsync(d, h, kBytes, cudaMemcpyHostToDevice);   // warmup: context up, copy engine primed
+      |     ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:99:25: note: expanded from macro 'cudaMemcpyAsync'
+   99 | #define cudaMemcpyAsync hipMemcpyAsync
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2138:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2138 |         cudaEventRecord(ev[0]);
+      |         ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2140:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2140 |             cudaMemcpyAsync(d, h, kBytes, cudaMemcpyHostToDevice);
+      |             ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:99:25: note: expanded from macro 'cudaMemcpyAsync'
+   99 | #define cudaMemcpyAsync hipMemcpyAsync
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2141:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2141 |             cudaEventRecord(ev[b + 1]);
+      |             ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2146:36: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2146 |     for (int i = 0; i < n_ev; ++i) cudaEventDestroy(ev[i]);
+      |                                    ^~~~~~~~~~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:38:26: note: expanded from macro 'cudaEventDestroy'
+   38 | #define cudaEventDestroy hipEventDestroy
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2160:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2160 |     cudaFree(d);
+      |     ^~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2161:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2161 |     cudaFreeHost(h);
+      |     ^~~~~~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2400:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2400 |         cudaMemsetAsync(buf, 0, 256, s);
+      |         ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:107:25: note: expanded from macro 'cudaMemsetAsync'
+  107 | #define cudaMemsetAsync hipMemsetAsync
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2401:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2401 |         cudaStreamSynchronize(s);
+      |         ^~~~~~~~~~~~~~~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2404:31: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2404 |     for (cudaStream_t s : ss) cudaStreamDestroy(s);
+      |                               ^~~~~~~~~~~~~~~~~ ~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:117:27: note: expanded from macro 'cudaStreamDestroy'
+  117 | #define cudaStreamDestroy hipStreamDestroy
+      |                           ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2405:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 2405 |     cudaFree(buf);
+      |     ^~~~~~~~ ~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3086:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3086 |         cudaGetLastError();
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3165:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3165 |         cudaGetLastError();
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3210:77: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3210 |                     if (cudaGetDeviceProperties(&prop, d) != cudaSuccess) { cudaGetLastError(); own = false; break; }
+      |                                                                             ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3232:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3232 |         cudaGetLastError();
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3623:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3623 |             cudaGetLastError();
+      |             ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3963:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3963 |         cudaGetLastError();
+      |         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3971:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3971 |                 cudaGetLastError();
+      |                 ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3981:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 3981 |         cudaMemGetInfo(&free_b, &total_b);
+      |         ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4312:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4312 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4317:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4317 |             cudaGetDeviceProperties(&dp, 0);
+      |             ^~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:56:33: note: expanded from macro 'cudaGetDeviceProperties'
+   56 | #define cudaGetDeviceProperties hipGetDeviceProperties
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4427:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4427 |             cudaGetLastError();
+      |             ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4429:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4429 |             cudaMemGetInfo(&free_b, &total_b);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4499:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4499 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4689:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4689 |             cudaDeviceGetAttribute(&sms, cudaDevAttrMultiProcessorCount, dev);
+      |             ^~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:24:32: note: expanded from macro 'cudaDeviceGetAttribute'
+   24 | #define cudaDeviceGetAttribute hipDeviceGetAttribute
+      |                                ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4691:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4691 |             cudaGetLastError();
+      |             ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5273:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5273 |             cudaMemGetInfo(&before, &total_b);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5276:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5276 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5368:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5368 |         cudaMemGetInfo(&fb, &tb);
+      |         ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5503:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5503 |                     cudaGetLastError();
+      |                     ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5504:41: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5504 |                     if (buf != nullptr) cudaFree(buf);
+      |                                         ^~~~~~~~ ~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5506:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5506 |                     cudaMemGetInfo(&fb, &tb);
+      |                     ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5516:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5516 |             cudaDeviceSynchronize();
+      |             ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5518:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5518 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5640:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5640 |                 cudaMemGetInfo(&fb, &tb);
+      |                 ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5739:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5739 |         if (!named) cudaGetLastError();
+      |                     ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6495:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 6495 |             cudaMemset(xcache.device_slot(0), 0, (size_t) xcache.bytes());
+      |             ^~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:106:20: note: expanded from macro 'cudaMemset'
+  106 | #define cudaMemset hipMemset
+      |                    ^~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6496:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 6496 |             cudaDeviceSynchronize();
+      |             ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6649:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 6649 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6736:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 6736 |             cudaMemGetInfo(&fb, &tb);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7383:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 7383 |         cudaFree(d_next);
+      |         ^~~~~~~~ ~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8139:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 8139 |                 cudaMemcpyAsync(xcache.device_slot((int32_t) s), b, (size_t) lay.blob_bytes(l), cudaMemcpyHostToDevice,
+      |                 ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 8140 |                                 nullptr);
+      |                                 ~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:99:25: note: expanded from macro 'cudaMemcpyAsync'
+   99 | #define cudaMemcpyAsync hipMemcpyAsync
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8822:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 8822 |             cudaMemGetInfo(&free_b, &total_b);
+      |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8921:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 8921 |                     cudaMemGetInfo(&fb, &tb);
+      |                     ^~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9037:28: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9037 |                     res_put(d_res);
+      |                     ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9040:28: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9040 |                     res_put(st->d_res);
+      |                     ~~~~~~~^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9369:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9369 |                     cudaGetLastError();
+      |                     ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9381:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9381 |                         cudaGetLastError();
+      |                         ^~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:58:26: note: expanded from macro 'cudaGetLastError'
+   58 | #define cudaGetLastError hipGetLastError
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9441:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9441 |                 cudaStreamSynchronize(stage_ver_p(st, 0).stream());
+      |                 ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9444:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 9444 |             cudaStreamSynchronize(mtp.stream());
+      |             ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10062:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10062 |             cudaGetDevice(&main_dev);
+       |             ^~~~~~~~~~~~~ ~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:54:23: note: expanded from macro 'cudaGetDevice'
+   54 | #define cudaGetDevice hipGetDevice
+      |                       ^~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10193:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10193 |         cudaEventCreateWithFlags(&adapt_ev, cudaEventDisableTiming);
+       |         ^~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:37:34: note: expanded from macro 'cudaEventCreateWithFlags'
+   37 | #define cudaEventCreateWithFlags hipEventCreateWithFlags
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10274:23: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10274 |             if (wait) cudaEventSynchronize(adapt_ev);
+       |                       ^~~~~~~~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:44:30: note: expanded from macro 'cudaEventSynchronize'
+   44 | #define cudaEventSynchronize hipEventSynchronize
+      |                              ^~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10278:31: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10278 |                     if (wait) cudaEventSynchronize(st->adapt_ev);
+       |                               ^~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:44:30: note: expanded from macro 'cudaEventSynchronize'
+   44 | #define cudaEventSynchronize hipEventSynchronize
+      |                              ^~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10360:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10360 |             cudaStreamSynchronize(ver.stream());   // the patches landed (the verifier streams do not block the read)
+       |             ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10363:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10363 |                 cudaStreamSynchronize(st->ver.stream());
+       |                 ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10390:39: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10390 |                 if (pairs != nullptr) cudaFreeHost(pairs);
+       |                                       ^~~~~~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10484:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10484 |                         cudaLaunchHostFunc(adapt_stream, [](void* p) { std::this_thread::sleep_for(std::chrono::microseconds(*(int*) p)); }, &slow_arg);
+       |                         ^~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:82:28: note: expanded from macro 'cudaLaunchHostFunc'
+   82 | #define cudaLaunchHostFunc hipLaunchHostFunc
+      |                            ^~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10524:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10524 |                     cudaStreamSynchronize(adapt_stream);   // no callback: wait here, the gate opens at once
+       |                     ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10538:33: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10538 |             if (!swaps.empty()) cudaEventRecord(adapt_ev, adapt_stream);
+       |                                 ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10546:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10546 |                     cudaEventRecord(st->adapt_ev, st->adapt_stream);
+       |                     ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10900:35: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10900 |                         res_upload();
+       |                         ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10918:36: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10918 |                     else res_upload();
+       |                          ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10963:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10963 |             cudaDeviceSynchronize();
+       |             ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10968:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10968 |                 cudaDeviceSynchronize();
+       |                 ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10982:44: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 10982 |                 if (a_res_dirty) res_upload();
+       |                                  ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11102:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11102 |             cudaMemGetInfo(&free_b, &total_b);
+       |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11163:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11163 |             cudaMemGetInfo(&free_b, &total_b);
+       |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11357:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11357 |             cudaMemGetInfo(&free_b, &total_b);
+       |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11378:27: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11378 |                 res_upload();
+       |                 ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11411:27: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11411 |                 res_upload();
+       |                 ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11414:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 11414 |             cudaMemGetInfo(&free_b, &total_b);
+       |             ^~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:95:24: note: expanded from macro 'cudaMemGetInfo'
+   95 | #define cudaMemGetInfo hipMemGetInfo
+      |                        ^~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:12569:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 12569 |                 cudaDeviceSynchronize();
+       |                 ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:12577:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 12577 |                         cudaDeviceSynchronize();
+       |                         ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13064:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13064 |                 cudaStreamSynchronize(main_stream);
+       |                 ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13068:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13068 |                     cudaStreamSynchronize(st->stream);
+       |                     ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13088:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13088 |                     cudaStreamSynchronize(main_stream);
+       |                     ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13092:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13092 |                         cudaStreamSynchronize(st->stream);
+       |                         ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13271:29: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13271 |                             cudaStreamWaitEvent(v.stream(), pl_mtp_ev[l1 & 1], 0);
+       |                             ^~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:123:29: note: expanded from macro 'cudaStreamWaitEvent'
+  123 | #define cudaStreamWaitEvent hipStreamWaitEvent
+      |                             ^~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13287:33: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13287 |                                 cudaEventRecord(pl_mtp_ev[f1 & 1], mtp.stream());
+       |                                 ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13431:44: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13431 |                 if (n_parts > 0) res_upload();
+       |                                  ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13517:36: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 13517 |                 if (any) res_upload();
+       |                          ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14405:29: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14405 |                            (cudaStreamQuery(sn.side), true);
+       |                             ^~~~~~~~~~~~~~~ ~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:121:25: note: expanded from macro 'cudaStreamQuery'
+  121 | #define cudaStreamQuery hipStreamQuery
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14506:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14506 |                     cudaEventCreateWithFlags(&fence_ev[(size_t) st], cudaEventDisableTiming);
+       |                     ^~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:37:34: note: expanded from macro 'cudaEventCreateWithFlags'
+   37 | #define cudaEventCreateWithFlags hipEventCreateWithFlags
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14507:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14507 |                     cudaEventCreateWithFlags(&exch_ev[(size_t) st], cudaEventDisableTiming);
+       |                     ^~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:37:34: note: expanded from macro 'cudaEventCreateWithFlags'
+   37 | #define cudaEventCreateWithFlags hipEventCreateWithFlags
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14512:25: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14512 |                         cudaEventRecord(ev[(size_t) st], pl_stream[(size_t) st]);
+       |                         ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14556:31: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14556 |                     res_upload();
+       |                     ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14959:57: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14959 |                 for (cudaEvent_t ev : fence_ev) if (ev) cudaEventDestroy(ev);
+       |                                                         ^~~~~~~~~~~~~~~~ ~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:38:26: note: expanded from macro 'cudaEventDestroy'
+   38 | #define cudaEventDestroy hipEventDestroy
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14960:56: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 14960 |                 for (cudaEvent_t ev : exch_ev) if (ev) cudaEventDestroy(ev);
+       |                                                        ^~~~~~~~~~~~~~~~ ~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:38:26: note: expanded from macro 'cudaEventDestroy'
+   38 | #define cudaEventDestroy hipEventDestroy
+      |                          ^~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15104:35: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 15104 |                         res_upload();
+       |                         ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15231:21: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 15231 |                     cudaMemcpy(d_hist, hist_stage.data(), (size_t) T * (size_t) hist_n * sizeof(int32_t),
+       |                     ^~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 15232 |                                cudaMemcpyHostToDevice);
+       |                                ~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:97:20: note: expanded from macro 'cudaMemcpy'
+   97 | #define cudaMemcpy hipMemcpy
+      |                    ^~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15974:65: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 15974 |                 if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+       |                                                                 ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15980:24: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 15980 |                 res_put(d_res);
+       |                 ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16020:61: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16020 |             if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+       |                                                             ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16049:20: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16049 |             res_put(d_res);
+       |             ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16078:57: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16078 |         if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+       |                                                         ^~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:29:31: note: expanded from macro 'cudaDeviceSynchronize'
+   29 | #define cudaDeviceSynchronize hipDeviceSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16160:13: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16160 |             cudaMemcpy(final_r_host.data(), ss.R, final_r_host.size() * sizeof(float), cudaMemcpyDeviceToHost);
+       |             ^~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:97:20: note: expanded from macro 'cudaMemcpy'
+   97 | #define cudaMemcpy hipMemcpy
+      |                    ^~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16415:39: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16415 |                 if (pairs != nullptr) cudaFreeHost(pairs);
+       |                                       ^~~~~~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16437:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16437 |                 cudaStreamSynchronize(cs);   // the patch landed
+       |                 ^~~~~~~~~~~~~~~~~~~~~ ~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:122:31: note: expanded from macro 'cudaStreamSynchronize'
+  122 | #define cudaStreamSynchronize hipStreamSynchronize
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16456:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16456 |         cudaEventCreateWithFlags(&adapt_ev, cudaEventDisableTiming);
+       |         ^~~~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:37:34: note: expanded from macro 'cudaEventCreateWithFlags'
+   37 | #define cudaEventCreateWithFlags hipEventCreateWithFlags
+      |                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16462:23: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16462 |             if (wait) cudaEventSynchronize(adapt_ev);
+       |                       ^~~~~~~~~~~~~~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:44:30: note: expanded from macro 'cudaEventSynchronize'
+   44 | #define cudaEventSynchronize hipEventSynchronize
+      |                              ^~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16579:33: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16579 |             if (!swaps.empty()) cudaEventRecord(adapt_ev, adapt_stream);
+       |                                 ^~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:43:25: note: expanded from macro 'cudaEventRecord'
+   43 | #define cudaEventRecord hipEventRecord
+      |                         ^~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16858:17: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 16858 |                 cudaMemcpy(hash_rows.data(), ver.final_R_all(), n_floats * sizeof(float), cudaMemcpyDeviceToHost);
+       |                 ^~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:97:20: note: expanded from macro 'cudaMemcpy'
+   97 | #define cudaMemcpy hipMemcpy
+      |                    ^~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17077:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17077 |         cudaFreeHost(layer_stage);
+       |         ^~~~~~~~~~~~ ~~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17083:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17083 |         cudaFreeHost(half_stage);
+       |         ^~~~~~~~~~~~ ~~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:48:22: note: expanded from macro 'cudaFreeHost'
+   48 | #define cudaFreeHost hipHostFree
+      |                      ^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17249:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17249 |     cudaFree(d_next);
+       |     ^~~~~~~~ ~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17250:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17250 |     cudaFree(d_logits);
+       |     ^~~~~~~~ ~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17251:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17251 |     cudaFree(d_emb);
+       |     ^~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17252:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17252 |     cudaFree(d_parts);
+       |     ^~~~~~~~ ~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17253:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17253 |     cudaFree(sbuf);
+       |     ^~~~~~~~ ~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17254:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 17254 |     cudaFree(arena);
+       |     ^~~~~~~~ ~~~~~
+/workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:46:18: note: expanded from macro 'cudaFree'
+   46 | #define cudaFree hipFree
+      |                  ^~~~~~~
+131 warnings generated.

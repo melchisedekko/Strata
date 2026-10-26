@@ -1,0 +1,17 @@
+  depth: confident chains are drafted deep under a flat cost       ok
+  depth: an unconfident first draft stops the chain                ok
+  source: the confident chain is verified whole                    ok
+  lookup-first: a reliable long lookup skips the MTP draft         ok
+  conf_stop: drafting stops at the first high-entropy draft        ok
+  tmax=8: the widest planned window is T=8 (kD drafts + 1)         ok
+  T=9 is priced (and learned) as the last measured row T=8         ok
+  tmax=12 is clamped to kD+1=8                                     ok
+  frozen: the gate plans on the seeded table (x unit), not the prior ok
+  rem: max_new bound                                               ok
+  rem: context bound (max_context - p - 1)                         ok
+  rem: no bound / >= 0                                             ok
+  defaults = arm A: tmax=5, skip, mtp, lookup only, no conf_stop   ok
+  JointGate() has tmax 5                                           ok
+  arm A: windows (MTP and lookup) reach T=5, never more; d<=4      ok
+  STRATA_SPEC_JOINT: unset/0 -> off (DraftPolicy), 1 -> on         ok
+PASS

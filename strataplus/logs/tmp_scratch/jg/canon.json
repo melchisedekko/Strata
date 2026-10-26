@@ -1,0 +1,89 @@
+{
+ "method": "JSON canonico: json.dumps(obj, sort_keys=True, separators=(',',':'), ensure_ascii=False) in UTF-8, poi sha256; uguaglianza esatta (nessuna tolleranza)",
+ "top_level": {
+  "s": {
+   "099ceda": "0b9e80062b1f7e1b3c28ecdedf262873de2d51afd0ded431491033fffabd1230",
+   "e51712c6": "0b9e80062b1f7e1b3c28ecdedf262873de2d51afd0ded431491033fffabd1230",
+   "equal": true
+  },
+  "rho_mtp": {
+   "099ceda": "ffad1be2b56e3fa1814cca910476bc824a5ea516c6c3f09367cd7211bc93cba0",
+   "e51712c6": "ffad1be2b56e3fa1814cca910476bc824a5ea516c6c3f09367cd7211bc93cba0",
+   "equal": true
+  },
+  "rho_lu": {
+   "099ceda": "8d3db351877a22d3fa8cd72f0785997f389fd61806ff243da05bae682dc4dcaf",
+   "e51712c6": "8d3db351877a22d3fa8cd72f0785997f389fd61806ff243da05bae682dc4dcaf",
+   "equal": true
+  },
+  "step_ms": {
+   "099ceda": "2d0603d3e1f804cc74693602d65870f1dc106e5dd51802cec2e78aeb44307012",
+   "e51712c6": "2d0603d3e1f804cc74693602d65870f1dc106e5dd51802cec2e78aeb44307012",
+   "equal": true
+  },
+  "cost_T_d": {
+   "099ceda": "943a520b465b3a371c36cd319f97f386787c42c88ea0ad5fa5995a8b7ac2afe1",
+   "e51712c6": "943a520b465b3a371c36cd319f97f386787c42c88ea0ad5fa5995a8b7ac2afe1",
+   "equal": true
+  },
+  "cost_by_k": {
+   "099ceda": "7739bcee49af76a706cd370e269997bb3dd86acd25c77a71e669b7c0ea1ba6b5",
+   "e51712c6": "7739bcee49af76a706cd370e269997bb3dd86acd25c77a71e669b7c0ea1ba6b5",
+   "equal": true
+  }
+ },
+ "models_q4": {
+  "099ceda": "258ff02f5f893edc8d0cac28fd2d3208dd0c1d1f40fd96b6cb9ba670a50f7b57",
+  "e51712c6": "258ff02f5f893edc8d0cac28fd2d3208dd0c1d1f40fd96b6cb9ba670a50f7b57",
+  "equal": true
+ },
+ "top_vs_model": {
+  "s": {
+   "099ceda": true,
+   "e51712c6": true
+  },
+  "rho_mtp": {
+   "099ceda": true,
+   "e51712c6": true
+  },
+  "rho_lu": {
+   "099ceda": true,
+   "e51712c6": true
+  },
+  "step_ms": {
+   "099ceda": true,
+   "e51712c6": true
+  },
+  "cost_T_d": {
+   "099ceda": true,
+   "e51712c6": true
+  },
+  "cost_by_k": {
+   "099ceda": true,
+   "e51712c6": true
+  }
+ },
+ "other_top_level_keys": {
+  "cost_def": true,
+  "flags": true,
+  "hardware": true,
+  "label": true,
+  "model": true,
+  "n_samples": true,
+  "note": true,
+  "profile": true,
+  "schema_version": true,
+  "source": true,
+  "threads": true
+ },
+ "models_keys": {
+  "099ceda": [
+   "qwen35-2b-mtp-q4_k_m"
+  ],
+  "e51712c6": [
+   "qwen35-2b-mtp-q4_k_m",
+   "qwen35-2b-mtp-q8_0"
+  ]
+ },
+ "all_q4_equal": true
+}

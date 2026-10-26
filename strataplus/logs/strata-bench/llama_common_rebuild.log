@@ -1,0 +1,5 @@
+[1/5] Building CXX object common/CMakeFiles/llama-common.dir/speculative.cpp.o
+[2/5] Building CXX object common/CMakeFiles/llama-common.dir/common.cpp.o
+[3/5] Building CXX object common/CMakeFiles/llama-common.dir/arg.cpp.o
+[4/5] Linking CXX shared library bin/libllama-common.so.0.7.0
+[5/5] Creating library symlink bin/libllama-common.so.0 bin/libllama-common.so

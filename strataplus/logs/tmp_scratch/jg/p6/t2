@@ -1,0 +1,2 @@
+2026-10-25 04:44:51 | 2026-10-25 04:44:54 | neg_hip_clang: check_hip.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]
+2026-10-25 04:44:54 | 2026-10-25 04:44:58 | neg_cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]

@@ -174,7 +174,7 @@ if grep -qxF "$SELF" "$TMPD/tok.txt"; then echo "ERRORE: il token compare in syn
 ( cd "$D" && find . -type f ! -name MANIFEST.sha256 -print0 | sort -z | xargs -0 sha256sum > MANIFEST.sha256 )
 
 # ---- commit (solo se cambia qualcosa) ----
-git add -A -- strataplus
+git add -A -f -- strataplus   # -f: il .gitignore upstream ignora *.log e logs/
 if git diff --cached --quiet; then
   echo "Nessun cambiamento da committare."
 else

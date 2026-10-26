@@ -1,0 +1,7 @@
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15024:28: error: ‘p6_undeclared_symbol’ was not declared in this scope
+15024 | int p6_negative_probe_46 = p6_undeclared_symbol;   // NEGATIVE PROBE
+      |                            ^~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16774:28: error: ‘p6_undeclared_symbol’ was not declared in this scope
+16774 | int p6_negative_probe_42 = p6_undeclared_symbol;   // NEGATIVE PROBE
+      |                            ^~~~~~~~~~~~~~~~~~~~

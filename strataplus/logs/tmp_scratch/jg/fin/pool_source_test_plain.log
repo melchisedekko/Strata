@@ -1,0 +1,6 @@
+  pool: an earlier request's text is proposed after reset()        ok
+  pool: matches shorter than the gate propose nothing              ok
+  pool: capacity bounded, oldest text evicted                      ok
+  pool: evicted text is no longer proposed                         ok
+  pool: indexing continues after eviction                          ok
+PASS

@@ -1,0 +1,58 @@
+04:53:27 0.085 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:29 0.065 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:31 0.060 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:33 0.070 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:35 0.065 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:37 0.080 0.02 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage 
+04:53:39 0.065 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:41 0.055 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:43 0.085 0.04 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:53:45 0.826 0.77 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:47 1.012 0.94 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:49 1.173 1.13 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:51 1.072 1.03 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:53 1.202 1.13 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:55 0.903 0.85 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:57 0.224 0.16 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:53:59 0.100 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:01 0.070 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:03 0.110 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:05 0.055 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:07 0.065 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:09 0.145 0.07 /usr/bin/python3 /usr/local/bin/sand-memory-watch --telemetry-log /tmp/sand-box-
+04:54:11 0.070 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:13 0.249 0.17 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:54:16 0.174 0.14 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host
+04:54:18 0.070 0.04 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:20 0.065 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:22 0.085 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:24 0.090 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:26 0.075 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:28 0.070 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:30 0.090 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:32 0.070 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:34 0.070 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:36 0.080 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:38 0.060 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:40 0.060 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:42 0.080 0.04 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:44 0.060 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:46 0.095 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:48 0.060 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:50 0.045 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:52 0.080 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:54 0.055 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:56 0.075 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:54:58 0.065 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:00 0.045 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:02 0.095 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:04 0.055 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:06 0.075 0.04 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:08 0.075 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:10 0.110 0.07 /usr/bin/python3 /usr/local/bin/sand-memory-watch --telemetry-log /tmp/sand-box-
+04:55:12 0.095 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:14 0.045 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:16 0.075 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:18 0.080 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:20 0.065 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+04:55:22 0.085 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 

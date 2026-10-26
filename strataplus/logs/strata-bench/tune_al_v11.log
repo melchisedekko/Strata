@@ -1,0 +1,418 @@
+{
+ "label": "proxy CPU, non AMD",
+ "source_dir": "/workspace/strata-plus/traces/v1.1",
+ "holdout_opened": false,
+ "runs": {
+  "agent_turns_bench_base": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 30,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0,
+     "n": 3840
+    },
+    "agent_edit": {
+     "value": 1.0,
+     "n": 3840
+    }
+   }
+  },
+  "agent_turns_bench_live_combo": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 23,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 5.3782,
+     "n": 714
+    },
+    "agent_edit": {
+     "value": 5.3782,
+     "n": 714
+    }
+   }
+  },
+  "agent_turns_bench_live_lookup": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 24,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 3.0794,
+     "n": 1247
+    },
+    "agent_edit": {
+     "value": 3.0794,
+     "n": 1247
+    }
+   }
+  },
+  "agent_turns_bench_live_mtp_k3": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 25,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 3.6226,
+     "n": 1060
+    },
+    "agent_edit": {
+     "value": 3.6226,
+     "n": 1060
+    }
+   }
+  },
+  "agent_turns_bench_tf_d7": {
+   "data_kind": "teacher_forced",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 30,
+   "metric": "AL_tf_Dmax7 = mean(acc_mtp+1) per posizione",
+   "AL": {
+    "ALL": {
+     "value": 6.4253,
+     "n": 3840
+    },
+    "agent_edit": {
+     "value": 6.4253,
+     "n": 3840
+    }
+   }
+  },
+  "base_p30": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 30,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0,
+     "n": 3739
+    },
+    "chat": {
+     "value": 1.0,
+     "n": 1238
+    },
+    "code": {
+     "value": 1.0,
+     "n": 1221
+    },
+    "edit": {
+     "value": 1.0,
+     "n": 1280
+    }
+   }
+  },
+  "diag_yright_T2": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 5,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.564,
+     "n": 945
+    },
+    "chat": {
+     "value": 1.1797,
+     "n": 434
+    },
+    "code": {
+     "value": 1.876,
+     "n": 242
+    },
+    "edit": {
+     "value": 1.9033,
+     "n": 269
+    }
+   }
+  },
+  "diag_yright_T4": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 5,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 2.1832,
+     "n": 677
+    },
+    "chat": {
+     "value": 1.3028,
+     "n": 393
+    },
+    "code": {
+     "value": 3.3139,
+     "n": 137
+    },
+    "edit": {
+     "value": 3.483,
+     "n": 147
+    }
+   }
+  },
+  "diag_yright_T8": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 6,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 2.5615,
+     "n": 577
+    },
+    "chat": {
+     "value": 1.5329,
+     "n": 334
+    },
+    "code": {
+     "value": 2.5363,
+     "n": 179
+    },
+    "edit": {
+     "value": 8.0,
+     "n": 64
+    }
+   }
+  },
+  "diag_ywrong_T2": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 5,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0014,
+     "n": 1475
+    },
+    "chat": {
+     "value": 1.0,
+     "n": 512
+    },
+    "code": {
+     "value": 1.0044,
+     "n": 451
+    },
+    "edit": {
+     "value": 1.0,
+     "n": 512
+    }
+   }
+  },
+  "diag_ywrong_T4": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 5,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0014,
+     "n": 1475
+    },
+    "chat": {
+     "value": 1.0,
+     "n": 512
+    },
+    "code": {
+     "value": 1.0044,
+     "n": 451
+    },
+    "edit": {
+     "value": 1.0,
+     "n": 512
+    }
+   }
+  },
+  "diag_ywrong_T8": {
+   "data_kind": "live",
+   "requests": 12,
+   "request_end_rows": 12,
+   "greedy_equal_ref": 6,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0007,
+     "n": 1476
+    },
+    "chat": {
+     "value": 1.0,
+     "n": 512
+    },
+    "code": {
+     "value": 1.0022,
+     "n": 452
+    },
+    "edit": {
+     "value": 1.0,
+     "n": 512
+    }
+   }
+  },
+  "live_combo_p30": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 20,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 4.0032,
+     "n": 934
+    },
+    "chat": {
+     "value": 2.5421,
+     "n": 487
+    },
+    "code": {
+     "value": 5.8986,
+     "n": 207
+    },
+    "edit": {
+     "value": 5.3333,
+     "n": 240
+    }
+   }
+  },
+  "live_lookup_p30": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 19,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.9731,
+     "n": 1895
+    },
+    "chat": {
+     "value": 1.0719,
+     "n": 1155
+    },
+    "code": {
+     "value": 3.4202,
+     "n": 357
+    },
+    "edit": {
+     "value": 3.342,
+     "n": 383
+    }
+   }
+  },
+  "live_mtp_k3_p30": {
+   "data_kind": "live",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 17,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 3.166,
+     "n": 1181
+    },
+    "chat": {
+     "value": 2.4859,
+     "n": 498
+    },
+    "code": {
+     "value": 3.7454,
+     "n": 326
+    },
+    "edit": {
+     "value": 3.5854,
+     "n": 357
+    }
+   }
+  },
+  "mtbench2_base": {
+   "data_kind": "live",
+   "requests": 20,
+   "request_end_rows": 20,
+   "greedy_equal_ref": 20,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 1.0,
+     "n": 2280
+    },
+    "chat": {
+     "value": 1.0,
+     "n": 2280
+    }
+   }
+  },
+  "mtbench2_live_mtp_k3": {
+   "data_kind": "live",
+   "requests": 20,
+   "request_end_rows": 20,
+   "greedy_equal_ref": 6,
+   "metric": "AL = mean(accepted+1) per round di verifica",
+   "AL": {
+    "ALL": {
+     "value": 2.4934,
+     "n": 912
+    },
+    "chat": {
+     "value": 2.4934,
+     "n": 912
+    }
+   }
+  },
+  "mtbench2_tf_d7": {
+   "data_kind": "teacher_forced",
+   "requests": 20,
+   "request_end_rows": 20,
+   "greedy_equal_ref": 20,
+   "metric": "AL_tf_Dmax7 = mean(acc_mtp+1) per posizione",
+   "AL": {
+    "ALL": {
+     "value": 3.6706,
+     "n": 2280
+    },
+    "chat": {
+     "value": 3.6706,
+     "n": 2280
+    }
+   }
+  },
+  "tf_d7_p30": {
+   "data_kind": "teacher_forced",
+   "requests": 30,
+   "request_end_rows": 30,
+   "greedy_equal_ref": 30,
+   "metric": "AL_tf_Dmax7 = mean(acc_mtp+1) per posizione",
+   "AL": {
+    "ALL": {
+     "value": 5.4793,
+     "n": 3739
+    },
+    "chat": {
+     "value": 3.4426,
+     "n": 1238
+    },
+    "code": {
+     "value": 6.7166,
+     "n": 1221
+    },
+    "edit": {
+     "value": 6.2687,
+     "n": 1280
+    }
+   }
+  }
+ }
+}

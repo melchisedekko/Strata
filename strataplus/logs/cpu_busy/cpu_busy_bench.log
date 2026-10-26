@@ -1,0 +1,91 @@
+# finestre CPU pesante di strata-bench (benchmark agent). Formato: inizio | fine | cosa | esito. Orari CET. Ricostruite da traces/raw/v11/campaign.log fino a 06:05; da qui in poi appese live.
+2026-10-25 02:02:01 | 2026-10-25 02:05:55 | llama_spec_trace/bench p4_2b_q4km (P4 esteso) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:06:01 | 2026-10-25 02:10:30 | llama_spec_trace/bench p4_2b_q8 (P4 esteso) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:11:19 | 2026-10-25 02:14:59 | llama_spec_trace/bench p4_2b_q4km_r2 (rerun Q4 con CPU libera) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:16:43 | 2026-10-25 02:20:51 | llama_spec_trace/bench agent_turns_bench_live_mtp_k3 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:20:51 | 2026-10-25 02:23:09 | llama_spec_trace/bench mtbench2_live_mtp_k3 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:23:09 | 2026-10-25 02:34:17 | llama_spec_trace/bench tf_d7_p30 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:34:17 | 2026-10-25 02:50:26 | llama_spec_trace/bench agent_turns_bench_tf_d7 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 02:50:26 | 2026-10-25 03:01:10 | llama_spec_trace/bench mtbench2_tf_d7 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:01:10 | 2026-10-25 03:03:18 | llama_spec_trace/bench live_lookup_p30 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:03:18 | 2026-10-25 03:07:33 | llama_spec_trace/bench agent_turns_bench_live_lookup ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:07:33 | 2026-10-25 03:09:58 | llama_spec_trace/bench live_combo_p30 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:09:58 | 2026-10-25 03:13:36 | llama_spec_trace/bench agent_turns_bench_live_combo ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:13:36 | 2026-10-25 03:23:41 | llama_spec_trace/bench diag_yright_T2 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:23:41 | 2026-10-25 03:25:31 | llama_spec_trace/bench diag_ywrong_T2 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:25:31 | 2026-10-25 03:26:40 | llama_spec_trace/bench diag_yright_T4 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:26:40 | 2026-10-25 03:28:57 | llama_spec_trace/bench diag_ywrong_T4 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:28:57 | 2026-10-25 03:30:14 | llama_spec_trace/bench diag_yright_T8 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:30:14 | 2026-10-25 03:38:18 | llama_spec_trace/bench diag_ywrong_T8 ps_heavy=0 (strata-bench, 1 processo llama) | exit 0
+2026-10-25 03:38:18 | 2026-10-25 04:15:10 | llama_spec_trace/bench holdout_tf_d7  (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:15:31 | 2026-10-25 04:16:21 | llama_spec_trace/bench knee build (build-nollamafile + 2 binari) (strata-bench, 1 processo llama) | build
+2026-10-25 04:16:39 | 2026-10-25 04:18:38 | llama_spec_trace/bench knee_q4km_main_b1 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:18:48 | 2026-10-25 04:20:46 | llama_spec_trace/bench knee_q4km_llamafile_off_b2 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:20:56 | 2026-10-25 04:22:54 | llama_spec_trace/bench knee_q4km_llamafile_off_b3 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:23:04 | 2026-10-25 04:25:01 | llama_spec_trace/bench knee_q4km_main_b4 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:25:11 | 2026-10-25 04:27:07 | llama_spec_trace/bench knee_q4km_main_b5 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:27:17 | 2026-10-25 04:29:15 | llama_spec_trace/bench knee_q4km_llamafile_off_b6 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:29:25 | 2026-10-25 04:31:26 | llama_spec_trace/bench knee_q4km_llamafile_off_b7 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:31:36 | 2026-10-25 04:33:35 | llama_spec_trace/bench knee_q4km_main_b8 (-t 6 -ub 512) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:33:50 | 2026-10-25 04:40:09 | llama_spec_trace/bench knee_q4km_ctrl_ub256 (-t 6 -ub 256) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 04:45:57 | 2026-10-25 04:47:55 | llama_spec_trace/bench knee_q4km_main_b4 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.229 intervals_ge0.5=5
+2026-10-25 04:48:25 | 2026-10-25 04:50:26 | llama_spec_trace/bench knee_q4km_main_b4 att 2 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.225 intervals_ge0.5=13
+2026-10-25 04:50:59 | 2026-10-25 04:52:55 | llama_spec_trace/bench knee_q4km_main_b4 att 3 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.222 intervals_ge0.5=5
+2026-10-25 04:53:25 | 2026-10-25 04:55:22 | llama_spec_trace/bench knee_q4km_main_b5 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.202 intervals_ge0.5=6
+2026-10-25 04:56:48 | 2026-10-25 04:58:49 | llama_spec_trace/bench knee_q4km_main_b5 att 2 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.327 intervals_ge0.5=10
+2026-10-25 04:59:20 | 2026-10-25 05:01:22 | llama_spec_trace/bench knee_q4km_main_b5 att 3 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max=1.197 intervals_ge0.5=6
+2026-10-25 05:01:52 | 2026-10-25 05:04:42 | llama_spec_trace/bench knee_q4km_llamafile_off_b7 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 (giudicato a mano dopo kill del parent run_knee_redo.sh) foreign_excl_sandhost: 0 0.2 -> VALID
+2026-10-25 05:05:12 | 2026-10-25 05:07:11 | llama_spec_trace/bench knee_q4km_main_b4 att 4 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.194 intervals_ge0.5=0
+2026-10-25 05:07:41 | 2026-10-25 05:09:39 | llama_spec_trace/bench knee_q4km_main_b5 att 4 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.145 intervals_ge0.5=0
+2026-10-25 05:10:09 | 2026-10-25 05:12:07 | llama_spec_trace/bench knee_q4km_main_b8 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.12 intervals_ge0.5=0
+2026-10-25 05:12:37 | 2026-10-25 05:19:02 | llama_spec_trace/bench knee_q4km_ctrl_ub256 att 1 (-t 6 -ub 256, 100 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.16 intervals_ge0.5=0
+2026-10-25 05:19:32 | 2026-10-25 05:25:09 | llama_spec_trace/bench knee_q4km_ctrl_t8 att 1 (-t 8 -ub 512, 100 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.144 intervals_ge0.5=0
+2026-10-25 05:25:40 | 2026-10-25 05:28:08 | llama_spec_trace/bench knee_q8_main_b1 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.125 intervals_ge0.5=0
+2026-10-25 05:28:38 | 2026-10-25 05:31:17 | llama_spec_trace/bench knee_q8_llamafile_off_b2 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.105 intervals_ge0.5=0
+2026-10-25 05:31:47 | 2026-10-25 05:34:25 | llama_spec_trace/bench knee_q8_llamafile_off_b3 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.12 intervals_ge0.5=0
+2026-10-25 05:34:56 | 2026-10-25 05:37:18 | llama_spec_trace/bench knee_q8_main_b4 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.145 intervals_ge0.5=0
+2026-10-25 05:37:48 | 2026-10-25 05:40:07 | llama_spec_trace/bench knee_q8_main_b5 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.09 intervals_ge0.5=0
+2026-10-25 05:40:37 | 2026-10-25 05:43:11 | llama_spec_trace/bench knee_q8_llamafile_off_b6 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.12 intervals_ge0.5=0
+2026-10-25 05:43:41 | 2026-10-25 05:46:20 | llama_spec_trace/bench knee_q8_llamafile_off_b7 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.105 intervals_ge0.5=0
+2026-10-25 05:46:50 | 2026-10-25 05:49:10 | llama_spec_trace/bench knee_q8_main_b8 att 1 (-t 6 -ub 512, 25 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.12 intervals_ge0.5=0
+2026-10-25 05:49:41 | 2026-10-25 05:57:38 | llama_spec_trace/bench knee_q8_ctrl_ub256 att 1 (-t 6 -ub 256, 100 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.175 intervals_ge0.5=0
+2026-10-25 05:58:08 | 2026-10-25 06:04:41 | llama_spec_trace/bench knee_q8_ctrl_t8 att 1 (-t 8 -ub 512, 100 rep) (strata-bench, 1 processo llama) | exit 0 foreign_max_excl_sandhost=0.105 intervals_ge0.5=0
+2026-10-25 06:04:53 | 2026-10-25 06:04:56 | llama_spec_trace/bench prepare_check_v12  (strata-bench, 1 processo llama) | {'code': 20, 'chat': 20, 'edit': 20} max chars 4212
+2026-10-25 06:05:26 | (in corso) | START check_v12_tf_d7 (strata-bench, 1 processo llama) |
+2026-10-25 06:23:41 | (in corso) | START check_v12_live_mtp_k3 llama_procs=0 (strata-bench) |
+2026-10-25 06:23:41 | 2026-10-25 06:29:00 | check_v12_live_mtp_k3 llama_procs=0 (strata-bench, 1 processo llama) | exit 0 foreign_max=0.120 intervals_ge0.5=0
+2026-10-25 06:29:30 | (in corso) | START check_v12_live_lookup llama_procs=0 (strata-bench) |
+2026-10-25 06:29:30 | 2026-10-25 06:33:46 | check_v12_live_lookup llama_procs=0 (strata-bench, 1 processo llama) | exit 0 foreign_max=0.120 intervals_ge0.5=0
+2026-10-25 06:34:16 | (in corso) | START check_v12_live_combo llama_procs=0 (strata-bench) |
+2026-10-25 06:34:16 | 2026-10-25 06:38:59 | check_v12_live_combo llama_procs=0 (strata-bench, 1 processo llama) | exit 0 foreign_max=0.145 intervals_ge0.5=0
+2026-10-25 06:41:18 | (in corso) | START build_nollamafile  (strata-bench) |
+2026-10-25 06:41:18 | 2026-10-25 06:41:21 | build_nollamafile  (strata-bench, 1 processo llama) | 
+2026-10-25 06:41:21 | (in corso) | START abl_llamafile_on  (strata-bench) |
+2026-10-25 06:43:46 | (in corso) | START abl_llamafile_on_ywrong_T2  (strata-bench) |
+2026-10-25 06:43:46 | 2026-10-25 06:45:01 | abl_llamafile_on_ywrong_T2  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 8 1.102
+2026-10-25 06:45:32 | (in corso) | START abl_llamafile_off_base  (strata-bench) |
+2026-10-25 06:45:32 | 2026-10-25 06:46:31 | abl_llamafile_off_base  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.105
+2026-10-25 06:47:01 | (in corso) | START abl_llamafile_off_ywrong_T2  (strata-bench) |
+2026-10-25 06:47:01 | 2026-10-25 06:48:18 | abl_llamafile_off_ywrong_T2  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.14
+2026-10-25 06:49:12 CET START agent_v12_tokenize (llama-tokenize vocab-only, single-thread, 23 prompt)
+2026-10-25 06:49:19 CET END agent_v12_tokenize
+2026-10-25 06:52:28 | (in corso) | START agent_v12_build llama_procs=0 (strata-bench) |
+2026-10-25 06:52:28 | 2026-10-25 06:52:30 | agent_v12_build llama_procs=0 (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.07
+2026-10-25 06:53:00 | (in corso) | START agent_v12_pilot_alloc131k llama_procs=0 (strata-bench) |
+2026-10-25 06:53:00 | 2026-10-25 06:53:11 | agent_v12_pilot_alloc131k llama_procs=0 (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.085
+2026-10-25 06:54:00 | (in corso) | START agent_v12_pilot_tf49k llama_procs=0 (strata-bench) |
+2026-10-25 06:54:00 | 2026-10-25 07:00:26 | agent_v12_pilot_tf49k llama_procs=0 (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.15
+2026-10-25 06:05:26 | 2026-10-25 06:23:11 | check_v12_tf_d7 (strata-bench, 1 processo llama) | coppia completata a mano (il watcher era partito dopo lo START); cpu max 0.195, 0 intervalli >=0.5
+2026-10-25 07:04:58 | (in corso) | START holdout_lookup_v12_n7  (strata-bench) |
+2026-10-25 07:04:58 | 2026-10-25 07:11:27 | holdout_lookup_v12_n7  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.2
+2026-10-25 07:11:57 | (in corso) | START holdout_lookup_v12_n12  (strata-bench) |
+2026-10-25 07:11:57 | 2026-10-25 07:18:02 | holdout_lookup_v12_n12  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.165
+2026-10-25 07:18:33 | (in corso) | START holdout_lookup_v12_n16  (strata-bench) |
+2026-10-25 07:18:33 | 2026-10-25 07:29:34 | holdout_lookup_v12_n16  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 2 0.944
+2026-10-25 07:32:06 | 2026-10-25 07:32:18 | nice -n 19 prepare_agent_v12_trunc.py (llama-tokenize vocab-only, troncamento agent_v12 ctx 49152) (strata-bench) |
+2026-10-25 07:32:55 | 2026-10-25 07:33:23 | nice -n 19 prepare_agent_v12_trunc.py retry (llama-tokenize vocab-only, troncamento agent_v12 ctx 49152) (strata-bench) |
+2026-10-25 07:34:05 | (in corso) | START agent_v12_build_nollamafile  (strata-bench) |
+2026-10-25 07:34:05 | 2026-10-25 07:34:08 | agent_v12_build_nollamafile  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.085
+2026-10-25 07:34:38 | (in corso) | START agent_v12_tf_d7  (strata-bench) |
+2026-10-25 07:34:38 | 2026-10-25 08:48:50 | agent_v12_tf_d7  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 9 1.097
+2026-10-25 08:49:20 | (in corso) | START agent_v12_live_mtp_k3  (strata-bench) |

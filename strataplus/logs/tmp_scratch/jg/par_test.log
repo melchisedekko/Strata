@@ -1,0 +1,61 @@
+code     P1      {}                           rounds   752/  752 same   752 ok
+code     P1      {'conf_stop': True}          rounds   843/  843 same   843 ok
+code     P1      {'skip': False}              rounds   748/  748 same   748 ok
+code     P1      {'srcs': ('lk', 'pl')}       rounds   757/  757 same   757 ok
+code     P1      {'srcs': ()}                 rounds   754/  754 same   754 ok
+code     P2      {}                           rounds   674/  674 same   674 ok
+code     P2      {'conf_stop': True}          rounds   827/  827 same   827 ok
+code     P2      {'skip': False}              rounds   663/  663 same   663 ok
+code     P2      {'srcs': ('lk', 'pl')}       rounds   671/  671 same   671 ok
+code     P2      {'srcs': ()}                 rounds   673/  673 same   673 ok
+code     B-flat  {}                           rounds   632/  632 same   632 ok
+code     B-flat  {'conf_stop': True}          rounds   789/  789 same   789 ok
+code     B-flat  {'skip': False}              rounds   634/  634 same   634 ok
+code     B-flat  {'srcs': ('lk', 'pl')}       rounds   631/  631 same   631 ok
+code     B-flat  {'srcs': ()}                 rounds   652/  652 same   652 ok
+chat     P1      {}                           rounds   997/  997 same   997 ok
+chat     P1      {'conf_stop': True}          rounds  1238/ 1238 same  1238 ok
+chat     P1      {'skip': False}              rounds   993/  993 same   993 ok
+chat     P1      {'srcs': ('lk', 'pl')}       rounds   999/  999 same   999 ok
+chat     P1      {'srcs': ()}                 rounds   993/  993 same   993 ok
+chat     P2      {}                           rounds   974/  974 same   974 ok
+chat     P2      {'conf_stop': True}          rounds  1231/ 1231 same  1231 ok
+chat     P2      {'skip': False}              rounds   967/  967 same   967 ok
+chat     P2      {'srcs': ('lk', 'pl')}       rounds   975/  975 same   975 ok
+chat     P2      {'srcs': ()}                 rounds   967/  967 same   967 ok
+chat     B-flat  {}                           rounds   895/  895 same   895 ok
+chat     B-flat  {'conf_stop': True}          rounds  1166/ 1166 same  1166 ok
+chat     B-flat  {'skip': False}              rounds   885/  885 same   885 ok
+chat     B-flat  {'srcs': ('lk', 'pl')}       rounds   894/  894 same   894 ok
+chat     B-flat  {'srcs': ()}                 rounds   882/  882 same   882 ok
+edit     P1      {}                           rounds  1164/ 1164 same  1164 ok
+edit     P1      {'conf_stop': True}          rounds  1083/ 1083 same  1083 ok
+edit     P1      {'skip': False}              rounds  1054/ 1054 same  1054 ok
+edit     P1      {'srcs': ('lk', 'pl')}       rounds  1243/ 1243 same  1243 ok
+edit     P1      {'srcs': ()}                 rounds  1307/ 1307 same  1307 ok
+edit     P2      {}                           rounds   934/  934 same   934 ok
+edit     P2      {'conf_stop': True}          rounds   954/  954 same   954 ok
+edit     P2      {'skip': False}              rounds   938/  938 same   938 ok
+edit     P2      {'srcs': ('lk', 'pl')}       rounds   955/  955 same   955 ok
+edit     P2      {'srcs': ()}                 rounds  1188/ 1188 same  1188 ok
+edit     B-flat  {}                           rounds   853/  853 same   853 ok
+edit     B-flat  {'conf_stop': True}          rounds   918/  918 same   918 ok
+edit     B-flat  {'skip': False}              rounds   855/  855 same   855 ok
+edit     B-flat  {'srcs': ('lk', 'pl')}       rounds   858/  858 same   858 ok
+edit     B-flat  {'srcs': ()}                 rounds  1071/ 1071 same  1071 ok
+session  P1      {}                           rounds   582/  582 same   582 ok
+session  P1      {'conf_stop': True}          rounds   612/  612 same   612 ok
+session  P1      {'skip': False}              rounds   585/  585 same   585 ok
+session  P1      {'srcs': ('lk', 'pl')}       rounds   560/  560 same   560 ok
+session  P1      {'srcs': ()}                 rounds   590/  590 same   590 ok
+session  P2      {}                           rounds   526/  526 same   526 ok
+session  P2      {'conf_stop': True}          rounds   574/  574 same   574 ok
+session  P2      {'skip': False}              rounds   532/  532 same   532 ok
+session  P2      {'srcs': ('lk', 'pl')}       rounds   496/  496 same   496 ok
+session  P2      {'srcs': ()}                 rounds   545/  545 same   545 ok
+session  B-flat  {}                           rounds   461/  461 same   461 ok
+session  B-flat  {'conf_stop': True}          rounds   561/  561 same   561 ok
+session  B-flat  {'skip': False}              rounds   469/  469 same   469 ok
+session  B-flat  {'srcs': ('lk', 'pl')}       rounds   437/  437 same   437 ok
+session  B-flat  {'srcs': ()}                 rounds   482/  482 same   482 ok
+PASS

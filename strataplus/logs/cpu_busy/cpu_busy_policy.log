@@ -1,0 +1,47 @@
+# Strata Policy - finestre di uso CPU sul box (orari CET, UTC+1). Formato: inizio | fine | comando | nota
+# Retroattive (prima della richiesta di log, 04:43 CET):
+2026-10-25 04:39:47 | 2026-10-25 04:39:51 | clang++-17 -fsyntax-only generate.cpp (nice 19) | prova manuale HIP, ~3.6 s
+2026-10-25 04:40:41 | 2026-10-25 04:42:33 | apt-get install libhipblas-dev librocblas-dev (nice 19) | da /var/log/apt/history.log; per lo piu' download
+2026-10-25 04:42:37 | 2026-10-25 04:43:18 | cmake configure HIP in /tmp/jg/p6/bld (nice 19) | interrotto, nessuna build; dir rimossa
+2026-10-25 04:44:20 | 2026-10-25 04:44:24 | hip_clang: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:24 | 2026-10-25 04:44:28 | hip_gcc: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:28 | 2026-10-25 04:44:31 | cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:31 | 2026-10-25 04:44:35 | base_hip_clang: check_hip.sh patchwork generate_2962494.cpp (nice 19) | rc=0
+2026-10-25 04:44:51 | 2026-10-25 04:44:54 | neg_hip_clang: check_hip.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]
+2026-10-25 04:44:54 | 2026-10-25 04:44:58 | neg_cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]
+2026-10-25 04:45:06 | 2026-10-25 04:45:10 | neg_hip_clang: check_hip.sh patchwork (nice 19) | rc=1
+2026-10-25 04:45:10 | 2026-10-25 04:45:13 | neg_cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=1
+2026-10-25 04:45:21 | 2026-10-25 04:45:23 | git diff/archive/apply --check P6 su 7dd5cf18 (leggero, nessuna compilazione) | ok
+2026-10-25 04:45:52 | 2026-10-25 04:45:53 | git diff/archive/apply --check P6 (e467f6e) su 7dd5cf18 (leggero) | ok
+2026-10-25 04:50:03 | 2026-10-25 04:50:03 | nice -n 19 python3 replay/holdout_v11_fulldraft.py (replay single-thread, full-draft post-hoc) | rc=127 (non partito: /usr/bin/time assente, 0 CPU)
+2026-10-25 04:50:07 | 2026-10-25 04:50:29 | nice -n 19 python3 replay/holdout_v11_fulldraft.py (replay single-thread, full-draft post-hoc) | rc=0
+2026-10-25 04:55:40 | 2026-10-25 04:56:18 | nice -n 19 python3 replay/holdout_v11_costvariants.py (replay single-thread, varianti costo draft A, post-hoc) | rc=0
+2026-10-25 04:59:21 | 2026-10-25 04:59:24 | nice -n 19 python3 replay/holdout_v11_speccost_vs_default.py (replay single-thread, SPEC_COST vs default min_p 0.5, post-hoc) | rc=0
+2026-10-25 06:44:31 | 2026-10-25 06:44:31 | nice -n 19 python3 replay/run_check_v12_wrapper.py (check_v12 confermativo, script congelato via wrapper, single-thread) | rc=3
+2026-10-25 06:48:19 | 2026-10-25 06:48:25 | nice -n 19 python3 replay/ceiling_third_source.py results/v2/ceiling_third_source (studio tetto terza fonte, offline, single-thread) | rc=0
+2026-10-25 06:48:40 | 2026-10-25 06:48:44 | nice -n 19 python3 /tmp/dbg_ceiling.py (debug sorgenti terza fonte, holdout code) | rc=0
+2026-10-25 06:51:56 | 2026-10-25 06:51:58 | nice -n 19 python3 replay/run_check_v12_wrapper_v2.py results/v2/check_v12_speccost_v2 (check_v12 v2, script congelato via wrapper v2, single-thread) | rc=0
+2026-10-25 06:53:28 | 2026-10-25 06:53:31 | nice -n 19 python3 replay/ceiling_long_window.py results/v2/ceiling_long_window (oracolo finestra lunga, solo AL, single-thread) | rc=0
+2026-10-25 06:56:39 | 2026-10-25 06:56:40 | nice -n 19 python3 replay/ceiling_installed_cfg.py results/v2/ceiling_installed_cfg (oracolo vs config installata, solo AL, single-thread) | rc=0
+2026-10-25 07:01:16 | 2026-10-25 07:01:22 | nice -n 19 python3 replay/lookup_rule_al.py results/v2/lookup_rule_al (regola min(match,16) vs oracolo + rho* parametrico, single-thread) | rc=0
+2026-10-25 07:03:28 | 2026-10-25 07:03:41 | nice -n 19 python3 replay/lookup_rule_al_addendum.py results/v2/lookup_rule_al_addendum (addendum C+D: colonna a', pareggi parametrici, single-thread) | rc=0
+2026-10-25 07:07:13 | 2026-10-25 07:07:13 | nice -n 19 python3 replay/lookup_only_replay.py results/v2/lookup_only_replay (replay lookup-only pre-registrato, dmax 7/12/16, single-thread) | rc=0
+2026-10-25 07:57:33 | 2026-10-25 07:57:35 | nice -n 19 python3 replay/lookup_prefix_replay.py results/v2/lookup_prefix_replay (replay lookup-only su prefisso comune vs live Bench holdout_lookup_v12, single-thread) | rc=0
+2026-10-25 07:58:17 | 2026-10-25 07:58:17 | nice -n 19 python3 replay/lookup_prefix_diag.py results/v2/lookup_prefix_replay (diagnosi edit, single-thread) | rc=0
+2026-10-25 08:04:03 | 2026-10-25 08:04:06 | nice -n 19 python3 replay/breakeven_dprime.py results/v2/breakeven_dprime (pareggio parametrico d' MTP3+lookup12, single-thread) | rc=0
+2026-10-25 08:07:50 | 2026-10-25 08:07:57 | nice -n 19 python3 replay/breakeven_dsecond.py results/v2/breakeven_dsecond (pareggio parametrico d'' MTP3+lookup11 T=12, single-thread) | rc=0
+2026-10-25 08:10:15 | 2026-10-25 08:10:15 | nice -n 19 python3 -c (lettura soglie H-LW da breakeven_dsecond.json, trivial) | rc=0
+2026-10-25 08:17:58 | 2026-10-25 08:18:34 | nice -n 19 tmp/pt12_syntax.sh (sintassi P-T12: HIP 5.7.1 clang++-17 host+device gfx1100, CUDA host g++; sequenziale, single-thread) | rc=0
+2026-10-25 08:18:46 | 2026-10-25 08:18:51 | nice -n 19 check_hip/check_cuda mtp.cpp native_expert.cpp (+ggml include) e prova clang -x cuda shared_expert.cu (sintassi P-T12, single-thread) | rc=0
+2026-10-25 08:20:16 | 2026-10-25 08:20:24 | nice -n 19 tmp/pt12_syntax_cuda.sh (sintassi P-T12 .cu CUDA 12.9 header, clang++-17 -x cuda sm_86 host-only+device-only, + controllo negativo; single-thread) | rc=0
+2026-10-25 08:20:31 | 2026-10-25 08:20:32 | nice -n 19 clang++-17 -x cuda host-only native_mmvq.cu a 7dd5cf1 (controllo baseline errori __ldcs; single-thread) | rc=0
+2026-10-25 08:20:53 | 2026-10-25 08:20:56 | nice -n 19 clang++-17 -x hip shared_expert.cu native_bf16.cu (ricontrollo dopo marker su righe messaggio; single-thread) | rc=0
+2026-10-25 08:21:38 | 2026-10-25 08:21:49 | nice -n 19 check_hip/check_cuda mtp.cpp generate.cpp con P_T12_mtp_optional applicato temporaneamente + git apply --check (single-thread) | rc=0
+2026-10-25 08:18:55 | 2026-10-25 08:19:13 | [REGISTRAZIONE A POSTERIORI, scritta 08:24:40] download+estrazione non annunciati di wheel PyPI nvidia_cuda_cccl_cu12 12.9.27 e nvidia curand (header) in /workspace/rocm-hdr/cudawhl/{dl,x}, finta cuda-root header-only in /workspace/rocm-hdr/cudaroot (version.json dichiara 12.1.0); solo per sintassi clang -x cuda P-T12; nessun pip install di sistema, nessun apt, nessuna modifica fuori da /workspace/rocm-hdr; I/O leggero, nessun job CPU pesante | rc=0
+2026-10-25 08:18:55 | 2026-10-25 08:19:13 | [integrazione alla riga precedente, scritta 08:24:45] file esatti: dl/nvidia_cuda_cccl_cu12-12.9.27 (3152243 B, 08:18:55) e dl/nvidia_curand_cu12-10.3.10.19 (68295626 B, 08:19:13); i wheel nvcc 12.9.86 e cuda_runtime 12.9.79 in cudawhl/ risalgono alle 04:40 (controllo sintassi P6) | rc=0
+2026-10-25 08:38:22 | 2026-10-25 08:39:01 | syntax check P-T12 v2, nice 19, 1 thread (nice -n 19 taskset -c 0 tmp/pt12v2_syntax.sh: HIP 5.7.1 clang++-17 host+device gfx1100, CUDA host g++; sequenziale) | rc=0
+2026-10-25 08:39:24 | 2026-10-25 08:39:30 | syntax check P-T12 v2, nice 19, 1 thread (ricontrollo mtp.cpp/native_expert.cpp HIP+CUDA host con -I ggml/include gia' presente in strata-bench/_deps; baseline iq_kernels.cu di b557725 HIP device; taskset -c 0) | rc=0
+2026-10-25 08:39:35 | 2026-10-25 08:39:45 | syntax check P-T12 v2, nice 19, 1 thread (nice -n 19 taskset -c 0 tmp/pt12v2_syntax_cuda.sh: clang++-17 -x cuda sm_86 host-only + device-only, header cudaroot/cudawhl gia' presenti; sequenziale) | rc=0
+2026-10-25 08:39:53 | 2026-10-25 08:39:55 | syntax check P-T12 v2, nice 19, 1 thread (baseline iq_kernels.cu b557725 vs v2, clang++-17 -x cuda sm_86 host-only; taskset -c 0) | rc=0
+2026-10-25 08:51:10 | 2026-10-25 08:51:14 | syntax check P-T12 v3, nice 19, 1 thread (nice -n 19 taskset -c 0 clang++-17 fused_gr.cu: -x hip gfx1100 device; -x cuda sm_86 host-only + device-only, header cudaroot gia' presenti; sequenziale) | rc=0
+2026-10-25 08:51:14 | 2026-10-25 08:51:15 | syntax check P-T12 v3, nice 19, 1 thread (nice -n 19 taskset -c 0 check_hip.sh + check_cuda.sh s2_expert_grouped_parity.cpp, caso 4b max_group=8, NON eseguito; sequenziale) | rc=0

@@ -1,0 +1,5 @@
+select A {'min_match': 8, 'factor': None, 'tmax': 8} ['-0.0063', '0.1192'] 20s
+eval B {'band': {'vs_baselines': (True, 0, 135), 'vs_gate': (False, 5, 90), 'vs_all': (False, 5, 225)}, 'all': {'vs_baselines': (True, 0, 162), 'vs_gate': (False, 5, 108), 'vs_all': (False, 5, 270)}}
+select B {'min_match': 12, 'factor': None, 'tmax': 8} ['-0.0111', '0.0895'] 39s
+eval A {'band': {'vs_baselines': (True, 0, 135), 'vs_gate': (False, 3, 90), 'vs_all': (False, 3, 225)}, 'all': {'vs_baselines': (True, 0, 162), 'vs_gate': (False, 5, 108), 'vs_all': (False, 5, 270)}}
+done 42s

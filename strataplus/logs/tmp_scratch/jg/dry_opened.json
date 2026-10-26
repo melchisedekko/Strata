@@ -1,0 +1,9 @@
+{
+ "opened_at": "2026-10-25 04:25:36 CET (UTC+1)",
+ "files_sha256_at_open": {
+  "tf_d7_p30.jsonl": "87efe507324b2a79b89c21a6736f1478094bf53385d9471694dc71b291d9abfa"
+ },
+ "frozen_params_v3_sha256": "37bf1996217dd4ee697e753b9ef31082c49a9904f0fe393d0c5d4968cf698e9c",
+ "script": "replay/holdout_v11.py",
+ "script_sha256": "59a34880ea1c9a812672adf965c5d0c2f969be2de05441b738bc9e3fdd8e400f"
+}

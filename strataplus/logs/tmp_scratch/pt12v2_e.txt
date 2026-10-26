@@ -1,0 +1,43 @@
+/tmp/pt12v2_iq_base.cu:2477:16: error: 'alignas' attribute cannot be applied to types
+ 2477 |     __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_XB];
+      |                ^
+/tmp/pt12v2_iq_base.cu:2664:16: error: 'alignas' attribute cannot be applied to types
+ 2664 |     __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_HB];
+      |                ^
+/tmp/pt12v2_iq_base.cu:4007:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4007 |     cudaStreamIsCapturing(s, &cs);
+      |     ^~~~~~~~~~~~~~~~~~~~~ ~~~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:119:31: note: expanded from macro 'cudaStreamIsCapturing'
+  119 | #define cudaStreamIsCapturing hipStreamIsCapturing
+      |                               ^~~~~~~~~~~~~~~~~~~~
+/tmp/pt12v2_iq_base.cu:4009:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4009 |     cudaGetDevice(&dev);
+      |     ^~~~~~~~~~~~~ ~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:54:23: note: expanded from macro 'cudaGetDevice'
+   54 | #define cudaGetDevice hipGetDevice
+      |                       ^~~~~~~~~~~~
+/tmp/pt12v2_iq_base.cu:4315:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4315 |     cudaGetDevice(&dev);
+      |     ^~~~~~~~~~~~~ ~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:54:23: note: expanded from macro 'cudaGetDevice'
+   54 | #define cudaGetDevice hipGetDevice
+      |                       ^~~~~~~~~~~~
+/tmp/pt12v2_iq_base.cu:4987:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4987 |         cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, dev);
+      |         ^~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:24:32: note: expanded from macro 'cudaDeviceGetAttribute'
+   24 | #define cudaDeviceGetAttribute hipDeviceGetAttribute
+      |                                ^~~~~~~~~~~~~~~~~~~~~
+/tmp/pt12v2_iq_base.cu:4988:9: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 4988 |         cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, dev);
+      |         ^~~~~~~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:24:32: note: expanded from macro 'cudaDeviceGetAttribute'
+   24 | #define cudaDeviceGetAttribute hipDeviceGetAttribute
+      |                                ^~~~~~~~~~~~~~~~~~~~~
+/tmp/pt12v2_iq_base.cu:5261:5: warning: ignoring return value of function declared with 'nodiscard' attribute [-Wunused-result]
+ 5261 |     cudaGetDevice(&dev_d);
+      |     ^~~~~~~~~~~~~ ~~~~~~
+/workspace/strata-policy/pt12_worktree/include/strata/hip_compat/cuda_runtime.h:54:23: note: expanded from macro 'cudaGetDevice'
+   54 | #define cudaGetDevice hipGetDevice
+      |                       ^~~~~~~~~~~~
+6 warnings and 2 errors generated when compiling for host.

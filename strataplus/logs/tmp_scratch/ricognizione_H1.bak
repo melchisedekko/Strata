@@ -1,0 +1,187 @@
+# Strata+ — Ricognizione H1: l'arbitro `DraftPolicy::choose` (MTP vs prompt lookup)
+
+Repo: [Niko1221/Strata @ 7dd5cf18](https://github.com/Niko1221/Strata/tree/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5). Il lavoro è solo locale: niente push, niente PR, nessun messaggio esterno.
+Piano di riferimento: `/workspace/strata-plus/piano.md` (v2). Formato dei log: `/workspace/strata-plus/log_format.md`.
+
+> **Natura dei numeri.** Nessun numero qui è una misura di tok/s sul motore reale.
+> - **SINTETICO:** generatore del replay, seed fissi.
+> - **PROXY CPU:** tracce teacher-forced di Strata Bench (`traces/raw/tf_d7.jsonl`) su un modello denso proxy. I candidati MTP sono reali; lookup e pool vengono ricalcolati.
+> - **E1:** testi reali, solo lookup, nessun MTP.
+>
+> I tok/s sono sempre **stimati** con i profili di costo simbolici: P1/P2 sono stime ricavate dal codice, B-flat/B-lin sono limiti. P4, il costo misurato su CPU, non è ancora disponibile.
+
+## 1. Come decide oggi il motore (riferimenti al codice @ 7dd5cf18)
+
+Base dei link: `https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/`
+
+| Cosa | Dove |
+|---|---|
+| Forma dei costi `kShape` (prior per T=1..8) | [src/spec/draft_policy.cpp#L13](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L13) |
+| Prior di lookup `kPriorQ {0.75,0.88,0.93,0.96}`, `kPriorN=4`, `lookup_rate(match)` | [draft_policy.cpp#L20-L21](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L20-L21), [#L38](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L38) |
+| `mtp_tokens(t)`: prior 1+0.7(t−1) | [draft_policy.cpp#L118](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L118) |
+| `choose(t_mtp, lookup_k, match)`: lookup geometrico con q per bucket di match; confronta e/cost(k+1) con mtp_tokens(T)/cost(T)·(1+margin); esplorazione stale/probe | [draft_policy.cpp#L123-L152](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L123-L152) |
+| `observe`: aggiorna solo il braccio giocato, più il costo wall-clock | [draft_policy.cpp#L154-L173](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L154-L173) |
+| `draft_rate` / `observe_probs` (calibrazione p→accettazione) | [draft_policy.cpp#L184-L197](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L184-L197) |
+| `keep_draft`: regola di catena cost-aware, attiva solo con `STRATA_SPEC_COST=1` | [draft_policy.cpp#L199-L224](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L199-L224) |
+| Costo di verifica: miss 1.75×/2.4×/3.05× per T=2/3/4 ("measured on decode traces"), base del profilo P1 | [include/strata/core/verify.hpp#L10-L11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/verify.hpp#L10-L11) |
+| Serve loop: `SuffixDrafter(max(1,suffix_draft),64,…)`, `DraftPolicy`, `STRATA_SPEC_COST`, `set_robust`, `set_chain_rule` | [src/program/generate.cpp#L11177-L11184](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11177-L11184) |
+| Chiamate a `choose` | [generate.cpp#L14471](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14471), [#L14900](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14900), [#L16560](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16560) |
+| **Gate di accordo**: il lookup viene considerato solo se `sbuf[0]==drafts[0]` | [generate.cpp#L14899](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14899) (serve), [#L16559](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16559) (CLI) |
+| Catena del lookup | [generate.cpp#L14906-L14917](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14906-L14917) |
+| `mtp.draft` | [generate.cpp#L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15169) |
+| `observe_probs` / `observe` / `observe_chain` | [generate.cpp#L15190-L15195](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15190-L15195), CLI [#L16713-L16715](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16713-L16715) |
+| CLI: stessa costruzione, più il seeding `STRATA_SPEC_COST_TABLE` | [generate.cpp#L16428-L16450](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16428-L16450) (seed [#L16432-L16442](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16432-L16442)) |
+
+## 2. Debolezze individuate
+
+1. **Gate di accordo.** Il lookup entra solo se la sua prima proposta coincide con il primo draft MTP. Proprio dove l'MTP sbaglia e il lookup avrebbe ragione, il lookup non viene mai giocato. Inoltre la scelta arriva *dopo* aver pagato il draft MTP.
+2. **Selection bias.** `observe` aggiorna solo il braccio scelto. Le stime del braccio perdente restano ferme ai prior, oppure vengono aggiornate solo dove il gate le lascia passare.
+3. **T dell'MTP fisso senza `STRATA_SPEC_COST`.** Di default T è quello di `--spec`. La regola di catena cost-aware (`keep_draft`) è un braccio A/B spento.
+4. **Costi wall-clock appresi online.** Sono rumorosi e non stazionari (carico, cache), quindi confondono confronto e riproducibilità. Da qui P2: un costo deterministico seminato da tabella.
+5. **Lookup su una richiesta sola.** Non c'è memoria fra richieste (H2) e il gate sul match è rozzo, con 4 bucket.
+
+## 3. Cosa è stato costruito (tutto locale)
+
+- **Simulatore di replay** `/workspace/strata-policy/replay/` (README, `SCHEMA.md`). Fa il link al codice **reale** `DraftPolicy`/`SuffixDrafter` via ctypes (`native/libstrata_spec_capi.so` a 7dd5cf18 non patchato; `native/libstrata_spec_capi_p3.so` con i sorgenti patchati). Il port Python serve solo da controllo.
+  - Metriche M1–M5 del piano.
+  - Oracoli O_round, O_DP, O_depth.
+  - IC95 con bootstrap a cluster (sessione o richiesta).
+  - Griglia α × ρ_mtp × ρ_lu: α∈[0,1], ρ_mtp∈{0,…,0.3} con 0.059 incluso, ρ_lu∈{0, 0.001≈20 µs/token, 0.01}.
+  - Comandi: `run_v2.py` e `report_v2.py`.
+- **Specifica dei log** `/workspace/strata-plus/log_format.md` (strataplus.v1, con sezione divergenze).
+  - D13: riga `request_end`.
+  - D14: note su Bench: G2 probs dal sampler, G3 max_match 32 vs 64, G7 ms_measured.
+- **Patch** `/workspace/strata-policy/patches/` (README con ordine di applicazione ed env var). `ALL_P1-P5_cumulative.diff` passa `git apply --check` su 7dd5cf18 pulito.
+
+| Patch | Contenuto | Stato |
+|---|---|---|
+| P2 | `set_frozen_costs` (`STRATA_SPEC_COST_FROZEN=1`) | compilato e testato |
+| P3 | `observe_counterfactual` (`STRATA_SPEC_CF=1`) | compilato e testato. Effetto ≈ nullo nel replay (±0.5% sintetico) |
+| P4 | `PoolSource` via `extra_draft_sources()` (`STRATA_LOOKUP_POOL=<cap>[,gate]`) | compilato e testato |
+| P1 | trace JSONL strataplus.v1 (`STRATA_PLUS_TRACE`) | bozza in generate.cpp, **non compilata** (header CUDA) |
+| P5 | `JointGate`: gate unico per sorgente + profondità MTP (candidato principale H1+H4) e variante con entropy stop alla AdaEDL | compilato, `joint_gate_test` PASS. Parità C++↔Python PASS (`tests/test_joint_gate_parity.py`). Wiring nel motore = solo design (`docs/strataplus_joint_gate.md`, `STRATA_SPEC_JOINT=1`) |
+
+**Come funziona il JointGate:**
+- obiettivo di Dinkelbach E[a+1] − λ·C;
+- costo online con RLS e prior ottimistico;
+- hazard per bucket di p e per bucket di match;
+- aggiornamenti controfattuali censurati;
+- salto dell'MTP quando il lookup domina.
+
+**Correzione dichiarata (sviluppo guardando i dati sintetici).**
+- *Sintomo:* nel run sintetico code|P1 il gate sceglieva "none" nel 69% dei round, pur draftando, e perdeva −5.4% contro STRATA_SPEC_COST=1.
+- *Causa:* un bug nel modello di costo. La clamp monotona in T veniva applicata anche alle righe già misurate, così il costo di T=2 restava incollato al prior di T=1 non ancora appreso (2.36 invece di 1.81 step) e T=2 non veniva più provato.
+- *Correzione:* clamp solo sulle righe con meno di 3 campioni, interpolazione ottimistica per le righe poco provate, costi per token ≥ 0. Applicata in Python e in C++ con la parità ripristinata.
+- *Effetto:* code|P1 passa da −5.4% a −0.7%.
+- *Trasparenza:* la diagnosi è stata fatta sul seed riportato. I risultati precedenti sono in `results/v2/*_pre_costfix/`.
+
+## 4. Risultati
+
+### E1 (testi reali, solo lookup) — `/workspace/strata-plus/e1/policy/results/E1_results.md`
+- Pool persistente con gate di match 12 su session_full: P1 **+3.7% [+2.1, +5.5]**, B-lin **−1.7%**.
+- Senza gate il pool di dominio alza l'AL (+20.7% sul codice) ma, con costi ripidi, perde nettamente in tok/s stimati (−29.5% in P1). Il pool va quindi messo dietro un gate.
+- Memoria: 16 MiB ≈ 246k token.
+
+### Replay v2, SINTETICO (48 richieste per dominio) — `replay/results/v2/synthetic/report.md`
+- **H1 no-go non scatta.** Il gap della policy attuale da O_round è 21–41%.
+- **H1 GO** per gate_v2 vs DraftPolicy di default:
+  - P1: code +28.6%, chat +56.7%, edit +15.1%;
+  - P2: +20.3%, +31.7%, +16.5%.
+  - Tutti gli IC95 sono > 0.
+- **H4(b) GO** vs MTP fisso k=3: +22% … +57%.
+- **H4(a) no-go** vs `STRATA_SPEC_COST=1`:
+  - P1: code −0.7% [−1.4, −0.0], chat +0.9%, edit +4.3%;
+  - P2: +2.6%, −1.5%, +8.1%.
+  - Il gap di STRATA_SPEC_COST=1 da O_depth è 4–13%, quindi l'H4 no-go non scatta: c'è ancora margine.
+- **Robustezza:**
+  - vs strata_current e vs k3: soddisfatta.
+  - vs strata_cost: fallisce in code|P1, code|B-lin, chat|P2 (regressioni ≤ 1.5%).
+- **H2 (pool, gate_v2_pool vs gate_v2):**
+  - session P2 +6.4% [+4.6, +8.2], P1 +0.7% (n.s.);
+  - code P2 +2.3%;
+  - piccole regressioni in chat (−0.2/−0.5%) ed edit P1 (−1.0%).
+- **Variante entropy stop (gate_v2_conf):** non migliora il candidato principale. Su chat|P2 perde −8.8% vs strata_cost.
+
+### Replay v2, PROXY CPU teacher-forced (30 richieste: code/chat/edit, nessuna sessione) — `replay/results/v2/tf/report.md`
+- **H1 GO** vs default:
+  - P1: code +4.8% [+1.4, +8.3], chat +31.1%, edit +5.6%;
+  - P2: +9.5%, +12.3%, +8.9%.
+- **H4(b) GO** vs k3.
+- **H4(a)** vs STRATA_SPEC_COST=1:
+  - P1: code +3.2% [+0.7, +5.5], chat −0.2% (n.s.), edit +2.4% (n.s.);
+  - P2: +8.8%, −0.3% (n.s.), +8.2%.
+  - Formalmente no-go (non tutti i domini sono > 0), ma nessuna cella ha IC95 interamente < 0.
+- In B-flat il guadagno è ampio: code +36%, chat +5.6%.
+- **H2 non valutabile:** non ci sono sessioni.
+- Con 30 richieste gli IC sono larghi.
+
+### Varianti richieste (famiglia v1 nel walk v2) — `replay/results/v2/{synthetic,tf}/variants.md`
+Stessi dati, profili e bootstrap del replay v2 (adattatore `strata_sim/v1adapt.py`, runner `run_variants.py`). Δ = tok/s **stimati** vs `strata_cost` / vs `gate_v2`; sintetico e proxy, non misure.
+- **Hedge full-feedback** (pesi esponenziali su {none, MTP@k, lookup@k}, feedback controfattuale censurato):
+  - stocastica: peggiore ovunque in P1/P2 (sintetico −4…−24% vs strata_cost, −11…−23% vs gate_v2);
+  - **deterministica** (follow-the-leader): meglio della stocastica di 0.5–6 punti ma resta sotto gate_v2 (−8…−22%);
+  - **contestuale** (chiavi per bucket di match/accordo e p₀): il miglior Hedge. Sintetico −3.5…−11% vs gate_v2, proxy code/edit P1 ≈ pari a strata_cost (+0.2/+1.0%), chat −8%.
+  - Unica area favorevole: B-flat (verifica piatta), dove però gate_v2 vince ancora di 7–18%.
+- **Stimatore contestuale con bonus di accordo** (`ctx_agree`, hazard per cella match×indice×dentro/fuori dal prefisso d'accordo, profondità congiunta):
+  - è competitivo con gate_v2 in chat (sintetico P2 +3.0%, B-flat +1.4%; proxy chat P1/P2 +0.9%) ed edit P1 proxy;
+  - ma ha un **blocco a freddo**: senza ottimismo sul costo resta su "none" quando il prior iniziale non premia l'MTP (code B-flat sintetico −67% vs gate_v2, proxy code P1 −26%, edit B-flat −80%). Non è robusto.
+  - **Bonus d'accordo** (ctx_agree vs ctx_noagree): da 0 a +3 punti (sintetico edit P1 +2.9, proxy edit B-lin +24 per lo stesso blocco a freddo evitato). Segnale utile, già incluso in gate_v2 (`agree` nei bucket di hazard).
+- **DraftPolicy attuale + full-feedback** (`v1_current_ff`, port Python): ±1–2% dal default, cioè il feedback controfattuale da solo non corregge l'arbitro (coerente con P3 ≈ nullo). Anche lo split per accordo (`v1_current_agree`) e la rimozione del gate `sbuf[0]==drafts[0]` (`v1_current_nogate`) restano entro ±2%.
+- **Stop su confidenza** (`gate_v2_conf`, AdaEDL su p top-1; `mtp_adaedl`): già nel report v2. Non migliora gate_v2 (chat|P2 −8.8% vs strata_cost).
+- **Deterministica nel senso P2** (costi congelati, `STRATA_SPEC_COST_FROZEN=1`): implementata e testata in C++ (patch P2). Nel replay i costi osservati vengono dal profilo simbolico, quindi tutte le policy sono deterministiche dato il trace. Fanno eccezione le Hedge stocastiche, che usano un seed fisso.
+- **Conclusione:** nessuna variante batte gate_v2 in modo robusto. Il candidato principale resta il gate congiunto fonte+profondità (P5).
+
+### Regione di vittoria (griglia α × ρ_mtp × ρ_lu)
+Griglia 7 α × 6 ρ_mtp × 3 ρ_lu = 126 celle per dominio. Celle con IC95 interamente > 0 (W) o < 0 (L) per gate_v2; tok/s **stimati**. Le mappe complete sono in `results/v2/{synthetic,tf}/report.md`, i dati in `grid.json`.
+
+| confronto | SINTETICO code | chat | edit | session | PROXY tf code | chat | edit |
+|---|---|---|---|---|---|---|---|
+| vs strata_current (default) | 126W/0L | 126W/0L | 126W/0L | 126W/0L | 107W/0L | 126W/0L | 112W/0L |
+| vs MTP fisso k3 | 126W/0L | 126W/0L | 126W/0L | 126W/0L | 114W/0L | 126W/0L | 119W/0L |
+| vs STRATA_SPEC_COST=1 | 75W/23L | **48W/60L** | 112W/4L | 100W/3L | 105W/0L | 33W/24L | 79W/1L |
+| vs STRATA_SPEC_COST=1 senza lookup | 75W/33L | 47W/60L | 108W/10L | 97W/9L | 99W/3L | 18W/26L | 88W/6L |
+| gate_v2_pool vs STRATA_SPEC_COST=1 | 80W/27L | 44W/65L | 112W/8L | 104W/14L | 91W/7L | 30W/35L | 64W/10L |
+| gate_v2_conf vs STRATA_SPEC_COST=1 | 43W/60L | 36W/78L | 119W/4L | 96W/18L | 86W/6L | 16W/71L | 39W/0L |
+
+Dove perde contro STRATA_SPEC_COST=1:
+- code: α ≥ 0.65 con ρ_mtp ≤ 0.2 (sintetico). Nel proxy non perde mai.
+- chat: α 0.2–0.8 a qualsiasi ρ_mtp (sintetico); α ≥ 0.5 nel proxy.
+- edit e session: solo celle sparse con α ≥ 0.8.
+
+
+**Lettura.**
+- Il candidato non perde mai contro la policy di default e k=3 in tutta la griglia. Vince in tutte le 126 celle nel sintetico e in 107–126 nel proxy; le restanti celle del proxy sono pari.
+- Contro `STRATA_SPEC_COST=1` vince dove la verifica è memory-bound (α basso, il caso tipico del decode MoE con offload) e dove il costo MTP è alto.
+- Con verifica ripida (α alto) il confronto è pari o negativo, soprattutto in **chat**. Lì il lookup rende poco e strata_cost è già vicino all'ottimo di profondità.
+- P1 viene da verify.hpp ed è ripido, quindi favorisce strata_cost. La decisione su H4(a) dipende dunque dal profilo vero, cioè da P4.
+
+## 5. Go/no-go (provvisorio, piano §8)
+- **H1:** GO in replay, sia sintetico sia proxy, contro il default. Va confermato su P4 e live.
+- **H4:**
+  - (b) GO.
+  - (a) non ancora (in griglia la chat sintetica perde in 60/126 celle): contro STRATA_SPEC_COST=1 il vantaggio è da 0 a +9% in code/edit e circa 0 in chat. La decisione dipende da α reale (P4).
+- **H2:** debole e solo con il pool dietro un gate. È positivo su sessioni lunghe in P2 e ≈0 o leggermente negativo altrove. Il gate a 12 è necessario.
+- **H5:** non riproducibile su proxy densi (Scout). Resta un limite dichiarato.
+- **Colibri (+13%):** è un'ipotesi della letteratura, non un'evidenza su Strata.
+
+## 6. Cosa serve da Strata Bench per il replay definitivo
+1. **`/workspace/strata-plus/traces/cost_p4_cpu.json`** con i costi misurati per (T, d, k). Il replay lo userà come P4 al posto della sensibilità; G7 ms_measured fornisce già la base.
+2. **Tracce strataplus.v1** (log_format.md) dal motore reale MoE, con `request_end` (D13), il campo `ent` opzionale (per l'entropy stop) e il campo `session` (per H2).
+3. Lookup con **max_match 64** come nel motore: il proxy usa 32 (G3). Il replay oggi ricalcola con 64.
+4. **M5, identità greedy:** nel proxy combo_k3 coincide con il baseline solo in 40/60 casi, il lookup in 19/30. Va chiarito, probabilmente nondeterminismo del proxy, prima di qualsiasi misura live.
+5. Le probabilità MTP dal sampler (top_k=10 + temp, G2) sono solo ordinali. Servono le probabilità greedy.
+
+Avvio: `cd /workspace/strata-policy/replay && nice -n 19 python3 run_v2.py --data tf:<trace.jsonl> --grid --procs 1 && python3 report_v2.py results/v2/<run>`.
+
+## 7. Stato di `log_format.md` e divergenze dal piano §6
+- File: `/workspace/strata-plus/log_format.md`, schema `strataplus.v1`, allineato al §6 **senza rimuovere né rinominare campi**.
+- Divergenze/aggiunte (sezione 4 del file), tutte retrocompatibili:
+  - D1 `data_kind` (live/teacher_forced/synthetic) obbligatorio; D2 `ref_tokens` (o `acc` per fonte, o D13) per l'accettazione controfattuale; D3 `dmax`; D4 semantica di `pos` fissata sul codice (`generate.cpp:15108-15109`);
+  - D5 `policy_dbg` facoltativo; D6 `cand.chain` per `--lookup-chain`; D7 `round.moe` (H5, solo Strata); D8 `ms_split`; D9 modalità di campionamento; D10 ordine di alimentazione del pool;
+  - D11 `cand.mtp.probs` = top-1 greedy e `cand.mtp.ent` facoltativo (stop su entropia); D12 formato di `cost_p4_cpu.json`; D13 riga `request_end` (output_ids, patch P1); D14 note sulle tracce proxy di Bench (G2 probs dal sampler, G3 max_match 32 vs 64, G7 ms_measured).
+- Minimo richiesto dal replay: D1, D2 (o `acc`, o D13), D3, D4.
+
+## 8. Verifica dei test (25/10/2026, ricompilati dal worktree patchato con zig c++)
+- C++: `suffix_drafter_test`, `draft_policy_test`, `controller_test`, `pool_source_test`, `joint_gate_test`, `spec_start_test` → tutti OK/PASS.
+- Parità JointGate C++↔Python (`replay/tests/test_joint_gate_parity.py`) → PASS; crosscheck DraftPolicy nativo vs port (`replay/crosscheck/crosscheck_native.py`) → 83 438 risposte, 0 discrepanze.
+- `ALL_P1-P5_cumulative.diff` → `git apply --check` OK su 7dd5cf18 pulito. `generate.cpp` (P1 e wiring P5) non compilabile qui (CUDA).

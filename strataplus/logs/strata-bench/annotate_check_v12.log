@@ -1,0 +1,30 @@
+{
+ "check_v12_live_combo": {
+  "requests": 60,
+  "greedy_equal_ref": 43,
+  "rounds": 1767,
+  "k_over_cap": 565,
+  "mtp_over_k": 0
+ },
+ "check_v12_live_lookup": {
+  "requests": 60,
+  "greedy_equal_ref": 44,
+  "rounds": 3531,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "check_v12_live_mtp_k3": {
+  "requests": 60,
+  "greedy_equal_ref": 41,
+  "rounds": 2273,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "check_v12_tf_d7": {
+  "requests": 60,
+  "greedy_equal_ref": 60,
+  "rounds": 7400,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ }
+}

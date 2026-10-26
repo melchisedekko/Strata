@@ -1,0 +1,47 @@
+               total        used        free      shared  buff/cache   available
+Mem:           16002        3211       10923          61        2258       12790
+Swap:              0           0           0
+2026-10-25 01:26:57 CEST START tf_d7
+2026-10-25 01:35:20 CEST END tf_d7 exit 0
+2026-10-25 01:35:20 CEST START base_r0
+2026-10-25 01:38:35 CEST END base_r0 exit 0
+2026-10-25 01:38:35 CEST START live_mtp_k3_r0
+2026-10-25 01:41:19 CEST END live_mtp_k3_r0 exit 0
+2026-10-25 01:41:19 CEST START live_lookup_r0
+2026-10-25 01:43:33 CEST END live_lookup_r0 exit 0
+2026-10-25 01:43:33 CEST START live_combo_k3_r0
+2026-10-25 01:46:03 CEST END live_combo_k3_r0 exit 0
+2026-10-25 01:46:03 CEST START live_combo_k3_r1
+2026-10-25 01:48:28 CEST END live_combo_k3_r1 exit 0
+2026-10-25 01:48:28 CEST START live_lookup_r1
+2026-10-25 01:50:40 CEST END live_lookup_r1 exit 0
+2026-10-25 01:50:40 CEST START live_mtp_k3_r1
+2026-10-25 01:53:22 CEST END live_mtp_k3_r1 exit 0
+2026-10-25 01:53:22 CEST START base_r1
+2026-10-25 01:58:16 CEST END base_r1 exit 0
+2026-10-25 01:58:16 CEST START base_r2
+2026-10-25 02:01:27 CEST END base_r2 exit 0
+2026-10-25 02:01:27 CEST START live_mtp_k3_r2
+2026-10-25 02:04:09 CEST END live_mtp_k3_r2 exit 0
+2026-10-25 02:04:09 CEST START live_lookup_r2
+2026-10-25 02:06:22 CEST END live_lookup_r2 exit 0
+2026-10-25 02:06:22 CEST START live_combo_k3_r2
+2026-10-25 02:08:45 CEST END live_combo_k3_r2 exit 0
+2026-10-25 02:08:45 CEST START live_mtp_k1_r0
+2026-10-25 02:11:23 CEST END live_mtp_k1_r0 exit 0
+2026-10-25 02:11:23 CEST START live_mtp_k2_r0
+2026-10-25 02:13:58 CEST END live_mtp_k2_r0 exit 0
+2026-10-25 02:13:58 CEST START live_mtp_k5_r0
+2026-10-25 02:16:53 CEST END live_mtp_k5_r0 exit 0
+2026-10-25 02:16:53 CEST START live_mtp_k7_r0
+2026-10-25 02:20:12 CEST END live_mtp_k7_r0 exit 0
+2026-10-25 02:20:19 CEST START p4_2b_q4km
+2026-10-25 02:22:36 CEST END p4_2b_q4km exit 0
+2026-10-25 02:22:36 CEST START p4_08b_q4km
+2026-10-25 02:23:39 CEST END p4_08b_q4km exit 0
+2026-10-25 02:23:39 CEST START p4_08b_q8
+2026-10-25 02:24:54 CEST END p4_08b_q8 exit 0
+2026-10-25 02:24:59 CEST START diag_yright
+2026-10-25 02:26:16 CEST END diag_yright exit 0
+2026-10-25 02:26:16 CEST START diag_ywrong
+2026-10-25 02:29:20 CEST END diag_ywrong exit 0

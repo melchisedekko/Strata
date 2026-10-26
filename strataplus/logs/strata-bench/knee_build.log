@@ -1,0 +1,2 @@
+/workspace/llama.cpp/build/CMakeCache.txt:GGML_LLAMAFILE:BOOL=ON
+/workspace/llama.cpp/build-nollamafile/CMakeCache.txt:GGML_LLAMAFILE:BOOL=OFF

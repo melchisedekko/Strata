@@ -1,0 +1,1302 @@
+<|im_start|>system
+# Tools
+
+You have access to the following functions:
+
+<tools>
+{"function": {"description": "Read a file of the repository (UTF-8 text).", "name": "read_file", "parameters": {"properties": {"path": {"description": "path from the repository root", "type": "string"}}, "required": ["path"], "type": "object"}}, "type": "function"}
+{"function": {"description": "Search the repository for a regular expression; returns matching lines.", "name": "grep", "parameters": {"properties": {"path": {"type": "string"}, "pattern": {"type": "string"}}, "required": ["pattern"], "type": "object"}}, "type": "function"}
+{"function": {"description": "Replace an exact string in a file with a new one.", "name": "edit_file", "parameters": {"properties": {"new": {"type": "string"}, "old": {"type": "string"}, "path": {"type": "string"}}, "required": ["path", "old", "new"], "type": "object"}}, "type": "function"}
+{"function": {"description": "Run a shell command in the repository and return its output.", "name": "run", "parameters": {"properties": {"command": {"type": "string"}}, "required": ["command"], "type": "object"}}, "type": "function"}
+</tools>
+
+If you choose to call a function ONLY reply in the following format with NO suffix:
+
+<tool_call>
+<function=example_function_name>
+<parameter=example_parameter_1>
+value_1
+</parameter>
+<parameter=example_parameter_2>
+This is the value for the second parameter
+that can span
+multiple lines
+</parameter>
+</function>
+</tool_call>
+
+<IMPORTANT>
+Reminder:
+- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags
+- Required parameters MUST be specified
+- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after
+- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls
+</IMPORTANT>
+
+You are an autonomous coding agent working in the user's repository. You can read files, search the code, edit files and run commands with the tools below. Work step by step: read the code you need before changing it, make small and correct edits, keep the existing style, and explain briefly what you did. Never invent file contents: read them. When the task is done, give a short summary of the changes and how to test them.<|im_end|>
+<|im_start|>user
+Explain precisely how the expert cache decides which experts stay in VRAM during decode, then propose and implement a small improvement to its eviction policy with a measurement plan.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Let me read the design overview first.
+
+<tool_call>
+<function=read_file>
+<parameter=path>
+docs/HOW_IT_WORKS.md
+</parameter>
+</function>
+</tool_call><|im_end|>
+<|im_start|>user
+<tool_response>
+# How does Strata work?
+
+Models like Qwen3.8-Flash-Next normally run on servers with hundreds of gigabytes of graphics memory. Your graphics
+card has 12-24 GB. Strata makes it fit by **sharing the work across your whole PC** - the same idea as a kitchen, where
+the things you use all the time stay on the counter and the rest waits in the pantry. Back to the
+[README](../README.md#how-does-it-work).
+
+## Who does what
+
+<p align="center"><img src="media/how-it-works.svg" width="860" alt="The model's 24,576 experts: the busiest on the graphics card, all of them in RAM, a lookup table on the SSD"></p>
+
+- **The model is a team of 24,576 small specialists ("experts"),** and each word it writes needs only 10 of them.
+  So it doesn't have to have all of them on the graphics card at once.
+- **Your graphics card** does the part of the work needed for every word, and keeps the few thousand experts that
+  are asked most often. It keeps learning which ones those are while you use it.
+- **Your RAM** holds every expert. When a word needs one the card doesn't have, **your processor** works on it -
+  at the same time as the graphics card, so neither waits for the other.
+- **Your SSD** holds a big lookup table; the model only reads a few small rows of it per word.
+
+The same in technical terms:
+
+- **GPU (VRAM):** attention and DeltaNet mixers, the gated-residual weights, routers, shared experts, output head, the
+  MTP draft layer, the KV cache (from 64K: only its most-read part, the rest streams from RAM), and an **expert
+  cache** that fills the rest of VRAM with the most-used experts (it adapts to the conversation while you chat).
+  More VRAM matters more than a faster GPU: every extra GB holds ~700 more experts, and every expert on the GPU is one
+  the CPU does not have to compute.
+- **RAM:** all 24,576 experts, pinned. The CPU computes the experts that are not on the GPU **in place**, at the same
+  time as the GPU works on the cached ones (AVX-512 / AVX2 kernels, ggml's for the i-quants). On a PC with little RAM
+  and a big card, the [low-RAM mode](MODELS.md#a-big-graphics-card-and-little-ram) keeps in RAM only what the GPU does
+  not hold.
+- **SSD:** the 28.8 GB n-gram table, read a few rows per token through the OS cache.
+
+This works the same on NVIDIA (CUDA) and AMD (HIP) cards: the same engine, compiled for each.
+
+## Guess, then check
+
+<p align="center"><img src="media/guess-and-check.svg" width="860" alt="A small helper guesses the next words; the big model checks them all at once and keeps the right ones"></p>
+
+- **Guess, then check.** A small, fast helper built into the model guesses the next few words, and the big model
+  checks all the guesses in one go. It keeps the ones it agrees with and writes the next word itself - so one step
+  often produces several words. The helper only guesses - the big model decides every word - so you get the same
+  quality answer, 1.6-1.8x sooner.
+- In technical terms: the model's own MTP layer drafts up to 3 tokens; one pass over all 48 layers checks them, 2.4-3.2
+  tokens per pass on average. When the reply repeats the context (code edits, quoted text), **prompt lookup** drafts
+  up to 5 tokens from the earlier copy, but only where its measured acceptance and cost say it pays: code edits 6-11%
+  faster, other text unchanged. The drafts are checked like the MTP's, so the output is the same.
+
+## Reading long texts
+
+**Long texts are read in big pieces** (up to 8,192 tokens - pieces of words - at a time), which is why a long
+document or code base is read at over 1,000 tokens per second. The experts of the next layer stream to the GPU over
+PCIe while the current layer's attention runs. After the first message, Strata keeps the conversation and reads only
+what is new, so follow-ups start in seconds.
+
+## More
+
+The [details](DETAILS.md#how-it-works) explain every part and its numbers, and the
+[paper](paper/Strata-Paper.pdf) tells the whole story, with the measurements behind it.
+
+## Credits
+
+- Model: [Qwen3.8-Flash-Next](https://huggingface.co/Qwen/Qwen3.8-Flash-Next) by the Qwen team; compressed versions by
+  [ISTA-DASLab](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF);
+  [Swift 1.5](https://huggingface.co/ukisai/Swift-1.5-Qwen3.8-Flash-Next-GSQ-RCO-GGUF) by UkisAI; the experimental
+  [UD-Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF) by Unsloth (its support follows
+  [eddoursul/Strata](https://github.com/eddoursul/Strata)). Their licenses apply to the model files.
+- Built with parts of [llama.cpp / ggml](https://github.com/ggml-org/llama.cpp) (MIT). Ideas from
+  [Splash](https://github.com/incoai/splash), [ninfer](https://github.com/Neroued/ninfer) and
+  [HyperQwen](https://github.com/syv-ai/HyperQwen). More in the [details](DETAILS.md#credits-and-licenses).
+- The AMD (HIP) backend: [AMD_HIP.md](AMD_HIP.md) names the contributors and the machines it was validated on.
+
+## License
+
+Strata is open source under the [MIT License](../LICENSE). A few parts carry their own licenses: `third_party/ggml`
+(MIT, llama.cpp / ggml), the web app's font (SIL Open Font License 1.1) and the experimental speed projection's
+vector in `data/experimental-speed-projection` (Qwen Community License 1.0, from the model's activations). The
+models are not part of this repository; each model's own license applies to its files.
+</tool_response><|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Now the cache's interface.
+
+<tool_call>
+<function=read_file>
+<parameter=path>
+include/strata/core/expert_cache.hpp
+</parameter>
+</function>
+</tool_call><|im_end|>
+<|im_start|>user
+<tool_response>
+// include/strata/core/expert_cache.hpp - R4: the VRAM-resident expert tier.
+//
+// **WHY THIS EXISTS, IN ONE PARAGRAPH.** The CPU expert pool is the engine's largest single cost: measured,
+// **663.6 MB of expert bytes per token at ~40 GB/s = 16.2 ms**, on a token of ~53 ms, and `test_expert_pool`
+// says the pipeline hides **1.055 ms of 19.035** - the CPU work is 96% exposed because the residual chain is
+// strictly serial. The only way past it is to stop reading those bytes: put some of the 48 x 512 experts in
+// VRAM and let the GPU compute them, so the CPU reads only the misses.
+//
+// **THE DESIGN IS SIZED AGAINST MEASUREMENTS, NOT AGAINST THE PLAN'S ASSUMPTIONS.**
+//
+//   * `h_expert` at 4,105 slots, **ten-fold leave-one-out: 0.6447 [0.6110, 0.6750]** (`tools/routing_kfold.py`).
+//     The 0.6573 the README published is in-sample and 0.4720 measured a single-prompt CORPUS, not the metric.
+//   * VRAM, measured on a live run rather than at startup: **6414 MiB free** with the engine at steady state,
+//     against **5413 MiB** for 4,105 slots. It fits, with ~1 GB spare. `strata-device`'s planner agrees and says
+//     FITS, but the planner runs before the dense arena exists, so the live figure is the one that counts.
+//   * `h_layer` held-out is **0.0456** - only 4.6% of (layer, token) pairs have all ten experts resident - so
+//     this cannot be a per-layer grouped kernel and the three-way split is not an optimisation.
+//
+// **WHAT THIS FILE IS.** The SLOT STORAGE and the RESIDENCY TABLE: it allocates the VRAM, fills it from the host
+// arena, and answers `(layer, expert) -> slot or -1`. It computes nothing itself: the GPU computes the experts it
+// holds in the verify window's grouped kernels and the prompt path (the hit/miss split), and the CPU pool the rest.
+// (Written when nothing consumed the slots yet and `--expert-cache` defaulted to 0; setup's configs use `auto`.)
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "strata/core/vmm.hpp"
+
+namespace strata::core {
+
+/// Where one expert's VRAM lives, or -1.  `int32_t` and not a bool because the slot index is what the kernel
+/// needs, and a table that has to be re-derived from a bitmask is a table that will be re-derived differently
+/// in the two places that use it.
+inline constexpr int32_t kNotResident = -1;
+
+/// **THE STATIC RESIDENCY PLAN, READ BACK FROM THE FILE `tools/make_profile.py` WROTE.**
+///
+/// `profile.bin` is `STRP`, then `version, n_layers, n_expert, slots, n_ranked`, then `n_ranked` `(layer,
+/// expert)` pairs ranked by descending routing frequency, then a `n_layers x n_expert` frequency table.
+///
+/// **WHY A PROFILE AND NOT THE COMPULSORY-MISS POLICY THIS ENGINE ALREADY HAD.**  Compulsory-miss fills with
+/// the first `S` DISTINCT experts the run happens to route, which on this workload is whatever the prompt
+/// touched first - it measured `h = 0.4864`.  A profile ranked by frequency over a whole trace is what the
+/// plan's `0.6447` refers to, and the CPU's half of the drain is linear in `h`, so the gap is worth about
+/// 4 ms of drain.  The point of reading it from a file is that a profile built on ONE prompt can be scored on
+/// ANOTHER, which is the only way to know whether it transfers.
+///
+/// The frequency table is not returned: it is the profile's own working, and the engine measures `h` by
+/// running rather than by re-deriving what the file claims.
+bool read_expert_profile(const std::string& path, int64_t n_layers, int64_t n_expert,
+                         std::vector<std::pair<int32_t, int32_t>>& ranked, int64_t& slots, std::string& err);
+
+/// #477 (--expert-profile-save): what the adaptive tier learned, as a profile ranking EVERY (layer, expert) pair -
+/// the experts resident in VRAM now first (where the swaps left the cache), then the rest; within each, by `heat`
+/// (the routing the adaptive tier counted since the start, descending), then by `prior` (the profile the engine
+/// started from: an expert this run never routed keeps its old place), then by index.  A start from it begins
+/// where this one ended; one with more slots adds the hottest of the rest, one with fewer keeps the hottest.
+/// `resident` and `heat`: n_layers x n_expert entries (`heat` may be empty: no counts, the prior decides).
+std::vector<std::pair<int32_t, int32_t>> rank_learned_profile(int64_t n_layers, int64_t n_expert,
+                                                              const std::vector<uint8_t>& resident,
+                                                              const std::vector<double>& heat,
+                                                              const std::vector<std::pair<int32_t, int32_t>>& prior);
+
+/// #477: writes `ranked` in tools/make_profile.py's format, byte for byte: `STRP`, `1, n_layers, n_expert,
+/// n_ranked, n_ranked` (uint32), the pairs (uint16 layer, uint16 expert), then the n_layers x n_expert int32 table
+/// of each pair's rank (-1: not ranked).  Atomically: a `<path>.tmp` beside it, renamed over `path` once complete,
+/// so a reader (the next start) never sees half a file.  False with `err` when it could not be written.
+bool write_expert_profile(const std::string& path, int64_t n_layers, int64_t n_expert,
+                          const std::vector<std::pair<int32_t, int32_t>>& ranked, std::string& err);
+
+/// Free device memory for the expert cache.  On a unified memory system - one memory for the CPU and the GPU, such as
+/// the DGX Spark (GB10); CUDA reports it as cudaDevAttrIntegrated - cudaMemGetInfo counts only MemFree, not the page cache - which, with the experts read from the GGUF in place, is mostly those
+/// files' clean pages and gives way to a device allocation.  There the figure is MemAvailable less 6 GiB for the OS
+/// and the engine's host side (STRATA_UMA_HEADROOM_GIB).  Elsewhere it is cudaMemGetInfo's.
+size_t device_free_bytes();
+
+/// One piece of an expert blob that lives contiguously in a source's own memory: `n` bytes at `p`, to land `at` bytes into the blob.
+struct BlobPart { const uint8_t* p; uint64_t n; uint64_t at; };
+
+class ExpertCache {
+public:
+    ExpertCache() = default;
+    ~ExpertCache();
+    ExpertCache(const ExpertCache&) = delete;
+    ExpertCache& operator=(const ExpertCache&) = delete;
+
+    /// Allocates `n_slots * blob_bytes` of DEVICE memory and a `n_layers * n_expert` residency table, and
+    /// **CHECKS THE ALLOCATION AGAINST WHAT THE CARD ACTUALLY HAS** rather than assuming the planner was right.
+    /// A cache that silently allocates less than it was asked for would report a hit rate for slots it does
+    /// not have, which is the shape of error this project keeps paying for.
+    bool open(int64_t n_slots, int64_t n_layers, int64_t n_expert, int64_t blob_bytes, std::string& err);
+    /// Plan v0.3 P6: slots of the given sizes, back to back (a native pack's blobs differ per layer, and a
+    /// profile-filled tier never moves an expert to another layer's slot, so each slot keeps its first size).
+    bool open_sized(const std::vector<int64_t>& slot_bytes, int64_t n_layers, int64_t n_expert, std::string& err);
+    /// Byte offset of each slot in the arena (null for uniform slots).
+    const uint64_t* slot_offsets() const { return off_.empty() ? nullptr : off_.data(); }
+    void close();
+
+    bool valid() const { return base_ != nullptr; }
+    /// The slots usable now: all of them, unless `shrink` gave the tail's VRAM back (#533) - then the ones wholly
+    /// inside the VRAM still backed, always a prefix.  The prompt path's loan (the last slots) and every report
+    /// follow this; `full_slots()` is what `open` allocated.
+    int64_t slots() const { return live_slots_; }
+    int64_t full_slots() const { return slots_; }
+    /// Slots actually claimed.  Not the same as `slots()` - the cache does not evict, so a run that routes
+    /// fewer distinct experts than there are slots leaves the rest empty.
+    int64_t resident() const { return per_layer_ ? admitted_ : next_free_; }
+    /// The bytes of `slots()` (all of the arena unless shrunk); `full_bytes()`: of every slot.
+    int64_t bytes() const { return slot_end(live_slots_); }
+    int64_t full_bytes() const { return slot_end(slots_); }
+    double gib() const { return (double) bytes() / 1073741824.0; }
+
+    /// **#533: HOT VRAM RESIZE, OPT-IN (--vram-elastic).**  With a segment size set before `open`/`open_sized`, the
+    /// arena is one reserved address range backed by physical segments of that size (CUDA virtual memory
+    /// management) instead of one cudaMalloc, so `shrink` can give the tail's VRAM back to the driver - for another
+    /// program - and `grow` can take it again, while every slot keeps its address (the captured graphs, the verify
+    /// plan's pointers and the prompt path's loan all hold addresses into it).  0 (the default): one cudaMalloc, as
+    /// always.  CUDA only: a HIP build refuses it at open.  The slots past `slots()` after a shrink must hold no
+    /// resident expert and no loan: the CALLER evicts them first (they become CPU misses).
+    void set_segment_bytes(int64_t seg_bytes) { seg_req_ = seg_bytes > 0 ? seg_bytes : 0; }
+    /// STRATA_MMQ_DIRECT: `open_sized` leaves at least `g` bytes of room after each slot's blob (the prompt MMQ
+    /// reads a little past a down matrix when it reads an expert in its slot).  Set before opening, like
+    /// `set_segment_bytes`; `close` keeps it.  0 (the default): no guard.  The uniform `open` ignores it, and so does
+    /// the SYCL engine's open_sized (its slots then have no guard, and `slot_tail` finds no room).
+    void set_slot_guard(int64_t g) { guard_req_ = g > 0 ? g : 0; }
+    /// The guard the open slots were laid out with: what `open_sized` applied (0 for uniform slots, when closed, and
+    /// on SYCL, whose open_sized applies none).
+    int64_t slot_guard() const { return guard_; }
+    /// A sized slot's arena bytes: the blob plus the guard, 256-byte aligned.
+    static int64_t slot_stride(int64_t blob, int64_t guard = 0) { return (blob + guard + 255) / 256 * 256; }
+    bool segmented() const { return !segs_.empty(); }
+    int64_t segment_bytes() const { return seg_; }
+    /// Bytes of the arena backed by VRAM now (a whole number of segments; the arena when not segmented).
+    int64_t mapped_bytes() const;
+    /// Unmaps every segment past the first `keep_bytes` (rounded UP to a segment boundary): `slots()` becomes the
+    /// slots wholly inside what stays.  Waits for the device first.  False with `err` when not segmented or a driver
+    /// call failed.
+    bool shrink(int64_t keep_bytes, std::string& err);
+    /// Maps segments again up to `want_bytes` (rounded DOWN to a segment, at most the arena; the last, shorter
+    /// segment only when `want_bytes` covers the arena).  Stops at the first segment the driver cannot back (false,
+    /// `err`: what was mapped by then stays).  The new slots are empty until the caller fills them.
+    bool grow(int64_t want_bytes, std::string& err);
+    /// The number of leading slots that fit wholly inside the first `bytes` bytes.
+    int64_t slots_within(int64_t bytes) const;
+    /// The bytes the first `n` slots span.
+    int64_t bytes_of(int64_t n) const { return slot_end(n < 0 ? 0 : n > slots_ ? slots_ : n); }
+
+    /// `(layer, expert)` -> slot index, or `kNotResident`.  Bounds-checked: a bad layer or expert returns
+    /// `kNotResident` rather than reading whatever is adjacent in the table.
+    int32_t slot_of(int64_t layer, int64_t expert) const;
+    /// Claims the next free slot for `(layer, expert)`.  Returns the slot, or `kNotResident` when the cache is
+    /// full - **it never evicts**, because eviction policy is a measured question (`R4.1`'s LFU-decay vs LRU
+    /// sweep) and a placeholder policy would set the hit rate that everything downstream is then sized against.
+    int32_t admit(int64_t layer, int64_t expert);
+
+    /// Publish a same-layer replacement after its slot copy has completed.
+    void replace(int64_t layer, int32_t old_expert, int32_t new_expert) {
+        auto& old = residency_[(size_t) layer * n_expert_ + old_expert];
+        residency_[(size_t) layer * n_expert_ + new_expert] = old;
+        old = kNotResident;
+    }
+
+    /// **R4.2g: GIVE EACH LAYER ITS OWN SLOTS.  ROUND 328 MEASURED WHY THE GLOBAL FORM CANNOT WORK.**
+    ///
+    /// `admit`'s original policy hands out slots in ARRIVAL ORDER from one counter shared by every layer
+    /// (`if (next_free_ >= slots_) return kNotResident;`).  A position looks at 10 experts in each of 48
+    /// layers, so the first `n_slots` distinct (layer, expert) pairs are **about 26 layers of POSITION 0** -
+    /// the cache fills entirely inside the first position it ever sees and never changes again, so hits are
+    /// confined to those few layers for the rest of the run.
+    ///
+    /// Measured, `--expert-cache 256`: **1781 of 60000 = 2.97%**.  `Memory/cache_allocation.py` scores the
+    /// same run's routing and says **8 slots per layer is worth 21.4%** and 64 is worth **70.4%**.  The cache
+    /// was never short of capacity - it was handing all of it to two layers.
+    ///
+    /// With this on, layer `l` may only use slots `[l*q, (l+1)*q)` where `q = slots()/n_layers`, the last
+    /// layer taking the remainder.  **EVICTION IS STILL ABSENT** - the property the comment above calls
+    /// deliberate is preserved exactly; only WHICH slot a layer may take changes.  Default off, so every
+    /// caller that predates this flag is bit-for-bit unaffected.
+    void set_per_layer_admission(bool on) { per_layer_ = on; }
+    bool per_layer_admission() const { return per_layer_; }
+    /// The slot range layer `l` may admit into under per-layer admission.  Exposed so a test can check it.
+    void layer_slot_range(int64_t layer, int64_t& lo, int64_t& hi) const;
+
+    /// The device address of one slot.
+    uint8_t* device_slot(int32_t slot);
+    const uint8_t* device_slot(int32_t slot) const;
+
+    /// Copies `(layer, expert)`'s blob from `host_blob` into `slot` on `stream`.  Asynchronous: the caller
+    /// orders it.  Returns false if the indices are out of range rather than reading past the arena.
+    /// `bytes` (plan v0.3 P6): the blob's own size when it is smaller than the slot (a native pack); 0 = the slot.
+    bool fill_slot(int32_t slot, const uint8_t* host_blob, void* stream, std::string& err, int64_t bytes = 0);
+
+    /// **THE SAME COPY, BUT BLOCKING, AND THE PROFILE FILL NEEDS IT.**  `fill_slot` is asynchronous because on
+    /// the token path the fill and the kernel that reads it are ordered by one stream and waiting would be a
+    /// synchronisation per layer.  At STARTUP there is no such ordering to lean on: the source is pageable host
+    /// memory, `verify_slot` reads the slot back on the LEGACY stream, and a legacy-stream copy is not ordered
+    /// against a `cudaStreamNonBlocking` one.  The first version used the async form and `verify_slot` refused
+    /// the whole run with "slot 0 differs from the arena at byte 0" - which is the check doing its job.
+    bool fill_slot_blocking(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes = 0);
+    /// perf-review D-4: `fill_slot_blocking`'s copy on the same (legacy) stream, but queued: many slots are refilled
+    /// with one `sync_queued` at the end instead of a wait per slot. Same ordering against earlier work, same bytes.
+    bool fill_slot_queued(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes = 0);
+    /// `fill_slot_queued` for a blob that is not in one piece: each `parts[i].n` bytes at `parts[i].p` go to byte `parts[i].at`
+    /// of the slot (the pieces tile the blob).  Same queue, same `sync_queued`.
+    bool fill_slot_queued_parts(int32_t slot, const BlobPart* parts, int n, std::string& err);
+    bool sync_queued(std::string& err);
+
+    /// Reads `slot` back to the host and compares it to `host_blob`, byte for byte.  **THE ONLY THING THAT SAYS
+    /// THE CACHE HOLDS THE EXPERT IT CLAIMS TO.**  A slot table that is right about indices and wrong about
+    /// bytes produces a plausible token, which is exactly the failure this project has paid for most often.
+    bool verify_slot(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes = 0);
+
+    /// Slots filled so far, for the startup report.
+    int64_t fills() const { return fills_; }
+
+    /// The elastic K/V (--kv-grow): the arena in a VMM range (vmm.hpp) instead of one cudaMalloc, so the K/V can take
+    /// single chunks of it and give them back. Applies to the next `open`; ignored where VMM is not available.
+    static void set_vmm(bool enabled);
+    /// The arena's range (null: one cudaMalloc).
+    VmmRange* vmm_range() { return vmm_.get(); }
+    /// Byte offset of slot `s` in the arena (s == slots(): the end).
+    uint64_t slot_offset(int64_t s) const { return off_.empty() ? (uint64_t) s * (uint64_t) blob_ : off_[(size_t) s]; }
+    /// The arena bytes of slot `s` (its blob, any slack and the guard).
+    uint64_t slot_room(int32_t s) const { return slot_offset(s + 1) - slot_offset(s); }
+    /// STRATA_MMQ_DIRECT: the address `blob` bytes into slot `s` when the slot has room for `need` more bytes there
+    /// (null otherwise, or for a bad slot).  Uniform slots too: their stride is the largest blob.
+    uint8_t* slot_tail(int32_t s, uint64_t blob, uint64_t need) const {
+        if (s < 0 || s >= slots_ || base_ == nullptr) return nullptr;
+        return slot_room(s) >= blob + need ? base_ + slot_offset(s) + blob : nullptr;
+    }
+
+private:
+#if defined(STRATA_USE_HIP)
+    bool ensure_blocking_staging(std::size_t bytes, std::string& err);
+    uint8_t* blocking_staging_ = nullptr;
+    std::size_t blocking_staging_bytes_ = 0;
+#endif
+    int64_t slot_end(int64_t n) const { return off_.empty() ? n * blob_ : (int64_t) off_[(size_t) n]; }
+    bool open_segmented(uint64_t want, std::string& err);
+    void release_segmented();
+    uint8_t* base_ = nullptr;
+    int64_t live_slots_ = 0;            ///< #533: slots() - all of them unless shrunk
+    int64_t seg_req_ = 0;               ///< #533: the segment size asked for (0: one cudaMalloc)
+    int64_t guard_req_ = 0;             ///< STRATA_MMQ_DIRECT: bytes kept after each sized slot's blob (set_slot_guard)
+    int64_t guard_ = 0;                 ///< ...the guard open_sized applied to the open slots (0: none)
+    int64_t seg_ = 0;                   ///< #533: the segment size used (a multiple of the driver's granularity)
+    uint64_t reserved_ = 0;             ///< #533: the reserved address range's size
+    std::vector<unsigned long long> segs_;   ///< #533: each segment's physical handle (0: unmapped)
+    std::vector<int64_t> seg_size_;     ///< #533: each segment's size (the last one may be shorter)
+    int64_t mapped_segs_ = 0;           ///< #533: segments [0, mapped_segs_) are backed
+    std::unique_ptr<VmmRange> vmm_;    ///< the arena's range when it is in VMM (set_vmm)
+    std::vector<int32_t> residency_;   ///< [n_layers * n_expert] -> slot or kNotResident
+    int64_t slots_ = 0;
+    int64_t n_layers_ = 0;
+    int64_t n_expert_ = 0;
+    int64_t blob_ = 0;
+    int64_t next_free_ = 0;
+    int64_t fills_ = 0;
+    /// R4.2g.  `per_layer_` off (the default) leaves `next_free_` as the only admission counter, so the
+    /// pre-existing path is untouched.
+    bool per_layer_ = false;
+    std::vector<int32_t> layer_next_;   ///< [n_layers] -> that layer's next free slot
+    std::vector<uint64_t> off_;         ///< plan v0.3 P6: slot offsets (slots + 1 entries) when sized
+    int64_t admitted_ = 0;
+};
+
+}  // namespace strata::core
+</tool_response><|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+And its implementation.
+
+<tool_call>
+<function=read_file>
+<parameter=path>
+src/core/expert_cache.cpp
+</parameter>
+</function>
+</tool_call><|im_end|>
+<|im_start|>user
+<tool_response>
+// src/core/expert_cache.cpp - R4's slot storage and residency table.  Read the header first.
+#include "strata/core/expert_cache.hpp"
+
+// #533's segmented cache uses CUDA's virtual memory management (cuMem*): not on HIP, neither the RDNA backend nor
+// the gfx906 compat build (PR #638), which compiles this file as HIP without STRATA_USE_HIP
+#if defined(STRATA_USE_HIP) || defined(STRATA_HIP_GFX906) || defined(STRATA_GPU_METAL)
+#define STRATA_EC_NO_VMM 1
+#endif
+
+#include <thread>
+#include <mutex>
+#include <cuda_runtime.h>
+#if !defined(STRATA_EC_NO_VMM)
+#include <cuda.h>   // #533: the virtual memory management types (the functions come through the runtime's entry points)
+#endif
+
+#include <algorithm>
+#include <atomic>
+#include <cstdio>
+#include <filesystem>
+#include <cstdlib>
+#include <utility>
+#include <cstring>
+
+namespace strata::core {
+
+// See the header.  NVIDIA's DGX Spark Porting Guide (section 5.5, "Memory reporting on UMA systems") recommends the same:
+// not to rely on cudaMemGetInfo alone but to count the memory the OS can reclaim.  Swap is not counted here (unlike
+// NVIDIA's reference snippet): an expert cache that pushes the system into swap would be far slower than a smaller one.
+size_t device_free_bytes() {
+    size_t free_b = 0, total_b = 0;
+    cudaMemGetInfo(&free_b, &total_b);
+#if defined(__linux__) && !defined(STRATA_HIP_GFX906)   // (the gfx906 compat layer has no cudaDevAttrIntegrated; that GPU is discrete)
+    // per device: a box can mix an integrated GPU (an APU) with a discrete one, and the answer is the CURRENT device's
+    static std::atomic<int> uma_cache[64];   // 0 unknown, 1 integrated (unified memory), 2 discrete
+    bool unified_memory = false;
+    {
+        int dev = 0, v = 0;
+        if (cudaGetDevice(&dev) == cudaSuccess && dev >= 0 && dev < 64) {
+            int c = uma_cache[dev].load(std::memory_order_acquire);
+            if (c == 0) {
+                c = cudaDeviceGetAttribute(&v, cudaDevAttrIntegrated, dev) == cudaSuccess && v ? 1 : 2;
+                uma_cache[dev].store(c, std::memory_order_release);
+            }
+            unified_memory = c == 1;
+        }
+    }
+    if (unified_memory) {
+        if (FILE* m = std::fopen("/proc/meminfo", "r")) {
+            char line[256];
+            unsigned long long kb = 0;
+            while (std::fgets(line, sizeof line, m))
+                if (std::sscanf(line, "MemAvailable: %llu kB", &kb) == 1) break;
+            std::fclose(m);
+            // STRATA_UMA_HEADROOM_GIB: a whole number of GiB, 0..1024; anything else keeps the default 6 (said once)
+            static const long gib = [] {
+                const char* h = std::getenv("STRATA_UMA_HEADROOM_GIB");
+                if (h == nullptr) return 6L;
+                char* end = nullptr;
+                const long v = std::strtol(h, &end, 10);
+                if (end != h && *end == '\0' && v >= 0 && v <= 1024) return v;
+                std::fprintf(stderr, "strata: STRATA_UMA_HEADROOM_GIB=%s is not a whole number of GiB (0-1024): using 6\n", h);
+                return 6L;
+            }();
+            const unsigned long long head = (unsigned long long) gib << 30;
+            const unsigned long long avail = kb << 10;
+            if (avail > head && avail - head > free_b) free_b = (size_t) (avail - head);
+        }
+    }
+#endif
+    return free_b;
+}
+
+bool read_expert_profile(const std::string& path, int64_t n_layers, int64_t n_expert,
+                         std::vector<std::pair<int32_t, int32_t>>& ranked, int64_t& slots, std::string& err) {
+    std::FILE* f = std::fopen(path.c_str(), "rb");
+    if (f == nullptr) {
+        err = "read_expert_profile: cannot open " + path;
+        return false;
+    }
+    char magic[4] = {0, 0, 0, 0};
+    uint32_t hdr[5] = {0, 0, 0, 0, 0};
+    if (std::fread(magic, 1, 4, f) != 4 || std::fread(hdr, 4, 5, f) != 5) {
+        std::fclose(f);
+        err = "read_expert_profile: " + path + " is too short to hold a header";
+        return false;
+    }
+    if (std::memcmp(magic, "STRP", 4) != 0) {
+        std::fclose(f);
+        err = "read_expert_profile: " + path + " does not start with STRP";
+        return false;
+    }
+    const uint32_t version = hdr[0], nl = hdr[1], ne = hdr[2], want = hdr[3], n_ranked = hdr[4];
+    // the version comes first: the fields after it are only known to be these in a version 1 file, so a later
+    // format is refused by its number rather than read as if it were this one
+    if (version != 1) {
+        std::fclose(f);
+        char buf[256];
+        std::snprintf(buf, sizeof buf,
+                      "read_expert_profile: %s is a version %u profile but this engine reads version 1 - it was "
+                      "written by a different release's tools/make_profile.py or --expert-profile-save",
+                      path.c_str(), version);
+        err = buf;
+        return false;
+    }
+    if ((int64_t) nl != n_layers || (int64_t) ne != n_expert) {
+        std::fclose(f);
+        char buf[256];
+        std::snprintf(buf, sizeof buf,
+                      "read_expert_profile: %s is %ux%u but this model is %lldx%lld - it is a profile for a "
+                      "different artifact", path.c_str(), nl, ne, (long long) n_layers, (long long) n_expert);
+        err = buf;
+        return false;
+    }
+    if (n_ranked > want) {
+        std::fclose(f);
+        err = "read_expert_profile: the header claims more ranked pairs than slots";
+        return false;
+    }
+    ranked.assign(n_ranked, {0, 0});
+    std::vector<uint16_t> raw((size_t) n_ranked * 2);
+    if (n_ranked > 0 && std::fread(raw.data(), 2, (size_t) n_ranked * 2, f) != (size_t) n_ranked * 2) {
+        std::fclose(f);
+        err = "read_expert_profile: the ranked list is truncated";
+        return false;
+    }
+    std::fclose(f);
+    for (uint32_t i = 0; i < n_ranked; ++i) {
+        const int32_t l = (int32_t) raw[(size_t) i * 2], e = (int32_t) raw[(size_t) i * 2 + 1];
+        if (l < 0 || l >= n_layers || e < 0 || e >= n_expert) {
+            char buf[256];
+            std::snprintf(buf, sizeof buf, "read_expert_profile: pair %u is (layer %d, expert %d), out of range",
+                          i, l, e);
+            err = buf;
+            return false;
+        }
+        ranked[(size_t) i] = {l, e};
+    }
+    slots = (int64_t) want;
+    return true;
+}
+
+std::vector<std::pair<int32_t, int32_t>> rank_learned_profile(int64_t n_layers, int64_t n_expert,
+                                                              const std::vector<uint8_t>& resident,
+                                                              const std::vector<double>& heat,
+                                                              const std::vector<std::pair<int32_t, int32_t>>& prior) {
+    const size_t n = (size_t) (n_layers * n_expert);
+    std::vector<int64_t> prior_rank(n, INT64_MAX);
+    for (size_t r = 0; r < prior.size(); ++r) {
+        const auto [l, e] = prior[r];
+        if (l >= 0 && l < n_layers && e >= 0 && e < n_expert) {
+            int64_t& pr = prior_rank[(size_t) (l * n_expert + e)];
+            if (pr == INT64_MAX) pr = (int64_t) r;
+        }
+    }
+    std::vector<int64_t> order(n);
+    for (size_t i = 0; i < n; ++i) order[i] = (int64_t) i;
+    auto res = [&](int64_t i) { return (size_t) i < resident.size() && resident[(size_t) i] != 0; };
+    auto ht = [&](int64_t i) { return (size_t) i < heat.size() ? heat[(size_t) i] : 0.0; };
+    std::stable_sort(order.begin(), order.end(), [&](int64_t a, int64_t b) {
+        if (res(a) != res(b)) return res(a);
+        if (ht(a) != ht(b)) return ht(a) > ht(b);
+        if (prior_rank[(size_t) a] != prior_rank[(size_t) b]) return prior_rank[(size_t) a] < prior_rank[(size_t) b];
+        return a < b;
+    });
+    std::vector<std::pair<int32_t, int32_t>> ranked(n);
+    for (size_t r = 0; r < n; ++r)
+        ranked[r] = {(int32_t) (order[r] / n_expert), (int32_t) (order[r] % n_expert)};
+    return ranked;
+}
+
+bool write_expert_profile(const std::string& path, int64_t n_layers, int64_t n_expert,
+                          const std::vector<std::pair<int32_t, int32_t>>& ranked, std::string& err) {
+    if (n_layers <= 0 || n_expert <= 0 || n_layers > 65535 || n_expert > 65535) {
+        err = "write_expert_profile: the model's layout does not fit the format";
+        return false;
+    }
+    std::vector<int32_t> table((size_t) (n_layers * n_expert), -1);
+    std::vector<uint16_t> pairs;
+    pairs.reserve(ranked.size() * 2);
+    for (size_t r = 0; r < ranked.size(); ++r) {
+        const auto [l, e] = ranked[r];
+        if (l < 0 || l >= n_layers || e < 0 || e >= n_expert) {
+            err = "write_expert_profile: a ranked pair is out of range";
+            return false;
+        }
+        table[(size_t) (l * n_expert + e)] = (int32_t) r;
+        pairs.push_back((uint16_t) l);
+        pairs.push_back((uint16_t) e);
+    }
+    const uint32_t hdr[5] = {1u, (uint32_t) n_layers, (uint32_t) n_expert, (uint32_t) ranked.size(),
+                             (uint32_t) ranked.size()};
+    const std::string tmp = path + ".tmp";
+    std::FILE* f = std::fopen(tmp.c_str(), "wb");
+    if (f == nullptr) {
+        err = "write_expert_profile: cannot create " + tmp;
+        return false;
+    }
+    // the format is little-endian (make_profile.py's "<"): so is every machine this engine runs on
+    bool ok = std::fwrite("STRP", 1, 4, f) == 4 && std::fwrite(hdr, 4, 5, f) == 5 &&
+              (pairs.empty() || std::fwrite(pairs.data(), 2, pairs.size(), f) == pairs.size()) &&
+              std::fwrite(table.data(), 4, table.size(), f) == table.size();
+    ok = (std::fclose(f) == 0) && ok;
+    std::error_code ec;
+    if (ok) std::filesystem::rename(tmp, path, ec);   // replaces an existing file (MoveFileEx / rename(2))
+    if (!ok || ec) {
+        std::filesystem::remove(tmp, ec);
+        err = "write_expert_profile: cannot write " + path;
+        return false;
+    }
+    return true;
+}
+
+ExpertCache::~ExpertCache() { close(); }
+
+// ---- #533: the segmented arena (--vram-elastic).  The driver API's virtual memory functions, looked up through the
+// runtime (no link against the driver library): one address range for the whole arena, backed by physical segments,
+// and the tail's segments unmapped / mapped again later.  Nothing here runs unless a segment size was set.
+#if !defined(STRATA_EC_NO_VMM)
+namespace {
+struct Vmm {
+    CUresult (CUDAAPI* device_get)(CUdevice*, int) = nullptr;
+    CUresult (CUDAAPI* attribute)(int*, CUdevice_attribute, CUdevice) = nullptr;
+    CUresult (CUDAAPI* granularity)(size_t*, const CUmemAllocationProp*, CUmemAllocationGranularity_flags) = nullptr;
+    CUresult (CUDAAPI* reserve)(CUdeviceptr*, size_t, size_t, CUdeviceptr, unsigned long long) = nullptr;
+    CUresult (CUDAAPI* address_free)(CUdeviceptr, size_t) = nullptr;
+    CUresult (CUDAAPI* create)(CUmemGenericAllocationHandle*, size_t, const CUmemAllocationProp*,
+                               unsigned long long) = nullptr;
+    CUresult (CUDAAPI* release)(CUmemGenericAllocationHandle) = nullptr;
+    CUresult (CUDAAPI* map)(CUdeviceptr, size_t, size_t, CUmemGenericAllocationHandle, unsigned long long) = nullptr;
+    CUresult (CUDAAPI* unmap)(CUdeviceptr, size_t) = nullptr;
+    CUresult (CUDAAPI* set_access)(CUdeviceptr, size_t, const CUmemAccessDesc*, size_t) = nullptr;
+    bool ok = false;
+};
+
+template <class F> bool entry(const char* name, F& f) {
+    void* p = nullptr;
+    cudaDriverEntryPointQueryResult q{};
+#if CUDART_VERSION >= 12050
+    const cudaError_t e = cudaGetDriverEntryPointByVersion(name, &p, 12000, cudaEnableDefault, &q);
+#else
+    const cudaError_t e = cudaGetDriverEntryPoint(name, &p, cudaEnableDefault, &q);
+#endif
+    if (e != cudaSuccess || q != cudaDriverEntryPointSuccess || p == nullptr) {
+        (void) cudaGetLastError();
+        return false;
+    }
+    f = reinterpret_cast<F>(p);
+    return true;
+}
+
+const Vmm& vmm() {
+    static const Vmm v = [] {
+        Vmm x;
+        x.ok = entry("cuDeviceGet", x.device_get) && entry("cuDeviceGetAttribute", x.attribute) &&
+               entry("cuMemGetAllocationGranularity", x.granularity) && entry("cuMemAddressReserve", x.reserve) &&
+               entry("cuMemAddressFree", x.address_free) && entry("cuMemCreate", x.create) &&
+               entry("cuMemRelease", x.release) && entry("cuMemMap", x.map) && entry("cuMemUnmap", x.unmap) &&
+               entry("cuMemSetAccess", x.set_access);
+        return x;
+    }();
+    return v;
+}
+
+CUmemAllocationProp device_prop(int dev) {
+    CUmemAllocationProp prop{};
+    prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+    prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+    prop.location.id = dev;
+    return prop;
+}
+
+// one segment: a physical allocation mapped at `va`, readable and writable by this device
+bool map_segment(const Vmm& v, int dev, CUdeviceptr va, size_t bytes, unsigned long long& handle) {
+    const CUmemAllocationProp prop = device_prop(dev);
+    CUmemGenericAllocationHandle h = 0;
+    if (v.create(&h, bytes, &prop, 0) != CUDA_SUCCESS) return false;
+    if (v.map(va, bytes, 0, h, 0) != CUDA_SUCCESS) {
+        v.release(h);
+        return false;
+    }
+    CUmemAccessDesc access{};
+    access.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+    access.location.id = dev;
+    access.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
+    if (v.set_access(va, bytes, &access, 1) != CUDA_SUCCESS) {
+        v.unmap(va, bytes);
+        v.release(h);
+        return false;
+    }
+    handle = (unsigned long long) h;
+    return true;
+}
+}  // namespace
+#endif
+
+bool ExpertCache::open_segmented(uint64_t want, std::string& err) {
+#if defined(STRATA_EC_NO_VMM)
+    (void) want;
+    err = "ExpertCache: --vram-elastic (a segmented expert cache) is CUDA-only for now";
+    return false;
+#else
+    const Vmm& v = vmm();
+    int dev = 0, supported = 0;
+    CUdevice cu = 0;
+    if (!v.ok || cudaGetDevice(&dev) != cudaSuccess || v.device_get(&cu, dev) != CUDA_SUCCESS ||
+        v.attribute(&supported, CU_DEVICE_ATTRIBUTE_VIRTUAL_MEMORY_MANAGEMENT_SUPPORTED, cu) != CUDA_SUCCESS ||
+        !supported) {
+        err = "ExpertCache: --vram-elastic needs the driver's virtual memory management, which this GPU or driver "
+              "does not offer";
+        return false;
+    }
+    const CUmemAllocationProp prop = device_prop(dev);
+    size_t gran = 0;
+    if (v.granularity(&gran, &prop, CU_MEM_ALLOC_GRANULARITY_RECOMMENDED) != CUDA_SUCCESS || gran == 0) {
+        err = "ExpertCache: cannot read the driver's allocation granularity";
+        return false;
+    }
+    const uint64_t g = (uint64_t) gran;
+    const uint64_t total = (want + g - 1) / g * g;
+    seg_ = (int64_t) (((uint64_t) seg_req_ + g - 1) / g * g);
+    CUdeviceptr va = 0;
+    if (v.reserve(&va, (size_t) total, 0, 0, 0) != CUDA_SUCCESS) {
+        err = "ExpertCache: cannot reserve the address range of the segmented expert cache";
+        return false;
+    }
+    base_ = reinterpret_cast<uint8_t*>(va);
+    reserved_ = total;
+    for (uint64_t at = 0; at < total; at += (uint64_t) seg_) {
+        segs_.push_back(0);
+        seg_size_.push_back((int64_t) std::min<uint64_t>((uint64_t) seg_, total - at));
+    }
+    for (size_t i = 0; i < segs_.size(); ++i) {
+        if (!map_segment(v, dev, va + (CUdeviceptr) ((uint64_t) i * (uint64_t) seg_), (size_t) seg_size_[i],
+                         segs_[i])) {
+            char buf[200];
+            std::snprintf(buf, sizeof buf, "ExpertCache: cudaMalloc failed: segment %zu of %zu (%.2f GiB) of the "
+                          "segmented cache could not be allocated", i + 1, segs_.size(),
+                          (double) seg_size_[i] / 1073741824.0);
+            err = buf;   // "cudaMalloc failed": the auto cache's smaller-retry path reads it as an allocation failure
+            release_segmented();
+            return false;
+        }
+        mapped_segs_ = (int64_t) i + 1;
+    }
+    return true;
+#endif
+}
+
+void ExpertCache::release_segmented() {
+#if !defined(STRATA_EC_NO_VMM)
+    const Vmm& v = vmm();
+    if (base_ != nullptr) cudaDeviceSynchronize();
+    const CUdeviceptr va = reinterpret_cast<CUdeviceptr>(base_);
+    for (size_t i = 0; i < segs_.size(); ++i)
+        if (segs_[i] != 0) {
+            v.unmap(va + (CUdeviceptr) ((uint64_t) i * (uint64_t) seg_), (size_t) seg_size_[i]);
+            v.release((CUmemGenericAllocationHandle) segs_[i]);
+        }
+    if (base_ != nullptr && reserved_ > 0) v.address_free(va, (size_t) reserved_);
+#endif
+    segs_.clear();
+    seg_size_.clear();
+    mapped_segs_ = 0;
+    reserved_ = 0;
+    base_ = nullptr;
+}
+
+int64_t ExpertCache::mapped_bytes() const {
+    if (segs_.empty()) return base_ != nullptr ? full_bytes() : 0;
+    int64_t b = 0;
+    for (int64_t i = 0; i < mapped_segs_; ++i) b += seg_size_[(size_t) i];
+    return b;
+}
+
+int64_t ExpertCache::slots_within(int64_t bytes) const {
+    if (bytes >= full_bytes()) return slots_;
+    if (bytes <= 0) return 0;
+    if (off_.empty()) return blob_ > 0 ? bytes / blob_ : 0;
+    // off_[i + 1] is slot i's end: count the slots whose end is at most `bytes`
+    return (int64_t) (std::upper_bound(off_.begin() + 1, off_.end(), (uint64_t) bytes) - (off_.begin() + 1));
+}
+
+bool ExpertCache::shrink(int64_t keep_bytes, std::string& err) {
+    if (segs_.empty()) {
+        err = "the expert cache is not segmented (the engine needs --vram-elastic)";
+        return false;
+    }
+#if defined(STRATA_EC_NO_VMM)
+    (void) keep_bytes;
+    return false;
+#else
+    const Vmm& v = vmm();
+    int64_t keep = 0, at = 0;   // the segments [0, keep) hold the first keep_bytes
+    while (keep < (int64_t) segs_.size() && at < keep_bytes) at += seg_size_[(size_t) keep++];
+    if (keep >= mapped_segs_) return true;
+    if (cudaDeviceSynchronize() != cudaSuccess) {
+        err = std::string("the device failed before the cache shrank: ") + cudaGetErrorString(cudaGetLastError());
+        return false;
+    }
+    const CUdeviceptr va = reinterpret_cast<CUdeviceptr>(base_);
+    for (int64_t i = mapped_segs_ - 1; i >= keep; --i) {
+        const CUdeviceptr p = va + (CUdeviceptr) ((uint64_t) i * (uint64_t) seg_);
+        if (v.unmap(p, (size_t) seg_size_[(size_t) i]) != CUDA_SUCCESS ||
+            v.release((CUmemGenericAllocationHandle) segs_[(size_t) i]) != CUDA_SUCCESS) {
+            err = "the driver refused to release an expert-cache segment";
+            live_slots_ = slots_within(mapped_bytes());
+            return false;
+        }
+        segs_[(size_t) i] = 0;
+        mapped_segs_ = i;
+    }
+    live_slots_ = slots_within(mapped_bytes());
+    return true;
+#endif
+}
+
+bool ExpertCache::grow(int64_t want_bytes, std::string& err) {
+    if (segs_.empty()) {
+        err = "the expert cache is not segmented (the engine needs --vram-elastic)";
+        return false;
+    }
+#if defined(STRATA_EC_NO_VMM)
+    (void) want_bytes;
+    return false;
+#else
+    const Vmm& v = vmm();
+    int dev = 0;
+    cudaGetDevice(&dev);
+    const CUdeviceptr va = reinterpret_cast<CUdeviceptr>(base_);
+    int64_t at = mapped_bytes();
+    while (mapped_segs_ < (int64_t) segs_.size() && at + seg_size_[(size_t) mapped_segs_] <= want_bytes) {
+        const size_t i = (size_t) mapped_segs_;
+        if (!map_segment(v, dev, va + (CUdeviceptr) ((uint64_t) i * (uint64_t) seg_), (size_t) seg_size_[i],
+                         segs_[i])) {
+            (void) cudaGetLastError();
+            err = "the driver has no VRAM for another expert-cache segment";
+            live_slots_ = slots_within(mapped_bytes());
+            return false;
+        }
+        at += seg_size_[i];
+        ++mapped_segs_;
+    }
+    live_slots_ = slots_within(mapped_bytes());
+    return true;
+#endif
+}
+
+#if defined(STRATA_USE_HIP)
+bool ExpertCache::ensure_blocking_staging(std::size_t bytes, std::string& err) {
+    if (bytes <= blocking_staging_bytes_) return true;
+    void* next = nullptr;
+    const cudaError_t status = cudaHostAlloc(&next, bytes, cudaHostAllocDefault);
+    if (status != cudaSuccess) {
+        err = std::string("ExpertCache: HIP blocking staging allocation: ") + cudaGetErrorString(status);
+        return false;
+    }
+    if (blocking_staging_) (void) cudaFreeHost(blocking_staging_);
+    blocking_staging_ = static_cast<uint8_t*>(next);
+    blocking_staging_bytes_ = bytes;
+    return true;
+}
+#endif
+
+namespace {
+bool g_cache_vmm = false;   // set_vmm
+}  // namespace
+
+void ExpertCache::set_vmm(bool enabled) { g_cache_vmm = enabled; }
+
+bool ExpertCache::open(int64_t n_slots, int64_t n_layers, int64_t n_expert, int64_t blob_bytes,
+                       std::string& err) {
+    close();
+    if (n_slots <= 0) {
+        err = "ExpertCache: n_slots must be positive";
+        return false;
+    }
+    if (n_layers <= 0 || n_expert <= 0 || blob_bytes <= 0) {
+        err = "ExpertCache: n_layers, n_expert and blob_bytes must all be positive";
+        return false;
+    }
+
+    const uint64_t want = (uint64_t) n_slots * (uint64_t) blob_bytes;
+
+    // ---- **THE ALLOCATION IS CHECKED AGAINST THE CARD, NOT AGAINST THE REQUEST.**
+    //
+    // `cudaMalloc` failing is the easy case. The one that matters is a machine where the weights already own
+    // most of VRAM: the cache then takes what is left and `slots()` would report the number ASKED FOR while
+    // `device_slot()` walks off the end. So the free-VRAM figure is read and compared BEFORE the allocation,
+    // and the two numbers are named in the refusal.
+    size_t free_b = 0, total_b = 0;
+    if (cudaMemGetInfo(&free_b, &total_b) == cudaSuccess) {
+        free_b = device_free_bytes();   // unified memory: what the OS can give back counts (see the header)
+        if ((uint64_t) free_b < want) {
+            char buf[320];
+            std::snprintf(buf, sizeof buf,
+                          "ExpertCache: %lld slots x %lld B = %.2f GiB, but only %.2f GiB of VRAM is free "
+                          "(%.2f GiB of %.2f GiB total). Lower --expert-cache.",
+                          (long long) n_slots, (long long) blob_bytes, (double) want / 1073741824.0,
+                          (double) free_b / 1073741824.0, (double) (total_b - free_b) / 1073741824.0,
+                          (double) total_b / 1073741824.0);
+            err = buf;
+            return false;
+        }
+    }
+
+    if (seg_req_ > 0) {   // #533: --vram-elastic: physical segments behind one address range (zeroed below)
+        if (!open_segmented(want, err)) return false;
+    } else if (g_cache_vmm && vmm_available()) {
+        // the elastic K/V: every chunk mapped now; the K/V may later take some of them (and give them back)
+        auto r = std::make_unique<VmmRange>();
+        if (!r->reserve(want) || !r->map_range(0, r->chunks(), [] { return (VmmChunk) 0; })) {
+            char buf[256];
+            std::snprintf(buf, sizeof buf, "ExpertCache: mapping %.2f GiB of VRAM failed: out of memory",
+                          (double) want / 1073741824.0);
+            err = buf;
+            return false;
+        }
+        base_ = r->base();
+        vmm_ = std::move(r);
+    } else if (cudaMalloc((void**) &base_, (size_t) want) != cudaSuccess) {
+        base_ = nullptr;
+        char buf[256];
+        std::snprintf(buf, sizeof buf, "ExpertCache: cudaMalloc(%.2f GiB) failed: %s",
+                      (double) want / 1073741824.0, cudaGetErrorString(cudaGetLastError()));
+        err = buf;
+        return false;
+    }
+    // Zeroed so a slot read before it is filled is a DETERMINISTIC wrong answer rather than whatever the
+    // allocator handed back.  A stale block of a previous process's memory would still sum to finite floats.
+    if (cudaMemset(base_, 0, (size_t) want) != cudaSuccess) {
+        err = "ExpertCache: cudaMemset of the slot arena failed";
+        close();
+        return false;
+    }
+
+    residency_.assign((size_t) (n_layers * n_expert), kNotResident);
+    slots_ = n_slots;
+    live_slots_ = n_slots;
+    n_layers_ = n_layers;
+    n_expert_ = n_expert;
+    blob_ = blob_bytes;
+#if defined(STRATA_USE_HIP)
+    if (!ensure_blocking_staging((std::size_t) blob_, err)) {
+        close();
+        return false;
+    }
+#endif
+    next_free_ = 0;
+    fills_ = 0;
+    admitted_ = 0;
+    // R4.2g: each layer starts at the bottom of its own range.  Built here rather than lazily so `admit`
+    // stays allocation-free on the token path.
+    layer_next_.assign((size_t) (n_layers > 0 ? n_layers : 0), 0);
+    for (int64_t l = 0; l < n_layers; ++l) {
+        int64_t lo = 0, hi = 0;
+        layer_slot_range(l, lo, hi);
+        layer_next_[(size_t) l] = (int32_t) lo;
+    }
+    return true;
+}
+
+bool ExpertCache::open_sized(const std::vector<int64_t>& slot_bytes, int64_t n_layers, int64_t n_expert,
+                             std::string& err) {
+    if (slot_bytes.empty()) { err = "ExpertCache: no slots"; return false; }
+    int64_t mx = 0;
+    std::vector<uint64_t> off(slot_bytes.size() + 1, 0);
+    for (size_t i = 0; i < slot_bytes.size(); ++i) {
+        // 256-byte aligned slots, so every blob starts where the kernels' vector loads expect it (and the
+        // STRATA_MMQ_DIRECT guard after each blob, 0 by default)
+        off[i + 1] = off[i] + (uint64_t) slot_stride(slot_bytes[i], guard_req_);
+        mx = slot_bytes[i] > mx ? slot_bytes[i] : mx;
+    }
+    // one allocation of the summed size, through the uniform path's checks: n "slots" of 1 byte
+    if (!open((int64_t) off.back(), n_layers, n_expert, 1, err)) return false;
+    slots_ = (int64_t) slot_bytes.size();
+    live_slots_ = slots_;
+    blob_ = mx;
+    off_ = std::move(off);
+    guard_ = guard_req_;
+#if defined(STRATA_USE_HIP)
+    if (!ensure_blocking_staging((std::size_t) blob_, err)) {
+        close();
+        return false;
+    }
+#endif
+    // #369: each layer's cursor at the bottom of its own range, as open() seeds it - open() above ran on byte-sized
+    // "slots", so its seeds are not slot indices
+    layer_next_.assign((size_t) (n_layers > 0 ? n_layers : 0), 0);
+    for (int64_t l = 0; l < n_layers; ++l) {
+        int64_t lo = 0, hi = 0;
+        layer_slot_range(l, lo, hi);
+        layer_next_[(size_t) l] = (int32_t) lo;
+    }
+    return true;
+}
+
+void ExpertCache::close() {
+#if defined(STRATA_USE_HIP)
+    if (blocking_staging_) (void) cudaFreeHost(blocking_staging_);
+    blocking_staging_ = nullptr;
+    blocking_staging_bytes_ = 0;
+#endif
+    off_.clear();
+    guard_ = 0;
+    if (!segs_.empty()) {
+        release_segmented();
+    } else if (vmm_) {
+        vmm_.reset();   // unmaps and frees every chunk it still holds
+        base_ = nullptr;
+    } else if (base_ != nullptr) {
+        cudaFree(base_);
+        base_ = nullptr;
+    }
+    residency_.clear();
+    slots_ = 0;
+    live_slots_ = 0;
+    n_layers_ = 0;
+    n_expert_ = 0;
+    blob_ = 0;
+    next_free_ = 0;
+    fills_ = 0;
+    admitted_ = 0;
+    layer_next_.clear();
+}
+
+/// R4.2g.  Layer `l` owns `[l*q, (l+1)*q)` with `q = slots_ / n_layers_`; the LAST layer takes whatever is
+/// left over, so the ranges always cover `0..slots_` exactly and no slot is orphaned by the division.
+void ExpertCache::layer_slot_range(int64_t layer, int64_t& lo, int64_t& hi) const {
+    lo = 0;
+    hi = 0;
+    if (n_layers_ <= 0 || slots_ <= 0 || layer < 0 || layer >= n_layers_) return;
+    const int64_t q = slots_ / n_layers_;
+    lo = layer * q;
+    hi = (layer == n_layers_ - 1) ? slots_ : (layer + 1) * q;
+}
+
+int32_t ExpertCache::slot_of(int64_t layer, int64_t expert) const {
+    if (layer < 0 || layer >= n_layers_ || expert < 0 || expert >= n_expert_) return kNotResident;
+    return residency_[(size_t) (layer * n_expert_ + expert)];
+}
+
+int32_t ExpertCache::admit(int64_t layer, int64_t expert) {
+    if (layer < 0 || layer >= n_layers_ || expert < 0 || expert >= n_expert_) return kNotResident;
+    const size_t at = (size_t) (layer * n_expert_ + expert);
+    if (residency_[at] != kNotResident) return residency_[at];
+    // R4.2g: THE PER-LAYER PATH.  Same "no eviction" rule, but the ceiling is this layer's own range rather
+    // than one counter shared by all 48 - which is what confined the measured hit rate to 2.97%.
+    if (per_layer_) {
+        if (layer_next_.empty()) return kNotResident;
+        int64_t lo = 0, hi = 0;
+        layer_slot_range(layer, lo, hi);
+        if ((int64_t) layer_next_[(size_t) layer] >= hi) return kNotResident;   // this layer's quota is full
+        residency_[at] = layer_next_[(size_t) layer]++;
+        ++admitted_;
+        return residency_[at];
+    }
+    if (next_free_ >= slots_) return kNotResident;   // full: no eviction, deliberately - see the header
+    residency_[at] = (int32_t) next_free_;
+    return (int32_t) next_free_++;
+}
+
+uint8_t* ExpertCache::device_slot(int32_t slot) {
+    if (slot < 0 || slot >= slots_) return nullptr;
+    if (!off_.empty()) return base_ + off_[(size_t) slot];
+    return base_ + (size_t) slot * (size_t) blob_;
+}
+
+const uint8_t* ExpertCache::device_slot(int32_t slot) const {
+    if (slot < 0 || slot >= slots_) return nullptr;
+    if (!off_.empty()) return base_ + off_[(size_t) slot];
+    return base_ + (size_t) slot * (size_t) blob_;
+}
+
+bool ExpertCache::fill_slot(int32_t slot, const uint8_t* host_blob, void* stream, std::string& err, int64_t bytes) {
+    const size_t n = (size_t) (bytes > 0 && bytes <= blob_ ? bytes : blob_);
+    uint8_t* dst = device_slot(slot);
+    if (dst == nullptr) {
+        err = "ExpertCache::fill_slot: slot " + std::to_string(slot) + " is outside 0.." +
+              std::to_string(slots_ - 1);
+        return false;
+    }
+    if (host_blob == nullptr) {
+        err = "ExpertCache::fill_slot: the host blob is null";
+        return false;
+    }
+    const cudaError_t e = cudaMemcpyAsync(dst, host_blob, n, cudaMemcpyHostToDevice,
+                                          (cudaStream_t) stream);
+    if (e != cudaSuccess) {
+        err = std::string("ExpertCache::fill_slot: ") + cudaGetErrorString(e);
+        return false;
+    }
+    ++fills_;
+    return true;
+}
+
+bool ExpertCache::fill_slot_blocking(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes) {
+    const size_t n = (size_t) (bytes > 0 && bytes <= blob_ ? bytes : blob_);
+    uint8_t* dst = device_slot(slot);
+    if (dst == nullptr) {
+        err = "ExpertCache::fill_slot_blocking: slot outside the arena";
+        return false;
+    }
+    if (host_blob == nullptr) {
+        err = "ExpertCache::fill_slot_blocking: the host blob is null";
+        return false;
+    }
+#if defined(STRATA_USE_HIP)
+    // Bound HIP's pageable-source staging to one expert instead of repeatedly
+    // registering regions of the mmap. The blocking copy completes before reuse.
+    if (!blocking_staging_ || n > blocking_staging_bytes_) {
+        err = "ExpertCache::fill_slot_blocking: HIP staging buffer is too small";
+        return false;
+    }
+    std::memcpy(blocking_staging_, host_blob, n);
+    const cudaError_t e = cudaMemcpy(dst, blocking_staging_, n, cudaMemcpyHostToDevice);
+#else
+    const cudaError_t e = cudaMemcpy(dst, host_blob, n, cudaMemcpyHostToDevice);
+#endif
+    if (e != cudaSuccess) {
+        err = std::string("ExpertCache::fill_slot_blocking: ") + cudaGetErrorString(e);
+        return false;
+    }
+    ++fills_;
+    return true;
+}
+
+bool ExpertCache::fill_slot_queued(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes) {
+    const size_t n = (size_t) (bytes > 0 && bytes <= blob_ ? bytes : blob_);
+    uint8_t* dst = device_slot(slot);
+    if (dst == nullptr || host_blob == nullptr) {
+        err = dst == nullptr ? "ExpertCache::fill_slot_queued: slot outside the arena"
+                             : "ExpertCache::fill_slot_queued: the host blob is null";
+        return false;
+    }
+    const cudaError_t e = cudaMemcpyAsync(dst, host_blob, n, cudaMemcpyHostToDevice, (cudaStream_t) 0);
+    if (e != cudaSuccess) {
+        err = std::string("ExpertCache::fill_slot_queued: ") + cudaGetErrorString(e);
+        return false;
+    }
+    ++fills_;
+    return true;
+}
+
+bool ExpertCache::fill_slot_queued_parts(int32_t slot, const BlobPart* parts, int n, std::string& err) {
+    uint8_t* dst = device_slot(slot);
+    if (dst == nullptr || parts == nullptr || n <= 0) {
+        err = "ExpertCache::fill_slot_queued_parts: slot outside the arena or no pieces";
+        return false;
+    }
+    uint64_t total = 0;
+    for (int i = 0; i < n; ++i) total += parts[i].n;
+    if (total > (uint64_t) blob_) {
+        err = "ExpertCache::fill_slot_queued_parts: the pieces are larger than a slot";
+        return false;
+    }
+    for (int i = 0; i < n; ++i) {
+        const cudaError_t e = cudaMemcpyAsync(dst + parts[i].at, parts[i].p, (size_t) parts[i].n, cudaMemcpyHostToDevice,
+                                              (cudaStream_t) 0);
+        if (e != cudaSuccess) {
+            err = std::string("ExpertCache::fill_slot_queued_parts: ") + cudaGetErrorString(e);
+            return false;
+        }
+    }
+    ++fills_;
+    return true;
+}
+
+bool ExpertCache::sync_queued(std::string& err) {
+    const cudaError_t e = cudaStreamSynchronize((cudaStream_t) 0);
+    if (e != cudaSuccess) {
+        err = std::string("ExpertCache::sync_queued: ") + cudaGetErrorString(e);
+        return false;
+    }
+    return true;
+}
+
+bool ExpertCache::verify_slot(int32_t slot, const uint8_t* host_blob, std::string& err, int64_t bytes) {
+    const int64_t nb = bytes > 0 && bytes <= blob_ ? bytes : blob_;
+    const uint8_t* src = device_slot(slot);
+    if (src == nullptr) {
+        err = "ExpertCache::verify_slot: slot outside the arena";
+        return false;
+    }
+    // `cudaMemcpy` and not `cudaMemcpyAsync`: this is a startup check, and a check that can be read before it
+    // has happened is not a check.  It also synchronises the fills queued before it, which is what makes the
+    // comparison meaningful.
+    std::vector<uint8_t> got((size_t) nb);
+    const cudaError_t e = cudaMemcpy(got.data(), src, (size_t) nb, cudaMemcpyDeviceToHost);
+    if (e != cudaSuccess) {
+        err = std::string("ExpertCache::verify_slot: ") + cudaGetErrorString(e);
+        return false;
+    }
+    if (std::memcmp(got.data(), host_blob, (size_t) nb) != 0) {
+        size_t first = 0;
+        while (first < (size_t) nb && got[first] == host_blob[first]) ++first;
+        char buf[256];
+        std::snprintf(buf, sizeof buf,
+                      "ExpertCache::verify_slot: slot %d differs from the arena at byte %llu (of %lld)",
+                      (int) slot, (unsigned long long) first, (long long) blob_);
+        err = buf;
+        return false;
+    }
+    return true;
+}
+
+}  // namespace strata::core
+</tool_response><|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Searching for the adaptive swap logic.
+
+<tool_call>
+<function=grep>
+<parameter=pattern>
+adapt_every
+</parameter>
+</function>
+</tool_call><|im_end|>
+<|im_start|>user
+<tool_response>
+src/program/generate.cpp:688:    /// Plan v0.3 P6: every `adapt_every` rounds, swap up to `adapt_swaps` of the most-routed missing experts into
+src/program/generate.cpp:690:    int adapt_every = 4;
+src/program/generate.cpp:691:    bool adapt_every_given = false;   ///< --adapt-every was on the command line (the per-card warm-up interval below does not override it)
+src/program/generate.cpp:694:    int adapt_iv(int64_t rounds) const { return adapt_warm_every > 0 && rounds < adapt_warm_rounds ? adapt_warm_every : adapt_every; }   ///< the interval in force at verify round `rounds`
+src/program/generate.cpp:2626:        else if (a == "--adapt-every") { o.adapt_every = std::atoi(next("--adapt-every")); o.adapt_every_given = true; }
+src/program/generate.cpp:3221:    // 2-5 tokens, so the adaptive tier (one swap round per adapt_every VERIFY rounds) learned the text 2-5 times slower per
+src/program/generate.cpp:3224:    if (!o.adapt_every_given && o.spec >= 2 && o.adapt_every > 0) {
+src/program/generate.cpp:3229:        if (n > 0 && n < o.adapt_every && wr > 0) { o.adapt_warm_every = n; o.adapt_warm_rounds = wr; }
+src/program/generate.cpp:5799:                    igpu_p.integrated != 0 && o.adapt_every > 0 && o.adapt_swaps > 0)
+src/program/generate.cpp:8083:                        : o.adapt_every <= 0 || o.adapt_swaps <= 0 ? "the adaptive tier is off"
+src/program/generate.cpp:8259:            if (o.adapt_every > 0 && o.adapt_swaps > 0 &&
+src/program/generate.cpp:8269:                         o.adapt_every > 0 && o.adapt_swaps > 0 ? "exchange them with the GPU cache (no file reads)"
+src/program/generate.cpp:10028:        if (o.adapt_every > 0 && o.adapt_swaps > 0 && !all_experts_resident)
+src/program/generate.cpp:10550:                                 "a round every %d windows%s\n", (long long) a_cap, o.adapt_every,
+src/program/generate.cpp:10736:                    if (drain || a_win - a_last < (int64_t) o.adapt_every) return true;
+src/program/generate.cpp:11599:            if (!drive.d.usage.empty() && !ajob && !in_prompt_read && (++ba_window % o.adapt_every) == 0 && pending.empty())
+src/program/generate.cpp:14449:                    if (!drive.d.usage.empty() && o.adapt_every > 0 && (rounds % o.adapt_iv(rounds)) == 0 && pending.empty() &&
+src/program/generate.cpp:16185:        if (o.adapt_every > 0 && o.adapt_swaps > 0) drive.d.usage.assign((size_t) (g.n_layers * g.n_expert), 0.0f);
+src/program/generate.cpp:16783:                        (long long) swaps_total, o.adapt_every, ms_adapt / rounds);
+sycl/src/program/generate.cpp:649:    /// Plan v0.3 P6: every `adapt_every` rounds, swap up to `adapt_swaps` of the most-routed missing experts into
+sycl/src/program/generate.cpp:651:    int adapt_every = 4;
+sycl/src/program/generate.cpp:1924:        else if (a == "--adapt-every") o.adapt_every = std::atoi(next("--adapt-every"));
+sycl/src/program/generate.cpp:5062:        if (!miss.empty() && no_host && o.adapt_every > 0 && o.adapt_swaps > 0) {
+sycl/src/program/generate.cpp:5065:            o.adapt_every = 0;
+sycl/src/program/generate.cpp:6585:                        : o.adapt_every <= 0 || o.adapt_swaps <= 0 ? "the adaptive tier is off"
+sycl/src/program/generate.cpp:6637:            if (o.adapt_every > 0 && o.adapt_swaps > 0 &&
+sycl/src/program/generate.cpp:6647:                         o.adapt_every > 0 && o.adapt_swaps > 0 ? "exchange them with the GPU cache (no file reads)"
+sycl/src/program/generate.cpp:7979:        if (o.adapt_every > 0 && o.adapt_swaps > 0 && !all_experts_resident)
+sycl/src/program/generate.cpp:8289:                                 "a round every %d windows\n", (long long) a_cap, o.adapt_every);
+sycl/src/program/generate.cpp:8493:                    if (drain || a_win - a_last < (int64_t) o.adapt_every) return true;
+sycl/src/program/generate.cpp:11051:                    if (!drive.d.usage.empty() && o.adapt_every > 0 && (rounds % o.adapt_every) == 0 && pending.empty() &&
+sycl/src/program/generate.cpp:11557:                if (!drive.d.usage.empty() && !ajob && ((rounds + 1) % o.adapt_every) == 0)
+sycl/src/program/generate.cpp:12455:        if (o.adapt_every > 0 && o.adapt_swaps > 0) drive.d.usage.assign((size_t) (g.n_layers * g.n_expert), 0.0f);
+sycl/src/program/generate.cpp:12780:            if (!drive.d.usage.empty() && ((rounds + 1) % o.adapt_every) == 0)
+sycl/src/program/generate.cpp:12889:                        (long long) swaps_total, o.adapt_every, ms_adapt / rounds);
+tools/agent_turns_bench.py:74:      ("grep", "adapt_every", "Searching for the adaptive swap logic."),
+</tool_response><|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+

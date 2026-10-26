@@ -1,0 +1,1431 @@
+# Strata+ — Supporto alla patch: gate_v2 / P5 a confronto, e codice ngram di llama.cpp per una `PoolSource`
+
+Scout tecnico, 25/10/2026, ~02:50 ora di Roma (UTC+2, CEST). È un documento di sola lettura: non ho modificato nessun repo e non ho fatto push.
+
+**Legenda**
+- **[S]** = implementato in Strata @ 7dd5cf18
+- **[P5]/[P4]** = patch locali Strata+ (mai pushate)
+- **[A]** = implementato altrove
+- **[P]** = proposta o idea plausibile, non implementata da nessuno
+
+Dove non trovo qualcosa lo scrivo come **non trovato**.
+
+**Commit di riferimento** (permalink):
+
+| Sigla | Repo @ commit |
+|---|---|
+| S | `https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5` |
+| L | `https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4` |
+| C | `https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0` |
+| G | `https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc` |
+| V | `https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e` |
+| AI | `https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51` |
+
+**Patch locali senza permalink.** Le patch P4 e P5 esistono solo in locale, quindi non hanno un permalink GitHub. Le cito con percorso e righe del worktree `/workspace/strata-policy/patchwork` (commit locale `4e381d7`, base 7dd5cf18):
+- `JG.cpp` = `/workspace/strata-policy/patchwork/src/spec/joint_gate.cpp`
+- `JG.hpp` = `/workspace/strata-policy/patchwork/include/strata/spec/joint_gate.hpp`
+- `PS.hpp` = `/workspace/strata-policy/patchwork/include/strata/spec/pool_source.hpp`
+- `PS.cpp` = `/workspace/strata-policy/patchwork/src/spec/pool_source.cpp`
+- `sim2.py` = `/workspace/strata-policy/replay/strata_sim/sim2.py` (GateV2, gemello Python)
+- `wiring.md` = `/workspace/strata-policy/patchwork/docs/strataplus_joint_gate.md`
+
+---
+
+## 0. In breve
+
+1. **P5 (`JointGate`) e gate_v2 coincidono** riga per riga per la logica di decisione: start/keep/finish/observe ([P5] `JG.cpp` L124-216 ↔ `sim2.py` `GateV2` L379-528, act L455, update L502; numerazione del file modificato alle 02:56 ora di Roma). La parità è dichiarata dal test del replay (README patches), che non ho rieseguito.
+2. **Rispetto ai sistemi esistenti, P5 è l'unico che:**
+   - sceglie insieme sorgente e profondità MTP con un modello di costo appreso;
+   - salta il draft MTP quando il lookup domina (lookup-first);
+   - usa feedback controfattuale censurato.
+
+   Colibri sceglie la profondità per sorgente e poi prende la sorgente col valore più alto, ma la profondità MTP automatica è opt-in. SGLang adatta solo i passi EAGLE con un EMA, senza costo e senza scelta di sorgente.
+3. **Bug e casi limite trovati in P5/P4** (dettagli in §2):
+   - (a) `tmax>8` o una finestra di catena con T>8 vanno fuori dagli array (`th_`, `n_t_`): non c'è guardia.
+   - (b) `set_frozen(true)` non usa la tabella seminata `STRATA_SPEC_COST_TABLE`: congela il prior `1+0.15·t` scalato dal primo campione, contrariamente a quanto dice `wiring.md`.
+   - (c) Gli hazard MTP per bucket di p non decadono mai, quindi l'adattamento a un cambio di dominio è lento.
+   - (d) `rem` non tiene conto di `max_context`.
+   - (e) [P4] Il pool riappende tutto il prompt a ogni richiesta, quindi in chat multi-turno la storia si duplica.
+   - (f) [P4] `PoolSource::propose` assume che la storia del pool finisca col contesto della richiesta corrente: è falso se le richieste si interlacciano.
+   - (g) Non c'è nessun mutex, né in P4 né nel registro `extra_draft_sources`.
+4. **Codice llama.cpp riusabile per un pool.** Il pezzo migliore è `common_ngram_mod`:
+   - 38+62 righe, solo STL, nessuna dipendenza da ggml o `llama_token`;
+   - MIT, come Strata;
+   - è stateless rispetto alla posizione nella storia, quindi è immune al problema (f) e idempotente rispetto alla duplicazione (e).
+
+   `ngram-cache` è riusabile con poco lavoro (dipende da `llama.h`/`log.h`/ggml_time) ma ha memoria illimitata. `ngram-map` è legato alla storia della sequenza ed è poco adatto.
+5. **Verifica delle affermazioni sulla soglia di match** (§5):
+   - SuffixDecoding: `max_spec_factor` (default 1.0) e `min_token_prob` (default 0.1) sono **corretti**, con due precisazioni:
+     - la probabilità è il prodotto cumulato lungo il cammino;
+     - esiste anche `max_spec_offset`, che vLLM non espone.
+   - llama.cpp "lunghezza minima di n-gram": **impreciso**.
+     - ngram-mod e ngram-simple usano un n **fisso** (24 e 12).
+     - I parametri `n_min` sono lunghezze minime del **draft**, non del match.
+     - Il vero "match minimo" configurabile è `prompt_lookup_min` di vLLM (default 5).
+
+---
+
+## 1. Confronto per aspetto: gate_v2/P5 vs DraftPolicy vs Colibri vs SGLang
+
+### 1.1 Mappa del codice
+
+**Strata `DraftPolicy::choose`** [S]
+- choose: [S/src/spec/draft_policy.cpp#L123-L152](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L123-L152)
+- observe: [#L154-L173](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L154-L173)
+- costanti: [#L15-L25](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L15-L25)
+- gate di accordo nel serve loop: [generate.cpp#L14899-L14900](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14899-L14900)
+
+**gate_v2 / P5 `JointGate`** [P5]
+- `JG.hpp` L1-75
+- `JG.cpp`: start L124-148, keep L150-165, finish L167-184, observe L186-216, CostRLS L43-79
+- gemello `sim2.py`: `censored` L317, `CostRLS` L328, `GateV2` L379-528
+
+**Colibri** [A]
+- gate: [C/c/spec_draft.h#L41-L47](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L41-L47) (costanti), [#L120-L160](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L120-L160) (costo, valore, pick)
+- arbitraggio MTP/lookup: [C/c/qwen38_core.h#L3883-L3894](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38_core.h#L3883-L3894)
+- init per generazione: [C/c/qwen38.c#L995-L1010](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38.c#L995-L1010)
+- doc: [C/docs/speculative.md#L187-L198](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/docs/speculative.md#L187-L198)
+
+**SGLang** [A]
+- `AdaptiveStepSlot`: [G/python/sglang/srt/speculative/adaptive_spec_params.py#L153-L262](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L153-L262)
+- solo EAGLE/EAGLE3: [#L56-L62](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L56-L62)
+- candidati per batch size: [#L28-L34](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L28-L34)
+
+**Scelta ngram/EAGLE in SGLang: non trovata.**
+- L'algoritmo è un singolo enum scelto all'avvio: [G/.../spec_info.py#L32-L60](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/spec_info.py#L32-L60).
+- Una grep su `speculative/` non mostra un worker che combini NGRAM ed EAGLE per round.
+
+### 1.2 Tabella per aspetto
+
+Sintassi: **uguale / diverso / mancante**, sempre riferito a P5 rispetto all'altro sistema.
+
+**Scelta della sorgente**
+- **P5:** none / MTP / lookup / pool. Usa un unico obiettivo di Dinkelbach E[a+1] − λ·C:
+  - lookup-first prima del draft (`JG.cpp` L124-148);
+  - scelta finale (L167-184).
+  - Non richiede l'accordo, che diventa una feature dell'hazard (`agree` in L112).
+- **DraftPolicy:**
+  - **diverso**: confronto e/cost(k+1) contro mtp_tokens/cost·(1+margin) ([L127-L138](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L127-L138));
+  - lookup solo se `sbuf[0]==drafts[0]` ([L14899](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14899));
+  - "none" non è un'opzione: T resta quello MTP.
+- **Colibri:**
+  - **simile**: valore per sorgente; lookup se vl>vm, a parità vince la k più lunga ([qwen38_core.h#L3893](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38_core.h#L3893));
+  - il passo semplice (k=0) è un'opzione ([spec_draft.h#L146-L150](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L146-L150)).
+- **SGLang:** **mancante** (una sola sorgente per server).
+
+**Scelta della profondità**
+- **P5:** MTP sequenziale. Dopo ogni draft, `keep()` confronta "ora" con "più avanti" (L150-165). C'è anche una variante entropy stop (L151-154).
+- **DraftPolicy:**
+  - **diverso**: T MTP fisso (`--spec`), a meno che `STRATA_SPEC_COST=1` non attivi `keep_draft` ([L199-L224](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L199-L224));
+  - per il lookup sceglie già k ([L131-L136](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L131-L136)).
+- **Colibri:**
+  - **simile**: `spec_gate_pick` massimizza su k=1..maxk ([L140-L160](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L140-L160));
+  - per l'MTP solo con `Q38_MTP_DRAFTS=auto|0`, altrimenti il default è depth=2 ([qwen38.c#L999-L1004](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38.c#L999-L1004));
+  - maxm è 3 ([qwen38_core.h#L3889](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38_core.h#L3889));
+  - la decisione avviene prima del draft, non draft per draft.
+- **SGLang:**
+  - **diverso**: sale o scende tra i candidati quando l'EMA dei draft accettati supera o scende sotto (passo − 0.5) più isteresi (−0.25 in discesa, 0 in salita); ogni 5 batch dopo 10 di warmup ([L166-L250](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L166-L250));
+  - nessun costo.
+
+**Stima dell'accettazione**
+- **P5:** hazard condizionali per posizione:
+  - MTP: per bucket di p top-1 (7 bucket, L10-12);
+  - lookup: per sorgente × bucket di match (4,6,12,24) × accordo × posizione≤2 (L81-87);
+  - E[a+1] dal prodotto degli hazard (L100-105).
+- **DraftPolicy:**
+  - **diverso**: q geometrica per bucket di match (6/12/24) con prior `kPriorQ` ([L32-L39](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L32-L39));
+  - MTP: EMA dei token per T ([L118-L121](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L118-L121)).
+- **Colibri:**
+  - **simile** (hazard per posizione): `acc[src][j]` = P(j+1 | 1..j) con memoria EMA 16 ([L46](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L46), [L52](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L52), [L107-L115](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L107-L115));
+  - non condizionata da p né dal match.
+- **SGLang:** **diverso**: un solo EMA della lunghezza accettata media del batch ([L196-L202](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L196-L202)).
+
+**Modello di costo**
+- **P5:** RLS online su one-hot(T) + ρ_mtp·d + ρ_lu·k, con prior ottimista e correzione CostRLS (L38-79).
+  - Il costo per round è in ms (scala fissata dal primo campione, L47).
+  - Non dipende dalla lunghezza del contesto.
+- **DraftPolicy:**
+  - **diverso**: tabella EMA per T e per bucket di contesto (6000/24000) ([L76-L96](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L76-L96), [L154-L162](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L154-L162));
+  - probe/stale ([L22-L25](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L22-L25)).
+- **Colibri:**
+  - **simile**: costo per numero di righe, relativo a T(1), con un ρ di fallback lineare ([L120-L125](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L120-L125));
+  - costo per draft extra per sorgente ([L133](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L133)).
+- **SGLang:** **mancante**.
+
+**Esplorazione**
+- **P5:** solo tramite prior ottimista e interpolazione delle righe poco provate (L61-78). **Non** c'è un probe periodico né un passo "none" forzato.
+- **DraftPolicy:** probe `kProbes=3` e re-misura stale dopo 300 round ([L142-L150](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L142-L150)).
+- **Colibri:**
+  - probe +1 profondità ogni 16 pick (4 se la riga è poco misurata) ([L151-L156](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L151-L156));
+  - passo semplice forzato ogni 64 forward per tenere T(1) misurato ([L44](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L44), [L145](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L145)).
+- **SGLang:** probe implicito ("+1" sull'EMA) e probe da steps=0 ([L219-L227](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L219-L227)).
+
+**Feedback**
+- **P5:** full-information censurato. Entrambe le sorgenti vengono valutate sui token committati a+1 (L186-216; `censored` L14-19).
+- **DraftPolicy:** **diverso**: aggiorna solo il braccio giocato ([L164-L172](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L164-L172)). P3 aggiunge il controfattuale.
+- **Colibri:** **diverso**: solo la sorgente giocata ([qwen38_core.h#L3813](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38_core.h#L3813)).
+- **SGLang:** **diverso**: solo la lunghezza accettata.
+
+**Determinismo**
+- **Output:** identico in tutti i casi con verifica greedy ([generate.cpp#L16646-L16647](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16646-L16647)).
+- **P5:**
+  - le decisioni dipendono dai ms misurati;
+  - `set_frozen` congela θ ma non λ, che usa il costo passato (L189-190);
+  - la scala viene dal primo campione (L47).
+  - Quindi è deterministica solo se l'engine passa costi da tabella (vedi bug b).
+- **DraftPolicy:** **uguale** (ms appresi); P2 aggiunge `set_frozen_costs` (patch locale, `patchwork/include/strata/spec/draft_policy.hpp` L71).
+- **Colibri:** **uguale** (tempi EMA).
+- **SGLang:** dipende solo dalle accettazioni, quindi è deterministico dato l'output. Il costo non c'è.
+
+**Stato per richiesta/sessione**
+- **P5:** il cablaggio non è definito (`wiring.md` passi 1-3). L'oggetto implicito è unico per processo: lo stato persiste tra richieste, senza bucket di contesto e senza reset.
+- **DraftPolicy:** un oggetto per processo nel serve loop, con bucket di contesto `set_context`.
+- **Colibri:** **diverso**: `SpecGate` re-inizializzato a ogni `q38_spec_begin`, cioè per generazione ([qwen38.c#L995-L1010](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38.c#L995-L1010)).
+- **SGLang:** **diverso**: per batch size, non per richiesta ([L28-L34](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L28-L34); `AdaptiveController` [adaptive_runtime_state.py#L69-L143](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_runtime_state.py#L69-L143)).
+
+---
+
+## 2. Bug e casi limite
+
+Ogni punto indica se è **verificato nel codice** o **plausibile**.
+
+### P5 `JointGate`
+
+**(a) [verificato] Fuori limite per T>8.**
+- `cost_pred` indicizza `th_[t-1]` (L39) e `cost_update` usa `x[t-1]`, `n_t_[t-1]` (L45, L58).
+- `th_` ha 10 righe: 8 per T più ρ_mtp e ρ_lu. `n_t_` ne ha 8 (`JG.hpp` L65, L68).
+- Lo stesso vale per `start()`, che chiama `expect(hm, min(tmax−1, rem))` su array di dimensione kD=7/8 (L139). Il commento "tmax - 1 <= kD" è solo un'assunzione.
+- Con `Options.tmax>8`, oppure se l'engine passa a `observe` una finestra di catena (`T_mtp+chain_n`, [generate.cpp#L14920-L14921](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14920-L14921) nella base) con T≥9:
+  - con T=9 `n_t_[8]` è già fuori limite e `th_[8]` (ρ_mtp) viene trattato come riga T;
+  - con T>10 anche `x[t-1]` va fuori limite.
+- `wiring.md` punto 4 esclude le catene, ma nel codice manca una guardia.
+- **[P]** `t = std::clamp(t,1,8)` e `tmax = min(tmax, kD+1)` nel costruttore.
+
+**(b) [verificato] La modalità frozen non usa la tabella seminata.**
+- `JG.hpp` espone solo `set_frozen(bool)` (L52). Non esiste un'API per seminare `th_`.
+- Con frozen, `cost_update` imposta `scale_` dal primo campione (L47) e poi esce (L48): resta il prior `1+0.15·t` (L32).
+- `wiring.md` passo 3 dice invece "the seeded table" (STRATA_SPEC_COST_TABLE).
+- **[P]** Aggiungere `seed_costs(const double* ms_by_T)` e una scala fissa.
+
+**(c) [verificato, effetto plausibile] Hazard MTP senza oblio.**
+- `hm_s_/hm_f_ += ok` senza decadimento (L197), mentre il marginale decade a 0.999 (L198) e il lookup a 0.998 (L212).
+- Dopo un cambio di dominio la calibrazione p→accettazione si adatta tanto più lentamente quanti più campioni ha già accumulato.
+- DraftPolicy usa invece `kCalDecay=0.995` ([L16](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L16)).
+- **Nota:** `sim2.py` L512-513 fa lo stesso, quindi il replay non può aver visto la differenza.
+
+**(d) [verificato] `rem` ignora `max_context`.**
+- `wiring.md` passa `rem = max_new − produced_n − 1`.
+- L'engine però interrompe la generazione se `p + T > o.max_context` ([generate.cpp#L14923](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14923) nella base: `break`, non riduce T).
+- Un gate che sceglie T più grande vicino alla fine del contesto termina la richiesta prima del tempo.
+- llama.cpp limita il draft con `n_ctx − prompt − 2` ([L/tools/server/server-context.cpp#L568-L587](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/tools/server/server-context.cpp#L568-L587)).
+- **[P]** `rem = min(max_new − produced − 1, max_context − p − 1)`.
+
+**(e) [verificato] Convenzione "0 / −1 = illimitato".**
+- In llama.cpp:
+  - `n_max = -1` significa disabilitato o illimitato ([L/common/speculative.h#L63-L65](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.h#L63-L65));
+  - il troncamento avviene solo `if (dp.n_max > 0)` ([speculative.cpp#L3020-L3030](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L3020-L3030)), quindi 0 non tronca;
+  - `n_remaining()` vale −1 per generazione illimitata e il cap si applica solo `if (n_remaining() > 0)` ([server-context.cpp#L537-L540](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/tools/server/server-context.cpp#L537-L540), [#L580-L582](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/tools/server/server-context.cpp#L580-L582));
+  - il server comunque non chiede draft se `n_draft_max <= 0` ([#L3755-L3757](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/tools/server/server-context.cpp#L3755-L3757)).
+- In Strata la convenzione è opposta:
+  - `max_k <= 0` → nessuna proposta ([draft_source.cpp#L17](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L17));
+  - `max_new < 1` viene rifiutato ([generate.cpp#L12385](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L12385), [#L3307](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L3307)).
+- In `JointGate`, `rem <= 0` disattiva l'MTP e restringe il lookup (L133, L115, L139). Corretto oggi; diventerebbe un bug silenzioso (speculazione spenta per sempre) se qualcuno adottasse la semantica llama.cpp (−1 = illimitato).
+- Stessa trappola nel porting di ngram-mod: il suo `n_max` interno (64) **non** è il `max_k` di Strata, va limitato esplicitamente (§4).
+- **Arctic Inference:** la docstring dice "max_spec_tokens: If 0, uses the cache's max_depth" ([AI/arctic_inference/suffix_decoding/cache.py#L255-L256](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L255-L256)). Il codice però usa `max_depth` solo se `None` ([#L284-L285](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L284-L285)), quindi con 0 → `min(0, …)` = nessun draft ([suffix_tree.cc#L606-L609](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L606-L609)). Docstring e codice divergono.
+
+**(f) [verificato] `tmax=1`.**
+- `kmax_ = min(kD, tmax−1, rem) = 0` (L146).
+- `start` ritorna false se il lookup non domina, quindi l'engine fa comunque almeno un draft e `finish` può restituire una finestra MTP T=2 > tmax.
+- Caso degenere; **[P]** se `kmax_==0` ritornare `true` con kNone.
+
+**(g) [plausibile] Prior di λ in unità miste.**
+- `lam_n_=lam_c_=1.0` (`JG.hpp` L70) vale 1 token/unità.
+- Dopo il primo `observe` il costo arriva in ms (L190): per pochi round λ mescola unità diverse e penalizza il costo, favorendo "none" e T piccoli.
+- Si esaurisce in pochi round (decadimento 0.995); è solo un effetto di warm-up.
+
+**(h) [mancante] Nessun passo "none" forzato e nessun probe periodico.**
+- La scala e λ si ancorano ai costi dei round giocati.
+- Colibri forza un passo semplice ogni 64 forward proprio per tenere T(1) misurato ([spec_draft.h#L44](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L44), [#L145](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L145)).
+- **[P]** Riusare la stessa idea.
+
+**(i) Rollback.**
+- Il gate non tiene stato legato alle posizioni della KV/GDN, quindi non serve rollback: l'unico input sono i token committati e i draft.
+- Il rischio è nel cablaggio. Se `start()` salta il draft MTP (d=0) e il lookup fallisce, il round successivo deve fare il draft MTP in serie (rischio già dichiarato in `wiring.md`, "Risks to measure live").
+- Il codice dell'engine per questo caso non esiste ancora (solo design).
+
+**(j) Cambio di dominio.**
+
+| Sistema | Meccanismo | Dove |
+|---|---|---|
+| P5 | decadimenti 0.999 (costo RLS, L49), 0.995 (λ, L189), 0.998 (lookup), nessuno sugli hazard MTP | punto (c) |
+| DraftPolicy | `kDecay=0.97` lookup, `kTokAlpha` 0.05, stale 300 | [L15-L25](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L15-L25) |
+| Colibri | memoria 16 verify | — |
+| SGLang | EMA 0.2 | — |
+| llama.cpp ngram-mod | **reset dell'intero pool** dopo 5 round consecutivi con accettazione < 0.25 | [speculative.cpp#L2186-L2204](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2186-L2204) |
+
+Sul reset di ngram-mod:
+- il commento a L2049 dice "< 0.5" ma il codice usa 0.25: divergenza commento/codice;
+- il reset è attivato da **una** sequenza ma svuota il pool **condiviso** da tutte.
+
+### P4 `PoolSource`
+
+**(k) [verificato] Duplicazione della storia in multi-turno.**
+- A ogni richiesta l'engine chiama `extra_sources_reset()`, che nel pool è un no-op (`PS.hpp` L29), e poi riappende **tutti** gli `ids` (patchwork `generate.cpp` L14214-14216; base [L14181-L14182](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14181-L14182)).
+- In una sessione multi-turno il prefisso della conversazione si ripete a ogni turno. La crescita è quadratica in numero di turni × lunghezza, con evizioni frequenti (`PS.cpp` L19, L24-30) e testo duplicato.
+- **[P]** Appendere solo il suffisso non già visto: hash del prefisso e offset per slot o conversazione. Con `common_ngram_mod` (§3) il problema diventa innocuo, perché `add` è idempotente.
+
+**(l) [verificato] Assunzione di contiguità.**
+- `propose` passa al `SuffixDrafter` solo i draft pendenti ("the pool's own history ends with the current request's committed context", `PS.cpp` L34-37).
+- Con più slot (`BSlot`, [generate.cpp#L11345](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11345)) o richieste interlacciate la coda del pool non è il contesto corrente.
+- Non ho verificato se il percorso batch usi le extra sources (**non verificato**). Sul percorso single-slot l'assunzione regge.
+
+**(m) [verificato] Nessun separatore tra richieste.**
+- Il testo di richieste diverse è concatenato (`PS.cpp` L20), quindi un match può attraversare il confine.
+- Effetto solo sulla velocità, non sull'output.
+
+**(n) [verificato] Doppia copia del testo.**
+- `text_` (`PS.hpp` L41) duplica `SuffixDrafter::hist_` ([suffix_drafter.hpp#L41](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/suffix_drafter.hpp#L41), [#L53](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/suffix_drafter.hpp#L53)).
+- L'evizione ricostruisce l'indice di `capacity/2` token in modo sincrono dentro `append`, nel serve loop: è un picco di latenza (entità **non misurata**).
+
+**(o) Thread safety.**
+- Nessun mutex in `draft_source.cpp`, `PS.cpp`, `suffix_drafter`. La grep su `mutex|atomic|thread` non trova nulla.
+- Il registro è uno `static std::vector` ([draft_source.cpp#L8-L11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L8-L11)).
+- Va bene solo con un unico thread nel serve loop.
+
+---
+
+## 3. Idee riusabili dagli altri
+
+| Idea | Dove | Stato | Per P5/P4 |
+|---|---|---|---|
+| Passo semplice forzato ogni N forward per ancorare T(1) | Colibri [spec_draft.h#L44](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L44), [#L145](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L145) | [A] | [P] in `start()` |
+| Probe di profondità +1 periodico, più frequente se poco misurato | Colibri [#L151-L156](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L151-L156) | [A] | [P] complementare al prior ottimista |
+| Costo extra per draft per sorgente (`d[src]`) | Colibri [#L99-L105](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L99-L105), [#L133](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L133) | [A] | P5 ha già ρ_mtp/ρ_lu |
+| Isteresi asimmetrica su/giù sulla profondità | SGLang [#L174-L175](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L174-L175), [#L230-L249](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L230-L249) | [A] | [P] utile solo se il gate oscilla; non misurato |
+| Candidati di profondità per batch size | SGLang [#L28-L34](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/adaptive_spec_params.py#L28-L34) | [A] | [P] per la modalità batch di Strata |
+| Bucket di costo per lunghezza di contesto | Strata [draft_policy.cpp#L76-L96](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L76-L96) | [S] | [P] per P5: una feature `ctx_bucket` nel RLS |
+| Reset del pool su occupazione > 0.25 o serie di bassa accettazione | llama.cpp [speculative.cpp#L2095-L2103](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2095-L2103), [#L2186-L2204](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2186-L2204) | [A] | [P] nel pool, ma per sorgente e senza effetto su altri slot |
+| Eviction LRU per nodo in un trie di capacità fissa; inserimento asincrono su thread worker con mutex | SGLang [trie.cpp#L23-L93](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/kernels/jit/csrc/ngram_corpus/trie.cpp#L23-L93), [ngram.cpp#L130-L141](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/kernels/jit/csrc/ngram_corpus/ngram.cpp#L130-L141) | [A], Apache-2.0 | [P] alternativa all'eviction "a metà" di P4 |
+| Cache dinamica persistente su disco tra processi (save/load/merge) | llama.cpp [speculative.cpp#L2254-L2288](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2254-L2288) | [A] | [P] pool che sopravvive al riavvio |
+| Lunghezza del draft proporzionale al match (+ soglia di prob.) | Arctic/vLLM (§5) | [A] | [P] opzione (c) |
+
+---
+
+## 4. llama.cpp: codice ngram riusabile per una `PoolSource` persistente
+
+### 4.1 L'interfaccia in Strata [S]
+
+**`DraftSource`** ([include/strata/spec/draft_source.hpp#L21-L34](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/draft_source.hpp#L21-L34)):
+- `name()`;
+- `reset()`, chiamato a inizio richiesta;
+- `append(tokens, n)`, solo per il contesto committato;
+- `propose(tail, n_tail, n_pending, max_k, out, match)`:
+  - `tail` contiene ≤ 64 token, gli ultimi `n_pending` sono draft non verificati;
+  - ritorna il numero di token proposti;
+  - `*match` = lunghezza del match.
+
+**Registro e arbitraggio:**
+- `extra_draft_sources()`: [hpp#L54-L55](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/draft_source.hpp#L54-L55), registro statico [draft_source.cpp#L8-L11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L8-L11).
+- `propose_from_sources`: vince il match più lungo ≥ `min_match`, a parità vince la sorgente precedente ([draft_source.cpp#L13-L34](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L13-L34)).
+
+**Hook nell'engine:**
+- [generate.cpp#L1089-L1095](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L1089-L1095)
+- reset/append a inizio richiesta [#L14181-L14182](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14181-L14182)
+- append dei token accettati [#L15157](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15157)
+- uso [#L14909](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14909)
+- Nella base tutto questo vale solo con `--lookup-chain`; P4 lo estende con `extra_sources_on`.
+
+**Manca nell'interfaccia:** un callback di accettazione (`accepted(n_proposed, n_ok)`).
+- ngram-mod lo usa per il reset su bassa accettazione.
+- **[P]** Aggiungere `virtual void feedback(int proposed, int accepted) {}` con default vuoto.
+
+### 4.2 Licenze (verificate sui file LICENSE)
+
+- **Strata:** MIT, "Copyright (c) 2026 Niko1221 and the Strata contributors" ([S/LICENSE#L1-L3](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/LICENSE#L1-L3)).
+- **llama.cpp:** MIT, "Copyright (c) 2023-2026 The ggml authors" ([L/LICENSE#L1-L3](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/LICENSE#L1-L3)).
+- **Compatibili.** L'obbligo MIT è conservare nota di copyright e permesso nelle copie o porzioni sostanziali. **[P]** Header nel file estratto più una voce in un file `THIRD_PARTY_NOTICES`.
+- **SGLang e Arctic Inference:** Apache-2.0 ([G/LICENSE#L1-L3](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/LICENSE#L1-L3), [AI/LICENSE#L1-L3](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/LICENSE#L1-L3)). Copiare il loro codice in Strata (MIT) comporta gli obblighi Apache: licenza, NOTICE, indicazione delle modifiche. Prendere solo le idee non li comporta.
+
+### 4.3 I pezzi, uno per uno
+
+**A. `common_ngram_mod` — consigliato**
+
+*File e righe*
+- [L/common/ngram-mod.h#L1-L38](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.h#L1-L38)
+- [L/common/ngram-mod.cpp#L1-L62](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.cpp#L1-L62)
+- Introdotto da PR #19164.
+
+*Cosa fa*
+- Tabella a indirizzamento diretto di `int32_t` di dimensione fissa.
+- `idx` = hash LCG degli n token (moltiplicatore 6364136223846793005) modulo la dimensione ([cpp#L15-L25](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.cpp#L15-L25)).
+- `add` memorizza il token successivo: **sovrascrive**, nessun controllo di collisione ([#L27-L35](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.cpp#L27-L35)).
+- `get` ritorna −1 se vuoto ([#L37-L41](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.cpp#L37-L41)).
+- `reset` riempie di −1 ([#L43-L46](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-mod.cpp#L43-L46)).
+
+*Uso in llama.cpp*
+- Driver in [speculative.cpp#L2033-L2206](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2033-L2206): un pool **condiviso tra tutti gli slot** (L2036-2037; doc [docs/speculative.md#L176](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/docs/speculative.md#L176)).
+- Dimensione `4*1024*1024` voci (L2060). Con `int32_t` sono 16 MiB, coerente con "~16 MB" in [docs#L172](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/docs/speculative.md#L172).
+- Default `n_match=24`, `n_max=64`, `n_min=48` ([common.h#L359-L364](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/common.h#L359-L364)). Warning se `n_match < 16` (L2070-2073).
+- Il draft concatena `get` sulla finestra scorrevole. Se si ferma prima di `n_min` token scarta tutto (L2132-2156).
+- I nuovi n-gram vengono aggiunti a blocchi di ≥ 32 token (L2123-2130).
+
+*Dipendenze*
+- Solo STL: `<cstdint>`, `<vector>`, `<cstddef>`, `<algorithm>`.
+- Niente ggml e niente `llama_token`: `entry_t = int32_t`. Il `static_assert(sizeof(llama_token)==…)` sta solo nel driver (L2062).
+- Il driver invece dipende da `llama_seq_id`, `llama_tokens`, `SPC_*` log e `common_params`: non va copiato, va riscritto.
+
+*Eviction e memoria*
+- Memoria costante.
+- Nessuna eviction fine: **reset totale** se l'occupazione supera 0.25 a `begin` (L2095-2103) o dopo 5 round con accettazione < 0.25 (L2186-2204).
+- Le collisioni producono token sbagliati, scartati dalla verifica: solo costo, mai errore.
+
+*Thread safety*
+- Nessun mutex o atomico (grep nulla in `ngram-mod.*` e `speculative.cpp`).
+- In llama.cpp è sicuro solo perché il loop del server chiama draft e accept in un unico thread. Questo è dedotto dal codice del driver e **non verificato** sull'intero server.
+
+*Rollback e contesto*
+- Si indicizzano solo token committati: niente rollback.
+- `get` dipende solo dagli ultimi n token passati, non da una posizione nella storia. Quindi:
+  - funziona anche con slot interlacciati (risolve il bug (l) di P4);
+  - riappendere lo stesso testo è idempotente in memoria (risolve (k)).
+
+*Effort di estrazione:* **basso**. Si copiano ~100 righe e si aggiunge la nota MIT; il driver va riscritto per Strata (~50-80 righe stimate, non misurate).
+
+*Limite rispetto a P4*
+- La "lunghezza di match" è sempre n e non è verificata (hash senza chiave).
+- Quindi in `propose_from_sources` il criterio "match più lungo vince" non ha informazione: il pool vincerebbe o perderebbe sempre allo stesso modo contro il lookup della richiesta.
+- **[P]** Riportare `match = n` solo se il draft ha ≥ `n_min` token, oppure verificare la chiave memorizzando anche un fingerprint (variante [P]).
+
+**B. `common_ngram_cache` (lookup decoding "classico")**
+
+*File e righe*
+- [L/common/ngram-cache.h#L1-L101](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-cache.h#L1-L101)
+- [ngram-cache.cpp#L12-L283](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-cache.cpp#L12-L283)
+
+*Cosa fa*
+- `unordered_map<ngram(1..4 token), unordered_map<token, count>>` (h L57-61).
+- `update` incrementa i conteggi per n=1..4 (cpp L12-52).
+- `draft` prova il contesto (soglie lax), poi la cache dinamica (strict), poi quella statica (2-gram).
+  - Dentro ogni cache prova gli n-gram dal più lungo (L104).
+  - Soglie di campione e percentuale: [cpp#L59-L63](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-cache.cpp#L59-L63), L134-139.
+  - Si ferma al primo token senza candidato (L157-195).
+- `save`/`load`/`merge` su file binario (L198-283).
+
+*Uso in llama.cpp*
+- Per sequenza: tre cache per `seq_info` ([speculative.cpp#L2213-L2219](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2213-L2219)).
+- La cache dinamica è caricata da `-lcd` e salvata alla distruzione, dopo il merge dei contesti ([#L2254-L2288](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2254-L2288); arg [arg.cpp#L1636-L1648](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/arg.cpp#L1636-L1648)).
+- **Persistenza tra richieste [verificato]:** `begin` azzera solo `cache_size` e non la mappa di contesto (L2290-2292), quindi la cache di contesto accumula tutte le richieste dello slot e riconta il prompt a ogni richiesta.
+- A ogni draft copia l'intero prompt in `inp` (L2302-2307): costo O(lunghezza) per round.
+
+*Dipendenze*
+- `llama.h` (`llama_token`, `LLAMA_TOKEN_NULL`), `common.h`, `log.h` (`LOG_DBG`), `ggml_time_ms`, `GGML_ASSERT`.
+- Si sostituiscono facilmente con `int32_t`, −1 e niente log.
+
+*Eviction e memoria:* **nessuna**. Le mappe crescono senza limite e il file dinamico cresce a ogni sessione.
+
+*Thread safety:* nessun mutex.
+
+*Effort:* **basso-medio**: ~280 righe, più un limite di memoria da aggiungere **[P]**.
+
+*Valore:* conteggi e soglie di confidenza al posto di "ultimo token vince", più la persistenza su disco.
+
+**C. `common_ngram_map` / `common_ngram_simple_draft`**
+
+*File e righe*
+- [L/common/ngram-map.h#L1-L115](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-map.h#L1-L115)
+- [ngram-map.cpp#L49-L112](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-map.cpp#L49-L112) (simple), L121-536 (map)
+
+*Cosa fa*
+- simple: ricerca lineare all'indietro dell'n-gram (`size_n`) e copia dell'm-gram successivo.
+- map: chiavi n-gram con fino a 4 valori m-gram e statistiche di accettazione (h L38-58), più una hash map opzionale da 262144 voci (h L41-42, L76).
+
+*Dipendenze*
+- `llama.h`, `common.h` (`llama_tokens`), `LOG_*`, `GGML_ABORT`.
+- Soprattutto, gli indici puntano dentro la **storia della sequenza** (`key_idx`, `value_idx`, h L46, L53), con pulizia esplicita quando la storia si accorcia (h L79-80; cpp L121-215).
+
+*Persistenza:* per sequenza, non condivisa.
+
+*Effort:* **medio-alto**, e poco adatto a un pool cross-request: richiederebbe di conservare la storia come fa P4.
+
+**D. Driver e priorità in llama.cpp**
+
+- Ordine fisso: ngram-simple → map-k → map-k4v → mod → cache → draft-model/EAGLE3/MTP/DFlash/DSpark ([speculative.cpp#L2806-L2818](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2806-L2818)).
+- Vince il primo che produce un draft ([#L2998-L3050](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2998-L3050)): **nessun costo, nessun confronto**. Da non riusare come arbitro.
+
+### 4.4 Schizzo di adattatore (**PROPOSTA**, pseudocodice, non compilato)
+
+```cpp
+// PROPOSTA - strata/spec/ngram_pool_source.hpp
+// Contiene common_ngram_mod copiato da llama.cpp (MIT, (c) 2023-2026 The ggml authors) - nota in THIRD_PARTY_NOTICES.
+class NgramPoolSource final : public DraftSource {
+  ngram_mod mod_;              // copia di common_ngram_mod (solo STL)
+  std::vector<int32_t> win_;   // ultimi n token committati della richiesta corrente (+1 in arrivo)
+  int n_, n_min_;              // n_match (llama.cpp default 24), draft minimo (default 48 in llama.cpp: per Strata [P] molto più basso, da tarare)
+  double occ_reset_ = 0.25;    // soglia di occupazione (come llama.cpp L2098)
+  // [P] mutex_ se le sorgenti verranno chiamate da più thread/slot
+public:
+  NgramPoolSource(int n, size_t entries, int n_min) : mod_(n, entries), n_(n), n_min_(n_min) {}
+  const char* name() const override { return "ngram-pool"; }
+  void reset() override { win_.clear(); }            // NON svuota mod_: pool persistente; solo niente n-gram a cavallo di 2 richieste
+  void append(const int32_t* t, size_t n) override {
+    for (size_t i = 0; i < n; ++i) {
+      win_.push_back(t[i]);
+      if ((int) win_.size() == n_ + 1) { mod_.add(win_.data()); win_.erase(win_.begin()); }  // add() legge n+1 token
+    }
+    if ((double) mod_.get_used() / mod_.size() > occ_reset_) mod_.reset();   // eviction "alla llama.cpp" - [P] meglio: generazioni/epoch
+  }
+  int propose(const int32_t* tail, int n_tail, int n_pending, int max_k, int32_t* out, int* match) override {
+    *match = 0;
+    if (max_k <= 0 || n_tail < n_) return 0;          // convenzione Strata: 0 = niente (NON "illimitato" come llama.cpp)
+    std::vector<int32_t> buf(tail + n_tail - n_, tail + n_tail);   // la coda include i draft pendenti: va bene, get() è senza stato
+    int k = 0;
+    for (; k < max_k; ++k) {                           // max_k di Strata limita; NON usare n_max=64 di llama.cpp
+      const int32_t tok = mod_.get(buf.data() + k);
+      if (tok < 0) break;
+      buf.push_back(tok); out[k] = tok;
+    }
+    if (k < std::min(n_min_, max_k)) return 0;
+    *match = n_;                                       // [P] lunghezza "nominale": l'hash non verifica la chiave
+    return k;
+  }
+  // [P] estensione d'interfaccia: void feedback(int proposed, int accepted) -> reset su serie di bassa accettazione (llama.cpp L2186-2204), ma per sorgente
+};
+// registrazione, come P4: extra_draft_sources().push_back(std::make_unique<NgramPoolSource>(24, 4u<<20, n_min));
+```
+
+**Note sull'adattatore [P]:**
+- `reset()` svuota solo la finestra. Così la duplicazione degli `ids` in multi-turno (bug (k)) riscrive le stesse celle senza costo di memoria; resta solo il costo CPU di re-hash.
+- Per il gate di P5 la sorgente "pool" (`kSrc=1`) va alimentata con `Lookup{k, match=n, agree}`. Con match costante, il bucket di match di P5 (`kMB={4,6,12,24}`, `JG.cpp` L11) collassa su un solo valore (24 → bucket 4). L'hazard impara comunque per posizione e accordo.
+
+---
+
+## 5. Soglia minima di match: precedenti
+
+Serve a Strata Policy per l'opzione (c), l'euristica di Specu: lookup lungo se c'è match, altrimenti MTP poco profondo, con una soglia minima di match.
+
+### 5.1 Verifica delle affermazioni fatte nel gruppo
+
+**1. "SuffixDecoding lega la lunghezza del draft alla lunghezza del match (parametro tipo `max_spec_factor`)" — CORRETTO.**
+- Nome esatto in vLLM: `suffix_decoding_max_spec_factor`, default **1.0**, con docstring "max_spec_tokens = max_spec_factor * prefix_match_length" ([V/vllm/config/speculative.py#L542-L545](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/config/speculative.py#L542-L545)). Viene validato ≥ 0 (L1707-1710).
+- In Arctic Inference il nome è `max_spec_factor`, default 1.0 ([AI/arctic_inference/suffix_decoding/cache.py#L240](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L240)).
+- Codice: `max_tokens = min(max_spec_tokens, int(match_len*max_spec_factor + max_spec_offset + 1e-6))` ([AI/csrc/suffix_decoding/suffix_tree.cc#L606-L609](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L606-L609)).
+- **Precisazione 1.** Esiste anche **`max_spec_offset`**, default **0.0** ([cache.py#L241](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L241), [#L257-L262](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L257-L262)). vLLM **non lo espone**: la chiamata passa solo factor e min_prob ([V/vllm/v1/spec_decode/suffix_decoding.py#L80-L88](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/v1/spec_decode/suffix_decoding.py#L80-L88)).
+- **Precisazione 2.** Il loop prova **tutte** le lunghezze di match da 1 in su ([suffix_tree.cc#L600-L605](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L600-L605)) e tiene il draft con **score** massimo, a parità il match più lungo (L616-619).
+  - Lo score è la somma delle probabilità dei token (L837).
+  - Fra albero del prompt e albero globale vince lo score più alto ([cache.py#L290-L308](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L290-L308)).
+  - Quindi **non c'è una soglia minima di match rigida**: con factor 1.0 un match di 1 token consente un draft di 1 token. La soglia è "morbida", proporzionale.
+
+**2. "Taglia i token sotto una soglia di probabilità (`min_token_prob`)" — CORRETTO, con una precisazione.**
+- Nome vLLM: `suffix_decoding_min_token_prob`, default **0.1**, docstring "Will only speculate tokens with estimated probability (based on frequency counts) greater than or equal to this value" ([V/vllm/config/speculative.py#L547-L550](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/config/speculative.py#L547-L550)). Validato in [0,1] (L1712-1715).
+- Arctic: `min_token_prob=0.1` ([cache.py#L242](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/suffix_decoding/cache.py#L242)).
+- **Precisazione.** Nel percorso a cammino singolo la probabilità è **cumulata**: `prob *= child->count / node->count` a ogni ramificazione ([suffix_tree.cc#L829-L851](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L829-L851)). Il draft si **interrompe** al primo punto in cui il prodotto scende sotto la soglia: non salta il token, tronca il resto.
+- Nel percorso ad albero c'è un controllo analogo (L896).
+
+**3. "Il lookup di llama.cpp ha una lunghezza minima di n-gram" — IMPRECISO.**
+- **ngram-mod:** l'n-gram ha lunghezza **fissa** `n_match` (default 24), non minima ([L/common/common.h#L359-L364](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/common.h#L359-L364)).
+  - Il suo `n_min` (default 48) è la **lunghezza minima del draft**: sotto quella soglia il draft viene scartato ([speculative.cpp#L2138-L2147](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2138-L2147)).
+  - Flag: `--spec-ngram-mod-n-match/-n-min/-n-max` ([arg.cpp#L4333-L4361](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/arg.cpp#L4333-L4361)). Il flag `--spec-ngram-mod-n-match` è descritto come "ngram-mod lookup length" e accetta 1..1024 (L4354-L4358). I vecchi `--draft-min` e `--spec-ngram-size-n` sono stati rimossi ([arg.cpp#L4467-L4480](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/arg.cpp#L4467-L4480)).
+  - La doc avverte "small `n` are not recommended" ([docs/speculative.md#L182](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/docs/speculative.md#L182)) e il codice emette un warning sotto 16 ([speculative.cpp#L2070-L2073](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/speculative.cpp#L2070-L2073)).
+- **ngram-simple:** n-gram di lunghezza **fissa** `size_n` (default 12) e draft fino a `size_m` (default 48) ([common.h#L366-L370](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/common.h#L366-L370)).
+  - Il codice chiama `n_draft_min = size_ngram` ([ngram-map.cpp#L57-L58](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-map.cpp#L57-L58)) e scarta il draft se ha meno token della lunghezza dell'n-gram ([#L96-L102](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-map.cpp#L96-L102)). Il nome "min" si riferisce di nuovo al draft.
+- **ngram-cache** (il "lookup decoding" originale, `examples/lookup`): prova n-gram da `LLAMA_NGRAM_MIN=1` a `LLAMA_NGRAM_MAX=4`, costanti di compilazione ([ngram-cache.h#L9-L11](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-cache.h#L9-L11)), dal più lungo al più corto. Il minimo è 1 e la confidenza viene da **soglie di conteggio e percentuale**, non dalla lunghezza ([ngram-cache.cpp#L59-L63](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-cache.cpp#L59-L63)).
+- **ngram-map-k/k4v:** oltre a `size_n` c'è `min_hits` (default 1): un minimo di **occorrenze** della chiave, non di lunghezza ([ngram-map.h#L68](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/ngram-map.h#L68), [common.h#L366-L370](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/common.h#L366-L370)).
+- **Draft model:** `n_min = 0` è il minimo di token di draft ([common.h#L329-L330](https://github.com/ggml-org/llama.cpp/blob/d327bf1f0780f87b8c01b367b61853b0c291d7c4/common/common.h#L329-L330)). Non c'entra col match.
+- **In sintesi:** in llama.cpp **non ho trovato** un parametro "lunghezza minima di match" in senso stretto. Ci sono n fissi e minimi sul draft.
+
+### 5.2 Precedenti veri di soglia minima di match
+
+| Sistema | Parametro | Default | Semantica | Riferimento |
+|---|---|---|---|---|
+| vLLM ngram (prompt lookup) | `prompt_lookup_min` / `prompt_lookup_max` | 5 / 5 se nessuno dei due è dato | n-gram tra min e max | [V/vllm/config/speculative.py#L497-L501](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/config/speculative.py#L497-L501), [#L1277-L1283](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/config/speculative.py#L1277-L1283) ("arbitrarily chosen", commento TODO a L1280); uso [ngram_proposer.py#L19-L21](https://github.com/vllm-project/vllm/blob/4e591657157a021cab997f911d67f50c0d18a71e/vllm/v1/spec_decode/ngram_proposer.py#L19-L21) |
+| SuffixDecoding (Arctic/vLLM) | `max_spec_factor` (+ `max_spec_offset`) | 1.0 (+0.0) | soglia **proporzionale**: draft ≤ factor·match + offset | §5.1 |
+| Colibri lookup | `spec_lookup(h, len, min_n=2, max_n=4, …)` | 2..4 (cablato) | suffisso più lungo tra 4 e 2 | [C/c/qwen38_core.h#L3883](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/qwen38_core.h#L3883), [spec_draft.h#L185-L198](https://github.com/JustVugg/colibri/blob/e0db083cdc9e563e0766cc6fc661ef23c32298e0/c/spec_draft.h#L185-L198) |
+| Strata `SuffixDrafter` | `min_match` = `--suffix-draft` | 3 | match minimo per proporre | [generate.cpp#L777](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L777), [#L11177](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11177), [suffix_drafter.hpp#L9-L10](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/suffix_drafter.hpp#L9-L10) |
+| Strata `--lookup-chain-min` | `lookup_chain_min` | 3 (clamp ≥ 3) | match minimo delle sorgenti in catena | [generate.cpp#L784](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L784), [#L2675](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L2675) |
+| Strata DraftPolicy | bucket di match <6 / <12 / <24 / ≥24 con prior q | 0.75 / 0.88 / 0.93 / 0.96 | soglia **morbida** via q | [draft_policy.cpp#L20](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L20), [#L32-L34](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L32-L34) |
+| Strata+ P4 pool | `gate` | 12 | il pool propone solo con match ≥ gate | `PS.hpp` L11-13, L27; `PS.cpp` L38 (locale) |
+| SGLang ngram | — | — | **non trovato** un parametro di match minimo: grep in `ngram_worker.py` mostra `max_trie_depth`, `min_bfs_breadth`/`max_bfs_breadth` | [G/.../ngram_worker.py#L100](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/ngram_worker.py#L100), [#L114-L123](https://github.com/sgl-project/sglang/blob/656331295619a4d0267b40b7da0b5cd5b549fcbc/python/sglang/srt/speculative/ngram_worker.py#L114-L123) |
+
+**Dati locali di contesto (non misure su motore).** Il report H1 riporta che il pool con gate 12 su session_full dà P1 +3.7% [+2.1, +5.5], mentre senza gate il pool perde −29.5% in P1 (`/workspace/strata-policy/ricognizione_H1.md` §4, righe 80-83). Sono tok/s stimati con profili simbolici.
+
+### 5.3 Per l'opzione (c) — proposte, da validare nel replay
+
+**[P1] Soglia rigida più lunghezza proporzionale.**
+- Regola:
+  - se `match ≥ m_min`: lookup con `k = min(max_k, floor(f·match + o))`;
+  - altrimenti: MTP con depth 1-2.
+- Precedenti:
+  - `m_min`: `prompt_lookup_min` di vLLM, il gate 12 di P4, `min_match` di Strata;
+  - `f`/`o`: `max_spec_factor`/`max_spec_offset`.
+- Default di partenza tratti dai precedenti, **non tarati per Strata**: f=1.0, o=0.
+- Nota: con f=1.0 e m_min=12 il lookup proporrebbe ≤ 12 token per match di 12. Già oggi SuffixDrafter limita il match a 64 ([generate.cpp#L11177](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11177)).
+
+**[P2] Soglia di confidenza per pool e cache.**
+- Troncare il draft quando la stima di probabilità cumulata scende sotto `p_min` (alla `min_token_prob`).
+- Richiede conteggi per continuazione: il `SuffixDrafter` non li ha (memorizza solo le posizioni, `WAYS=4`, [suffix_drafter.hpp#L7-L10](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/suffix_drafter.hpp#L7-L10)), e nemmeno `ngram_mod`. Li ha `ngram-cache` (§4.3 B).
+
+**[P3] Bucket di match in P5.** P5 ha già `kMB={4,6,12,24}` (`JG.cpp` L11), quindi l'opzione (c) è un caso particolare "a soglia fissa" di ciò che P5 impara. Utile come baseline semplice e deterministica nel replay, senza costo appreso.
+
+**Stato nel replay [verificato].** Strata Policy ha già aggiunto `SpecuC` in `sim2.py` L234-260 (file modificato alle 02:56 ora di Roma):
+- soglia `min_match` (default 3) sul match del SuffixDrafter (`q["lk_m"]`);
+- `factor` opzionale con `k = min(k_lookup, kmax_lu, max(1, floor(f·match)))`;
+- `min_token_prob` omesso, come dichiarato nella docstring (L235-239).
+
+Differenze rispetto ad Arctic, utili per interpretare i risultati:
+- (1) Arctic non ha una soglia rigida e usa `int(f·match + offset + 1e-6)` con minimo 0, non `max(1, …)` ([suffix_tree.cc#L606-L609](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L606-L609)). Con `min_match ≥ 3` e f ≥ 1/3 le due formule coincidono.
+- (2) Arctic sceglie la lunghezza di match che massimizza lo score (somma delle probabilità) su tutte le lunghezze ([L600-L620](https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/csrc/suffix_decoding/suffix_tree.cc#L600-L620)), non il match più lungo come SuffixDrafter.
+
+**Caso limite.**
+- Con `ngram_mod` il match è sempre n, quindi una soglia di match non discrimina.
+- Usare invece la lunghezza del draft ottenuto (alla `n_min` di llama.cpp) come proxy di confidenza [P].
+
+## 6. Percorso batch ed extra_draft_sources
+
+**Commit.** Strata upstream `7dd5cf18e68c639a8773e096c5c79f971ea2a9f5`, che il 25/10/2026 è anche l'HEAD remoto (`git ls-remote origin HEAD` → stesso sha). S = `https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5`. Le patch locali (patchwork @ `4e381d7`, mai pushate) sono citate come path:riga, senza permalink.
+
+**Risposta breve.** Il percorso batch (`--batch/--slots`, comandi `BGEN`, `batch_step`) **non** usa `extra_draft_sources`. Lo usano solo i due loop a sequenza singola: il loop seriale di `--serve` (GEN) e il decode CLI. In più, a monte il registro è sempre vuoto, perché nel repo nessuno vi registra una sorgente.
+
+### 6.1 Verificato nel codice
+
+**Definizione e lettura del registro.**
+- Il registro è un `static std::vector` globale al processo: [draft_source.cpp L8-11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L8-L11).
+- Viene letto solo in `propose_from_sources` ([L31-32](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_source.cpp#L31-L32)) e negli helper [generate.cpp L1090-1095](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L1090-L1095) (`extra_sources_reset` / `extra_sources_append`, che iterano su tutte le sorgenti).
+- L'header dice di registrare le sorgenti "before the first request" ([draft_source.hpp L8-9](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/draft_source.hpp#L8-L9)) e che `reset()` segnala che "A new request starts" ([L25-26](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/draft_source.hpp#L25-L26)).
+- Nessun `push_back`/`emplace` sul registro in `src/`, `include/`, `sycl/` (`rg extra_draft_sources`). Il registro è quindi vuoto a monte. Per lo stesso `rg`, anche `src/qwen35/q36_engine.cu`, che pure gestisce `BGEN`, non lo usa.
+
+**Tutti i call site** (`rg 'extra_draft_sources|extra_sources_|propose_from_sources'`), solo in due blocchi di `main()` ([L2309](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L2309)):
+
+| Blocco | reset + prompt | propose (chain) | append committed |
+|---|---|---|---|
+| A. `--serve`, loop seriale per richiesta (blocco `if (o.serve)` da [L8354](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L8354); `READY` a [L11168](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11168)) | [L14180-14183](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14180-L14183) | [L14906-14911](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14906-L14911) | [L15157](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15157) |
+| B. CLI non-serve (`spec_loop_runs` a [L16102](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16102)) | [L16464-16468](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16464-L16468) | [L16571-16576](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16571-L16576) | [L16684](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16684) |
+
+Il backend SYCL replica lo stesso schema a `sycl/src/program/generate.cpp`, righe 973-977, 10707-10708, 11475, 11599, 12661-12663, 12690, 12797 (da `rg`).
+
+Tutto è condizionato a `o.lookup_chain > 0`. In più, la propose richiede `!first_window && !from_sfx` ([L14906](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14906)).
+
+**Il percorso batch non tocca le sorgenti.**
+- Lo stato per slot `BSlot` ([L11317-11345](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11317-L11345)) contiene solo `draft` MTP ([L11321](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11321)) e `ids` della conversazione ([L11329](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11329)). Non ha né suffix né lookup.
+- `batch_step` ([L11519-11545](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11519-L11545)) mette nella finestra 1 riga per slot, oppure 2 con `--batch-mtp` (`draft[0]`).
+- Accetta al più la riga MTP ([L11606-11608](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11606-L11608)).
+- Fa l'emit con `BT` e `sl.ids.push_back` ([L11640-11657](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11640-L11657)), senza `extra_sources_append`.
+- Il draft successivo è solo MTP per slot ([L11658-11674](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11658-L11674)).
+- `batch_step` gira tra una riga di controllo e l'altra ([L11946-11948](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11946-L11948)) e durante la lettura dei prompt ([L13910](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L13910)), sempre sul thread principale.
+
+**Admission BGEN.**
+- `BGEN <slot> <max_new>` viene riscritto in `GEN 1` ([L12000-12015](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L12000-L12015)). Il primo token passa quindi dal loop seriale A, che fa reset + append del prompt ([L14180-14183](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14180-L14183)) e append del primo token ([L15157](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15157)).
+- Con `max_new=1` c'è una sola finestra (`first_window`), quindi la propose non scatta mai ([L14906](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14906)).
+- Dopo, `BADM` passa la sequenza allo slot ([L15390-15422](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15390-L15422)): `sl = BSlot{}`, `sl.ids = live`, draft MTP. Da lì le sorgenti non vedono più nulla.
+
+**Entry point.**
+- **CLI**: blocco B.
+- **Server HTTP**: `serve/server.py` pilota un processo `--serve` via stdin.
+  - Senza `--batch`, ogni richiesta è un `GEN` (blocco A).
+  - Con `--batch` (opt-in `"parallel": N` → `--batch N`, [server.py L3132-3153](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/serve/server.py#L3132-L3153)) vale `generate_batched` ([L1768-1775](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/serve/server.py#L1768-L1775)). Una richiesta da sola usa il solo path `GEN` ("with drafts", blocco A, quindi con lookup-chain). Se ne arriva un'altra, viene STOPpata e prosegue in uno slot con `BGEN` (prompt + generato). Altrimenti va subito in `BGEN` ([L1931](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/serve/server.py#L1931)).
+- **Loop pipelined** (`--pipeline-windows 2`, escluso con `--batch`: [L4408](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L4408)): fa lookup solo con `sfx.propose` ([L14466-14471](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14466-L14471)), senza sorgenti extra.
+
+**Stato con sequenze concorrenti.**
+- Esiste un'unica istanza di ogni sorgente extra per processo, condivisa (registro statico), con reset a ogni richiesta seriale: GEN, oppure la fase `GEN 1` di un BGEN.
+- È condivisa anche `sfx` del serve loop, creata una volta sola ([L11177](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11177)) e resettata per richiesta ([L14176-14179](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14176-L14179)), come pure `DraftPolicy` "learned over the whole process" ([L11178](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11178)).
+- Non esiste stato per slot per le sorgenti.
+- Non ci sono race: tutte le chiamate stanno nel loop principale e i thread `adapt` ([L11600](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11600), [L14452](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14452)) non le toccano. Nessun mutex nel codice spec (§2).
+
+**Patch locali P4** (patchwork @4e381d7, non upstream):
+- `register_pool_from_env()` è chiamata a `src/program/generate.cpp:11207` (serve) e `:16538` (CLI).
+- `extra_sources_on()` (`:1124`) estende reset/append anche a `--lookup-chain 0` (`:14214`, `:15218`, `:16576`, `:16796`).
+- Il pool viene chiesto anche nella finestra lookup (`:14946-14957`) e nella chain (`:14967-14972`).
+- Come a monte, niente di tutto questo è nel percorso `batch_step`.
+
+### 6.2 Plausibile (dedotto dal codice sopra, non testato)
+
+- **Pool parziale con `--batch` + P4.** Il pool riceverebbe i prompt di tutte le richieste (fase `GEN 1`) e l'output completo solo delle richieste solo-path. Dei batched vedrebbe solo il primo token. I token emessi in `batch_step` non verrebbero mai aggiunti.
+- **Duplicati nel pool.** Una richiesta solo STOPpata e reinviata come `BGEN` con prompt + generato verrebbe appesa di nuovo per intero, con un prefisso duplicato. Con un pool ngram è innocuo per la correttezza (il verify decide), ma consuma capacità e sposta i conteggi.
+- **Junction n-gram.** Appendere richieste diverse una dopo l'altra in un unico testo crea n-gram di giunzione (vedi §4). È lo stesso problema già noto per il pool sul path seriale.
+- **Batch nel blocco CLI B.** Nel blocco B non sembra esserci batch: `--batch` richiede `--serve` ([L5341-5347](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L5341-L5347)).
+
+### 6.3 Cosa servirebbe per una PoolSource persistente nel percorso batch [PROPOSTA]
+
+1. **Append dei committed per slot.** In `batch_step`, nel loop di emit ([L11640-11657](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11640-L11657)), appendere `y` (o `tok`) per lo slot `b`. Il pool deve ricevere stream **separati per slot**, cioè `append(slot_id, …)` oppure un buffer di coda per slot da cui fare merge a fine richiesta (`BDONE`). Non va bene un unico testo globale interleaved: alternerebbe token di sequenze diverse e creerebbe n-gram falsi.
+2. **Separare "inizio richiesta" da reset del pool.** Oggi `reset()` = nuova richiesta ([draft_source.hpp L25-26](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/spec/draft_source.hpp#L25-L26)). Per un pool persistente il no-op della patch (`pool_source.hpp:29`) va bene, ma con N slot servirebbe un hook `begin(slot)` / `end(slot)`: per esempio, al `BDONE` (righe 11633/11650) fare commit nel pool dello stream di quello slot.
+3. **Propose per slot.** Serve una coda per slot (ultimi ≤64 token di `sl.ids` + `draft`) e righe di finestra libere. Oggi lo slot ha 1-2 righe e `kVerifyMaxT` = 8 righe totali ([L11528](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11528); server.py [L3132](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/serve/server.py#L3132)). In più, l'accept in batch confronta solo la riga MTP ([L11607](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11607)) e `commit_slot_prefixes` accetta prefissi per slot ([L11610](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11610)). Per draft multi-token da pool servirebbe quindi estendere il layout righe e l'accept oltre 2: **è il lavoro principale, non un semplice aggancio**.
+4. **Concorrenza.** Finché tutto resta nel loop principale non serve un mutex. Diventa necessario se il pool viene aggiornato da un thread (per esempio un merge asincrono) o se lo usano repliche multiple (`serve/test_replicas.py` esiste, ma il modello di processo delle repliche non l'ho verificato).
+5. **Gate.** Riusare `lookup_chain_min` / gate del pool per singolo slot. Una `DraftPolicy` unica di processo ([L11178](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11178)) mescolerebbe statistiche di slot diversi; serve almeno `observe` per slot oppure stime aggregate esplicite.
+
+### 6.4 Non trovato
+
+- Una registrazione di sorgenti extra nel codice upstream (CLI flag, env, plugin): non trovata.
+- Stato delle sorgenti per slot o per sequenza: non trovato.
+- Qualsiasi uso di `extra_draft_sources` / suffix / lookup in `batch_step` o in `q36_engine.cu`: non trovato.
+- Benchmark o test di `--lookup-chain` insieme a `--batch`: non trovato (non cercato a fondo in `docs/work/evidence`).
+
+## §7 Compilazione senza GPU
+
+Fatto il 25/10/2026, ~04:40 CET, sul box: Debian 13, 8 CPU, 15 GB, nessuna GPU.
+Codice upstream: Strata @ `7dd5cf18e68c639a8773e096c5c79f971ea2a9f5` (clone `/workspace/scout/Strata`).
+Codice patchato: `/workspace/strata-policy/patchwork` @ `2962494`, più una modifica non committata a `src/program/generate.cpp` (+116 righe, aggancio P6 JointGate dietro `STRATA_SPEC_JOINT=1`). Questa modifica è di un altro agente: non l'ho toccata.
+Nessuna modifica ai repo e nessun push.
+
+### 7.1 Come il CMake compila `generate.cpp` (verificato da codice)
+
+- Il progetto dichiara solo `LANGUAGES CXX`, in C++20: [CMakeLists.txt#L11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L11), [#L62-L63](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L62-L63).
+- Le opzioni di backend:
+  - `STRATA_ENABLE_CUDA` OFF ([#L69](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L69));
+  - `STRATA_ENABLE_HIP` OFF ([#L82](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L82));
+  - le due sono mutuamente esclusive ([#L112-L113](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L112-L113));
+  - con HIP viene incluso `cmake/hip_backend.cmake` ([#L115-L116](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L115-L116)).
+- `generate.cpp` è un'unità **host CXX**, non HIP/CUDA: `add_executable(strata src/program/generate.cpp)` ([#L759-L761](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L759-L761)). Diventano `LANGUAGE HIP` solo i `*.cu` di src/bench/tests ([hip_backend.cmake#L123-L130](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L123-L130)).
+- Selezione HIP:
+  - `enable_language(HIP)` e `find_package(hip/hipblas CONFIG REQUIRED)`: [hip_backend.cmake#L45](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L45), [#L58-L59](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L58-L59).
+  - Define `STRATA_USE_HIP=1` e `STRATA_HIP_ARCHS="..."`, e include `include/strata/hip_compat` messo BEFORE: [#L94-L98](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L94-L98).
+  - **Force-include** `-include include/strata/hip_compat/cuda_runtime.h` per CXX ([#L113-L118](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L113-L118)) e per HIP ([#L120-L121](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L120-L121)).
+  - Default arch: gfx1100 ([#L4-L5](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/cmake/hip_backend.cmake#L4-L5)).
+  - Non esiste nessun `GGML_USE_HIP` per `generate.cpp`: il define è `STRATA_USE_HIP`.
+- Altri define che arrivano a `strata`:
+  - `STRATA_VERSION` ([#L23](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L23));
+  - `STRATA_Q6K_EXPERTS=1`, ON di default ([#L95-L97](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L95-L97));
+  - `STRATA_HAVE_QWEN35=1` ([#L794](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L794));
+  - opzionali: `STRATA_HAVE_DFLASH2` ([#L340](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L340)) e `STRATA_PREFILL_MMQ/FUSED` ([#L1988](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L1988)).
+- Header di `generate.cpp`:
+  - solo header Strata (L1-L103);
+  - `#include <cuda_runtime.h>` incondizionato, salvo Metal ([generate.cpp#L118-L121](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L118-L121)).
+- Dipendenze reali, ricavate con `-M` (verificato con prova, 509 file):
+  - 96 header del repo;
+  - di HIP solo `/usr/include/hip/hip_runtime.h` (+ `hip_version.h`), più `hip_compat/cuda_runtime.h` e `hip_compat/intrinsics.hpp`;
+  - **nessun** header hipblas/rocblas, **nessun** `.cu`/`.cuh` incluso.
+- Funzioni device negli header raggiungibili:
+  - `__shfl*` e un `asm` GCN compaiono solo in [hip_compat/intrinsics.hpp#L36](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/intrinsics.hpp#L36) e [#L116-L139](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/intrinsics.hpp#L116-L139);
+  - il file intero è chiuso in `#if defined(__HIPCC__)` ([#L5](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/intrinsics.hpp#L5)…[#L163](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/intrinsics.hpp#L163));
+  - viene incluso da [hip_compat/cuda_runtime.h#L149](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/cuda_runtime.h#L149);
+  - quindi nella compilazione host CXX è vuoto.
+  - Negli altri header trovo `__global__`, `<<<` e `__launch_bounds__` solo dentro commenti, ad esempio [kernels/elementwise.hpp#L89](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/kernels/elementwise.hpp#L89).
+
+### 7.2 Strada 1: HIP host `-fsyntax-only` con header ROCm. **VERIFICATO CON PROVA (regge)**
+
+Pacchetti installati, solo repo Debian 13 (nessun repo AMD necessario):
+- comando: `sudo apt-get install --no-install-recommends libamdhip64-dev hipcc`;
+- versione: HIP 5.7.1;
+- dimensioni installate da `dpkg-query`, in kB:
+  - libamdhip64-dev 1996
+  - libamdhip64-5 24526
+  - hipcc 104
+  - clang-17 368
+  - libclang-cpp17 61620
+  - libllvm17 121456
+  - llvm-17 117536
+  - rocm-device-libs-17 3246
+- Totale ≈ 330 MB, quasi tutto llvm/clang-17. `/usr/include/hip` pesa 2,0 MB.
+- Header hipblas/rocblas 5.5.1, estratti con `apt-get download` + `dpkg -x` in `/workspace/rocm-hdr/x` (115 kB): **non servono**, perché `generate.cpp` non li raggiunge (prova sotto senza `-I`).
+- Le librerie complete (librocblas0 166,5 MB, librocsolver0 450,8 MB, ~720 MB di download) non servono per il check.
+
+Script: `/workspace/rocm-hdr/check_hip.sh`. Riproduce i flag di `hip_backend.cmake` per CXX. Il comando:
+```
+clang++-17 -std=c++20 -fsyntax-only \
+  -D__HIP_PLATFORM_AMD__=1 -DSTRATA_USE_HIP=1 '-DSTRATA_HIP_ARCHS="gfx1100"' -DSTRATA_WMMA_GFX11=1 \
+  -DSTRATA_Q6K_EXPERTS=1 -DSTRATA_NATIVE_EXPERTS=1 -DSTRATA_HAVE_QWEN35=1 '-DSTRATA_VERSION="0.0-syntax"' \
+  -include $R/include/strata/hip_compat/cuda_runtime.h -I$R/include/strata/hip_compat -I$R/include \
+  -I$R/src/program -I$R/third_party/ggml -mavx2 -mfma -mf16c $R/src/program/generate.cpp
+```
+
+Esiti, con log in `/workspace/rocm-hdr/*.log`:
+
+| Prova | Esito |
+|---|---|
+| upstream 7dd5cf18, clang++-17 17.0.6 | exit 0, 0 errori, 132 warning, ~3,5 s |
+| upstream, g++ 14.2.0 (`CXX=g++`) | exit 0, 0 errori |
+| upstream + `-DSTRATA_HAVE_DFLASH2=1` / `-DSTRATA_PREFILL_MMQ=1 -DSTRATA_PREFILL_FUSED=1` | exit 0 / exit 0 |
+| upstream, `-x hip --cuda-host-only --offload-arch=gfx1100` (attiva `__HIPCC__`, quindi intrinsics.hpp) | exit 0 (con `-nogpulib -nogpuinc`: fatal `amd_hip_runtime.h:425 'include/cuda_wrappers/algorithm' not found`) |
+| **controllo di sanità**: copia con un errore iniettato alla riga 14183 | exit 1, `error: use of undeclared identifier 'undeclared_symbol_xyz'` alla 14183, quindi il corpo viene davvero analizzato |
+| patchwork (P4+P5+P6 con aggancio `STRATA_SPEC_JOINT`), clang++-17 e g++ | exit 0 / exit 0 |
+| patchwork `src/spec/joint_gate.cpp`, `src/spec/pool_source.cpp` (stessi flag) | exit 0 / exit 0 |
+
+Limiti:
+- HIP 5.7 seleziona i rami `HIP_VERSION_MAJOR < 7` della shim ([cuda_runtime.h#L47](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/cuda_runtime.h#L47), [#L67](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/cuda_runtime.h#L67)), quindi il ramo ROCm 7 non è coperto.
+- È solo un controllo di sintassi e semantica del TU host: non fa link e non compila i `.cu`.
+- `STRATA_SPEC_JOINT` è una variabile d'ambiente letta a runtime (`std::getenv` in patchwork `src/spec/joint_gate.cpp:29`, repo locale), quindi il codice dell'aggancio viene compilato sempre, senza bisogno di un define.
+
+### 7.3 Strada 2: HIP-CPU. **NON REGGE (verificato con prova + da codice)**
+
+Clone shallow di `ROCm/HIP-CPU` @ `e112c935057434897bb12d9ab3910380a8bd5f58`.
+- I documenti dichiarano come non portabili "inline PTX / inline GCN ASM" e il lock-step dei warp ([docs/overview.md#L87-L88](https://github.com/ROCm/HIP-CPU/blob/e112c935057434897bb12d9ab3910380a8bd5f58/docs/overview.md#L87-L88)), e un'implementazione "not a complete implementation of HIP" ([#L93-L94](https://github.com/ROCm/HIP-CPU/blob/e112c935057434897bb12d9ab3910380a8bd5f58/docs/overview.md#L93-L94)).
+- Manca `include/hip/hip_version.h`, che invece la shim include ([cuda_runtime.h#L13](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/cuda_runtime.h#L13)).
+- Prova con g++ e `-I HIP-CPU/include` al posto di `__HIP_PLATFORM_AMD__`: **76 errori**, già nella shim Strata. Mancano:
+  - `hipFuncAttribute` / `hipFuncSetAttribute` e `hipGraph_t` / `hipGraphExec_t` / `hipGraphNode_t` ([cuda_runtime.h#L134-L139](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/hip_compat/cuda_runtime.h#L134-L139));
+  - `hipLaunchHostFunc`, `hipStreamCreateWithPriority`, `hipDeviceGetStreamPriorityRange`, `hipDeviceGetAttribute` (+ attributi), `hipEventQuery`, `hipHostRegisterReadOnly`.
+- hipBLAS/rocBLAS non servono a `generate.cpp`, quindi non sono loro a bloccare.
+- In più servirebbe TBB, che non ho installato.
+- Conclusione: servirebbe una shim aggiuntiva da scrivere. Non conviene, visto che la strada 1 funziona.
+
+### 7.4 Strada 3: header CUDA senza nvcc. **VERIFICATO CON PROVA (regge)**
+
+- Debian non ha `nvidia-cuda-dev` tra i candidati apt del box.
+- Uso due wheel pip, solo scaricati ed estratti, senza installarli:
+  - `nvidia-cuda-runtime-cu12==12.9.79`: 3,5 MB, include 4,3 MB;
+  - `nvidia-cuda-nvcc-cu12==12.9.86`: 40,5 MB, da cui estraggo solo `include/` (920 kB), che serve per `crt/host_config.h`.
+- Non serve `clang -x cuda --cuda-host-only`: `generate.cpp` è CXX anche con CUDA ([#L759](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/CMakeLists.txt#L759)).
+- Script: `/workspace/rocm-hdr/check_cuda.sh` (g++ di default).
+
+| Prova | Esito |
+|---|---|
+| upstream, g++ | exit 0 |
+| upstream, clang++-17 | exit 0 |
+| patchwork, g++ | exit 0 |
+| errore iniettato alla 14183 | rilevato (`‘undeclared_symbol_xyz’ was not declared`) |
+
+### 7.5 Metal shim
+
+`metal/` è APPLE-only ([metal/CMakeLists.txt#L17-L18](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/metal/CMakeLists.txt#L17-L18)). Non l'ho provato: plausibile che non serva.
+
+### 7.6 Raccomandazione per Strata Policy
+
+Usare **entrambi** i flavor, ~4-8 s ciascuno, perché `generate.cpp` ha rami `STRATA_USE_HIP` e rami CUDA:
+```
+# HIP (= flavor della build R9700/gfx1100): prerequisito apt `libamdhip64-dev hipcc` (≈330 MB, già sul box)
+/workspace/rocm-hdr/check_hip.sh /workspace/strata-policy/patchwork          # clang++-17
+CXX=g++ /workspace/rocm-hdr/check_hip.sh /workspace/strata-policy/patchwork
+# CUDA: header da wheel pip in /workspace/rocm-hdr/cudawhl/x/nvidia (≈5 MB estratti)
+/workspace/rocm-hdr/check_cuda.sh /workspace/strata-policy/patchwork
+# TU aggiuntivi delle patch:
+/workspace/rocm-hdr/check_hip.sh /workspace/strata-policy/patchwork /workspace/strata-policy/patchwork/src/spec/joint_gate.cpp
+```
+Gli script vivono sul box e non nel repo. Se servono altrove, il comando completo è in §7.2.
+Non trovato / non coperto: link, `.cu`, ramo `HIP_VERSION_MAJOR>=7`, build gfx906.
+
+## §8 Draft MTP a passi variabili e skip
+
+Svolto il 25/10/2026, ~05:05 CET, **solo leggendo il codice** (rg/Read): nessuna compilazione e nessuna installazione, come da vincolo di team.
+- Upstream: Strata @ `7dd5cf18e68c639a8773e096c5c79f971ea2a9f5`. Prefisso S = https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5
+- Patch P6: `/workspace/strata-policy/patchwork` @ `079ecdd40d6e14f38db7577119c942529cac17b2`. È un repo locale, quindi niente permalink GitHub: cito `path:riga` a quel commit. HEAD ora è `e467f6e`, che tocca solo `docs/strataplus_joint_gate.md`, per cui le righe di `generate.cpp` coincidono.
+- Il draft MTP **non** sta in `q36_engine.cu`: sta in `MtpDrafter`, cioè [include/strata/core/mtp.hpp](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L38-L304) e [src/core/mtp.cpp](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1554-L1739).
+
+### 8.1 Il numero di passi è variabile? Il draft è sequenziale? (verificato da codice)
+
+**Dove si fissa S_mtp**
+- Serve: `S = o.spec`, poi `S_mtp = mtp_max_t>0 ? min(mtp_max_t,S) : S`, e `mtp.set_max_drafts(S_mtp - 1)` ([generate.cpp#L11172-L11176](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11172-L11176)).
+- Flag: `--spec N` ([#L2608](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L2608)) e `--mtp-max-t` ([#L2673](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L2673)). Con `--suffix-draft`, `mtp_max_t` diventa `spec` e `spec` può crescere fino a 8 ([#L3208-L3218](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L3208-L3218)).
+- Il drafter alloca buffer e K/V per `max_t` righe al `load` ([mtp.hpp#L45-L48](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L45-L48)).
+- `set_max_drafts(k)` è un semplice setter e si può chiamare a ogni round ([mtp.hpp#L57-L58](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L57-L58)).
+- In `draft()` il limite è `max_steps = min(max_t_-1, max_drafts_, celle rimaste)` ([mtp.cpp#L1580](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1580)).
+
+**Struttura: grafi a passi, non un grafo unico**
+- Un grafo "round" per T: catch-up K/V delle T celle della finestra più il draft 0 sulla riga a ([capture_round, mtp.cpp#L1270-L1316](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1270-L1316); commento a [#L1281-L1283](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1281-L1283): "the draft chain is one graph per step … so the host can stop it when a draft is unlikely").
+- **Un grafo per ogni passo** j ([capture_step, #L1318-L1346](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1318-L1346)): un forward completo del layer MTP su una riga.
+- Sono grafi catturati con `cudaGraph`, cioè `hipGraph` via la shim, e catturati in modo lazy ([#L1577-L1582](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1577-L1582)). Array fissi `round_exec_[9]`, `step_exec_[9]` ([mtp.hpp#L189](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L189), [#L249](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L249)).
+- La lunghezza **non** è catturata in un grafo unico: fermarsi prima evita i forward dei passi successivi.
+
+**Due modalità in `draft()`**
+- **Veloce**: `min_p <= 0` e nessun `chain_rule_` ([#L1623-L1657](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1623-L1657)). Accoda il round **e tutti** i `max_steps-1` grafi di passo senza attese intermedie, quindi calcola **sempre l'intera catena** S_mtp-1.
+- **Troncabile**: `min_p > 0` oppure `chain_rule_` presente ([#L1658-L1708](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1658-L1708)). Lancia il passo j **solo se** `pj >= min_p` (o se `chain_rule_(j-1,pj)` è vero), aspettando sull'host l'output di ogni passo (`wait_step`, [#L1673-L1705](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1673-L1705)).
+
+**Early-stop già esistente**
+- `--spec-min-p` ([#L2630](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L2630), default 0.0 a [#L705](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L705); l'help dice "setup writes 0.5", [#L940-L941](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L940-L941)).
+- In serve arriva come `req_spec_min_p` in `mtp.draft(...)` ([#L15168-L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15168-L15169)); nella CLI come `o.spec_min_p` ([#L16529](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16529)).
+- **Tronca anche il calcolo**, non solo la proposta: i passi dopo il primo draft sotto soglia non vengono lanciati. Si calcola fino al primo draft fallito incluso.
+- La finestra del round successivo applica la stessa regola su `dprob` ([#L14885-L14888](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14885-L14888)).
+- Anche `STRATA_SPEC_COST` usa `set_chain_rule` per fermare la catena ([#L11179-L11188](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11179-L11188); [mtp.hpp#L109-L111](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L109-L111)).
+
+**Conseguenza per il replay (verificato da codice; quanto pesi va misurato da Bench)**
+- L'affermazione "il motore calcola sempre l'intero draft S_mtp" vale **solo** con `spec_min_p = 0` e senza `chain_rule`.
+- Con `spec_min_p > 0`, come scrive il setup, il motore calcola circa `d_minp + 1` passi: i draft sopra soglia più quello che fallisce, entro S_mtp-1.
+- Il gate P6 sceglie `d ≤ d_avail = t_plan-1` sui draft già fatti (patchwork `src/program/generate.cpp:1158`, `decide`). Lo spreco per round è quindi `(passi calcolati) − d`, non `S_mtp−1−d`.
+- Numeri: **non trovati** (nessuna misura nel repo letta qui).
+- Metal: `max_steps` è passato a `metal_engine::mtp_draft` ([mtp.cpp#L1556-L1568](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1556-L1568)). Se lì `min_p` tronchi il calcolo: **non verificato** (non ho letto `metal/`).
+
+### 8.2 Lo skip può evitare il draft? (verificato da codice salvo dove indicato)
+
+**Ordine nel loop GEN seriale di serve**
+1. Il round r sceglie la finestra all'inizio: `T` dalla regola min_p, poi `policy.choose` ([#L14880-L14903](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14880-L14903)).
+2. Verify e commit ([#L15089](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15089), [#L15124](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15124)).
+3. **Poi** `mtp.draft(T, outv, p, a, …)`, che produce i draft del round r+1 ([#L15168-L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15168-L15169)).
+4. `policy.observe` con `round_ms` misurato da `round0` ([#L14922](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14922)) fino a dopo il draft ([#L15191-L15196](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15191-L15196)). Il costo appreso **include** quindi il tempo di draft effettivamente speso.
+
+CLI: stessa struttura, con `draft_next(T, a)` dopo il commit ([#L16693](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16693)), `round_ms` a [#L16702](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16702), scelta a [#L16535-L16562](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16535-L16562).
+
+Quindi il draft MTP viene calcolato **prima** della decisione della policy del round in cui viene usato.
+
+**Quando `DraftPolicy::choose` sceglie il lookup**
+- L'upstream ha **già calcolato** il draft MTP, e gli serve: il lookup è ammesso solo se `sbuf[0] == drafts[0]` (gate di accordo, [#L14899](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14899); CLI [#L16558](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16558)).
+- Dopo un round lookup, `mtp.draft` gira di nuovo con il `T` del lookup: non c'è un ramo che lo salti.
+
+**Dipendenza di stato**
+- Il grafo round fa il **catch-up K/V** del layer MTP per le celle accettate (`T = a + 1`, salvo `STRATA_MTP_CATCHUP_ALL`) ([mtp.cpp#L1573-L1575](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1573-L1575), [#L1281](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1281)), usando i residui finali della finestra verificata (`window_R`, [mtp.hpp#L83-L86](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L83-L86)). Il draft r+1 dipende da quello stato.
+- Se `max_steps == 0` nessun ramo lancia il grafo round ([#L1623](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1623), [#L1658](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1658)), quindi **neanche il catch-up**. Uno skip "totale" via `set_max_drafts(0)` lascerebbe buchi nel K/V MTP per quelle celle.
+- Il codice tollera celle speculative sovrascritte ([mtp.hpp#L16-L18](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L16-L18)). I buchi peggiorerebbero solo la qualità dei draft futuri, non l'output ([#L13-L14](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L13-L14)): **plausibile, non misurato**.
+- Alternativa che mantiene il K/V coerente senza draft: `mtp.prefill(R_rows, next_tokens, n, cell0)`, che esegue solo la parte frontale (K/V), senza attention/MoE/head (`record_forward(T, -1)` = "K/V only", [mtp.cpp#L1252-L1261](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1252-L1261), [#L869-L875](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L869-L875)). È già usata così per una finestra merged ([generate.cpp#L15139](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15139)).
+  - Però non produce `drafts[0]`: il round successivo non avrebbe né il fallback MTP né il gate di accordo `lk[0]==mtp[0]`, che P6 usa (patchwork `generate.cpp:1166`).
+  - Che la catena di passi riparta correttamente dopo un `prefill` al posto di un round: **plausibile, non verificato**.
+
+**Come si inserisce P6** (patchwork @079ecdd)
+- Il commento lo dichiara esplicitamente: "It does not yet skip or stop the MTP draft itself, so the draft time a skip/stop would save is not saved here" (`generate.cpp:1133-1137`).
+- `JointHook::decide` lavora sui draft già fatti: `d_avail = t_plan-1`, `keep()` fino a `d_avail` (`generate.cpp:1158-1185`). Chiamata in serve a `generate.cpp:15023-15041` e in CLI a `16772-16781`.
+- `mtp.draft` resta invariato a fine round (`generate.cpp:15326`, CLI `16745`/`16920`).
+- `joint->observe` riceve `round_ms` che include quel draft (`generate.cpp:15358-15359`, `16941`).
+
+### 8.3 Cosa servirebbe per tagliare il draft a d nel motore
+
+Il punto esatto è la chiamata `mtp.draft(...)` a fine round ([serve #L15168-L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15168-L15169), [CLI #L16529](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16529)) e il ciclo dei passi in [mtp.cpp#L1689](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1689).
+
+**Cambio minimo (proposta, non scritta né compilata):** installare con `mtp.set_chain_rule(...)` una regola che chiede al gate, passo per passo, se continuare (lo stesso `keep(p, …, d)` che oggi P6 applica a posteriori). È già il meccanismo usato da `STRATA_SPEC_COST`.
+- Fa entrare `draft()` nella modalità troncabile, che smette di lanciare i grafi di passo appena la regola dice no.
+- Nessuna modifica a `mtp.cpp`: solo in `generate.cpp`, dove si crea `JointHook` (serve vicino a patchwork `:11284`, CLI vicino a `:16640`).
+- Il gate deve inglobare il test `min_p`, perché la regola **sostituisce** `pj >= min_p` ([#L1689](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1689)).
+- La regola viene chiamata anche sull'ultimo passo di una catena completa ([#L1708](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1708)).
+
+**Alternativa più grezza:** `mtp.set_max_drafts(d)` prima di `mtp.draft` (setter per round, [mtp.hpp#L58](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L58)). Resta nella modalità veloce, ma richiede di conoscere d **prima** di vedere le probabilità del round. Il serve oggi lo chiama una volta sola ([#L11174-L11176](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11174-L11176)): andrebbe ripristinato a S_mtp-1 quando serve la catena intera.
+
+**Skip:** al massimo si risparmiano i passi 1…: `chain_rule` ritorna false a j=1 quando il gate prevede none/lookup.
+- Il grafo round (catch-up K/V + draft 0) va comunque eseguito per la coerenza del K/V MTP (§8.2).
+- Il draft 0 serve al gate di accordo.
+- Uno skip anche del round richiederebbe `mtp.prefill` più un piano per draft 0: **plausibile, non verificato**.
+- La decisione "skip" andrebbe presa a fine round r, prima del draft. Il lookup del round r+1 è calcolabile lì, dopo `sfx.append` ([#L15156](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15156)). Oggi P6 lo calcola all'inizio di r+1 (patchwork `:15026-15037`).
+
+**Vincoli**
+
+| Vincolo | Stato | Riferimento |
+|---|---|---|
+| Grafi catturati | ok: uno per T (round) e uno per passo j; la profondità variabile non richiede nuove catture; il troncamento usa grafi già pronti | [mtp.cpp#L1577-L1582](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1577-L1582) |
+| Buffer fissi | ok: `max_t` righe al load; uscite oltre n azzerate | [#L1734](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1734) |
+| K/V MTP | i passi scrivono celle speculative `p+a+j`, sovrascritte poi: fermarsi prima è sicuro; saltare il round no | [#L1578-L1580](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1578-L1580) |
+| Costo della modalità troncabile | un'attesa host per passo invece dell'accodamento unico; quanto costa: **non trovato**, misura per Bench | [#L1673-L1705](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1673-L1705) |
+| Conflitto con `STRATA_SPEC_COST` | condividono `chain_rule_`, quindi mutuamente esclusivi | [generate.cpp#L11183-L11188](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11183-L11188) |
+| Coupled sampling | grafi propri, stesso meccanismo per passi | [mtp.cpp#L1624-L1629](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1624-L1629) |
+| `--pipeline-windows` | usa `chain_launch` con `n_out` fisso; fuori da P6 | [#L1772-L1823](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1772-L1823) |
+
+**Non trovato / non verificato**
+- Misure del costo per passo MTP.
+- Comportamento di Metal.
+- Qualità dei draft dopo buchi di catch-up.
+- Correttezza di `prefill` come sostituto del round.
+
+## §9 set_max_drafts per round, max_drafts=1, feature a fine round
+
+Verifica del 25/10/2026, ~05:10 CET. Solo lettura del codice (rg/Read): nessuna compilazione e nessuna installazione.
+- **Strata.** Prefisso dei permalink: S = https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5
+- **P6.** Riferimenti `path:riga` in `/workspace/strata-policy/patchwork` al commit `079ecdd`. Le righe sono identiche in `e467f6e`, che modifica solo i docs.
+
+### 9.1 `max_drafts_` viene riletto a ogni `draft()`? → verificato da codice
+
+**Definizione.** È un semplice setter, senza clamp e senza effetti collaterali: `void set_max_drafts(int k) { max_drafts_ = k; }` ([mtp.hpp#L57-L58](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L57-L58)). Il default è `1 << 30` ([mtp.hpp#L214](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/mtp.hpp#L214)). Nel CUDA/HIP non esiste un'altra definizione in `mtp.cpp`.
+
+**Dove viene letto.** In tutto `src/` e `include/` `max_drafts_` compare solo in quattro punti:
+- [mtp.cpp#L1559](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1559) (Metal);
+- [mtp.cpp#L1580](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1580) (CUDA/HIP);
+- le due righe dell'header già citate.
+
+Entrambe le letture sono variabili locali `const int max_steps` calcolate **a ogni chiamata** di `draft()`. `chain_launch` e `prepare_chain` non lo leggono: usano `n_out` e `max_t_` ([mtp.cpp#L1753-L1785](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1753-L1785)). Il port `sycl/` ha un header proprio che usa `max_drafts_`. Non è il percorso CUDA/HIP e non l'ho analizzato oltre.
+
+**Grafi.**
+- `capture_round(T)` e `capture_step(j)` sono indicizzati per T e per j e ritornano subito se il grafo esiste già ([#L1270-L1272](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1270-L1272), [#L1320-L1322](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1320-L1322)). Nessun grafo contiene `max_steps`.
+- `draft()` cattura in modo lazy solo i `j < max_steps` mancanti ([#L1581-L1582](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1581-L1582)).
+- Abbassare k non ricattura nulla. Alzarlo oltre il massimo già usato cattura una volta sola i nuovi j, durante quel round.
+
+**Buffer.** Sono dimensionati su `max_t` al `load`, non su `max_drafts`: `h_out_` e `h_prob_` hanno T·4 byte, `h_step_` e `h_pos_` hanno R2 = 2T righe ([mtp.cpp#L375-L383](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L375-L383)).
+
+**Uso attuale in `generate.cpp`.**
+- Serve: viene chiamato una volta sola al setup ([#L11172-L11176](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11172-L11176)), con `S_mtp-1` se `S_mtp < S`, oppure se `max_t() > S_mtp` (caso `--pipeline-windows 2`, drafter caricato con 8 righe).
+- CLI: solo `if (S_mtp < o.spec)` ([#L16426-L16427](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16426-L16427)). Altrimenti resta `1<<30`, quindi `max_steps = max_t_-1`.
+- Batch: `d->set_max_drafts(1)` ([#L5532](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L5532)).
+
+**Conclusione.** Chiamare `set_max_drafts(k)` con valori diversi a ogni round è sicuro: niente ricattura e niente buffer da ridimensionare.
+
+**Avvertenze (da codice).**
+- Lo stato è persistente: va riportato a `S_mtp-1` (serve) o a `max_t-1` (CLI) quando serve la catena intera.
+- Va usato `k ≤` quel valore base, altrimenti si supera S_mtp.
+- `max_steps` è anche limitato da `st_.max_cells-(p+a)`.
+
+### 9.2 Il confine `max_drafts=1` / `max_drafts=0` → verificato da codice
+
+**`max_drafts=1` → `max_steps=1`.**
+- Nessun `capture_step`, perché `j<1` è falso ([#L1581](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1581)).
+- Ramo veloce (`min_p<=0` e nessuna `chain_rule`): viene lanciato solo `round_exec_[T]` ([#L1623-L1627](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1623-L1627)). Il ciclo dei passi `j<1` è vuoto. Poi sync, `last=0` e `n=1` ([#L1628-L1657](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1628-L1657)).
+- Ramo troncabile: lancia il round, attende il passo 0 e mette `n=1` ([#L1664-L1688](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1664-L1688)). Il `for (j = 1; j < 1 …)` non entra ([#L1689](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1689)).
+- Se c'è una `chain_rule`, viene comunque chiamata una volta con idx 0 dalla riga "last step of a full chain" ([#L1708](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1708)).
+- Risultato: il grafo round gira intero, cioè catch-up K/V delle celle accettate più draft 0 ([#L1281-L1283](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1281-L1283)). Si ottiene 1 draft. Gli slot `drafts`/`probs` da 1 a `max_t-2` vengono azzerati ([#L1734](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1734)).
+
+**`max_drafts=0` (o negativo) → `max_steps≤0`.** La funzione **non** ritorna subito:
+- esegue comunque `capture_round(T)`, che cattura solo se il grafo manca e non lo lancia ([#L1577](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1577));
+- prepara i buffer mappati ([#L1592-L1603](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1592-L1603));
+- esegue `stage_source_R(T)`, che può accodare una copia D2D di `window_R` ([#L1604](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1604), [#L1741-L1750](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1741-L1750)).
+
+Dopo di che **nessuno dei due rami** gira, perché entrambi richiedono `max_steps > 0` ([#L1623](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1623), [#L1658](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1658)). Quindi:
+- **il catch-up K/V MTP non viene fatto**;
+- `n=0`, tutti i draft e le probabilità vanno a 0, `return true` senza errore ([#L1734-L1738](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1734-L1738)).
+
+**Rischio nel chiamante (da codice).**
+- In serve, con `spec_min_p=0` e senza `STRATA_SPEC_COST`, il T del round dopo resta `S_mtp` ([#L14881](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14881)), indipendentemente da quanti draft esistono.
+- Con d tagliato, la finestra di verifica conterrebbe draft azzerati (token 0): sono righe di verify sprecate. L'output resta corretto, perché decide il verify.
+- Con `min_p>0` le probabilità azzerate (0 < min_p) fermano da sole T a n+1 ([#L14884-L14887](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14884-L14887)).
+- Oggi il serve non passa `n_drafts` a `mtp.draft` ([#L15168-L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15168-L15169)). Per limitare T a n+1 anche con `min_p=0` andrebbe passato.
+
+### 9.3 Cosa sa il gate nel punto di `mtp.draft` per r+1 → verificato da codice (salvo dove indicato)
+
+Ordine a fine round r nel serve upstream:
+1. Accettazione: `a` ([#L15108-L15109](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15108-L15109)) e contatori per sorgente `from_sfx` ([#L15110](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15110)).
+2. `ver.commit(a+1)` ([#L15124](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15124)).
+3. Emissione dei token con `sfx.append` ed `extra_sources_append` ([#L15151-L15158](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15151-L15158)).
+4. **`mtp.draft`** ([#L15168-L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15168-L15169)).
+5. `policy.observe(from_sfx, T, a, sfx_match, ms)` ([#L15191-L15196](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15191-L15196)).
+6. `p += a+1` ([#L15200](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15200)).
+7. Inizio di r+1: `sfx.propose` ([#L14897-L14898](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14897-L14898)).
+
+CLI, stesso schema: commit ([#L16669](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16669)), `sfx.append` ([#L16683](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16683)), `draft_next` ([#L16693](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16693)), `round_ms` e observe ([#L16702-L16715](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16702-L16715)), propose all'inizio del round dopo ([#L16556-L16557](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16556-L16557)).
+
+P6 ha lo stesso ordine:
+- serve: `sfx.append` a `generate.cpp:15313`, `mtp.draft` a `:15326`, `joint->observe` a `:15358-15359`, decide all'inizio di r+1 a `:15023-15041`;
+- CLI: `sfx.append` a `:16910`, `draft_next` a `:16920`, observe a `:16941`, decide a `:16772-16781`.
+
+| Informazione | Disponibile prima di `mtp.draft`? | Stato |
+|---|---|---|
+| `a` (accettati del round r), sorgente `from_sfx`, `sfx_match`, T, `outv`, `eos`, `produced_n` | sì: calcolati alle righe 1-3 dell'ordine sopra | verificato |
+| Probabilità dei draft MTP del round r (`dprob`/`dwin`, `cf_mtp` in P6) | sì | verificato |
+| **Observe del round r** (`policy.observe`, `joint->observe`) | **no**: oggi avviene **dopo** il draft, perché il `round_ms` misurato include il draft (`round0` [#L14922](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14922)) | verificato |
+| Proposta lookup per r+1 | oggi è calcolata **dopo** `mtp.draft`, all'inizio di r+1. Il suo input `sfx` è già aggiornato al punto 3 e fra draft e propose non c'è nessuna chiamata `sfx.*` | verificato |
+| Proposta lookup anticipata a prima del draft (identica) | P4 `propose_from_sources` dipende anche dal pool e da `lookup_src` (patchwork `:15030-15033`) | plausibile, non verificato |
+| `mtp_p` dei draft di r+1 | no: escono da `mtp.draft` stesso | verificato |
+| `remaining()` | sì: dipende da `max_new`, `produced_n`, `max_context` e `p`, ma `p` viene aggiornato solo a [#L15200](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15200), quindi andrebbe passato `p+a+1` | verificato |
+
+Il gate di accordo `lk[0]==mtp[0]` di P6 (`generate.cpp:1166`) richiede il draft 0 di r+1, quindi non è disponibile prima del draft. Con `max_drafts ≥ 1` il draft 0 si ottiene comunque dal grafo round.
+
+### 9.4 Interazione con `--spec-min-p 0.5` e con `chain_rule` → verificato da codice
+
+**Origine di 0.5.** Il setup scrive `"--spec", "4", "--spec-min-p", "0.5"` ([setup.py#L9420](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/setup.py#L9420)). In serve ogni richiesta può sovrascriverlo con `spec_min_p`, limitato a [0,1] ([generate.cpp#L12351](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L12351)).
+
+**Con `min_p>0` si usa il ramo troncabile** ([#L1658](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1658)):
+- per ogni passo c'è un `wait_step` con spin sull'host ([#L1673-L1681](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1673-L1681), [#L1700-L1701](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1700-L1701));
+- il passo j viene lanciato solo se il draft precedente ha `pj >= min_p`.
+
+**`set_max_drafts` e `min_p` si combinano senza conflitti.** La condizione del ciclo è `j < max_steps && (test)` ([#L1689](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1689)): il numero di passi è il minimo fra il cap e il primo draft sotto soglia.
+
+**`chain_rule` sostituisce `min_p`, non si somma.** L'espressione è `chain_rule_ ? chain_rule_(j-1,pj) : pj >= min_p` (stessa riga). Con una `chain_rule` attiva, `min_p` conta solo per scegliere il ramo troncabile ([#L1623](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/core/mtp.cpp#L1623)) e per il T del chiamante ([generate.cpp#L14884-L14887](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14884-L14887)).
+- In serve, con `STRATA_SPEC_COST`, la `chain_rule` è installata ([#L11183-L11188](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11183-L11188)) e T viene da `chain_rows`, non da `min_p` ([#L14883-L14884](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14883-L14884)).
+- Anche il cap `max_steps` resta valido sopra la `chain_rule`.
+
+**Implicazione per P6 (proposta).**
+- `set_max_drafts(d)` per round, insieme a `min_p=0.5`, dà `min(d, soglia)` senza toccare `mtp.cpp`.
+- Una `chain_rule` del gate dovrebbe invece reincludere da sé il test `pj >= min_p` ed è incompatibile con `STRATA_SPEC_COST`.
+- Costo dell'attesa host per passo: **non trovato** (nessuna misura letta), da misurare in Bench.
+
+---
+
+## §10 Finestra di verifica oltre 8 (H-LW)
+
+Fonti: Strata 7dd5cf1 (licenza MIT, `/workspace/Strata/LICENSE` L1). Solo lettura, nessuna build. Etichette: **verificato da codice** = riga letta; **plausibile** = dedotto, non compilato né misurato; **non trovato**.
+
+### §10.B Finestra massima del lookup in altri progetti (COMPITO B, completo)
+
+**llama.cpp** (`/workspace/llama.cpp`, commit d327bf1, licenza MIT, `LICENSE` L1). Tutto verificato da codice:
+- Draft da modello / MTP / EAGLE3: `common_params_speculative_draft::n_max = 3`, `n_min = 0` (common/common.h L329-330). Il flag `--spec-draft-n-max` rifiuta solo `value < 0` e non ha un tetto superiore (common/arg.cpp L4189-4196). Per DFlash/DSpark viene clampato al block size addestrato (common/speculative.cpp L1099-1104).
+- ngram-mod: `n_match = 24`, `n_max = 64`, `n_min = 48` (common/common.h L359-364). `--spec-ngram-mod-n-max/-n-min` accettano 0..1024 e `--spec-ngram-mod-n-match` 1..1024 (common/arg.cpp L4333-4362). L'impl usa n_max come lunghezza del draft (common/speculative.cpp L2104, L2178-2184).
+- ngram-simple / map-k / map-k4v: `size_n = 12` (lookup) e `size_m = 48` (lunghezza del draft) (common/common.h L366-370). I flag accettano 1..1024 (common/arg.cpp L4364-4381). La lunghezza del draft è size_m (common/speculative.cpp L1989, L2032-2033, L2558-2566).
+- ngram-cache (lookup classico): `uint16_t n_draft = 8; // TODO get from config?` è hard-coded (common/speculative.cpp L2428). L'esempio `examples/lookup` usa invece `params.speculative.draft.n_max` (examples/lookup/lookup.cpp L30).
+- Tetti nel target: il server limita il draft solo al contesto rimasto, `n_ctx - n_tokens - 2` e `n_remaining - 1` (tools/server/server-context.cpp L568-586, usato a L3755 e L3786). Gli output per sequenza sono `min(n_batch, 1 + n_draft)` (common/speculative.cpp L2824-2832, chiamato da server-context.cpp L61-62). Non esiste un tetto fisso stile kVerifyMaxT: la verifica è un batch generico limitato da n_batch.
+
+**Colibri** (https://github.com/JustVugg/colibri, commit remoto e0db083c, licenza Apache-2.0, `LICENSE` L1-2). La directory locale `/workspace/colibri` contiene solo copie dei .md e non è un repo git: il codice è stato letto da raw.githubusercontent.com a quel commit. Verificato da codice:
+- qwen36: `#define Q36_SPEC_ROWS 6` ("the picked token and up to five prompt-lookup drafts") e `Q36_SPEC_SNAPS = ROWS-1` (c/qwen36.c L47-50). `COLI_LOOKUP_DRAFTS` vale di default 5, con errore fuori da 1..5 (c/qwen36.c L4801-4805). Ogni passo prende `room = min(more-1, lookup_max, kv_cap-1-pos)` e chiama `spec_lookup(hist, n, 2, 4, room, d)`, cioè n-gram da 4 fino a 2 (c/qwen36.c L4909-4918).
+- qwen38: `#define Q38_SPEC_ROWS 6` (c/qwen38_core.h L32). `lookup_max = COLI_LOOKUP_DRAFTS`, default 5 e max 5 (c/qwen38.c L1007; validazione in c/qwen38_core.h L2206-2214). La chiamata `spec_lookup(...,2,4,want,dl)` è a c/qwen38_core.h L3883. L'MTP fa al massimo 3 draft (c/qwen38.c, il parsing di Q38_MTP_DRAFTS nelle righe vicine a L1003).
+- Gate: `SPEC_MAX_DRAFTS 8` (c/spec_draft.h L41, "an engine's verify may take fewer"). `spec_gate_pick` clampa maxk a 8 (L143). La probe va "one draft deeper" ogni 16 pick (L42, L153-154).
+- Verifica: un solo forward sul token più k draft. Le righe rifiutate vengono annullate ripristinando gli snapshot di stato DeltaNet/conv/PLE, uno per riga (docs/speculative.md L18-36). Costo: 63-113 MiB per slot, quindi 314-563 MiB per 5 draft (docs/speculative.md L43-48). Il calcolo è riga per riga con bit identici al decode (L52-60). **La finestra massima effettiva è 6 righe (1+5).** Il GLM (c/colibri.c) non è stato letto: per quello "non trovato".
+
+**vLLM** (main 66bf9315, licenza Apache-2.0). Verificato da codice in https://github.com/vllm-project/vllm/blob/66bf931544202f159cf83c66a812826b7d5c84fb/vllm/config/speculative.py:
+- `prompt_lookup_max/min` sono le lunghezze dell'n-gram cercato, non del draft. Valgono `ge=1` (L497, L500), con default 5/5 quando sono assenti (L1279-1282).
+- La lunghezza del draft è `num_speculative_tokens`, con `Field(gt=0)` e nessun tetto superiore (L413). Il proposer la usa come k, clampato a `max_model_len - len` (vllm/v1/spec_decode/ngram_proposer.py L25, L228).
+- Suffix nativo: `suffix_decoding_max_tree_depth = 24`, che limita la somma di match e speculazione (L532-534), con `max_spec_factor = 1.0` (L542). Se num_speculative_tokens non è impostato, prende il valore della tree depth (L1688-1691).
+
+**Arctic-Inference SuffixDecoding** (main aca5d9a8, licenza Apache-2.0). Verificato da codice:
+- https://github.com/snowflakedb/ArcticInference/blob/aca5d9a8a62474035c15d114d40a01abc8c94b51/arctic_inference/vllm/config.py: `suffix_cache_max_depth = 64` (L56) e `suffix_max_spec_factor = 1.0` (L59). Se non è dato altro, `num_speculative_tokens` vale 16 di default ("not suffix_cache_max_depth which can be very large and makes every step process 1+N tokens") (L143-151).
+- arctic_inference/suffix_decoding/cache.py: `max_tree_depth = 64` (L62). `max_spec_tokens` di default è la depth, limitata da `max_spec_factor * match_length` (L239-262, L284-288).
+
+**Sintesi B (plausibile).** I sistemi con batch di verifica generico (llama.cpp, vLLM, Arctic) non hanno un tetto hardware di finestra. Usano default di draft alti per il lookup (llama.cpp ngram-mod 64 e size_m 48, Arctic 16, vLLM suffix 24) e si affidano a gate e accettazione. I motori con kernel e stato specializzati (Colibri come Strata) fissano invece un tetto basso di righe a compile time: Colibri 6, Strata 8. La ragione è il costo degli snapshot per riga sui modelli ibridi DeltaNet, e il gate tiene comunque 8 posizioni.
+
+### §10.A Mappa per alzare kVerifyMaxT a 12/16. COMPLETATA 2026-10-25 (patch a T=12)
+
+Lettura del codice di Strata @7dd5cf1 fatta solo con rg/sed: niente build e niente esecuzioni. "V" vuol dire verificato leggendo il codice, "P" vuol dire plausibile (non compilato, non misurato). Le classi sono quelle della bozza: a = solo dimensione, b = logica o kernel, c = policy/costo, d = batch.
+- Correzione al conteggio: kVerifyMaxT compare in **77 righe**, ma le occorrenze sono **82**, in 11 file sotto src e include (22 file contando sycl, serve e bench).
+- La bozza segnalava falsi positivi, ora verificati:
+  - s_gemv.cu `case 8`: si riferisce a code_bits, non a T (V).
+  - qsa_decode_attn.cu `[8]`: sono larghezze vettoriali (V).
+  - In verify.cpp L2390, `row[8]` indicizza un'altra dimensione (V).
+  - copy_from_mapped_multi `n>8` (elementwise.cu L416) viene chiamato con n=7 e n=2 (mtp.cpp L1298 e L1334) (V).
+
+#### (1) PATCH MINIMA: misurare s(12), cioè una verify da 12 righe, a single stream
+
+**Pilotaggio consigliato, senza MTP** (V; generate.cpp):
+- Comando: `--spec 12 --suffix-draft 0 --spec-oracle <continuazione> [--expert-profile/--expert-cache come al solito]`, con env `STRATA_SPEC_T_CYCLE=8,12` (o `1,…,12`) e `STRATA_VERIFY_PROFILE=1`.
+- Senza `--mtp`, `use_mtp=false` (L16143) e l'MTP non viene caricato (L5472). Le righe della finestra vengono dall'oracle (L16594-16595).
+- T_CYCLE accetta `1<=v<=o.spec` (L16393) e forza T a ogni round (L16553). I vettori sono dimensionati su o.spec (L16383-16385 e L16406-16407) e il primo round di ogni T, quello della cattura, è escluso (L16709). Il risultato si legge nella riga `window cost (ms/round) T8:… T12:…` (L16746-16749).
+- `--suffix-draft 0` evita la clamp di L3208-3210 e il ramo sfx/policy (L16556). DraftPolicy(12) clampa da sola a 8 (draft_policy.cpp L30) senza effetti.
+- Non esiste un "verify_bench": verify_parity e spec_verify_parity (kMaxT=8, L128) sono test di parità, non misure di costo.
+- s(12)/s(8) = T12/T8 sulla stessa run. Nota: la misura include il costo host del round.
+
+**Configurazione target (d′): `--spec 12 --mtp-max-t 4` (S_mtp=4) con lookup fino a 12.** Ecco cosa serve perché S=12 arrivi fino alla verify:
+- **Clamp CLI** (V):
+  - Con `--mtp-max-t 4` esplicito, la clamp di L3208-3210 (`spec=min(spec+2,8)`) non scatta, perché richiede mtp_max_t==0.
+  - L3215-3218 (`min(...,8)`) scatta solo con `--lookup-chain>0`. Per d′ va portata a `kVerifyMaxT`, e il range di L2674 (0..7) va portato a `0..kVerifyMaxT-1` (c).
+  - `--spec` (L2608) non ha un tetto superiore lì. Il limite reale è il check di verify.cpp L721-722 (`max_t>kVerifyMaxT || >cpu::MAXT`).
+  - L16426: `S_mtp=min(4,12)=4`. Siccome S_mtp<o.spec, si chiama `set_max_drafts(3)` (L16427).
+- **Lookup e policy** (V, c), **necessari in d′**:
+  - generate.cpp L16557 (CLI) e L14897 (serve) chiamano `sfx.propose(S-1, sbuf)`. sbuf è dimensionato su o.spec/S (L16454 e L14174): OK.
+  - `policy.choose` invece limita il lookup a `max_t_-1` (draft_policy.cpp L125, L131, L137) e `max_t_ = clamp(max_t,1,kMaxT=8)` (L30). **Con kMaxT=8 una finestra lookup non supera mai 8 righe.** Modifiche:
+    - draft_policy.hpp L25: `kMaxT = 8` → `kMaxT = strata::kernels::kVerifyMaxT` (oppure 12).
+    - Gli array `kMaxT+1` a L88, L90 e L98 scalano da soli.
+    - draft_policy.cpp L13 kShape: aggiungere 4 valori, per esempio `…,3.6, 3.95, 4.3, 4.65, 5.0` (estrapolazione lineare, P). **Senza questi valori l'aggregate init mette 0.0: in cost_ms (L42-50) la riga `kShape[t]/kShape[u]` produce un costo 0, cioè r=∞, e la policy sceglie sempre T=12** (V).
+  - Con T_CYCLE, la policy può comunque sovrascrivere T quando il lookup scatta (L16559-16561). Per misurare s(12) conviene quindi `--suffix-draft 0` anche in d′.
+- **Buffer di finestra** (V): `window`/`outv` (L16416), `cbuf` (L16457 e L14189), `drafts`/`dprob` (L16383-16384, e DS = max(S, mtp.max_t()) a L14169-14171) sono tutti dimensionati su o.spec/S, quindi OK a 12. `win_cap = o.spec` (L16531).
+  - Lato serve con S_mtp=4: dwin_s[8] (L14173) è copiato con `min(…,8)` (L14890) e usato con T_mtp-1≤3 (L15190); dp_tested/t2_rej[8] hanno le guardie `d<8` e `a<8` (L15113-15114). Restano OK.
+  - PW{tok[8]} (L14248-14252) e chain_n (L14781) servono solo con `--pipeline-windows 2`, quindi vanno nella lista 2.
+- **MTP in d′: NON resta intatto a 4** (V). `mtp_t = pipeline_windows>=2 ? kVerifyMaxT : o.spec` (generate.cpp L5470), quindi l'MTP viene caricato con max_t_=12 (mtp.cpp L266 accetta ≤kVerifyMaxT). In più `draft()` fa il catch-up delle righe accettate, `T=a+1` fino a 12 (mtp.cpp L1575 con STRATA_MTP_CATCHUP_ALL spento, poi capture_round(T) L1271), e prefill cattura `T=1..max_t_` (L1371, L1392, L1497-1499). Modifiche necessarie:
+  - mtp.hpp: `prefill_exec_[9]`, `prefill_dev_exec_[9]` (L242-243), `round_exec_[9]` (L249) e `round_exec_c_[9]` (L193) vanno portati a `[kVerifyMaxT+1]`, altrimenti c'è overflow dell'indice 12 (V). La distruzione usa range-for (mtp.cpp L138-144) e scala da sola.
+  - mtp.cpp L396: `xq_ = native_q8_1_bytes(NH*HD, 8)` → `native_q8_1_bytes(max(NH*HD, N), T)`. Quantizza N×T righe (L905 e L935). Overflow se N·T > NH·HD·8, quindi dipende dalla geometria (V sul dimensionamento, P sul caso concreto).
+  - Restano a 8 senza rischio con S_mtp≤8 e senza pipeline windows: `step_exec_[9]`, `step_exec_c_[9]` (L189 e L194, indice j<max_steps=min(max_t_-1, max_drafts_)=3, L1580), `ev_step_[8]`, `chain_tok_[8]` e `chain_prob_[8]` (L235-238, solo chain_launch con pipeline; ciclo `j<8` a L1850) (V).
+- **Verifier, host** (a/b):
+  - kVerifyMaxT: verify_kernels.hpp L21 `= 8` → `= 12`. È template e scala con la costante (V).
+  - cpu::MAXT: cpu/expert.hpp L143 `= 8` → `= 12`, richiesto dal check di verify.cpp L721. pool.hpp L62-65 e L364-366 scalano. static_assert(MAXT*10≤128) in expert_source.cpp L4756-4759: 120 passa (V).
+  - verify.hpp:
+    - L536 `last_tokens_[8]` → `[kVerifyMaxT]`: è scritto per t<T a verify.cpp L2744, quindi **overflow a T=12** (V).
+    - L547-549 `exec_/exec_nr_/launched_/launched_nr_[9]` e L616 `groups_[9]` → `[kVerifyMaxT+1]` (indice T, verify.cpp L1148) (V).
+    - L520-524 `prof_t_sum_/prof_t_win_/rs_win_[9]` → `[kVerifyMaxT+1]` (V).
+  - verify.cpp L2358 `T<=8` → `T<=kVerifyMaxT` (report profilo); L2757 `last_t_<=8` → `<=kVerifyMaxT`. Senza queste due modifiche STRATA_VERIFY_PROFILE non vede T=12 (V). L2742 `T<=8` è solo una guardia delle route stats: va bene così.
+- **Kernel GPU sul percorso della verify** (b; i .cu vengono compilati anche come HIP):
+  - native_mmvq.cu (V):
+    - L829 `MAX_NCOLS=8` → `12`; L1800 messaggio.
+    - L1511-1519 `launch_multi` (CUDA e HIP non-gfx906): aggiungere `case 9..12` (o almeno 12, se T_CYCLE usa solo 8 e 12). Registri: NCOLS somme per thread (occupancy, P).
+    - **HIP gfx906**: anche `wave_launch` L1870-1879.
+    - Solo CUDA: `launch_il` (L1739), nel blocco `#if !__HIPCC__` L1523-1794. `native_mmvq_il_supported` (L3230) ritorna false per ncols>8 e quindi usa il fallback: si può lasciare.
+    - `native_mmvq_pair` L2844 e `il_rows_for` L3144 fanno fallback (V).
+    - `q8_packed_mmvq`/`q6_packed` (L2089-2090 e L2224-2225) lanciano throw dopo validate_shape: sono opt-in (STRATA_Q8_PACKED), da lasciare spenti nella misura.
+    - Alternativa sconsigliata: spezzare 8+4 al livello di entry. È bitwise uguale (commento L823-828), ma legge i pesi due volte e quindi gonfia s(12).
+  - shared_expert.cu L219-220: `n_tok>8` → `>kVerifyMaxT`. Dentro usa native_mmvq con ncols=n_tok (V).
+  - native_bf16.cu (router verify.cpp L1950, PLE L1272-1290, indexer L1604-1654) (V):
+    - L298-300 throw `n_tok>8` → `>12`. Nello switch STRATA_MMVF_M il default `<N, 8, false>` va portato a `<N, kVerifyMaxT, false>` (registri, P).
+    - L274 (`_aux`, opt-in STRATA_MMVF_ROWS) ritorna false e usa il fallback.
+  - verify_kernels.cu (V):
+    - gdn_conv_ab/gdn_ab_multi/gdn_state_replay usano il default `<kVerifyMaxT,false>` (L1056, L1105, L1149), quindi scalano. Rischio registri: acc[MAX_T] (L104), gv/bv/vv[MAXT] (L474) (occupancy, P).
+    - resident_plan: static_assert kVerifyMaxT*10≤128 (L1281) dà 120: passa (V). Va bene solo se k≤10 (P per altri modelli).
+  - s2_expert_grouped.cu L826 `GMAX=8` → `12`. È **obbligatorio**, perché static_assert(GMAX>=kVerifyMaxT) a L829 rompe la compilazione. Shared memory: xs_w 8·GMAX·NC int + xs_dh, cioè 25 KB a 8 e circa 37,5 KB a 12 (L996-997, dal commento "20 KB" + "5 KB"), sotto i 48 KB statici. Anche xs_q/hs_q[GMAX] (L860-861 e L922-923) scalano (P per FF grande).
+  - fused_gr.hpp L68 `kFusedGrMaxT=8` → `kVerifyMaxT`. **fused_gr_read_multi rifiuta n_tok>kFusedGrMaxT** (fused_gr.cu L2204) e viene chiamato con n=T (verify.cpp L1368, L2270, L2288). I modelli hc lo usano (verify.cpp L737) (V).
+    - Rischi: smem dinamica T·(N/S) float (L615); a 12 con N=2560 e S=2 fanno ~61 KB, al limite dei 64 KB di HIP/Turing (P).
+    - persist (opt-in HIP): `n_tok>st.max_t` ritorna false e usa il fallback (L3032) (V).
+  - iq_kernels.cu: `launch_mmvq_multi_nc` (L3360-3370) con default `<TY,8,false>` fa un ciclo interno su c0 a passi di NC (L1803-1808), quindi è corretto (V). Rilegge però i pesi da cache: si può aggiungere `case 12` per avere un costo fedele (P). native_gu_multi lavora a GRP_NC=4 per passata (L1859-1862): OK.
+  - native_moe.cu L178-185 e verify.cpp L1144 e L2170 hanno guardie `n<=8` che portano al percorso non fuso: corretto, solo un po' più lento (V).
+  - Attenzione QSA/flash: nessun tetto a T trovato con rg (P, OK).
+- **CPU, se ci sono expert miss sulla CPU** (b): i kernel nativi multi-token fanno dispatch `switch(nt)` con `default: <8>`. Per nt>8 **troncano** senza errore (iq_avx2_rows.inl L546, iq_avx512.cpp L230, iq_avx1.cpp L308, nvfp4_avx2.cpp L176 e L194) oppure hanno `y[8]` senza guardia, cioè overflow (iq_avx2.cpp L557, iq_avx1.cpp L421, tq_cpu.cpp L175-176 e L217-219 con kTqMaxTokens=8 di tq_cpu.hpp L76) (V).
+  - Patch minima consigliata, in un solo punto: all'inizio di `native_gu_rows` (native_expert.cpp L262) e di `native_down_rows` (L374), se `nt>8` ricorrere a blocchi di 8 token (puntatori act/ff/hq/out spostati). Ogni token resta indipendente dal gruppo (P sul bitwise).
+  - q2_rows_any e i kernel bf16/q5_1/q8_0 fanno già tiling (V). Il router CPU tronca a 8 in modo sicuro (expert_source.cpp L3048) (V).
+  - In alternativa: un `--expert-cache` abbastanza grande da avere zero miss CPU nella misura.
+
+#### (2) PATCH COMPLETA a T=12 (in aggiunta alla 1)
+- **Batch e multi-slot** (d, V):
+  - verify.hpp L378 `brow_[8]`, L384 `last_rows_[8]`, L413 `b_out_[8]`, L420 `last_pos_b_[8]` → `[kVerifyMaxT]` (scritti per t<S a verify.cpp L3504, L3764 e L3767).
+  - verify.cpp L3774-3775 e L3950-3951 `int rows[8]` con `t<8` troncano: portare a kVerifyMaxT.
+  - L1512 e L3562 `<=8` (opt-in GDN groups).
+  - generate.cpp: slots_in_windows L5323-5342, kHistSlots L8948, L9016-9168, L11321, L11521-11528, L11749-11760 (scalano con kVerifyMaxT, ma vanno ricontrollati per memoria, P).
+- **Pipeline windows** (V): generate.cpp L14248-14252 `PW{tok[8],prob[8]}` → `[kVerifyMaxT]`; L14781 e L14810 `chain_n = kVerifyMaxT-1`. mtp.hpp `ev_step_[8]`, `chain_tok_[8]`, `chain_prob_[8]` (L235-238) → `[kVerifyMaxT]`; `step_exec_[9]` e `step_exec_c_[9]` → `[kVerifyMaxT+1]`; mtp.cpp L1850 `j<8` → `j<kVerifyMaxT`. Con la pipeline mtp_t=kVerifyMaxT, quindi chain_n_ arriva a 11: **overflow a T=12** (V).
+- **MTP con S_mtp>8**: le stesse modifiche ai grafi step. h_force_ e n_force≤16 (mtp.cpp L1777-1778) restano OK.
+- **Policy** (c): kShape misurata su T 9..12 (bench/results) al posto dell'estrapolazione. STRATA_SPEC_COST_TABLE e `double ms[DraftPolicy::kMaxT]` (generate.cpp L16400-16402 e L16432-16437) scalano. Clamp lookup-chain e il default di --suffix-draft (L3208-3218) diventano `kVerifyMaxT` invece di 8.
+- **Statistiche serve**: dwin_s[8] (L14173), t2_rej/t2_hit e dp_tested/dp_ok[8] (L14187-14188) → `[kVerifyMaxT]` se S_mtp>8. Oggi hanno guardie, quindi è solo telemetria troncata.
+- **GEMV completi**: native_mmvq tutti i `case 9..12` (IL CUDA L1739, packed L2089 e L2224, pair L2844, interleave L2966, L3144, L3230), q8_sm60.cuh L121 (solo CUDA, fallback), dflash2.cu L719 (`--draft dflash2`), iq_kernels `case 12`, native_moe combine `n_tok<=8` (L180) per la fusione.
+- **CPU completa**: casi template 9..12 (oppure tiling a 4) in iq_avx2_rows.inl, iq_avx512.cpp, iq_avx1.cpp, nvfp4_avx2.cpp; `y[8]` → `y[MAXT]` in iq_avx2.cpp L557 e iq_avx1.cpp L421; kTqMaxTokens=12 (tq_cpu.hpp L76) con le sue matrici L175-219. Router AVX1 kq_avx1.cpp L49 `acc[8]` (protetto da L3048). peer/remote CAP MAXT*10 (peer_experts.cpp L29, remote_experts.cpp L21 e L271) scalano (P).
+- **Parità e test**: spec_verify_parity L128 kMaxT=8, gdn_parity e resident_plan_parity (kVerifyMaxT), native_expert_bench NTOK=8, fused_gr_bench TM.
+- **16 rispetto a 12** (P): resident_plan con 160>128 entry richiede un redesign (più di 4 warp, s_ids); GMAX=16 porta la smem MoE a ~50 KB, oltre i 48 KB statici; fused_gr a ~82 KB, oltre i 64 KB HIP.
+
+#### §10.A.1 Patch di misura (2026-10-25)
+Ambito deciso dal Lead: solo verifier host e kernel GPU (più l'MTP se serve), niente policy, kShape o CPU. Comando: `--spec 12 --suffix-draft 0 --spec-oracle <file>` con `STRATA_SPEC_T_CYCLE=8,12` e `STRATA_VERIFY_PROFILE=1`. GPU di riferimento gfx1201, gfx1100 e gfx1151 (il ramo gfx906 non serve). V vuol dire verificato con rg/sed, P vuol dire plausibile.
+
+1. **La policy non limita T** (V). Nel loop CLI la T di partenza è S_mtp=o.spec (generate.cpp L16536). `first_window` la mette a 1, poi `T = t_cycle[rounds % n]` (L16553).
+   - Il ramo `if (o.suffix_draft > 0 …)` (L16556-16563), l'unico che chiama `policy.choose`, è spento da `--suffix-draft 0`.
+   - `policy.chain` (L16580) richiede lookup_chain>0 e use_mtp.
+   - Il ramo spec_cost (L16538 e L16713) richiede `STRATA_SPEC_COST=1`.
+   - Restano due chiamate, entrambe innocue:
+     - `DraftPolicy policy(o.spec)` (L16429) mette max_t_=clamp(12,1,8) (draft_policy.cpp L30).
+     - `policy.observe(from_sfx,T,…)` a ogni round (L16714) fa `t=clamp(t,1,kMaxT)` (draft_policy.cpp L155) prima di indicizzare cost_/mtp_tok_ ([kMaxT+1], draft_policy.hpp L88-90). Quindi non c'è overflow: i campioni a T=12 finiscono su cost_[8], che nessuno legge in questa modalità.
+   - observe_chain clampa allo stesso modo (L259). Non ho trovato assert su T.
+   - **Nessun file della policy va toccato per la misura.**
+2. **`--spec 12` viene accettato** (V). Il parse `o.spec = atoi` (L2608) non ha un tetto.
+   - La clamp a 8 di L3208-3210 richiede suffix_draft>0, quella di L3215-3218 richiede lookup_chain>0: con `--suffix-draft 0` non scattano.
+   - L5499-5502 riguarda solo dflash2.
+   - L'unico tetto è `ver.init(..., o.spec)` (L16139), che arriva a verify.cpp L721: `max_t > kVerifyMaxT || max_t > cpu::MAXT`. Per questo **cpu::MAXT va portato a 12 anche nella patch di misura** (vedi punto 4).
+   - Senza `--mtp` l'MTP non viene caricato (L5455 e L5472) e use_mtp=false (L16143). **Gli array MTP, L5470 e xq_ non servono alla misura.** Servono solo se si misura con l'MTP.
+   - Tutti i vettori del loop CLI sono dimensionati su o.spec (drafts, dprob, window_hist L16383-16385; dwin L16403; t_cycle_ms/_n/_seen L16406-16407; accepted_hist L16424; window/outv L16416).
+   - t2_rej[8], dp_tested[8] e dwin_s[8] stanno nel percorso serve (L14173 e L14187-14188), non nel CLI.
+   - **In generate.cpp non serve nessuna riga per la misura.**
+   - **T_CYCLE** (V): il parse (L16389-16397) accetta una lista di lunghezza qualsiasi separata da virgole, scartando i valori fuori da 1..o.spec. Quindi `6,8,12` va bene. I valori si alternano **a round, in modo ciclico**, `t_cycle[rounds % size]` con `++rounds` a L16674, e mai sul primo round (first_window).
+   - Il primo round di ogni larghezza (la cattura del grafo) è escluso (`t_cycle_seen[T]++ > 0`, L16709). round_ms parte da t0 (L16533) prima di `retry_round`, quindi comprende l'host del round.
+   - La riga `window cost (ms/round)` (L16746-16749) stampa `T<i>:<ms>(n=..)` **per ogni T con almeno un campione**, quindi per ogni valore del ciclo.
+   - Due cose da sapere:
+     - (a) Se la cattura a 12 va in OOM, win_cap scende a 11 con un messaggio "not enough VRAM left for a 12-token verify window" (L16612-16617) e il campione passa a T11.
+     - (b) Vicino a max_context, `room` riduce T (L16567-16568).
+   - Con l'oracle esatto si ha a=T-1 a ogni round.
+3. **fused_gr è obbligatorio per Qwen3.8-Flash-Next** (V). La geometria di default è quella di Flash-Next (qwen4exp: geometry.hpp L21, hc=4 e hc_lr=320 a L49-50). La famiglia non-Qwen35Moe legge `hyper_connection.count` (family_layout.hpp L64-69). Qwen35Moe ha hc=0.
+   - Verifier::init rifiuta qualunque geometria per cui `fused_gr_supported(n_embd,hc,hc_lr)` è falso (verify.cpp L737; fused_gr.cu L2373-2374: n_embd==2560, hc==HC, hc_lr==LR). Quindi la verify *esiste* solo per modelli hc e chiama sempre `fused_gr_read_multi` con n=T (verify.cpp L1368, L2270, L2288 e anche **L2303**).
+   - **Correzione a §10.A**: con n_tok>kFusedGrMaxT, fused_gr_read_multi non ritorna errore ma fa **`std::exit(1)`** (fused_gr.cu L2204-2207).
+   - **kFusedGrMaxT va portato a 12** (fused_gr.hpp L68).
+   - Shared memory su HIP non-gfx906: tile 1280 (fused_gr.cu L1079-1084), quindi 12·1280·4 = 61 440 B. È sotto i 64 KiB di LDS, la want viene clampata all'opt-in (L1093-1094) e il chunk dei token si riduce da solo se non ci sta (L1134-1135 e L1271-1281). Il rischio è performance o registri (accumulatori MAX_T), non la correttezza (P).
+4. **Expert mancanti: sì, la verify GPU li calcola sulla CPU** (V).
+   - `ver.run(T,…, &drive_pool_multi, …)` (generate.cpp L16609) chiama `pool(...)` a ogni layer con n = token del gruppo (verify.cpp L3057-3059). Poi drive_pool_multi (generate.cpp L1159-1165) chiama `expert_pool_dispatch_multi` (expert_source.cpp L4779).
+   - Il controllo esistente è `n_tok > MAXT`, che porta a d.failed (L4783-4787). Scatta per *ogni* finestra, non solo se ci sono miss: per questo MAXT=8 è incompatibile con T=12 e va portato a 12 (static_assert MAXT*10≤128 a L4759: 120 passa).
+   - I job per expert hanno `jb.nt` fino a T (L5121-5125, array act/out/nact[MAXT] in pool.hpp L59-65). Con MAXT=12 nt arriva a 12 e gli entry point arrivano tutti ai kernel:
+     - pool.cpp `run_split_multi_native` (L1359), da expert_source.cpp L5133/L5178 e da **prefill.cpp L4048** (nt = cnt ≤ MAXT, candidati scelti con `c <= cpu::MAXT` a L3860);
+     - pool.cpp `run_split_multi` (L1320, formato S2), da expert_source.cpp L5134/L5179.
+   - Dentro run_phase i kernel sono:
+     - native_gu_rows (pool.cpp L1234) e native_down_rows (L1244), che **troncano** o vanno in overflow oltre 8;
+     - q2_rows_any (L1226-1227 e L1239-1240), che fa già tiling;
+     - s2_expert_gu_rows_multi / s2_expert_down_rows_multi (L1259 e L1263; expert.cpp L474-482 e L488+, default `<8>`, quindi **troncano**).
+   - **Guardia proposta, un solo punto per ciascun entry**: in testa a `ExpertPool::run_split_multi_native` (pool.cpp L1359) e a `ExpertPool::run_split_multi` (L1320), `for e<n: if (jobs[e].nt > 8) { fprintf(stderr,"strata: CPU expert with %d tokens (>8)\n", nt); std::abort(); }`. Copre verify (L5133, L5134, L5178, L5179) e prefill (L4048).
+   - Siccome il prefill ci passerebbe con MAXT=12, va anche fissato il criterio del prefill: prefill.cpp L3860 `c <= cpu::MAXT` → `c <= 8`, così il prefill resta com'è oggi (V sul punto, P sull'assenza di altri effetti; anche L3786 dimensiona con MAXT, ma ingrandire è innocuo).
+   - In alternativa, una guardia in native_gu_rows/native_down_rows (native_expert.cpp L262 e L374): copre anche parity e bench, ma non il percorso S2.
+   - Per la misura basta comunque una cache con zero miss, ma la guardia rende visibile l'eventuale caso.
+5. **Miss per round: non vengono esposti** (V).
+   - Contatori cumulativi: `ExpertDispatch::multi_misses` (expert pairs CPU, `+= njobs` a expert_source.cpp L5209) e `multi_entries` (`++` a L5126), dichiarati in expert_source.hpp L643-644.
+   - Stampa (sempre, non legata a VERIFY_PROFILE): la riga `verify window … CPU experts %.2f distinct / %.2f routed per layer` (generate.cpp L16761-16767, baseline a L16470). È una **media sull'intera run**, non per round né per T.
+   - STRATA_VERIFY_PROFILE (verify.cpp L935, report L2358+) dà per T solo i *tempi* delle fasi "waitCPU" e "PCIe grp" (nomi a L2354), non i conteggi, e oggi solo per T≤8.
+   - STRATA_SPEC_TRACE (L16398-16405, riga a L16703-16707) stampa `T a sfx ms p…` senza miss.
+   - **Punto minimo da strumentare**: nel loop CLI, `const int64_t m0 = drive.d.multi_misses;` prima di `ver.run` (L16609). Poi in L16709-16712 accumulare `t_cycle_miss[T] += drive.d.multi_misses - m0` (vettore o.spec+1) e stamparlo nella riga di L16749, per esempio `T12:…(n=..,miss=..)`. Oppure aggiungerlo alla riga di STRATA_SPEC_TRACE (L16704), per avere il dato a ogni round (P: l'edit non è stato compilato).
+
+**Patch di misura risultante** (in sostanza la lista 1 senza policy, kShape e MTP):
+- verify_kernels.hpp L21 =12; cpu/expert.hpp L143 MAXT=12;
+- verify.hpp: last_tokens_ e gli array [9] → kVerifyMaxT(+1); verify.cpp L2358/L2757 → kVerifyMaxT;
+- native_mmvq.cu: MAX_NCOLS=12 e case 9..12 in launch_multi (senza wave_launch, che è solo gfx906);
+- shared_expert.cu L219 e native_bf16.cu L298 più il default <N,kVerifyMaxT>;
+- s2_expert_grouped.cu GMAX=12; fused_gr.hpp kFusedGrMaxT=12;
+- guardia nt>8 in pool.cpp L1320/L1359; prefill.cpp L3860 → 8;
+- opzionale: contatore dei miss per T in generate.cpp.
+
+## §10.B Revisione P-T12 (b557725), 2026-10-25
+
+Revisione in sola lettura (rg/sed) del commit b557725 sopra 7dd5cf1, ramo strataplus-pt12-measure (worktree /workspace/strata-policy/pt12_worktree, status pulito). Non ho compilato né eseguito nulla. Hash verificati: P_T12_measure.diff ff167c8a…c68f1b, identico a `git diff 7dd5cf1 b557725`; P_T12_MEASURE.md defaff3c…020b05; P_T12_mtp_optional.diff 626a44ed…c5cf. Diffstat: 13 file, +86/−23. Le righe citate sono di b557725, salvo indicazione diversa.
+
+Perimetro della misura (decisione del Lead): `--spec 12 --suffix-draft 0 --spec-oracle`, `STRATA_SPEC_T_CYCLE=6,8,12`, `STRATA_VERIFY_PROFILE=1`, senza `--mtp`, senza `--serve`/`--batch`.
+
+### Verdetto
+
+**Approvabile con modifiche**, che sono due condizioni sulla misura e non sul codice:
+
+- (M1) rendere obbligatorio un controllo A/B di s(8) (rilievo B1);
+- (M2) usare il build solo nel perimetro qui sopra (rilievo B8).
+
+Non ho trovato nessun BLOCCANTE nel perimetro di misura.
+
+### Rilievi
+
+**B1. DA VERIFICARE SU AMD: s(8) del build patchato non è quello di produzione (bias favorevole a T12).**
+
+Portando kFusedGrMaxT (fused_gr.hpp L68) e kVerifyMaxT (verify_kernels.hpp L21) a 12, le T senza istanza exact-T (7 e 8) finiscono sui default dei template, che ora sono istanze con MAX_T=12:
+
+- fused_gr.cu:
+  - gr_down_multi_kernel con default MAX_T=kFusedGrMaxT (L1306-1316), con acc[MAX_T] nei registri (L320);
+  - gr_up_multi_kernel `<kFusedGrMaxT,false>` (L1367), la cui smem statica lo[MAX_T][LR]+g[MAX_T][HC][UPM_COLS] passa da 12 288 a 18 432 B (L367-370);
+  - gr_up_q32 (L1334), gr_up75 (L1357), gr_down_staged default (L1305; corretto 2026-10-25 su segnalazione Policy: L1304 è il ramo `max4` `<4>`).
+- verify_kernels.cu:
+  - gdn_conv_ab_kernel `<kVerifyMaxT,false>` (L1056);
+  - gdn_ab_multi_kernel (L1105), con acc[MAX_T] (L104);
+  - gdn_state_replay<kVerifyMaxT> (L1149), solo con STRATA_GDN_SPLIT (opt-in).
+- s2_expert_grouped.cu: GMAX=12 (L826) fa crescere la smem statica dei kernel grouped per **ogni** T: L860-861 diventa 34 560 B, L996-997 diventa 38 400 B (prima 23 040 e 25 600). Conta solo se il pack misurato è S2. Tutto resta sotto i 64 KiB.
+
+Più registri e più LDS a T=7/8 possono ridurre l'occupancy, cioè peggiorare s(8). Se s(8) peggiora, il rapporto s(12)/s(8) risulta più favorevole a T12 del vero (stima ottimistica). Il risultato bitwise non cambia: le istanze MAX_T fanno gli stessi conti per riga.
+
+Correzione, una delle due:
+
+- (a) `case 7: case 8:` verso `<8,false>` nei dispatch citati, aggiungendo `kFusedGrMaxT8 = 8` come parametro esplicito;
+- (b) controllo A/B obbligatorio: T_CYCLE=6,8 su 7dd5cf1 contro b557725, con lo stesso seed e lo stesso prompt; gli s(8) devono coincidere entro il rumore, per esempio ±1 %. Se non coincidono, il rapporto va calcolato con l's(8) di 7dd5cf1.
+
+Non tocca s(6): T=1..6 hanno istanze exact-T. native_bf16.cu L328-329 lascia `<N,8,false>` per 7..8 e native_mmvq usa MAX_NCOLS solo nel controllo di L1804 (nessuna smem), quindi lì non c'è bias.
+
+**B2. DA VERIFICARE SU AMD: LDS e occupancy di fused_gr a T=12.**
+
+A T=12, want = 61 440 B di LDS dinamica con chunk=12 (prima, con cap 8, chunk=8). Siamo sotto 65 536, quindi la smem non supera i 64 KiB, ma il kernel gira con un blocco per CU. Va letto nella riga "GPU stages per window width": se lo stadio gr pesa molto di più a T12, è un costo reale del kernel e non un errore della patch.
+
+fused_gr.cu L2180-2183 (launch_q8, solo con STRATA_HC_Q8) ha ancora `default: fprintf+exit(1)` oltre 8: fuori perimetro, ma va lasciato spento. NIT.
+
+**B3. OK: split nel pool (punto a).**
+
+pool.cpp L1320-1346 (pt12_split_over8), L1349-1352 (run_split_multi) e L1392-1395 (run_split_multi_native).
+
+- Il sub-job copia blob, fmt, nt e act/out/nact[t0+t]: sono tutti i campi di ExpertJobMulti (pool.hpp L59-70). Gli offset dei token sono t0=0,8 e le righe di peso sono le stesse.
+- Lo scratch è split_multi_[e] per indice di sub-job, sempre distinto. Le uscite sono scritte per assegnazione (`sb.ff[t][r]=`, `out` dai kernel di riga) e mai accumulate.
+- Non esiste una riduzione tra token, quindi l'ordine di riduzione per riga non cambia.
+- La ricorsione termina perché dopo lo split ogni sub-job ha nt≤8. Con n>96 il percorso S2 passa a single-token (esatto), quello nativo procede a lotti da 96.
+- T=9 diventa 8+1: il pezzo da 1 token va per nt=1 nel percorso single-token (native_expert.cpp L295-307 e L321, mt_min=2). È la stessa strada che oggi prende ogni token instradato da solo, quindi non nasce una nuova classe di differenza.
+- Parità greedy: NIT / DA VERIFICARE con `--spec-oracle`, che la controlla già.
+- Con T_CYCLE=6,8,12, T=9..11 compare solo dopo un OOM di cattura (win_cap, generate.cpp L16616-16621, con un messaggio su stderr) o vicino a fine generazione (room).
+- NIT: multi_bytes conta i sub-job; thread_local gbuf/ubuf[MAXT][FF] (L1222 circa) cresce di 4×FF float per thread.
+
+**B4. OK: contatore dei miss (punto b), con due NIT di formato.**
+
+- Lettura: generate.cpp L16612, subito prima di ver.run e dopo apply_pending/set_spec_q. Con l'OOM, `goto retry_round` rilegge i valori, quindi i miss del tentativo fallito non entrano.
+- Accumulo: L16716-16720, dentro lo stesso if di t_cycle_ms (`timed_round && t_cycle_seen[T]++ > 0`). Il primo round per T è quindi escluso, non c'è doppia conta e il denominatore è lo stesso t_cycle_n.
+- Senza MTP, tra lettura e accumulo nient'altro tocca multi_misses: draft_next non viene chiamato, e il thread di adapt non fa dispatch (plausibile, non dimostrato).
+- NIT: la stampa di L16759-16765, `T%zu:%.2f(entries=%.2f, rounds miss=%lld no-miss=%lld)`, ha spazi dentro le parentesi e rompe uno split su spazi. Proposta: `T12:1.23(ent=4.56,rmiss=10,rnomiss=30)`.
+- NIT: il valore è la somma per round su tutti i layer delle coppie (layer, expert) mancanti; va scritto così nel MD, non come "per layer".
+
+**B5. OK: coerenza di kVerifyMaxT (punto c).**
+
+Le 77 righe / 82 occorrenze ricontrollate sul worktree si dividono così:
+
+- dimensionamenti coerenti:
+  - verify.hpp L521-522, L537, L548-550, L617;
+  - verify.cpp L773 h_nf_, L2898 e L3734 ple_rows sullo stack;
+  - generate.cpp L11521-11524 e L11759-11760.
+- dimensionati su max_t_ (=o.spec), tutti coerenti: verify.cpp L721 controlla `max_t ≤ kVerifyMaxT && ≤ cpu::MAXT`; i buffer device scalano con T=max_t (L757); la riga "window up to %d tokens, %.1f MiB" (L1088) mostra l'aumento di VRAM.
+- solo MTP o pipeline: L3173 d_spec_, L3701 handoff, generate.cpp L9110 e L9142-9150 (pl_mtp_R).
+- resident_plan: capx=max_t_·K=120 ≤ 128 (verify_kernels.cu L1281), OK.
+
+Non ho trovato kVerifyMaxT usato al posto di una quantità di VRAM o del resident_plan.
+
+DA VERIFICARE: l'aumento di VRAM dei buffer di verify a max_t=12 e dei grafi catturati fino a T=12 viene allocato dopo il tier VRAM degli expert, quindi può solo far scattare l'OOM di cattura (win_cap, con un messaggio). Se nel log compare "not enough VRAM left for a 12-token verify window", T12 non è stato misurato e la riga mostrerà T11.
+
+**B6. NIT / DA VERIFICARE: letterali `8` rimasti nei percorsi di verify (punto d).**
+
+- verify.cpp L1144 (lfuse_on, `n <= 8`) e L2170-2171 (hits_in_combine, `n <= 8` a L2171, identica in 7dd5cf1; corretto 2026-10-25 su segnalazione Policy: L2165-2167 sono il copy_rows_from_mapped), più native_moe.cu L178 (combine con shared, `n_tok <= 8`). Sono condizioni di abilitazione: a T=12 il round prende i kernel separati (gate/scale del shared e add degli hit fuori dalla combine) invece di quelli fusi. È un ripiego silenzioso ma corretto (bitwise, per i commenti S26/143-amdk). La conseguenza è che s(12) contiene qualche lancio in più che a T=8 non c'è: un costo vero del build, ma non un T12 "ottimizzato". Va scritto nel report; se STRATA_LFUSE non è attivo non conta.
+- Ripieghi verso il layout o il kernel generico, tutti con `return false` e nessun throw raggiungibile:
+  - native_mmvq.cu L2058 e L2211 (packed q8/q6 a ncols>8, si torna al layout GGUF);
+  - L2850 (pair: shared_expert.cu L229-233 torna alle due chiamate gate/up);
+  - L3150 e L3236 (il_supported falso, quindi native_q8_1_interleave, che a L2972 lancerebbe, non viene chiamato: tutti i chiamanti in verify.cpp L1400, L1441, L1674 e L2319 lo controllano prima);
+  - native_bf16.cu L274 (rows aux);
+  - q8_sm60.cuh L121 (solo CUDA).
+- Il wave di native_mmvq (L1883, throw oltre 8) è solo gfx906, sotto `#if`: non va su gfx1100/gfx942.
+- verify.cpp L1512 (`te - tb <= 8`, batch_rec), L1979/L1982 (route stats guardate), L2384-2392 (report di route a 8): fuori percorso o solo diagnostica. NIT.
+- verify.hpp L525 rs_win_[9]: usato solo con la guardia T<=8 (verify.cpp L2742). NIT, lasciare il commento.
+- generate.cpp L3210 e L3218: clamp a 8 per suffix e lookup-chain. Con `--suffix-draft 0` non entrano in gioco.
+- Commenti non aggiornati (NIT): verify.hpp L521 dice ancora "(1..8)", iq_kernels.cu L1860 dice "kVerifyMaxT = 8".
+
+**B7. NIT: effetti collaterali fuori dalla misura.**
+
+- kq_avx2.cpp L28: MAXT=8 locale, sicuro perché il pool spezza prima.
+- prefill.cpp L3786: il cap del buffer usa ancora cpu::MAXT, quindi alloca 12/8 di RAM in più senza effetto. L3860 c<=8 è corretto.
+- q36_engine.cu L2271: i job si riempiono fino a 12 e poi vengono spezzati (12+8 diventa 8,4,8): cambia il raggruppamento, non il risultato.
+- generate.cpp L5328/L5342 (slots_in_windows, cap kVerifyMaxT): vedi B8.
+- Test unitari: expert_multi_test.cpp L77 cicla `n ≤ c::MAXT` (=12) su s2_expert_vnni_multi, che non è spezzato; con la patch è facile che fallisca a n=9..12. Non l'ho eseguito. Con il build di misura non va lanciato ctest, oppure il ciclo va limitato a 8.
+
+**B8. NIT fuori perimetro, ma va dichiarato: `--serve --batch` con più di 8 slot ora va oltre gli array.**
+
+- Con cap=kVerifyMaxT=12, generate.cpp L5328/L5342 accetta 9..12 slot per finestra.
+- Gli array batch del Verifier restano a 8: verify.hpp L379 brow_[8], L385 last_rows_[8], L414 b_out_[8], L421 last_pos_b_[8]. verify.cpp li scrive per `t < S` a L3504, L3764 e L3767; inoltre L3774-3775 e L3950-3951 usano rows[8] con `t<8`, e le righe oltre l'ottava restano 0. Risultato: overflow e righe sbagliate.
+- Nel loop serve con MTP, dwin_s (std::array<float,8>, L14173) è letto per T_mtp−1 fino a 11 da policy.observe_probs (L15190), e t2_rej[8] è indicizzato con `a` fino a 11 (L15115).
+- Nessuno di questi percorsi è nel comando di misura (single stream, senza --mtp né --serve). Correzione: un clamp di una riga (`cap = 8` nel percorso batch) oppure una nota nel MD con il divieto esplicito di usare il build per serve, batch o MTP.
+
+**B9. Conflitto con P6 su generate.cpp (punto e), solo descrizione.**
+
+- L'hunk P6 `@@ -16823,6 +16938,7 @@` (patches/P6_engine_hook.diff L226 circa) inserisce `if (joint && timed_round) joint->observe(a, round_ms, outv.data());` con questo contesto: `++t_cycle_n[(size_t) T];` / `}` / `if (spec_cost … observe_probs`. Nella base 7dd5cf1 è la L16709-16711.
+- P-T12 inserisce 4 righe proprio tra `++t_cycle_n` e `}` (b557725 L16716-16720). Il contesto iniziale dell'hunk P6 quindi non combacia più: `git apply` senza fuzz rifiuta, `patch` con fuzz 1-2 probabilmente lo applica, `git am -3` dà un conflitto da risolvere a mano.
+- La risoluzione corretta è banale: la riga P6 va dopo la `}` che chiude il blocco t_cycle, prima di observe_probs o subito dopo.
+- Gli altri hunk delle due patch non si toccano. P6 L16665 (scelta di T) e L16537 (make_joint_hook) sono lontani da L16408-16410 e L16612 di P-T12, anche se le basi sono diverse (P6 sta sopra P1-P5, con offset di circa +100 righe).
+- Semanticamente non interagiscono nella misura: make_joint_hook riceve "STRATA_SPEC_T_CYCLE" come opzione in conflitto, quindi con T_CYCLE impostato il JointGate non sceglie T.
+
+**B10. NIT sul MD (P_T12_MEASURE.md).**
+
+- Il protocollo dice T_CYCLE=8,12; il Lead ha fissato 6,8,12. Va allineato.
+- Va aggiunto il controllo A/B di B1(b).
+- Va aggiunto il controllo sulle righe "not enough VRAM … window" (B5).
+- Va aggiunto il divieto serve/batch/MTP (B8).
+
+### Sommario per il Lead
+
+1. Patch letta hunk per hunk su b557725 (13 file, +86/−23); hash dei tre artefatti OK.
+2. Costanti a 12 coerenti con tutti gli static_assert (fused_gr.cu L217 GrMulti≤4096, s2_expert_grouped.cu L829).
+3. Switch e template: case 9..12 presenti dove servono (native_mmvq L1519-1523, native_bf16 L328-329). Nessun throw raggiungibile nel perimetro.
+4. Smem sempre sotto i 64 KiB: fused_gr 61 440 B a T12 (B2), s2 grouped 38 400 B.
+5. Split del pool corretto: campi, offset, scratch, nessun accumulo e ordine di riduzione invariato (B3).
+6. Contatore dei miss corretto: letto prima di ver.run, stesso filtro di t_cycle_ms, primo round escluso, niente doppia conta (B4). Due NIT di formato.
+7. kVerifyMaxT non è usato al posto della VRAM o del resident_plan (B5).
+8. Rilievo principale (B1, da verificare su AMD): a T=7/8 i default dei template diventano MAX_T=12. s(8) può peggiorare e il rapporto s(12)/s(8) sarebbe ottimistico per T12.
+9. Condizione M1: case 7/8 verso <8>, oppure A/B T8 tra 7dd5cf1 e b557725 con lo stesso seed (±1 %).
+10. Ripieghi silenziosi a T>8 (lfuse/combine, packed, pair, il): corretti, ma s(12) include kernel non fusi (B6). Va scritto nel report.
+11. Fuori perimetro, overflow reali con `--serve --batch >8` e serve+MTP (B8). Condizione M2: build usato solo per la misura, oppure clamp di una riga.
+12. Test: expert_multi_test probabilmente fallisce con MAXT=12 (B7). Non va lanciato sul build di misura.
+13. P6: conflitto solo testuale sul contesto di L16716-16720; si risolve mettendo joint->observe dopo la `}` del blocco t_cycle (B9).
+14. Nessun BLOCCANTE nel perimetro `--spec 12 --suffix-draft 0 --spec-oracle`, T_CYCLE=6,8,12, senza --mtp.
+15. Verdetto: **approvabile con modifiche (M1 obbligatoria, M2 come nota o clamp)**.
+16. Nessun repo modificato, niente build, test o esecuzioni. Ho solo aggiunto questa sezione (backup in /tmp/scout_patch_support.md.bak3).
+
+## §10.C Revisione P-T12 v2 (d6d4358)
+
+Base: ramo strataplus-pt12-measure, worktree /workspace/strata-policy/pt12_worktree, HEAD d6d4358 sopra b557725, status pulito. Lavoro in sola lettura (git show/diff, rg, sed): niente build, test o esecuzioni. Hash verificati: P_T12_MEASURE_v2.md c6806e76…817, P_T12_measure_v2.diff d106c044…359f (= `git diff 7dd5cf1 d6d4358`), P_T12_v2_delta.diff 00041a48…f6f9 (= `git diff b557725 d6d4358`); i file v1 sono invariati. Delta: 10 file, +88/−38, tutti dichiarati in P_T12_MEASURE_v2.md. Totale 7dd5cf1..d6d4358: 18 file, +171/−58.
+
+### Finding
+
+**C1 — ok (verificato nel codice). Chiamanti di moe_grouped_s2 (rg completo su src/ e tools/).**
+- verify.cpp:2102-2103 passa `n` (L2076: `n = te - tb`, cioè le righe del gruppo di finestra). Ogni token ha top-k distinti, quindi le entry per gruppo di expert sono ≤ n ≤ T: a T≤8 si va in `<8>`. A T=12 con 2 gruppi (n=6) si va ancora in `<8>`, ed è corretto; con 1 gruppo (n=12) si va su GMAX 12.
+- mtp.cpp:1130-1131 passa `(int) T`, il T di record_rest ≤ max_t_ ≤ kVerifyMaxT (L266). Vale nel draft (T=1 o a+1) e nel catch-up del prefill (L1471/L1497, T=min(max_t_, n−c)). I gruppi vengono da moe_group_resident (top-10 distinti per token), quindi entry ≤ T e a T≤8 si va in `<8>`. Resta un'ipotesi non verificata: che native_route_resident (L1123) mantenga gli id distinti.
+- remote_experts.cpp:345-347 passa `(int) n_tok`; n_tok ≤ cpu::MAXT (L271) e i gruppi sono per expert id (L280-296), quindi a n_tok≤8 si va in `<8>`. Il percorso esiste solo con --expert-cache-remote ed è fuori dalla misura. Il ramo native (L340) chiama native_expert_grouped, che non ha max_group.
+- **Nessun percorso di produzione passa il default 0**, quindi nessun T≤8 resta su GMAX 12.
+
+**C2 — ok (verificato).** s2_expert_grouped.cu:
+- GMAX=12 a L826, static_assert GMAX ≥ kVerifyMaxT a L829;
+- `template <int GM = GMAX>` a L853/L916/L990/L1057;
+- g8 = `max_group in 1..8` a L1181;
+- dispatch a L1191/L1196 (gate-up) e L1237/L1240 (down).
+Ho confrontato il file normalizzato (senza commenti, GM→GMAX) con 7dd5cf1: i corpi dei kernel sono identici, quindi a T≤8 tornano esattamente le istanze GMAX 8 di 7dd5cf1. Grid e blocchi (256) non dipendono da GM. La firma nell'header (s2_expert_grouped.hpp L100-103, `int max_group = 0`) coincide con la definizione (L1173-1176). Nit: `if (fast) if (g8) … else … else …` funziona per il dangling else ma si legge male; meglio usare le graffe.
+
+**C3 — nit (verificato).** Il parity harness (s2_expert_grouped_parity.cpp L419, L455, L657) chiama con il default 0, quindi prova solo GMAX 12. Le istanze `<8>` effettivamente usate a T≤8 restano senza un controllo di parità dedicato. Lo copre l'argomento «identiche a 7dd5cf1» di C2, ma non un test.
+
+**C4 — ok (verificato).** fused_gr.cu, down a T≤8:
+- kGrBaseMaxT=8 più static_assert a L220-221;
+- i rami `else if (ct <= kGrBaseMaxT)` per staged, 1280 q8w/plain e 2560 q8w/plain (L1316, L1321, L1324, L1329, L1332) usano `<8>`, gli stessi template e argomenti dei default `<>` e `<…, kFusedGrMaxT[, true]>` di 7dd5cf1 (allora kFusedGrMaxT=8);
+- la smem dinamica al lancio è `ct * per_tok` (L1293) e non dipende dal MAX_T;
+- gli attributi sono want8 = 8·tv·4 (L1100) per `<1280|2560, 4, true>` e per le nuove `<…, 8[, true]>` (L1106-1113), uguali al want di 7dd5cf1, più set_staged_attr `<8, false>` (L1129);
+- il chunk ora è limitato a 12 (L1146-1148). Con n_tok≤8 la suddivisione in ct resta identica: chunk ≥ 8 dà un solo lancio, chunk < 8 dà lo stesso valore di 7dd5cf1;
+- grid DOWN_BLOCKS+1 e THREADS sono invariati; i rami exact 1..6, down_tg e max4 sono intatti.
+
+**C5 — ok (verificato).** fused_gr.cu, i 4 switch up (q32 L1343/1350, q8w multi L1357/1364, up75 L1368/1375, multi L1379/1386):
+- `case 7: case 8:` porta a `<kGrBaseMaxT, false[, true]>`;
+- con STRATA_NO_MULTI_GR la chiave diventa 8 per n_tok≤8 e quindi va nell'istanza `<8, false>`, come il default di 7dd5cf1;
+- il default `<kFusedGrMaxT, false>` riguarda solo T=9..12.
+Non manca nessun ramo.
+
+**C6 — ok (verificato).** verify_kernels.cu:
+- `case 7: case 8:` porta a `<8, false>` per gdn_conv_ab (L1056) e gdn_ab_multi (L1106); il default `<kVerifyMaxT, false>` riguarda solo 9..12;
+- gdn_state_replay usa `n_tok <= 8 ? <8> : <kVerifyMaxT>` (L1151-1155);
+- il ramo con output (gdn_step_split_kernel / gdn_out_norm_kernel, L1158-1162) e il commit non hanno template su T e sono invariati;
+- negli altri .cu non ci sono altri template con default a kVerifyMaxT.
+Nit: a L1154 l'`else` non è indentato come l'`if`.
+
+**C7 — da correggere, condizionale (codice verificato; effetto a runtime ipotizzato).** STRATA_HC_PERSIST (opt-in):
+- kernel_t (fused_gr.cu L2877-2888) ha `case 1..8` e restituisce nullptr per T>8;
+- il self-check di avvio cicla `for (T = 1; T <= kFusedGrMaxT …)` (L3022), quindi ora arriva a 9 e lancia `kernel_for(9)` = nullptr (L2902);
+- check(9) fallisce (errore di lancio oppure out non finito, quindi `return 2`), ok=false, e il persist viene spento **per tutti i T** («check failed at 9 tokens»). In 7dd5cf1 invece restava attivo fino a 8.
+Con quella variabile la s(8)/s(6) della build patchata non è più quella di 7dd5cf1. Il difetto viene da b557725 e non dal delta, ed è assente dal «Fuori perimetro» di P_T12_MEASURE_v2.md. Due rimedi: limitare il loop a `T <= 8`, oppure dichiarare nel md che la misura va fatta senza STRATA_HC_PERSIST.
+
+**C8 — nit (verificato; già documentato in buona parte).** Altri percorsi opt-in in cui T=7..8 restano su MAX_T=12:
+- STRATA_GR_V3: `<1, kFusedGrMaxT, false>` a L2309/L2318; `<2>` con default 12 per ogni T a L2302/L2311; need1 = 12·N·4 a L2271-2275 può cambiare la scelta S=1 → default read;
+- STRATA_GR_SPLIT gfx906: gr_up_fast/gr_up_multi con default `<12>` a L2341-2342, gr_down_split con acc[kFusedGrMaxT] a L1580;
+- STRATA_HC_Q8 (launch_q8, L2177-2187): istanze per T esatto, invariato. È comunque escluso dalle istruzioni (md L103).
+V3 e split sono già nel «Fuori perimetro» (md L78). Va solo esplicitato che la misura va fatta senza STRATA_GR_V3/STRATA_GR_SPLIT/STRATA_HC_PERSIST, e che arch_defaults.hpp non li accende.
+
+**C9 — ok (verificato).** Guardia M2 in generate.cpp L2796-2801: `if (o.serve)` stampa su stderr e fa `return 2` da main (equivale a exit 2).
+- Sta subito dopo il parsing (L2795) e prima del blocco HIP arch_defaults (L2802+). Tra l'inizio di main (L2309) e L2796 ci sono solo SetDllDirectory, setenv (CUDA_MODULE_LOADING, GPU_PINNED_MIN_XFER_SIZE) e il parsing: nessuna query al device e nessun load.
+- Copre --serve con e senza --mtp, perché la condizione è solo o.serve.
+- --batch/--slots senza --serve vengono spenti (L5348-5353, `o.batch = 0`) e --batch-mtp richiede --batch.
+- Gli array a 8 (verify.hpp L379/L385/L414/L421 brow_/last_rows_/b_out_/last_pos_b_; generate.cpp dwin_s L14179 e t2_rej L14193, ex L14173 più lo spostamento di +6) sono quindi irraggiungibili.
+- Non ho trovato altri entry point server (--port/--http ecc.).
+
+**C10 — ok (verificato), con un nit.** Stampa e contatore dei miss:
+- La riga a L16765-16772 stampa `T12:1.23(ent=…,rmiss=…,rnomiss=…)` senza spazi, come richiesto.
+- multi_misses è cumulativo (expert_source.cpp L5209 `+= njobs`, coppie (layer, expert) distinte calcolate dalla CPU, expert_source.hpp L643). Il delta per round è quindi la somma su tutti i layer.
+- Lo snapshot a L16618 viene preso dopo apply_pending e dentro `retry_round` (L16543), quindi si ripete al retry dopo un OOM.
+- L'accumulo (L16722-16725) sta sotto `t_cycle_seen[T]++ > 0` (L16719), quindi il primo round per T è escluso.
+- Il fallback OOM a 11 righe è confermato a L16622-16627.
+Nit: la riga storica a L16788-16789 normalizza per round·n_layers (per layer), mentre la nuova è una somma per round. Nello stesso output ci sono quindi due scale; l'etichetta lo dice, ma conviene ricordarlo nel md.
+
+**C11 — ok (verificato).** I commenti sono aggiornati: verify.hpp L521 (`1..kVerifyMaxT`) e iq_kernels.cu L1860-1862 (12 nella build di misura, 8 in 7dd5cf1).
+
+**C12 — ok (verificato).** P_T12_MEASURE_v2.md:
+- `STRATA_SPEC_T_CYCLE=6,8,12` (L14, L105; per 7dd5cf1 `--spec 8`, `6,8` a L106);
+- decisione = s(12) patchata / s(8) di 7dd5cf1, ramo (a) = s(12) patchata / s(6) di 7dd5cf1, con due binari alternati nella stessa sessione (L26-28, L103-108);
+- --serve è escluso (L15, L110).
+Ipotesi dichiarata e non verificabile senza build: P1, cioè che registri e occupancy delle istanze `<8>` siano uguali a 7dd5cf1.
+
+**C13 — ok (verificato).** Regressioni del delta:
+- sono toccati solo i 10 file dichiarati;
+- non ci sono istanziazioni esplicite, quindi nessun rischio ODR o di istanze duplicate: `<1280, 8, true>` e simili sono istanze implicite uniche per TU;
+- la firma dell'header coincide con la definizione (C2);
+- i letterali 8 nuovi sono tutti legati a kGrBaseMaxT o a `n_tok <= 8` con commento;
+- i limiti superiori restano kFusedGrMaxT/kVerifyMaxT = 12.
+
+### Correzioni a §10.B (Policy ha ragione su entrambe)
+- B1: il default `gr_down_staged_kernel<>` in b557725 è a **L1305**; L1304 è il ramo `max4` `<4>`. Riga corretta con la nota «corretto 2026-10-25 su segnalazione Policy».
+- B6: hits_in_combine è a **verify.cpp L2170-2171** (`n <= 8` a L2171) ed è identico in 7dd5cf1, b557725 e d6d4358. Le righe L2165-2167 citate prima sono copy_rows_from_mapped. Riga corretta con la stessa nota.
+
+### Verdetto
+**Approvabile per la misura, con condizioni:**
+1. eseguire la misura senza STRATA_HC_PERSIST, STRATA_GR_V3, STRATA_GR_SPLIT e STRATA_HC_Q8, scrivendolo nel md; in alternativa, correggere il loop di C7 a `T <= 8`;
+2. P1 (registri/occupancy delle `<8>`) resta un'ipotesi.
+M1 (C1-C6) e M2 (C9) sono soddisfatti nel percorso di default.

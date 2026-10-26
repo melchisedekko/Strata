@@ -1,0 +1,4 @@
+ninja: Entering directory `/workspace/llama.cpp/build-nollamafile'
+ninja: no work to do.
+//ggml: use LLAMAFILE
+GGML_LLAMAFILE:BOOL=OFF

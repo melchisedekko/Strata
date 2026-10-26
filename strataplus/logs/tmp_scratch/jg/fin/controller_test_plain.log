@@ -1,0 +1,15 @@
+prior: mtp k=3 expected 3.24 tokens, 72.8 tok/s (plain 48.8)
+after rejections: none, p0 0.42
+long lookup match, measured costs: lookup k=3 expected 3.55, 86.8 tok/s
+long lookup match, cheap wide verify: lookup k=8 expected 6.60, 328.3 tok/s
+after full acceptance: mtp k=8 (was 3), p0 1.000
+
+MTP acceptance -> choice (default cost model):
+  p=0.50: none k=0, 48.8 tok/s
+  p=0.60: mtp k=1, 56.1 tok/s
+  p=0.70: mtp k=1, 58.7 tok/s
+  p=0.80: mtp k=1, 63.9 tok/s
+  p=0.86: mtp k=3, 70.8 tok/s
+  p=0.90: mtp k=3, 76.3 tok/s
+  p=0.95: mtp k=5, 84.6 tok/s
+controller tests: OK

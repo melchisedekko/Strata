@@ -1,0 +1,1110 @@
+In file included from /workspace/strata-policy/patchwork/src/program/generate.cpp:38:
+/workspace/strata-policy/patchwork/include/strata/core/on_device.hpp: In destructor ‘strata::core::OnDevice::~OnDevice()’:
+/workspace/strata-policy/patchwork/include/strata/core/on_device.hpp:17:51: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   17 |     ~OnDevice() { if (previous >= 0) cudaSetDevice(previous); }
+In file included from /usr/include/hip/hip_runtime.h:113,
+                 from /workspace/strata-policy/patchwork/include/strata/hip_compat/cuda_runtime.h:12,
+                 from <command-line>:
+/usr/include/hip/hip_runtime_api.h:1573:12: note: in call to ‘hipError_t hipSetDevice(int)’, declared here
+ 1573 | hipError_t hipSetDevice(int deviceId);
+      |            ^~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+In file included from /workspace/strata-policy/patchwork/include/strata/core/mtp.hpp:23,
+                 from /workspace/strata-policy/patchwork/src/program/generate.cpp:68:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp: In member function ‘void* strata::core::PinnedRing::acquire(size_t)’:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:51:67: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   51 |         if (cudaGetDevice(&cur) != cudaSuccess) { cudaGetLastError(); return nullptr; }
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:58:79: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   58 |             if (cudaEventSynchronize(sl.ev) != cudaSuccess) { cudaGetLastError(); return nullptr; }
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:61:37: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   61 |             if (sl.p) { cudaFreeHost(sl.p); sl.p = nullptr; sl.cap = 0; }   // idle: its last copy was waited for above
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:64:33: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   64 |                 cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:71:29: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   71 |             cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp: In member function ‘hipError_t strata::core::PinnedRing::submit(void*, const void*, size_t, hipStream_t)’:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:91:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+   91 |         cudaGetLastError();                // no event: the copy is waited for here instead
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp: In member function ‘bool strata::core::PinnedRing::reserve(size_t)’:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:123:67: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  123 |         if (cudaGetDevice(&cur) != cudaSuccess) { cudaGetLastError(); return false; }
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:130:83: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  130 |                 if (cudaEventSynchronize(sl.ev) != cudaSuccess) { cudaGetLastError(); return false; }
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:133:41: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  133 |                 if (sl.p) { cudaFreeHost(sl.p); sl.p = nullptr; sl.cap = 0; }
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:136:37: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  136 |                     cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:143:33: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  143 |                 cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp: In member function ‘void strata::core::PinnedRing::release()’:
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:153:58: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  153 |             if (sl.pending && sl.ev) cudaEventSynchronize(sl.ev);
+/usr/include/hip/hip_runtime_api.h:2539:12: note: in call to ‘hipError_t hipEventSynchronize(hipEvent_t)’, declared here
+ 2539 | hipError_t hipEventSynchronize(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:154:40: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  154 |             if (sl.ev) cudaEventDestroy(sl.ev);
+/usr/include/hip/hip_runtime_api.h:2521:12: note: in call to ‘hipError_t hipEventDestroy(hipEvent_t)’, declared here
+ 2521 | hipError_t hipEventDestroy(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:155:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  155 |             if (sl.p) cudaFreeHost(sl.p);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/include/strata/core/pinned_ring.hpp:158:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+  158 |         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘void {anonymous}::mem_mark(const char*)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:1611:19: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 1611 |     cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int32_t* {anonymous}::res_pairs_alloc(size_t, const std::vector<int>&)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:1714:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 1714 |             cudaFreeHost(p);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘double {anonymous}::probe_pcie_h2d_gbps(std::string*)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2114:21: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2114 |         cudaFreeHost(h);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2118:20: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2118 |     cudaMemcpyAsync(d, h, kBytes, cudaMemcpyHostToDevice);   // warmup: context up, copy engine primed
+/usr/include/hip/hip_runtime_api.h:3883:12: note: in call to ‘hipError_t hipMemcpyAsync(void*, const void*, size_t, hipMemcpyKind, hipStream_t)’, declared here
+ 3883 | hipError_t hipMemcpyAsync(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind,
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2138:24: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2138 |         cudaEventRecord(ev[0]);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2140:28: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2140 |             cudaMemcpyAsync(d, h, kBytes, cudaMemcpyHostToDevice);
+/usr/include/hip/hip_runtime_api.h:3883:12: note: in call to ‘hipError_t hipMemcpyAsync(void*, const void*, size_t, hipMemcpyKind, hipStream_t)’, declared here
+ 3883 | hipError_t hipMemcpyAsync(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind,
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2141:28: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2141 |             cudaEventRecord(ev[b + 1]);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2146:52: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2146 |     for (int i = 0; i < n_ev; ++i) cudaEventDestroy(ev[i]);
+/usr/include/hip/hip_runtime_api.h:2521:12: note: in call to ‘hipError_t hipEventDestroy(hipEvent_t)’, declared here
+ 2521 | hipError_t hipEventDestroy(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2160:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2160 |     cudaFree(d);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2161:17: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2161 |     cudaFreeHost(h);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘void prime_hw_queues()’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2400:24: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2400 |         cudaMemsetAsync(buf, 0, 256, s);
+/usr/include/hip/hip_runtime_api.h:3972:12: note: in call to ‘hipError_t hipMemsetAsync(void*, int, size_t, hipStream_t)’, declared here
+ 3972 | hipError_t hipMemsetAsync(void* dst, int value, size_t sizeBytes, hipStream_t stream __dparm(0));
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2401:30: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2401 |         cudaStreamSynchronize(s);
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2404:48: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2404 |     for (cudaStream_t s : ss) cudaStreamDestroy(s);
+/usr/include/hip/hip_runtime_api.h:2155:12: note: in call to ‘hipError_t hipStreamDestroy(hipStream_t)’, declared here
+ 2155 | hipError_t hipStreamDestroy(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:2405:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 2405 |     cudaFree(buf);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3086:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3086 |         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3165:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3165 |         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3210:93: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3210 |                     if (cudaGetDeviceProperties(&prop, d) != cudaSuccess) { cudaGetLastError(); own = false; break; }
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3232:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3232 |         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3623:29: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3623 |             cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3963:25: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3963 |         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3971:33: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3971 |                 cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:3981:23: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 3981 |         cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4312:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4312 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4317:36: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4317 |             cudaGetDeviceProperties(&dp, 0);
+/usr/include/hip/hip_runtime_api.h:1681:12: note: in call to ‘hipError_t hipGetDeviceProperties(hipDeviceProp_t*, int)’, declared here
+ 1681 | hipError_t hipGetDeviceProperties(hipDeviceProp_t* prop, int deviceId);
+      |            ^~~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4427:29: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4427 |             cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4429:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4429 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4499:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4499 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4689:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4689 |             cudaDeviceGetAttribute(&sms, cudaDevAttrMultiProcessorCount, dev);
+/usr/include/hip/hip_runtime_api.h:1610:12: note: in call to ‘hipError_t hipDeviceGetAttribute(int*, hipDeviceAttribute_t, int)’, declared here
+ 1610 | hipError_t hipDeviceGetAttribute(int* pi, hipDeviceAttribute_t attr, int deviceId);
+      |            ^~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:4691:29: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 4691 |             cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5273:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5273 |             cudaMemGetInfo(&before, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5276:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5276 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5368:23: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5368 |         cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5503:37: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5503 |                     cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5504:49: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5504 |                     if (buf != nullptr) cudaFree(buf);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5506:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5506 |                     cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5516:34: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5516 |             cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5518:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5518 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5640:31: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5640 |                 cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:5739:37: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 5739 |         if (!named) cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6495:23: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 6495 |             cudaMemset(xcache.device_slot(0), 0, (size_t) xcache.bytes());
+/usr/include/hip/hip_runtime_api.h:3894:12: note: in call to ‘hipError_t hipMemset(void*, int, size_t)’, declared here
+ 3894 | hipError_t hipMemset(void* dst, int value, size_t sizeBytes);
+      |            ^~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6496:34: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 6496 |             cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6649:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 6649 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:6736:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 6736 |             cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7383:17: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 7383 |         cudaFree(d_next);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8139:32: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 8139 |                 cudaMemcpyAsync(xcache.device_slot((int32_t) s), b, (size_t) lay.blob_bytes(l), cudaMemcpyHostToDevice,
+/usr/include/hip/hip_runtime_api.h:3883:12: note: in call to ‘hipError_t hipMemcpyAsync(void*, const void*, size_t, hipMemcpyKind, hipStream_t)’, declared here
+ 3883 | hipError_t hipMemcpyAsync(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind,
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8822:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 8822 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:8921:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 8921 |                     cudaMemGetInfo(&fb, &tb);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9037:28: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9037 |                     res_put(d_res);
+      |                     ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7500:20: note: in call to ‘main(int, char**)::<lambda(int32_t*)>’, declared here
+ 7500 |     auto res_put = [&host_res](int32_t* dst) -> cudaError_t {
+      |                    ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9040:28: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9040 |                     res_put(st->d_res);
+      |                     ~~~~~~~^~~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7500:20: note: in call to ‘main(int, char**)::<lambda(int32_t*)>’, declared here
+ 7500 |     auto res_put = [&host_res](int32_t* dst) -> cudaError_t {
+      |                    ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9369:37: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9369 |                     cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9381:41: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9381 |                         cudaGetLastError();
+/usr/include/hip/hip_runtime_api.h:2008:12: note: in call to ‘hipError_t hipGetLastError()’, declared here
+ 2008 | hipError_t hipGetLastError(void);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9441:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9441 |                 cudaStreamSynchronize(stage_ver_p(st, 0).stream());
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:9444:34: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+ 9444 |             cudaStreamSynchronize(mtp.stream());
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10062:26: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10062 |             cudaGetDevice(&main_dev);
+/usr/include/hip/hip_runtime_api.h:1587:12: note: in call to ‘hipError_t hipGetDevice(int*)’, declared here
+ 1587 | hipError_t hipGetDevice(int* deviceId);
+      |            ^~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10193:33: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10193 |         cudaEventCreateWithFlags(&adapt_ev, cudaEventDisableTiming);
+/usr/include/hip/hip_runtime_api.h:2460:12: note: in call to ‘hipError_t hipEventCreateWithFlags(ihipEvent_t**, unsigned int)’, declared here
+ 2460 | hipError_t hipEventCreateWithFlags(hipEvent_t* event, unsigned flags);
+      |            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10274:43: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10274 |             if (wait) cudaEventSynchronize(adapt_ev);
+/usr/include/hip/hip_runtime_api.h:2539:12: note: in call to ‘hipError_t hipEventSynchronize(hipEvent_t)’, declared here
+ 2539 | hipError_t hipEventSynchronize(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10278:51: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10278 |                     if (wait) cudaEventSynchronize(st->adapt_ev);
+/usr/include/hip/hip_runtime_api.h:2539:12: note: in call to ‘hipError_t hipEventSynchronize(hipEvent_t)’, declared here
+ 2539 | hipError_t hipEventSynchronize(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10360:34: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10360 |             cudaStreamSynchronize(ver.stream());   // the patches landed (the verifier streams do not block the read)
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10363:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10363 |                 cudaStreamSynchronize(st->ver.stream());
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In destructor ‘main(int, char**)::PreLaunchOff::~PreLaunchOff()’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10390:51: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10390 |                 if (pairs != nullptr) cudaFreeHost(pairs);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10484:43: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10484 |                         cudaLaunchHostFunc(adapt_stream, [](void* p) { std::this_thread::sleep_for(std::chrono::microseconds(*(int*) p)); }, &slow_arg);
+/usr/include/hip/hip_runtime_api.h:5378:12: note: in call to ‘hipError_t hipLaunchHostFunc(hipStream_t, hipHostFn_t, void*)’, declared here
+ 5378 | hipError_t hipLaunchHostFunc(hipStream_t stream, hipHostFn_t fn, void* userData);
+      |            ^~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10524:42: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10524 |                     cudaStreamSynchronize(adapt_stream);   // no callback: wait here, the gate opens at once
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10538:48: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10538 |             if (!swaps.empty()) cudaEventRecord(adapt_ev, adapt_stream);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10546:36: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10546 |                     cudaEventRecord(st->adapt_ev, st->adapt_stream);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10900:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10900 |                         res_upload();
+      |                         ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10918:36: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10918 |                     else res_upload();
+      |                          ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10963:34: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10963 |             cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10968:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10968 |                 cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10982:44: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+10982 |                 if (a_res_dirty) res_upload();
+      |                                  ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11102:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11102 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11163:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11163 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11357:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11357 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11378:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11378 |                 res_upload();
+      |                 ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11411:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11411 |                 res_upload();
+      |                 ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:11414:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+11414 |             cudaMemGetInfo(&free_b, &total_b);
+/usr/include/hip/hip_runtime_api.h:4048:12: note: in call to ‘hipError_t hipMemGetInfo(size_t*, size_t*)’, declared here
+ 4048 | hipError_t hipMemGetInfo(size_t* free, size_t* total);
+      |            ^~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:12569:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+12569 |                 cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:12577:46: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+12577 |                         cudaDeviceSynchronize();
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13064:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13064 |                 cudaStreamSynchronize(main_stream);
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13068:42: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13068 |                     cudaStreamSynchronize(st->stream);
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13088:42: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13088 |                     cudaStreamSynchronize(main_stream);
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13092:46: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13092 |                         cudaStreamSynchronize(st->stream);
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13271:48: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13271 |                             cudaStreamWaitEvent(v.stream(), pl_mtp_ev[l1 & 1], 0);
+/usr/include/hip/hip_runtime_api.h:2211:12: note: in call to ‘hipError_t hipStreamWaitEvent(hipStream_t, hipEvent_t, unsigned int)’, declared here
+ 2211 | hipError_t hipStreamWaitEvent(hipStream_t stream, hipEvent_t event, unsigned int flags);
+      |            ^~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13287:48: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13287 |                                 cudaEventRecord(pl_mtp_ev[f1 & 1], mtp.stream());
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13431:44: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13431 |                 if (n_parts > 0) res_upload();
+      |                                  ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:13517:36: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+13517 |                 if (any) res_upload();
+      |                          ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14405:44: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14405 |                            (cudaStreamQuery(sn.side), true);
+/usr/include/hip/hip_runtime_api.h:2171:12: note: in call to ‘hipError_t hipStreamQuery(hipStream_t)’, declared here
+ 2171 | hipError_t hipStreamQuery(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14506:45: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14506 |                     cudaEventCreateWithFlags(&fence_ev[(size_t) st], cudaEventDisableTiming);
+/usr/include/hip/hip_runtime_api.h:2460:12: note: in call to ‘hipError_t hipEventCreateWithFlags(ihipEvent_t**, unsigned int)’, declared here
+ 2460 | hipError_t hipEventCreateWithFlags(hipEvent_t* event, unsigned flags);
+      |            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14507:45: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14507 |                     cudaEventCreateWithFlags(&exch_ev[(size_t) st], cudaEventDisableTiming);
+/usr/include/hip/hip_runtime_api.h:2460:12: note: in call to ‘hipError_t hipEventCreateWithFlags(ihipEvent_t**, unsigned int)’, declared here
+ 2460 | hipError_t hipEventCreateWithFlags(hipEvent_t* event, unsigned flags);
+      |            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14512:40: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14512 |                         cudaEventRecord(ev[(size_t) st], pl_stream[(size_t) st]);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14556:31: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14556 |                     res_upload();
+      |                     ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14959:73: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14959 |                 for (cudaEvent_t ev : fence_ev) if (ev) cudaEventDestroy(ev);
+/usr/include/hip/hip_runtime_api.h:2521:12: note: in call to ‘hipError_t hipEventDestroy(hipEvent_t)’, declared here
+ 2521 | hipError_t hipEventDestroy(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:14960:72: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+14960 |                 for (cudaEvent_t ev : exch_ev) if (ev) cudaEventDestroy(ev);
+/usr/include/hip/hip_runtime_api.h:2521:12: note: in call to ‘hipError_t hipEventDestroy(hipEvent_t)’, declared here
+ 2521 | hipError_t hipEventDestroy(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15104:35: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+15104 |                         res_upload();
+      |                         ~~~~~~~~~~^~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:10262:27: note: in call to ‘main(int, char**)::<lambda()>’, declared here
+10262 |         auto res_upload = [&]() -> cudaError_t {   // the first error, every table tried
+      |                           ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15231:31: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+15231 |                     cudaMemcpy(d_hist, hist_stage.data(), (size_t) T * (size_t) hist_n * sizeof(int32_t),
+/usr/include/hip/hip_runtime_api.h:3617:12: note: in call to ‘hipError_t hipMemcpy(void*, const void*, size_t, hipMemcpyKind)’, declared here
+ 3617 | hipError_t hipMemcpy(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind);
+      |            ^~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15974:86: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+15974 |                 if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:15980:24: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+15980 |                 res_put(d_res);
+      |                 ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7500:20: note: in call to ‘main(int, char**)::<lambda(int32_t*)>’, declared here
+ 7500 |     auto res_put = [&host_res](int32_t* dst) -> cudaError_t {
+      |                    ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16020:82: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16020 |             if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16049:20: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16049 |             res_put(d_res);
+      |             ~~~~~~~^~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:7500:20: note: in call to ‘main(int, char**)::<lambda(int32_t*)>’, declared here
+ 7500 |     auto res_put = [&host_res](int32_t* dst) -> cudaError_t {
+      |                    ^
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16078:78: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16078 |         if (!kvg_ensure(n_prompt + o.max_new + 64, [] { cudaDeviceSynchronize(); })) return 1;
+/usr/include/hip/hip_runtime_api.h:1529:12: note: in call to ‘hipError_t hipDeviceSynchronize()’, declared here
+ 1529 | hipError_t hipDeviceSynchronize(void);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16160:23: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16160 |             cudaMemcpy(final_r_host.data(), ss.R, final_r_host.size() * sizeof(float), cudaMemcpyDeviceToHost);
+/usr/include/hip/hip_runtime_api.h:3617:12: note: in call to ‘hipError_t hipMemcpy(void*, const void*, size_t, hipMemcpyKind)’, declared here
+ 3617 | hipError_t hipMemcpy(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind);
+      |            ^~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In destructor ‘main(int, char**)::PreLaunchOff::~PreLaunchOff()’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16415:51: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16415 |                 if (pairs != nullptr) cudaFreeHost(pairs);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16437:38: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16437 |                 cudaStreamSynchronize(cs);   // the patch landed
+/usr/include/hip/hip_runtime_api.h:2191:12: note: in call to ‘hipError_t hipStreamSynchronize(hipStream_t)’, declared here
+ 2191 | hipError_t hipStreamSynchronize(hipStream_t stream);
+      |            ^~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16456:33: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16456 |         cudaEventCreateWithFlags(&adapt_ev, cudaEventDisableTiming);
+/usr/include/hip/hip_runtime_api.h:2460:12: note: in call to ‘hipError_t hipEventCreateWithFlags(ihipEvent_t**, unsigned int)’, declared here
+ 2460 | hipError_t hipEventCreateWithFlags(hipEvent_t* event, unsigned flags);
+      |            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16462:43: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16462 |             if (wait) cudaEventSynchronize(adapt_ev);
+/usr/include/hip/hip_runtime_api.h:2539:12: note: in call to ‘hipError_t hipEventSynchronize(hipEvent_t)’, declared here
+ 2539 | hipError_t hipEventSynchronize(hipEvent_t event);
+      |            ^~~~~~~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In lambda function:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16579:48: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16579 |             if (!swaps.empty()) cudaEventRecord(adapt_ev, adapt_stream);
+/usr/include/hip/hip_runtime_api.h:2501:12: note: in call to ‘hipError_t hipEventRecord(hipEvent_t, hipStream_t)’, declared here
+ 2501 | hipError_t hipEventRecord(hipEvent_t event, hipStream_t stream = NULL);
+      |            ^~~~~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp: In function ‘int main(int, char**)’:
+/workspace/strata-policy/patchwork/src/program/generate.cpp:16858:27: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+16858 |                 cudaMemcpy(hash_rows.data(), ver.final_R_all(), n_floats * sizeof(float), cudaMemcpyDeviceToHost);
+/usr/include/hip/hip_runtime_api.h:3617:12: note: in call to ‘hipError_t hipMemcpy(void*, const void*, size_t, hipMemcpyKind)’, declared here
+ 3617 | hipError_t hipMemcpy(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind);
+      |            ^~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17077:21: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17077 |         cudaFreeHost(layer_stage);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17083:21: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17083 |         cudaFreeHost(half_stage);
+/usr/include/hip/hip_runtime_api.h:3587:12: note: in call to ‘hipError_t hipHostFree(void*)’, declared here
+ 3587 | hipError_t hipHostFree(void* ptr);
+      |            ^~~~~~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17249:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17249 |     cudaFree(d_next);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17250:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17250 |     cudaFree(d_logits);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17251:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17251 |     cudaFree(d_emb);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17252:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17252 |     cudaFree(d_parts);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17253:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17253 |     cudaFree(sbuf);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+/workspace/strata-policy/patchwork/src/program/generate.cpp:17254:13: warning: ignoring returned value of type ‘hipError_t’, declared with attribute ‘nodiscard’ [-Wunused-result]
+17254 |     cudaFree(arena);
+/usr/include/hip/hip_runtime_api.h:3562:12: note: in call to ‘hipError_t hipFree(void*)’, declared here
+ 3562 | hipError_t hipFree(void* ptr);
+      |            ^~~~~~~
+/usr/include/hip/hip_runtime_api.h:332:3: note: ‘hipError_t’ declared here
+  332 | } hipError_t;
+      |   ^~~~~~~~~~
+g++: warning: /workspace/strata-policy/patchwork: linker input file unused because linking not done

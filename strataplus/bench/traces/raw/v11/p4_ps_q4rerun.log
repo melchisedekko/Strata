@@ -1,0 +1,400 @@
+02:10:49 busy
+02:10:54 busy
+02:10:59 busy
+02:11:04 busy
+== 2026-10-25 02:11:19 CET BEFORE p4_2b_q4km_r2 (ok=3)
+    PID %CPU   RSS ELAPSED COMMAND
+   9745 10.5 605012   9031 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10122 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80484   10122 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10123 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7404 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7403 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+ 164476  0.2 29760    2252 x11vnc -skip_lockkeys -display :17 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5917 -quiet
+== 2026-10-25 02:11:24 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  448 1843612     5 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605028   9036 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10127 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80484   10127 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10128 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7409 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7408 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:29 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  523 1843656    10 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605040   9041 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10132 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80484   10132 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10134 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7414 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7413 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:34 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  548 1843656    15 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605056   9046 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10137 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80472   10137 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10139 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7419 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7418 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:39 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  561 1843656    20 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605072   9051 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10142 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80472   10142 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10144 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7424 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7423 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:44 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  568 1843656    25 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605176   9056 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10147 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80472   10147 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10149 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7429 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7428 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:49 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  573 1843656    30 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605196   9061 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10152 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80472   10152 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10154 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7434 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7433 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:54 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  577 1843656    35 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605244   9066 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10157 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80256   10157 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10159 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7439 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7438 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:11:59 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  578 1861596    40 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605288   9071 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101900  10162 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80256   10162 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10164 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7444 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7443 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:04 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  581 1861596    45 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605320   9076 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10167 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79708   10167 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10169 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7449 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7448 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:10 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  582 1861596    50 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 605416   9081 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10172 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79708   10172 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10174 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7454 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7453 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:15 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  584 1861596    55 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 681944   9086 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10177 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80024   10177 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.1  8384   10179 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7459 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7458 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:20 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  585 1861596    60 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 750424   9091 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10182 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80092   10182 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10184 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7464 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7463 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:25 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  586 1861596    65 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 818804   9096 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10187 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80168   10187 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10189 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7469 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7468 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:30 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  587 1861596    70 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 758040   9101 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10192 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80020   10192 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10194 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7474 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7473 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:35 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  587 1859280    75 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 604060   9106 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10197 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79592   10197 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10199 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7479 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7478 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:40 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  588 1861876    80 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 605616   9111 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10202 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79592   10202 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10204 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7484 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7483 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:45 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  588 1861876    85 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 605976   9116 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10207 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79592   10207 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10209 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7489 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7488 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:50 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  589 1861876    90 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 606012   9121 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10212 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79592   10212 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10214 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7494 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7493 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:12:55 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  589 1861876    95 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606068   9126 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10217 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80024   10217 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10219 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7499 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7498 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:00 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  590 1861876   100 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606104   9131 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10222 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79928   10222 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10224 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7504 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7503 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:05 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  590 1861876   105 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606104   9136 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10227 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79928   10227 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10229 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7509 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7508 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:10 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  590 1829104   110 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606108   9141 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10232 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79928   10232 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10234 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7514 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7513 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:15 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  590 1862088   115 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606116   9146 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10237 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80148   10237 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10239 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7519 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7518 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:20 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  591 1862088   120 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606124   9151 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10242 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80140   10242 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10244 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7524 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7523 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:25 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  591 1862088   125 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9156 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10247 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80140   10247 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10249 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7529 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7528 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:30 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  591 1862088   130 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9161 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10252 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80140   10252 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10254 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7534 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7533 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:35 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1862088   135 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9166 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10257 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80140   10257 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10259 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7539 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7538 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:40 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1862088   140 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9172 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10262 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79824   10262 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10264 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7544 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7543 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:45 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1862088   145 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9177 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10267 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79824   10267 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10269 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7549 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7548 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:50 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1898508   150 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9182 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10272 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79824   10272 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10274 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7554 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7553 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:13:55 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1898508   155 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606128   9187 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10277 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79824   10277 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10279 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7559 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7558 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:00 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  592 1898508   160 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606132   9192 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10282 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79696   10282 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10284 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7564 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7563 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:05 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1898508   165 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606132   9197 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10287 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79696   10287 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10289 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7569 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7568 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:10 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1898508   170 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606140   9202 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10292 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79696   10292 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10294 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7574 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7573 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:15 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1898508   175 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606144   9207 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10297 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79696   10297 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10299 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7579 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7578 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:20 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1898508   180 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 606180   9212 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10302 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79684   10302 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10304 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7584 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7583 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:25 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   185 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+ 208995 35.4  2792       4 grep -l 099ceda /workspace/strata-policy -r
+   9745 10.5 668416   9217 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10307 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79684   10307 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10309 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7589 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+== 2026-10-25 02:14:30 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   190 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 740332   9222 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10312 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79684   10312 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10314 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7594 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7593 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:35 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   195 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 817988   9227 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10318 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 79684   10317 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10319 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7599 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7598 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:40 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   200 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 757560   9232 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10323 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80000   10323 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10324 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7604 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7603 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:45 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   205 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.6 603452   9237 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10328 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80000   10328 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10329 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7609 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7609 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:50 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   210 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 604104   9242 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10333 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80000   10333 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10334 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7614 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7614 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet
+== 2026-10-25 02:14:55 CET DURING p4_2b_q4km_r2
+    PID %CPU   RSS ELAPSED COMMAND
+ 206818  593 1930988   215 ./proxy/llama_spec_trace.v11p4.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --p4-tmax 12 --p4-dmax 8 --tag p4_2b_q4km --out /workspace/strata-plus/traces/raw/v11/p4_2b_q4km_r2
+   9745 10.5 604740   9247 /exec-daemon/node --disable-warning=ExperimentalWarning /opt/sand/sand-host/host-main.cjs
+    245  3.2 101904  10338 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs
+    259  1.1 80000   10338 /exec-daemon/node /usr/local/bin/sand-ua-governor.mjs
+      7  1.0  8384   10339 /pod-daemon --ssh-auth-sock-path /run/host-services/ssh-auth.sock --ssh-auth-vsock-port 52
+  24460  0.2 27800    7619 x11vnc -skip_lockkeys -display :18 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5918 -quiet
+  25804  0.2 27908    7619 x11vnc -skip_lockkeys -display :19 -localhost -nopw -shared -forever -noxdamage -norc -rfbport 5919 -quiet

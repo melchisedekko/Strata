@@ -1,0 +1,2 @@
+05:03:57 0.075 infra=0.000 0.03 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 
+05:03:59 0.055 infra=0.005 0.02 /exec-daemon/node /usr/local/bin/sand-web-bot-auth.mjs 

@@ -1,0 +1,4 @@
+JointGate() tmax = 5
+tune tf_d7: {'cfg': 108, 'rounds': 44552, 'bad': 0, 'maxT': 5}
+tune+synth: {'cfg': 128, 'rounds': 64096, 'bad': 0, 'maxT': 5} synth only cfg 20 rounds 19544
+PASS

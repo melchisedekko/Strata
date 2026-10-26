@@ -1,0 +1,8 @@
+clang++-17: warning: CUDA version is newer than the latest partially supported version 12.1 [-Wunknown-cuda-version]
+/tmp/pt12_neg.cu:2:15: error: static assertion failed due to requirement 'strata::kernels::kVerifyMaxT == 8': neg
+    2 | static_assert(strata::kernels::kVerifyMaxT == 8, "neg");
+      |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/pt12_neg.cu:2:44: note: expression evaluates to '12 == 8'
+    2 | static_assert(strata::kernels::kVerifyMaxT == 8, "neg");
+      |               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+1 error generated when compiling for sm_86.

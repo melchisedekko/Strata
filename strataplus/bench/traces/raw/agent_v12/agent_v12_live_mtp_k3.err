@@ -9,3 +9,4 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t0: 53 tok, 14 verify + 0 replay rounds, acc 39/42, decode 2132 ms
 [agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t1: 68 tok, 23 verify + 0 replay rounds, acc 46/69, decode 3885 ms
 [agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t2: 56 tok, 21 verify + 0 replay rounds, acc 35/63, decode 4343 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t3: 71 tok, 21 verify + 0 replay rounds, acc 50/63, decode 4506 ms

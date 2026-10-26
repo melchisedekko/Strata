@@ -1,0 +1,1 @@
+06:52:30 0.070 infra=0.010 0.02 x11vnc -skip_lockkeys -display :17 -localhost -nopw -shared -forever -noxdamage 

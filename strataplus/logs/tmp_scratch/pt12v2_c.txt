@@ -1,0 +1,41 @@
+clang++-17: warning: CUDA version is newer than the latest partially supported version 12.1 [-Wunknown-cuda-version]
+/tmp/pt12v2_iq_base.cu:1786:5: error: 'alignas' attribute cannot be applied to types
+ 1786 |     STRATA_SHARED_ALIGN16_U32(s_grid_buf, IqGridWords<TY, STAGE_GRID>::value);
+      |     ^
+/tmp/pt12v2_iq_base.cu:1780:57: note: expanded from macro 'STRATA_SHARED_ALIGN16_U32'
+ 1780 | #define STRATA_SHARED_ALIGN16_U32(name, ...) __shared__ alignas(16) uint32_t name[__VA_ARGS__]
+      |                                                         ^
+/tmp/pt12v2_iq_base.cu:1873:5: error: 'alignas' attribute cannot be applied to types
+ 1873 |     STRATA_SHARED_ALIGN16_U32(s_grid_buf, IqGridWords<TG, STAGE_GRID>::value);
+      |     ^
+/tmp/pt12v2_iq_base.cu:1780:57: note: expanded from macro 'STRATA_SHARED_ALIGN16_U32'
+ 1780 | #define STRATA_SHARED_ALIGN16_U32(name, ...) __shared__ alignas(16) uint32_t name[__VA_ARGS__]
+      |                                                         ^
+/tmp/pt12v2_iq_base.cu:2138:5: error: 'alignas' attribute cannot be applied to types
+ 2138 |     STRATA_SHARED_ALIGN16_U32(s_grid_buf, IqGridWords<TD, STAGE_TQ>::value);   // the trellis codebook on a cc 6.0 card, else 4 unused words
+      |     ^
+/tmp/pt12v2_iq_base.cu:1780:57: note: expanded from macro 'STRATA_SHARED_ALIGN16_U32'
+ 1780 | #define STRATA_SHARED_ALIGN16_U32(name, ...) __shared__ alignas(16) uint32_t name[__VA_ARGS__]
+      |                                                         ^
+/tmp/pt12v2_iq_base.cu:2477:16: error: 'alignas' attribute cannot be applied to types
+ 2477 |     __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_XB];
+      |                ^
+/tmp/pt12v2_iq_base.cu:2479:5: error: 'alignas' attribute cannot be applied to types
+ 2479 |     STRATA_SHARED_ALIGN16_U32(s_grid_buf, EdGrid<TG>::words);
+      |     ^
+/tmp/pt12v2_iq_base.cu:1780:57: note: expanded from macro 'STRATA_SHARED_ALIGN16_U32'
+ 1780 | #define STRATA_SHARED_ALIGN16_U32(name, ...) __shared__ alignas(16) uint32_t name[__VA_ARGS__]
+      |                                                         ^
+/tmp/pt12v2_iq_base.cu:2664:16: error: 'alignas' attribute cannot be applied to types
+ 2664 |     __shared__ alignas(16) int4 s_u[ED_NC * 2 * ED_HB];
+      |                ^
+/tmp/pt12v2_iq_base.cu:2777:5: error: 'alignas' attribute cannot be applied to types
+ 2777 |     STRATA_SHARED_ALIGN16_U32(s_grid_buf, IqGridWords<TG, STAGE_GRID>::value);
+      |     ^
+/tmp/pt12v2_iq_base.cu:1780:57: note: expanded from macro 'STRATA_SHARED_ALIGN16_U32'
+ 1780 | #define STRATA_SHARED_ALIGN16_U32(name, ...) __shared__ alignas(16) uint32_t name[__VA_ARGS__]
+      |                                                         ^
+/tmp/pt12v2_iq_base.cu:4394:5: error: expected a for, while, or do-while loop to follow '#pragma unroll'
+ 4394 |     __trap();   // a 64-lane wavefront: mode 1 is gfx906's only
+      |     ^
+8 errors generated when compiling for host.

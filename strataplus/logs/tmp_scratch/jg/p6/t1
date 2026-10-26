@@ -1,0 +1,9 @@
+# Strata Policy - finestre di uso CPU sul box (orari CET, UTC+1). Formato: inizio | fine | comando | nota
+# Retroattive (prima della richiesta di log, 04:43 CET):
+2026-10-25 04:39:47 | 2026-10-25 04:39:51 | clang++-17 -fsyntax-only generate.cpp (nice 19) | prova manuale HIP, ~3.6 s
+2026-10-25 04:40:41 | 2026-10-25 04:42:33 | apt-get install libhipblas-dev librocblas-dev (nice 19) | da /var/log/apt/history.log; per lo piu' download
+2026-10-25 04:42:37 | 2026-10-25 04:43:18 | cmake configure HIP in /tmp/jg/p6/bld (nice 19) | interrotto, nessuna build; dir rimossa
+2026-10-25 04:44:20 | 2026-10-25 04:44:24 | hip_clang: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:24 | 2026-10-25 04:44:28 | hip_gcc: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:28 | 2026-10-25 04:44:31 | cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:31 | 2026-10-25 04:44:35 | base_hip_clang: check_hip.sh patchwork generate_2962494.cpp (nice 19) | rc=0
