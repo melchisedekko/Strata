@@ -37,3 +37,23 @@
     logs/tmp_scratch/jg/oob_pre
 
 ## Esclusi dalla scansione segreti (contenuto sospetto, NON pubblicato)
+
+## Esclusi per licenza (decisione del proprietario, 2026-10-26)
+
+Riferimento: `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11,
+CSV sha256 80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc), sezione 4, più il controllo del 2026-10-26.
+Elenco esatto dei percorsi: `strataplus/.gitignore` (stessa lista negli exclude rsync di `sync.sh`).
+Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 ma **restano nei commit precedenti**
+(la riscrittura della storia non è ancora autorizzata). Vedi `ERRATA_LICENZE.md`.
+
+| Categoria | File | Motivo |
+|---|---|---|
+| Dati derivati da edit_np (testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE GitHub edit_np una licenza con una clausola che vieta l'uso come dati di training |
+| `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più edit_np |
+| `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più edit_np |
+| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene ID edit_np (edit_np-ID, edit_np-ID) e la diagnosi per richiesta del dominio edit |
+| Artefatti H-CA stimati su edit_np: `policy/strata-policy/replay/results/v2/hca/` tranne `hca_results.json` e `REPORT.md` (aggregati, pubblicati), quindi anche `edit_np_fitted/`; `replay/run_hca.json`; smoke/probe H-CA da /tmp; pesi/feature di classificatori; qualsiasi nome con "edit_np" (es. `lang_inventory_edit_np/`) | pattern, anche per file futuri | uso solo locale; si pubblicano gli aggregati, i run file addendum e il codice (`hca*.py`) |
+| `bench/strata-bench/datasets/specbench.jsonl` | regola già esistente | Spec-Bench, licenze miste |
+| `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
+
+Totale tolto dalla testa il 2026-10-26: 292 file (291 del par. 4 + `gen.py`).

@@ -17,7 +17,9 @@ Il resto del repo è identico a 7dd5cf1.
 | `logs/` | log dei benchmark, log `cpu_busy_*`, file di lavoro recuperati da `/tmp` (`tmp_scratch/`) |
 | `patches/` | tutte le patch `.diff`/`.md`, serie `format-patch` e `git bundle` per branch |
 | `MANIFEST.sha256` | sha256 di ogni file del backup |
-| `SKIPPED.md` | file esclusi: >50 MB (con path, dimensione, sha256), binari ELF, file segnalati dallo scan segreti |
+| `SKIPPED.md` | file esclusi: >50 MB (con path, dimensione, sha256), binari ELF, file segnalati dallo scan segreti, file esclusi per licenza |
+| `ERRATA_LICENZE.md` | correzioni alle licenze dichiarate in `DATASETS.md` (edit_np, Spec-Bench, E1) |
+| `.gitignore` | percorsi esclusi per licenza |
 | `SECRET_SCAN_ALLOWLIST.txt` | falsi positivi dello scan segreti verificati a mano (sono hash sha256 di file, non chiavi) |
 | `sync.sh` | script di sincronizzazione idempotente |
 
@@ -57,10 +59,16 @@ non per produzione. Vedi anche `patches/strata-policy/STATUS_P6_NON_ACCENDERE.md
 |---|---|---|---|
 | HumanEval | openai/openai_humaneval @7dce605 | MIT | incluso |
 | MT-Bench questions | lm-sys/FastChat @587d5cf `question.jsonl` | Apache-2.0 | incluso (anche nei mix proxy_30, check_v12, holdout, sessions_all, mtbench2) |
-| edit_np | edit_np @<revisione non pubblicata> | MIT | incluso |
+| edit_np | edit_np @<revisione non pubblicata> | **licenza in conflitto** (non "MIT"): la card HF alla revisione usata dice MIT, il `LICENSE` del repo GitHub edit_np dice una licenza con una clausola che vieta l'uso come dati di training | **escluso** dal 2026-10-26 (testi, prompt tokenizzati, ID, metriche per richiesta, artefatti H-CA); usato solo in locale. Vedi `ERRATA_LICENZE.md` |
 | Sessioni agent (agent_v12*) | repo Strata | MIT | incluso |
-| Spec-Bench `specbench.jsonl` | hemingkx/Spec-Bench | repo Apache-2.0, contenuto da fonti con licenze miste | **escluso** |
-| E1 `policy/data` (dolly, mbpp, tokenizer Qwen) | Hugging Face | CC-BY-SA-3.0 / CC-BY-4.0 / altro | **escluso** (riscaricabile; restano solo id e numeri in `e1_per_request.csv`) |
+| Spec-Bench | hemingkx/Spec-Bench @fd2c1cd | repo Apache-2.0, contenuto da fonti con licenze miste | **escluso**: `specbench.jsonl` non è mai stato pubblicato; fino al 2026-10-26 però `bench/strata-bench/datasets/subset_ids.json` conteneva 26 ID `specbench-N` (solo ID). Il file è stato tolto dalla testa il 2026-10-26 |
+| E1 `policy/data` (dolly, mbpp, tokenizer Qwen) | Hugging Face | CC-BY-SA-3.0 / CC-BY-4.0 / altro | **escluso** (riscaricabile). Anche `e1_per_request.csv` (ID e metriche per richiesta di Dolly e MBPP) è stato tolto dalla testa il 2026-10-26; restano solo gli aggregati (`e1_summary.json`, `E1_results.md`) |
+
+> **Nota del 2026-10-26 (licenze).** Dalla testa di questo branch sono stati tolti 292 file: i 291 della sezione 4 di
+> `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11; 289 derivati da edit_np,
+> `e1_per_request.csv`, `subset_ids.json`) più `logs/tmp_scratch/gen/gen.py` (ID edit_np). Sono elencati in `.gitignore`
+> e negli exclude di `sync.sh`. **Questi file esistono ancora nei commit precedenti** del branch (fino a `54002c1`):
+> la storia non è stata riscritta. Dettagli in `ERRATA_LICENZE.md` e `SKIPPED.md`.
 
 ## Cosa non è incluso
 
@@ -68,6 +76,7 @@ non per produzione. Vedi anche `patches/strata-policy/STATUS_P6_NON_ACCENDERE.md
 - Output di build e binari (`build*/`, `*.o`, `*.so`, eseguibili ELF; vedi `SKIPPED.md`), virtualenv, wheel, header ROCm (`rocm-hdr`)
 - Clone completi upstream (Strata, llama.cpp, colibri, HIP-CPU, arctic, sglang, vllm) e copie di documenti upstream
 - File >50 MB (elencati in `SKIPPED.md`) e file segnalati dallo scan segreti e non verificati
+- Dati derivati da edit_np, ID/metriche per richiesta di Dolly, MBPP e Spec-Bench, classificatore H-CA stimato su edit_np (solo locale; pubblicati solo gli aggregati `hca_results.json` e `REPORT.md`) (vedi `SKIPPED.md`, `ERRATA_LICENZE.md`)
 
 ## Sincronizzazione
 

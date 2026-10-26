@@ -33,6 +33,305 @@ EXC=(--exclude='.venv/' --exclude='venv/' --exclude='__pycache__/' --exclude='*.
      --exclude='*.o' --exclude='*.so' --exclude='*.a' --exclude='build/' --exclude='build-*/' --exclude='.git/'
      --exclude='node_modules/' --exclude='*.whl')
 
+# ---- esclusioni per licenza (LICENSE_INVENTORY.md sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11, 2026-10-26) ----
+# Stessa lista di strataplus/.gitignore. Percorsi relativi a strataplus/; m() li traduce in exclude rsync ancorati
+# alla sorgente della cartella di destinazione. Con m 1 (--delete-excluded) eventuali copie vengono anche cancellate.
+LIC_LIST=$(cat <<'LICEOF'
+bench/e1/policy/results/e1_per_request.csv
+bench/strata-bench/datasets/subset_ids.json
+bench/traces/raw/v11_holdout/
+logs/tmp_scratch/annt/
+logs/tmp_scratch/cv12t/
+logs/tmp_scratch/v11p/
+policy/strata-policy/replay/results/v2/split_c/
+bench/strata-bench/datasets/agent_turns_bench.jsonl
+bench/strata-bench/datasets/edit_np.jsonl
+bench/strata-bench/datasets/check_v12.jsonl
+bench/strata-bench/datasets/check_v12_ids.json
+bench/strata-bench/datasets/diag_prompts.jsonl
+bench/strata-bench/datasets/diag_ref.tsv
+bench/strata-bench/datasets/holdout_90.jsonl
+bench/strata-bench/datasets/holdout_ids.json
+bench/strata-bench/datasets/p4_prompts.jsonl
+bench/strata-bench/datasets/proxy_30.jsonl
+bench/strata-bench/datasets/sessions_all.jsonl
+bench/strata-bench/smoke/p2.jsonl
+bench/strata-bench/smoke/s2.requests.jsonl
+bench/strata-bench/smoke/s2.rounds.jsonl
+bench/strata-bench/smoke_mtp/e_base_mtp.err
+bench/strata-bench/smoke_mtp/e_base_mtp.jsonl
+bench/strata-bench/smoke_mtp/e_live_combo.err
+bench/strata-bench/smoke_mtp/e_live_combo.jsonl
+bench/strata-bench/smoke_mtp/e_live_lookup.err
+bench/strata-bench/smoke_mtp/e_live_lookup.jsonl
+bench/strata-bench/smoke_mtp/e_live_mtp.err
+bench/strata-bench/smoke_mtp/e_live_mtp.jsonl
+bench/strata-bench/smoke_mtp/p4.err
+bench/strata-bench/smoke_mtp/p4.jsonl
+bench/traces/CRITICAL.md
+bench/traces/GREEDY_DIAG.md
+bench/traces/SUMMARY.md
+bench/traces/base_r0.jsonl
+bench/traces/base_r1.jsonl
+bench/traces/base_r2.jsonl
+bench/traces/check_v12/check_v12.jsonl
+bench/traces/check_v12/check_v12_divergence.json
+bench/traces/check_v12/check_v12_ids.json
+bench/traces/check_v12/check_v12_licenses.json
+bench/traces/check_v12/check_v12_live_combo.jsonl
+bench/traces/check_v12/check_v12_live_lookup.jsonl
+bench/traces/check_v12/check_v12_live_mtp_k3.jsonl
+bench/traces/check_v12/check_v12_tf_d7.jsonl
+bench/traces/check_v12_eos_clamped_recalc.json
+bench/traces/docs_prev/GREEDY_DIAG.md.pre_0738
+bench/traces/docs_prev/GREEDY_DIAG.md.pre_0810
+bench/traces/docs_prev/SUMMARY.md.pre_0738
+bench/traces/greedy_diag.json
+bench/traces/holdout_lookup_v12/holdout_90.jsonl
+bench/traces/holdout_lookup_v12/holdout_lookup_v12_n12.jsonl
+bench/traces/holdout_lookup_v12/holdout_lookup_v12_n16.jsonl
+bench/traces/holdout_lookup_v12/holdout_lookup_v12_n7.jsonl
+bench/traces/holdout_lookup_v12/holdout_lookup_v12_summary.json
+bench/traces/holdout_lookup_v12/ref_holdout_tf.tsv
+bench/traces/holdout_lookup_v12_ERRATA.md
+bench/traces/live_combo_k3_r0.jsonl
+bench/traces/live_combo_k3_r1.jsonl
+bench/traces/live_combo_k3_r2.jsonl
+bench/traces/live_lookup_r0.jsonl
+bench/traces/live_lookup_r1.jsonl
+bench/traces/live_lookup_r2.jsonl
+bench/traces/live_mtp_k1_r0.jsonl
+bench/traces/live_mtp_k2_r0.jsonl
+bench/traces/live_mtp_k3_r0.jsonl
+bench/traces/live_mtp_k3_r1.jsonl
+bench/traces/live_mtp_k3_r2.jsonl
+bench/traces/live_mtp_k5_r0.jsonl
+bench/traces/live_mtp_k7_r0.jsonl
+bench/traces/raw/base_r0.err
+bench/traces/raw/base_r0.jsonl
+bench/traces/raw/base_r1.err
+bench/traces/raw/base_r1.jsonl
+bench/traces/raw/base_r2.err
+bench/traces/raw/base_r2.jsonl
+bench/traces/raw/check_v12/check_v12_live_combo.err
+bench/traces/raw/check_v12/check_v12_live_combo.jsonl
+bench/traces/raw/check_v12/check_v12_live_lookup.err
+bench/traces/raw/check_v12/check_v12_live_lookup.jsonl
+bench/traces/raw/check_v12/check_v12_live_mtp_k3.err
+bench/traces/raw/check_v12/check_v12_live_mtp_k3.jsonl
+bench/traces/raw/check_v12/check_v12_tf_d7.err
+bench/traces/raw/check_v12/check_v12_tf_d7.jsonl
+bench/traces/raw/check_v12/ref_tf.tsv
+bench/traces/raw/diag_yright.err
+bench/traces/raw/diag_yright.jsonl
+bench/traces/raw/diag_ywrong.err
+bench/traces/raw/diag_ywrong.jsonl
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n12.err
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n12.jsonl
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n16.err
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n16.jsonl
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n7.err
+bench/traces/raw/holdout_lookup_v12/holdout_lookup_v12_n7.jsonl
+bench/traces/raw/holdout_lookup_v12/ref_holdout_tf.tsv
+bench/traces/raw/live_combo_k3_r0.err
+bench/traces/raw/live_combo_k3_r0.jsonl
+bench/traces/raw/live_combo_k3_r1.err
+bench/traces/raw/live_combo_k3_r1.jsonl
+bench/traces/raw/live_combo_k3_r2.err
+bench/traces/raw/live_combo_k3_r2.jsonl
+bench/traces/raw/live_lookup_r0.err
+bench/traces/raw/live_lookup_r0.jsonl
+bench/traces/raw/live_lookup_r1.err
+bench/traces/raw/live_lookup_r1.jsonl
+bench/traces/raw/live_lookup_r2.err
+bench/traces/raw/live_lookup_r2.jsonl
+bench/traces/raw/live_mtp_k1_r0.err
+bench/traces/raw/live_mtp_k1_r0.jsonl
+bench/traces/raw/live_mtp_k2_r0.err
+bench/traces/raw/live_mtp_k2_r0.jsonl
+bench/traces/raw/live_mtp_k3_r0.err
+bench/traces/raw/live_mtp_k3_r0.jsonl
+bench/traces/raw/live_mtp_k3_r1.err
+bench/traces/raw/live_mtp_k3_r1.jsonl
+bench/traces/raw/live_mtp_k3_r2.err
+bench/traces/raw/live_mtp_k3_r2.jsonl
+bench/traces/raw/live_mtp_k5_r0.err
+bench/traces/raw/live_mtp_k5_r0.jsonl
+bench/traces/raw/live_mtp_k7_r0.err
+bench/traces/raw/live_mtp_k7_r0.jsonl
+bench/traces/raw/p4_08b_q4km.err
+bench/traces/raw/p4_08b_q4km.jsonl
+bench/traces/raw/p4_08b_q8.err
+bench/traces/raw/p4_08b_q8.jsonl
+bench/traces/raw/p4_2b_q4km.err
+bench/traces/raw/p4_2b_q4km.jsonl
+bench/traces/raw/tf_d7.err
+bench/traces/raw/tf_d7.jsonl
+bench/traces/raw/v11/abl_llamafile_off_base.err
+bench/traces/raw/v11/abl_llamafile_off_base.jsonl
+bench/traces/raw/v11/abl_llamafile_off_ref.tsv
+bench/traces/raw/v11/abl_llamafile_off_ywrong_T2.err
+bench/traces/raw/v11/abl_llamafile_off_ywrong_T2.jsonl
+bench/traces/raw/v11/abl_llamafile_on_base.err
+bench/traces/raw/v11/abl_llamafile_on_base.jsonl
+bench/traces/raw/v11/abl_llamafile_on_ref.tsv
+bench/traces/raw/v11/abl_llamafile_on_ywrong_T2.err
+bench/traces/raw/v11/abl_llamafile_on_ywrong_T2.jsonl
+bench/traces/raw/v11/agent_turns_bench_base.err
+bench/traces/raw/v11/agent_turns_bench_base.jsonl
+bench/traces/raw/v11/agent_turns_bench_live_combo.err
+bench/traces/raw/v11/agent_turns_bench_live_combo.jsonl
+bench/traces/raw/v11/agent_turns_bench_live_lookup.err
+bench/traces/raw/v11/agent_turns_bench_live_lookup.jsonl
+bench/traces/raw/v11/agent_turns_bench_live_mtp_k3.err
+bench/traces/raw/v11/agent_turns_bench_live_mtp_k3.jsonl
+bench/traces/raw/v11/agent_turns_bench_tf_d7.err
+bench/traces/raw/v11/agent_turns_bench_tf_d7.jsonl
+bench/traces/raw/v11/base_p30.err
+bench/traces/raw/v11/base_p30.jsonl
+bench/traces/raw/v11/campaign.log
+bench/traces/raw/v11/diag_yright_T2.err
+bench/traces/raw/v11/diag_yright_T2.jsonl
+bench/traces/raw/v11/diag_yright_T4.err
+bench/traces/raw/v11/diag_yright_T4.jsonl
+bench/traces/raw/v11/diag_yright_T8.err
+bench/traces/raw/v11/diag_yright_T8.jsonl
+bench/traces/raw/v11/diag_ywrong_T2.err
+bench/traces/raw/v11/diag_ywrong_T2.jsonl
+bench/traces/raw/v11/diag_ywrong_T4.err
+bench/traces/raw/v11/diag_ywrong_T4.jsonl
+bench/traces/raw/v11/diag_ywrong_T8.err
+bench/traces/raw/v11/diag_ywrong_T8.jsonl
+bench/traces/raw/v11/divergence_tune_p30.json
+bench/traces/raw/v11/knee/invalid/knee_q4km_ctrl_ub256.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_ctrl_ub256.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_llamafile_off_b7.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_llamafile_off_b7.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a1.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a1.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a2.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a2.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a3.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b4_a3.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a1.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a1.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a2.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a2.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a3.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b5_a3.jsonl
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b8.err
+bench/traces/raw/v11/knee/invalid/knee_q4km_main_b8.jsonl
+bench/traces/raw/v11/knee/knee_q4km_ctrl_t8.err
+bench/traces/raw/v11/knee/knee_q4km_ctrl_t8.jsonl
+bench/traces/raw/v11/knee/knee_q4km_ctrl_ub256.err
+bench/traces/raw/v11/knee/knee_q4km_ctrl_ub256.jsonl
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b2.err
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b2.jsonl
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b3.err
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b3.jsonl
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b6.err
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b6.jsonl
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b7.err
+bench/traces/raw/v11/knee/knee_q4km_llamafile_off_b7.jsonl
+bench/traces/raw/v11/knee/knee_q4km_main_b1.err
+bench/traces/raw/v11/knee/knee_q4km_main_b1.jsonl
+bench/traces/raw/v11/knee/knee_q4km_main_b4.err
+bench/traces/raw/v11/knee/knee_q4km_main_b4.jsonl
+bench/traces/raw/v11/knee/knee_q4km_main_b5.err
+bench/traces/raw/v11/knee/knee_q4km_main_b5.jsonl
+bench/traces/raw/v11/knee/knee_q4km_main_b8.err
+bench/traces/raw/v11/knee/knee_q4km_main_b8.jsonl
+bench/traces/raw/v11/knee/knee_q8_ctrl_t8.err
+bench/traces/raw/v11/knee/knee_q8_ctrl_t8.jsonl
+bench/traces/raw/v11/knee/knee_q8_ctrl_ub256.err
+bench/traces/raw/v11/knee/knee_q8_ctrl_ub256.jsonl
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b2.err
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b2.jsonl
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b3.err
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b3.jsonl
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b6.err
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b6.jsonl
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b7.err
+bench/traces/raw/v11/knee/knee_q8_llamafile_off_b7.jsonl
+bench/traces/raw/v11/knee/knee_q8_main_b1.err
+bench/traces/raw/v11/knee/knee_q8_main_b1.jsonl
+bench/traces/raw/v11/knee/knee_q8_main_b4.err
+bench/traces/raw/v11/knee/knee_q8_main_b4.jsonl
+bench/traces/raw/v11/knee/knee_q8_main_b5.err
+bench/traces/raw/v11/knee/knee_q8_main_b5.jsonl
+bench/traces/raw/v11/knee/knee_q8_main_b8.err
+bench/traces/raw/v11/knee/knee_q8_main_b8.jsonl
+bench/traces/raw/v11/live_combo_p30.err
+bench/traces/raw/v11/live_combo_p30.jsonl
+bench/traces/raw/v11/live_lookup_p30.err
+bench/traces/raw/v11/live_lookup_p30.jsonl
+bench/traces/raw/v11/live_mtp_k3_p30.err
+bench/traces/raw/v11/live_mtp_k3_p30.jsonl
+bench/traces/raw/v11/p4_2b_q4km.err
+bench/traces/raw/v11/p4_2b_q4km.jsonl
+bench/traces/raw/v11/p4_2b_q4km_r2.err
+bench/traces/raw/v11/p4_2b_q4km_r2.jsonl
+bench/traces/raw/v11/p4_2b_q8.err
+bench/traces/raw/v11/p4_2b_q8.jsonl
+bench/traces/raw/v11/ref_base.tsv
+bench/traces/raw/v11/tf_d7_p30.err
+bench/traces/raw/v11/tf_d7_p30.jsonl
+bench/traces/summary.json
+bench/traces/tf_d7.jsonl
+bench/traces/v1.1/agent_turns_bench_base.jsonl
+bench/traces/v1.1/agent_turns_bench_live_combo.jsonl
+bench/traces/v1.1/agent_turns_bench_live_lookup.jsonl
+bench/traces/v1.1/agent_turns_bench_live_mtp_k3.jsonl
+bench/traces/v1.1/agent_turns_bench_tf_d7.jsonl
+bench/traces/v1.1/base_p30.jsonl
+bench/traces/v1.1/diag_yright_T2.jsonl
+bench/traces/v1.1/diag_yright_T4.jsonl
+bench/traces/v1.1/diag_yright_T8.jsonl
+bench/traces/v1.1/diag_ywrong_T2.jsonl
+bench/traces/v1.1/diag_ywrong_T4.jsonl
+bench/traces/v1.1/diag_ywrong_T8.jsonl
+bench/traces/v1.1/holdout_edit_tf_d7.jsonl
+bench/traces/v1.1/live_combo_p30.jsonl
+bench/traces/v1.1/live_lookup_p30.jsonl
+bench/traces/v1.1/live_mtp_k3_p30.jsonl
+bench/traces/v1.1/tf_d7_p30.jsonl
+logs/tmp_scratch/div_p30.json
+logs/tmp_scratch/div_test.json
+logs/tmp_scratch/jg/split_h_decay.json
+logs/tmp_scratch/jg/split_h_prefix.json
+logs/tmp_scratch/lic_test.json
+logs/tmp_scratch/smk/live.err
+logs/tmp_scratch/smk/live.jsonl
+logs/tmp_scratch/smk/p.jsonl
+logs/tmp_scratch/sum.txt
+policy/strata-policy/replay/frozen_params.json
+policy/strata-policy/replay/frozen_params_v2.json
+policy/strata-policy/replay/frozen_params_v3_PREPARED_NOT_FROZEN.json
+policy/strata-policy/replay/results/v2/_obsolete_decay/split_h_decay.json
+policy/strata-policy/replay/results/v2/lookup_only_replay/lookup_only_replay.json
+policy/strata-policy/replay/results/v2/lookup_prefix_replay/REPORT.md
+policy/strata-policy/replay/results/v2/lookup_prefix_replay/diag_stdout.txt
+policy/strata-policy/replay/results/v2/lookup_prefix_replay/lookup_prefix_diag.json
+policy/strata-policy/replay/results/v2/lookup_prefix_replay/lookup_prefix_replay.json
+policy/strata-policy/replay/results/v2/split_h/split_h.json
+logs/tmp_scratch/gen/
+policy/strata-policy/replay/run_hca.json
+LICEOF
+)
+# pattern generici (anche per file futuri): edit_np e artefatti H-CA/classificatore; il codice *.py resta
+LIC_EXC=(--exclude='*[cC][aA][nN][iI][tT][eE][dD][iI][tT]*' --exclude='*[cC][aA][nN]_[iI][tT]_[eE][dD][iI][tT]*'
+         --include='/replay/results/v2/hca/hca_results.json' --include='/replay/results/v2/hca/REPORT.md' --exclude='/replay/results/v2/hca/*'
+         --exclude='*[hH][cC][aA]*.npz' --exclude='*[hH][cC][aA]*.npy' --exclude='*[hH][cC][aA]*.pkl' --exclude='*[hH][cC][aA]*.joblib'
+         --exclude='*[hH][cC][aA]*.pt' --exclude='*[hH][cC][aA]*.safetensors' --exclude='*[hH][cC][aA]*fitted*'
+         --exclude='*[hH][-_][cC][aA]*.npz' --exclude='*[hH][-_][cC][aA]*.npy' --exclude='*[hH][-_][cC][aA]*.pkl' --exclude='*[hH][-_][cC][aA]*.joblib' --exclude='*[hH][-_][cC][aA]*.pt' --exclude='*[hH][-_][cC][aA]*.safetensors' --exclude='*[hH][-_][cC][aA]*fitted*'
+         --include='*[cC][lL][aA][sS][sS][iI][fF][iI][eE][rR]*.py' --exclude='*[cC][lL][aA][sS][sS][iI][fF][iI][eE][rR]*.*')
+# solo per logs/tmp_scratch (da /tmp): smoke/probe H-CA esclusi, il codice resta
+LIC_EXC_TMP=(--include='*[hH][cC][aA]*.py' --include='*[hH][-_][cC][aA]*.py' --exclude='*[hH][cC][aA]*' --exclude='*[hH][-_][cC][aA]*')
+
 TMPD=$(mktemp -d); trap 'rm -rf "$TMPD"' EXIT
 : > "$TMPD/large.txt"
 
@@ -45,9 +344,13 @@ m() {
   [ ${#srcs[@]} -eq 0 ] && return 0
   mkdir -p "$D/$dest"
   local dflags=(); [ "$del" = 1 ] && dflags=(--delete --delete-excluded)
-  rsync -a "${dflags[@]}" --max-size=$MAXSIZE "${EXC[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/"
+  local lic=() e
+  while IFS= read -r e; do [ -n "$e" ] && [ "${e#"$dest"/}" != "$e" ] && lic+=(--exclude="/${e#"$dest"/}"); done <<< "$LIC_LIST"
+  [ "$dest" = logs/tmp_scratch ] && lic+=("${LIC_EXC_TMP[@]}")
+  lic+=("${LIC_EXC[@]}")
+  rsync -a "${dflags[@]}" --max-size=$MAXSIZE "${EXC[@]}" "${lic[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/"
   # file oltre il limite: solo elenco (path, size, sha256)
-  rsync -a -n --min-size=$MAXSIZE --out-format='%n' "${EXC[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/" 2>/dev/null \
+  rsync -a -n --min-size=$MAXSIZE --out-format='%n' "${EXC[@]}" "${lic[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/" 2>/dev/null \
     | grep -v '/$' | while read -r rel; do
         for s in "${srcs[@]}"; do
           local cand
@@ -130,6 +433,18 @@ for dp,dn,fn in os.walk(root):
 open(outp,'w').write(''.join(sorted(x+'\n' for x in out)))
 PY
 
+# ---- controllo licenze: niente che strataplus/.gitignore escluda (git add -f lo aggiungerebbe comunque) ----
+: > "$TMPD/lic.txt"
+if [ -f "$D/.gitignore" ]; then
+  LICG=$(mktemp -d -p "$TMPD"); git init -q "$LICG"; mkdir -p "$LICG/strataplus"; cp "$D/.gitignore" "$LICG/strataplus/.gitignore"
+  ( cd "$D" && find . -type f ! -name .gitignore -printf 'strataplus/%P\n' ) \
+    | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic.txt" || true
+  while read -r f; do [ -n "$f" ] && rm -f "$REPO/$f"; done < "$TMPD/lic.txt"
+  [ -s "$TMPD/lic.txt" ] && echo "AVVISO: $(wc -l < "$TMPD/lic.txt") file esclusi per licenza rimossi dalla copia (non pubblicati)"
+else
+  echo "ERRORE: $D/.gitignore mancante (esclusioni per licenza)" >&2; exit 4
+fi
+
 # ---- scansione segreti (repo PUBBLICO): file sospetti rimossi dallo staging ----
 : > "$TMPD/hits.txt"
 RX='(ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,}|ghs_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|hf_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|xox[abprs]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9]{32,}|aws_secret_access_key|AIza[0-9A-Za-z_-]{35})'
@@ -170,11 +485,42 @@ if grep -qxF "$SELF" "$TMPD/tok.txt"; then echo "ERRORE: il token compare in syn
   echo
   echo "## Esclusi dalla scansione segreti (contenuto sospetto, NON pubblicato)"
   sed 's/^/    /' "$TMPD/secret.txt"
+  echo
+  cat <<'SKEOF'
+## Esclusi per licenza (decisione del proprietario, 2026-10-26)
+
+Riferimento: `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11,
+CSV sha256 80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc), sezione 4, più il controllo del 2026-10-26.
+Elenco esatto dei percorsi: `strataplus/.gitignore` (stessa lista negli exclude rsync di `sync.sh`).
+Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 ma **restano nei commit precedenti**
+(la riscrittura della storia non è ancora autorizzata). Vedi `ERRATA_LICENZE.md`.
+
+| Categoria | File | Motivo |
+|---|---|---|
+| Dati derivati da edit_np (testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE GitHub edit_np una licenza con una clausola che vieta l'uso come dati di training |
+| `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più edit_np |
+| `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più edit_np |
+| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene ID edit_np (edit_np-ID, edit_np-ID) e la diagnosi per richiesta del dominio edit |
+| Artefatti H-CA stimati su edit_np: `policy/strata-policy/replay/results/v2/hca/` tranne `hca_results.json` e `REPORT.md` (aggregati, pubblicati), quindi anche `edit_np_fitted/`; `replay/run_hca.json`; smoke/probe H-CA da /tmp; pesi/feature di classificatori; qualsiasi nome con "edit_np" (es. `lang_inventory_edit_np/`) | pattern, anche per file futuri | uso solo locale; si pubblicano gli aggregati, i run file addendum e il codice (`hca*.py`) |
+| `bench/strata-bench/datasets/specbench.jsonl` | regola già esistente | Spec-Bench, licenze miste |
+| `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
+
+Totale tolto dalla testa il 2026-10-26: 292 file (291 del par. 4 + `gen.py`).
+SKEOF
+  if [ -s "$TMPD/lic.txt" ]; then
+    echo
+    echo "### Rimossi in questo sync dal controllo licenze"
+    sed 's/^/    /' "$TMPD/lic.txt"
+  fi
 } > "$D/SKIPPED.md"
 ( cd "$D" && find . -type f ! -name MANIFEST.sha256 -print0 | sort -z | xargs -0 sha256sum > MANIFEST.sha256 )
 
 # ---- commit (solo se cambia qualcosa) ----
 git add -A -f -- strataplus   # -f: il .gitignore upstream ignora *.log e logs/
+if [ -n "${LICG:-}" ] && git ls-files -- strataplus | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic_idx.txt"; then
+  echo "ERRORE: file esclusi per licenza nell'indice:" >&2; cat "$TMPD/lic_idx.txt" >&2
+  git reset -q -- strataplus; exit 4
+fi
 if git diff --cached --quiet; then
   echo "Nessun cambiamento da committare."
 else
