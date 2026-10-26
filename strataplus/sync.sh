@@ -320,6 +320,10 @@ policy/strata-policy/replay/results/v2/lookup_prefix_replay/lookup_prefix_replay
 policy/strata-policy/replay/results/v2/split_h/split_h.json
 logs/tmp_scratch/gen/
 policy/strata-policy/replay/run_hca.json
+bench/traces/mtp_cap_prefix_check.json
+bench/strata-bench/runs/live_combo_aprime_holdout.md
+logs/tmp_scratch/mcp_test.json
+logs/tmp_scratch/order.txt
 LICEOF
 )
 # pattern generici (anche per file futuri): edit_np e artefatti H-CA/classificatore; il codice *.py resta
@@ -439,6 +443,9 @@ if [ -f "$D/.gitignore" ]; then
   LICG=$(mktemp -d -p "$TMPD"); git init -q "$LICG"; mkdir -p "$LICG/strataplus"; cp "$D/.gitignore" "$LICG/strataplus/.gitignore"
   ( cd "$D" && find . -type f ! -name .gitignore -printf 'strataplus/%P\n' ) \
     | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic.txt" || true
+  # controllo sul contenuto: qualsiasi file (anche nuovo, con nome qualsiasi) che contiene ID edit_np resta fuori
+  grep -rlIiE 'edit_np[-_][0-9]+' "$D" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
+  sort -u -o "$TMPD/lic.txt" "$TMPD/lic.txt"
   while read -r f; do [ -n "$f" ] && rm -f "$REPO/$f"; done < "$TMPD/lic.txt"
   [ -s "$TMPD/lic.txt" ] && echo "AVVISO: $(wc -l < "$TMPD/lic.txt") file esclusi per licenza rimossi dalla copia (non pubblicati)"
 else
@@ -500,8 +507,9 @@ Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 
 | Dati derivati da edit_np (testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE GitHub edit_np una licenza con una clausola che vieta l'uso come dati di training |
 | `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più edit_np |
 | `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più edit_np |
-| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene ID edit_np (edit_np-ID, edit_np-ID) e la diagnosi per richiesta del dominio edit |
+| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene 2 ID edit_np e la diagnosi per richiesta del dominio edit |
 | Artefatti H-CA stimati su edit_np: `policy/strata-policy/replay/results/v2/hca/` tranne `hca_results.json` e `REPORT.md` (aggregati, pubblicati), quindi anche `edit_np_fitted/`; `replay/run_hca.json`; smoke/probe H-CA da /tmp; pesi/feature di classificatori; qualsiasi nome con "edit_np" (es. `lang_inventory_edit_np/`) | pattern, anche per file futuri | uso solo locale; si pubblicano gli aggregati, i run file addendum e il codice (`hca*.py`) |
+| File con ID edit_np nel contenuto (`edit_np-N`), qualunque nome; per ora `bench/traces/mtp_cap_prefix_check.json`, `bench/strata-bench/runs/live_combo_aprime_holdout.md`, `logs/tmp_scratch/mcp_test.json`, `logs/tmp_scratch/order.txt` (mai pubblicati) | controllo sul contenuto in `sync.sh` | ID e metriche per richiesta |
 | `bench/strata-bench/datasets/specbench.jsonl` | regola già esistente | Spec-Bench, licenze miste |
 | `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
 
@@ -517,7 +525,8 @@ SKEOF
 
 # ---- commit (solo se cambia qualcosa) ----
 git add -A -f -- strataplus   # -f: il .gitignore upstream ignora *.log e logs/
-if [ -n "${LICG:-}" ] && git ls-files -- strataplus | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic_idx.txt"; then
+git ls-files -z -- strataplus | xargs -0 grep -lIiE 'edit_np[-_][0-9]+' > "$TMPD/lic_id.txt" 2>/dev/null || true
+if { [ -n "${LICG:-}" ] && git ls-files -- strataplus | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic_idx.txt"; } || { cat "$TMPD/lic_id.txt" >> "$TMPD/lic_idx.txt"; [ -s "$TMPD/lic_id.txt" ]; }; then
   echo "ERRORE: file esclusi per licenza nell'indice:" >&2; cat "$TMPD/lic_idx.txt" >&2
   git reset -q -- strataplus; exit 4
 fi

@@ -35,7 +35,7 @@ Restano gli aggregati (`e1_summary.json`, `pool_sizes.json`, `E1_results.md`).
 ## 4. Cosa è stato fatto il 2026-10-26
 
 - Tolti dalla testa di `strataplus-research` **292 file**: i 291 della sezione 4 dell'inventario (289 solo edit_np,
-  più `e1_per_request.csv` e `subset_ids.json`) e `logs/tmp_scratch/gen/gen.py` (ID `edit_np-ID`, `edit_np-ID`
+  più `e1_per_request.csv` e `subset_ids.json`) e `logs/tmp_scratch/gen/gen.py` (2 ID edit_np
   e diagnosi per richiesta del dominio `edit`), trovato da una scansione successiva di tutti i file della testa.
 - Percorsi esatti e pattern generici (nomi con "edit_np", artefatti H-CA/classificatore, anche futuri) in
   `strataplus/.gitignore`; gli stessi exclude in `sync.sh`, che controlla anche la copia prima del commit.
