@@ -239,7 +239,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 acb678aec29887d7f825415a7f4168c9fb2b956fe12fc723eb2c3d1fbd906c29  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-706eb6997e7c9ff5a26a2941cd24833c3b88ab7d128f25bb70160505f2b4a4ad  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
+3728a4394acbe9c539813552b611ff98993110e44cab55b783d3b7e4288bec7d  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
 6e7605821daa296d92b43536fd5233f8271a1ecb219fd3d55efa00ee21eba612  ./bench/traces/raw/agent_v12/ref_tf.tsv
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12_pilot/agent_v12_build.err
