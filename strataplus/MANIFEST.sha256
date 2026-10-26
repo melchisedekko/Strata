@@ -1,4 +1,4 @@
-abfe21453c1100029f714324aa38126949b3cc871de4e8454872beea7d95bbaf  ./README.md
+289d59cead84e8a4f7893c2ca62d5caee94710022f69ebdec76b7aaf326ec999  ./README.md
 59c82184111dc133e57c93ca79a95238a498ae1434e566b111597710c1c19915  ./SECRET_SCAN_ALLOWLIST.txt
 7aed35f123bd012b34579eb1621a24e301cca6251dcfccc01ba41b607dbafec7  ./SKIPPED.md
 cb4b945830fbeb300c5f251096f8db5b69029cabcc06fe629ff9d033f19c5d23  ./bench/e1/policy/README.md
@@ -239,7 +239,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 acb678aec29887d7f825415a7f4168c9fb2b956fe12fc723eb2c3d1fbd906c29  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-e3ea75b8faeabb887cf1fa05f63c5c32195d8f1b72db810f9bcc60b284ba7b2b  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
+706eb6997e7c9ff5a26a2941cd24833c3b88ab7d128f25bb70160505f2b4a4ad  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
 6e7605821daa296d92b43536fd5233f8271a1ecb219fd3d55efa00ee21eba612  ./bench/traces/raw/agent_v12/ref_tf.tsv
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12_pilot/agent_v12_build.err
@@ -1053,4 +1053,4 @@ c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/scout/
 c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/strata-plus/scout.md
 542900a0d13e88f5bc01859fd02fd8a2467e7ebaddfccd35232a496f15f87526  ./scout/strata-plus/scout_greedy_rho.md
 b647e52d1412f836545cb7a70512560f13a9970784bec573786ab058582c40ac  ./scout/strata-plus/scout_patch_support.md
-bde7c867a05433862bdafc8ccbabdd53dc66d067baa6e4c4a3b5f955d3e26886  ./sync.sh
+7536fa338a5ead13289c7a2d710b7fbed48f260df736d5b424e847f95b3c5b96  ./sync.sh

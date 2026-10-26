@@ -24,9 +24,10 @@ Il resto del repo è identico a 7dd5cf1.
 ## Ripristinare i branch delle patch
 
 I branch locali `strataplus-policy-local` (P1–P6, head `e467f6e`) e `strataplus-pt12-measure`
-(P-T12 measure v1–v3, head `e441f3a`) **non sono pubblicati come branch**: sono salvati in
-`patches/branches/<branch>/` come `git bundle` (thin, prerequisito 7dd5cf1) e come serie `format-patch`
-(`7dd5cf1..head`). `LOG.txt` e `HEAD` riportano commit e head attesi.
+(P-T12 measure v1–v3, head `e441f3a`) sono **pubblicati così come sono** come branch separati di questo
+fork (`git fetch origin strataplus-policy-local strataplus-pt12-measure`). In più, come copia di riserva,
+sono salvati in `patches/branches/<branch>/` come `git bundle` (thin, prerequisito 7dd5cf1) e come serie
+`format-patch` (`7dd5cf1..head`). `LOG.txt` e `HEAD` riportano commit e head attesi.
 
 Da un clone di questo repo (che contiene già 7dd5cf1):
 
@@ -80,7 +81,7 @@ Lo script è idempotente:
 - esegue lo scan segreti (regex + gitleaks)
 - rigenera `MANIFEST.sha256`
 - committa solo se ci sono cambiamenti, con timestamp CET
-- fa push **solo** del branch `strataplus-research` del fork `melchisedekko/Strata`
+- fa push dei branch `strataplus-research`, `strataplus-policy-local` e `strataplus-pt12-measure` del fork `melchisedekko/Strata`, solo in fast-forward e dopo lo scan segreti dei commit (mai il branch di default)
 
 Il token viene letto da `GITHUB_TOKEN` solo a runtime e passato tramite header HTTP: non viene mai scritto in file, config o URL.
 **Non eseguire lo script con `bash -x`**, perché la traccia stamperebbe il token.

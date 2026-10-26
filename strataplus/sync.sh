@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Strata+ research backup -> fork PUBBLICO melchisedekko/Strata, SOLO branch `strataplus-research`.
 # Idempotente: ricopia le sorgenti inventariate, rigenera manifest/patch/bundle, scansiona segreti,
-# committa solo se ci sono cambiamenti e fa push del solo branch strataplus-research.
+# committa solo se ci sono cambiamenti e fa push di strataplus-research, strataplus-policy-local e strataplus-pt12-measure.
 # Il token viene letto SOLO da $GITHUB_TOKEN a runtime (mai scritto su file, config o URL).
 # Uso:   bash /workspace/strataplus-backup/sync.sh          (NOPUSH=1 per non fare push)
 set -euo pipefail
@@ -183,18 +183,38 @@ else
   echo "Commit: $(git rev-parse --short HEAD)"
 fi
 
-# ---- push del SOLO branch strataplus-research sul fork (mai force) ----
+# ---- branch delle patch: import dal repo sorgente + scansione segreti dei commit ----
+# I branch vengono pubblicati così come sono (nessun merge: P6 e P-T12 confliggono in generate.cpp).
+PUSH_REFS=("refs/heads/$BR:refs/heads/$BR")
+for b in "${BRANCHES[@]}"; do
+  git -C "$SRC_GIT" rev-parse -q --verify "refs/heads/$b" >/dev/null || { echo "AVVISO: $b assente in $SRC_GIT, salto"; continue; }
+  # fast-forward soltanto: se il branch sorgente è stato riscritto, fetch fallisce e il branch non viene pubblicato
+  if ! git fetch -q "$SRC_GIT" "refs/heads/$b:refs/heads/$b" 2>"$TMPD/fetch_$b.log"; then
+    echo "AVVISO: $b non è fast-forward rispetto alla copia locale, non pubblicato (vedi sotto)"; cat "$TMPD/fetch_$b.log"; continue
+  fi
+  bad=0
+  git log -p --format= "$BASE..refs/heads/$b" | grep -qE "$RX" && bad=1
+  [ -n "${GITHUB_TOKEN:-}" ] && git log -p --format= "$BASE..refs/heads/$b" | grep -qF -- "$GITHUB_TOKEN" && bad=1
+  if [ -x "$GITLEAKS" ]; then
+    "$GITLEAKS" git . --log-opts="$BASE..refs/heads/$b" --redact --no-banner -l error -f json -r "$TMPD/glb_$b.json" >/dev/null 2>&1 || true
+    [ -s "$TMPD/glb_$b.json" ] && [ "$(python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$TMPD/glb_$b.json")" != 0 ] && bad=1
+  fi
+  if [ "$bad" = 1 ]; then echo "AVVISO: possibili segreti nei commit di $b: NON pubblicato"; continue; fi
+  PUSH_REFS+=("refs/heads/$b:refs/heads/$b")
+done
+
+# ---- push di strataplus-research + branch delle patch sul fork (mai force, mai il default branch) ----
 if [ "$NOPUSH" != 1 ]; then
   [ -n "${GITHUB_TOKEN:-}" ] || { echo "ERRORE: GITHUB_TOKEN non impostato" >&2; exit 1; }
   AUTH=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
   GIT_TERMINAL_PROMPT=0 GIT_CONFIG_COUNT=2 \
     GIT_CONFIG_KEY_0=credential.helper GIT_CONFIG_VALUE_0= \
     GIT_CONFIG_KEY_1=http.https://github.com/.extraHeader GIT_CONFIG_VALUE_1="Authorization: Basic $AUTH" \
-    git push -q "$REMOTE_URL" "refs/heads/$BR:refs/heads/$BR" > "$TMPD/push.log" 2>&1 && prc=0 || prc=$?
+    git push -q "$REMOTE_URL" "${PUSH_REFS[@]}" > "$TMPD/push.log" 2>&1 && prc=0 || prc=$?
   unset AUTH
   grep -v -i authorization "$TMPD/push.log" || true
   [ "$prc" = 0 ] || { echo "ERRORE: push fallito (rc=$prc)" >&2; exit "$prc"; }
-  echo "Push OK: $BR -> $REMOTE_URL"
+  echo "Push OK: ${PUSH_REFS[*]%%:*} -> $REMOTE_URL"
 fi
 echo "$T0 | $(date '+%Y-%m-%d %H:%M:%S') | sync.sh HEAD=$(git rev-parse --short HEAD)" >> "$RUNLOG"
 echo "OK: HEAD $(git rev-parse HEAD)"
