@@ -1,0 +1,14 @@
+# HumanEvalFix (bigcode/humanevalpack): nota di licenza
+- **Dataset:** bigcode/humanevalpack, https://huggingface.co/datasets/bigcode/humanevalpack
+- **Revisione pinnata:** 9a41762f73a8cb23bb5811b73d5aab164efcf378 (richiesta "9a41762f", risolta dall'API HF).
+- **Licenza: MIT.** Verificata sulla card a quella revisione: il front-matter di README.md (copiato qui) dice `license: mit`. È coerente con l'API, che restituisce cardData.license = "mit" alla stessa revisione.
+- **Scaricato il:** 26/10/2026, 19:53–19:54 CET, con curl da `https://huggingface.co/datasets/bigcode/humanevalpack/resolve/<rev>/<lang>/test-00000-of-00001.parquet`, sotto nice 19.
+  - huggingface_hub non è installato sul box: per questo curl invece della CLI.
+  - Finestra START/END in campaign.log.
+- **File tenuti:** solo i 5 linguaggi non Python, cioè js, java, go, cpp, rust (split test), più README.md (card).
+  - **I dati Python non sono stati scaricati.**
+- **Integrità:** gli sha256 locali (SHA256SUMS) coincidono con gli oid LFS che l'API paths-info restituisce alla stessa revisione.
+- **Uso:** dominio pubblicabile **'edit-fix'**, riportato separato da edit/edit_np e mai sommato.
+  - Non è stata generata nessuna traccia.
+  - Lo split tune/holdout lo fa Policy nel suo run file.
+- **Etichetta:** proxy CPU, non AMD (vale per ogni uso futuro su questo box).

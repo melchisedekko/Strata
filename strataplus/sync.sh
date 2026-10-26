@@ -324,9 +324,19 @@ bench/traces/mtp_cap_prefix_check.json
 bench/strata-bench/runs/live_combo_aprime_holdout.md
 logs/tmp_scratch/mcp_test.json
 logs/tmp_scratch/order.txt
+logs/tmp_scratch/c0.json
+logs/tmp_scratch/c1.json
+logs/tmp_scratch/hfcards/
 LICEOF
 )
 # pattern generici (anche per file futuri): edit_np e artefatti H-CA/classificatore; il codice *.py resta
+# dati GREZZI di terzi (regola del 2026-10-26 20:05 CET, LICENSE_INVENTORY.md sez. 7): mai sul fork
+RAW_EXC=(--exclude='*.[pP][aA][rR][qQ][uU][eE][tT]' --exclude='*.[aA][rR][rR][oO][wW]' --exclude='[tT][oO][kK][eE][nN][iI][zZ][eE][rR]*.json'
+  --exclude='*[hH][fF][-_][cC][aA][rR][dD]*' --exclude='[nN][fF][eE]_*.jsonl'
+  --exclude='*[nN][oO][fF][uU][nN][eE][vV][aA][lL]*')
+# cartelle di download dei dataset in bench/strata-bench/datasets/*/: solo note/hash/log del team (dopo LIC_EXC)
+DS_ALLOW=(--include='/datasets/*/LICENSE_NOTE*.md' --include='/datasets/*/SHA256SUMS' --include='/datasets/*/*.sha256' --include='/datasets/*/*.log'
+  --exclude='/datasets/*/**')
 LIC_EXC=(--exclude='*[cC][aA][nN][iI][tT][eE][dD][iI][tT]*' --exclude='*[cC][aA][nN]_[iI][tT]_[eE][dD][iI][tT]*'
          --include='/replay/results/v2/hca/hca_results.json' --include='/replay/results/v2/hca/REPORT.md' --exclude='/replay/results/v2/hca/*'
          --exclude='*[hH][cC][aA]*.npz' --exclude='*[hH][cC][aA]*.npy' --exclude='*[hH][cC][aA]*.pkl' --exclude='*[hH][cC][aA]*.joblib'
@@ -351,7 +361,8 @@ m() {
   local lic=() e
   while IFS= read -r e; do [ -n "$e" ] && [ "${e#"$dest"/}" != "$e" ] && lic+=(--exclude="/${e#"$dest"/}"); done <<< "$LIC_LIST"
   [ "$dest" = logs/tmp_scratch ] && lic+=("${LIC_EXC_TMP[@]}")
-  lic+=("${LIC_EXC[@]}")
+  lic+=("${RAW_EXC[@]}" "${LIC_EXC[@]}")
+  [ "$dest" = bench/strata-bench ] && lic+=("${DS_ALLOW[@]}")
   rsync -a "${dflags[@]}" --max-size=$MAXSIZE "${EXC[@]}" "${lic[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/"
   # file oltre il limite: solo elenco (path, size, sha256)
   rsync -a -n --min-size=$MAXSIZE --out-format='%n' "${EXC[@]}" "${lic[@]}" "${extra[@]}" "${srcs[@]}" "$D/$dest/" 2>/dev/null \
@@ -445,6 +456,33 @@ if [ -f "$D/.gitignore" ]; then
     | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic.txt" || true
   # controllo sul contenuto: qualsiasi file (anche nuovo, con nome qualsiasi) che contiene ID edit_np resta fuori
   grep -rlIiE 'edit_np[-_][0-9]+' "$D" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
+  # quarantena (2026-10-26): file di dati NUOVI (non in HEAD) sotto datasets/, *.jsonl di tmp_scratch, parquet/arrow ovunque:
+  # restano fuori finche' qualcuno non li rivede e ne mette lo sha256 in REVIEWED (sotto). I file gia' tracciati passano.
+  REVIEWED=$(cat <<'REVEOF'
+18288525fff122efc9790efbeadcbf810ae5c650149833ea5cb8a141efdba84e  bench/strata-bench/datasets/holdout_90_codechat.jsonl
+89c28ff8fc0a74d20074c83226f4637955235f43dbf52caa73c9153d79724684  bench/strata-bench/datasets/proxy_30_codechat.jsonl
+ea8e2f340aecd87511fd0de5627f74975bb772024aa0b65535ab14fa4d1869c0  bench/strata-bench/datasets/commitpackft_selection_manifest.csv
+584a98a9e12aa762b2b8a4d4cfa3313fb4df4a3169e7d89d2bcc6d43ef5fd20d  bench/strata-bench/datasets/commitpackft_selection_counts.json
+77247b1da5c174548fc5ef6ef9227d22ebbedfe1a66ecbd3c5bc3e806bf3d7c1  bench/strata-bench/datasets/commitpackft_fc56fe33/raw_files.sha256
+9789d77fcf5c6ac140936905105d3db74e2845a66aeddf4e3583f227d12ef90a  bench/strata-bench/datasets/commitpackft_fc56fe33/select_run.log
+a6ceeb5a076d7f3c1e93134566e926121c4cfb4ee998caed27932417a883e2e2  bench/strata-bench/datasets/humanevalfix_9a41762f/LICENSE_NOTE.md
+3341a36cd081b49247dc60691025f548bf120f6dbb9b54122a0688c377f8d0b7  bench/strata-bench/datasets/humanevalfix_9a41762f/SHA256SUMS
+7949ed6b9e5b22d7ad6b8397f409a4b66b43c83b4d4de3760a9a1653c6c83145  logs/tmp_scratch/a.jsonl
+5a26280967ad5b7652f2baa320a8b6f5cf722ea030444e69a72f25922d03491f  bench/strata-bench/datasets/commitpackft_fc56fe33/selected_files.sha256
+7bb6353c855cba4ee9cb77c75e3070395c2c28d4e7d2e7b99f96cb700fc26ee2  bench/strata-bench/datasets/commitpackft_selection.sha256
+5e6f30651d22cfd5214ffda2d824db02d83dcf7033931dd3315480b80634c777  bench/strata-bench/datasets/commitpackft_selection_README.md
+REVEOF
+)
+  : > "$TMPD/quar.txt"
+  ( cd "$D" && { find bench/strata-bench/datasets -type f 2>/dev/null; find logs/tmp_scratch -maxdepth 1 -type f -name '*.jsonl' 2>/dev/null
+      find . -type f \( -iname '*.parquet' -o -iname '*.arrow' \) -printf '%P\n'; } | sort -u ) | while IFS= read -r p; do
+    grep -qxF "strataplus/$p" "$TMPD/lic.txt" && continue
+    git -C "$REPO" cat-file -e "HEAD:strataplus/$p" 2>/dev/null && continue
+    printf '%s\n' "$REVIEWED" | grep -qxF "$(sha256sum "$D/$p" | cut -d' ' -f1)  $p" && continue
+    echo "strataplus/$p"
+  done > "$TMPD/quar.txt"
+  [ -s "$TMPD/quar.txt" ] && echo "AVVISO: $(wc -l < "$TMPD/quar.txt") file di dati nuovi in quarantena (non pubblicati, da revisionare)"
+  cat "$TMPD/quar.txt" >> "$TMPD/lic.txt"
   sort -u -o "$TMPD/lic.txt" "$TMPD/lic.txt"
   while read -r f; do [ -n "$f" ] && rm -f "$REPO/$f"; done < "$TMPD/lic.txt"
   [ -s "$TMPD/lic.txt" ] && echo "AVVISO: $(wc -l < "$TMPD/lic.txt") file esclusi per licenza rimossi dalla copia (non pubblicati)"
@@ -514,10 +552,30 @@ Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 
 | `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
 
 Totale tolto dalla testa il 2026-10-26: 292 file (291 del par. 4 + `gen.py`).
+
+## Dati grezzi di terzi (regola del proprietario, 2026-10-26 20:05 CET)
+
+"Tutto quello che il team produce va nel backup, ma il contenuto grezzo di dataset di terzi no."
+Riferimento: `LICENSE_INVENTORY.md` sezione 7 (sha256 29bfb7c43a13614a1c01f8239dec019e9cae7dc0957549b60b98649c8d53e0c1).
+Mai pubblicati (non sono mai arrivati sul fork).
+
+| Esclusi | Motivo |
+|---|---|
+| `bench/strata-bench/datasets/humanevalfix_9a41762f/` tranne `LICENSE_NOTE.md`, `SHA256SUMS` (parquet per linguaggio, card HF) | dataset grezzo bigcode/humanevalpack, riscaricabile dal pin 9a41762f |
+| `bench/strata-bench/datasets/commitpackft_fc56fe33/` tranne `raw_files.sha256`, `select_run.log` (`raw/`, `selected/`, `tokenizer/`, card HF) | dataset grezzo bigcode/commitpackft (licenze per repo miste), riscaricabile dal pin fc56fe33 |
+| qualsiasi altra cartella `datasets/*/`: solo `LICENSE_NOTE*.md`, `SHA256SUMS`, `*.sha256`, `*.log` | regola per download futuri |
+| `*.parquet`, `*.arrow`, `tokenizer*.json`, `*hf_card*`/`*hf-card*` ovunque | formati di dataset/tokenizer e card HF di terzi |
+| `logs/tmp_scratch/nfe_*.jsonl`, `*nofuneval*` | NoFunEval: codice di terzi (repo GitHub, PIE/CodeNet, CodeQL), licenze non verificate |
+| `logs/tmp_scratch/hfcards/` | copie di card HF di terzi |
+| `logs/tmp_scratch/c0.json`, `c1.json` | dump API HF (commit dei repo bigcode, utenti), non prodotti dal team |
+| quarantena: file NUOVI sotto `datasets/`, `*.jsonl` nuovi in `tmp_scratch/`, parquet/arrow | fuori finche' non revisionati (sha256 in `REVIEWED` in `sync.sh`) |
+
+Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
+edit_np), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
 SKEOF
   if [ -s "$TMPD/lic.txt" ]; then
     echo
-    echo "### Rimossi in questo sync dal controllo licenze"
+    echo "### Rimossi in questo sync dal controllo licenze/quarantena"
     sed 's/^/    /' "$TMPD/lic.txt"
   fi
 } > "$D/SKIPPED.md"

@@ -1,0 +1,33 @@
+{
+ "label": "H-CA addendum 1 a run_hca.json: lettura decisionale cross-fitted, conteggi, verdetti per rho, licenza. Scritto PRIMA di qualsiasi calcolo di valutazione. Proxy CPU (tracce v1.1, Qwen3.5-2B-MTP); tok/s STIMATI s(T)=1+rho(T-1), draft a costo zero.",
+ "written": "2026-10-26 CET, Policy (executor), prima di eval",
+ "refers_to": {
+  "run_hca.json": "ea2bed9c1438175c279c291652a6e9dd552e14b24d694320befc9338249bf50b",
+  "hca.py (funzioni riusate per import, invariato)": "35ddc537b0306780ceb3d920476d64d1530eec097a55a53f5b3aacbf928ed348"
+ },
+ "unchanged": "griglia (168), regola del round e arbitro (DraftPolicy nativo 7dd5cf18, policy nuova per richiesta), feature e forma del classificatore, soglie {0.25,0.5,0.75}x{0.5,0.7,0.9}, ascesa per coordinate 2 passate, rho flat/steep, oracolo per round R01/P/X, soglie dei criteri (3%, 50%), bootstrap a cluster richiesta B=2000 seed 0, regole sui dati (tune per scegliere, holdout v1.1 solo descrittivo).",
+ "folds": "5 fold sul tune: fold = indice della richiesta nel file tf_d7_p30.jsonl mod 5 (stesse fold del classificatore in run_hca). Il file ha i domini in blocchi di 10 (code, chat, edit), quindi ogni fold ha 2 richieste per dominio e ogni training 8 per dominio (conteggi riportati nell'output).",
+ "a_cross_fit": {
+  "principle": "la lettura DECISIONALE e' cross-fitted per (1), (2), (3) e classificatore: per ogni fold f tutte le scelte si fanno sulle 4 fold di training e la richiesta di f e' valutata con quelle scelte; i valori tune sono somme sulle 5 fold tenute fuori. Le versioni in-sample di (2) e (3) (run_hca) sono riportate solo come tetti ottimistici.",
+  "1_cf": "configurazione della griglia con tok/s massimo sulle richieste di training (tutti i domini insieme), applicata alla fold tenuta fuori; pareggi -> indice di griglia minore",
+  "2_cf": "versione causale di (2), 'configurazione per richiesta da metadati noti prima della generazione': la configurazione e' scelta per DOMINIO della richiesta (etichetta di richiesta, nota all'avvio, nessun dato del contenuto generato), come la migliore configurazione fissa della griglia sulle richieste di training di quel dominio; applicata alle richieste del dominio nella fold tenuta fuori (policy nuova per richiesta, DraftPolicy(S)). Se un dominio non ha richieste di training: si usa 1_cf (dichiarato nell'output).",
+  "3_cf": "versione causale di (3), 'configurazione per tipo di segmento': tabella (dominio, in_code) -> configurazione della griglia, dove in_code = parita' delle linee-fence completate prima della posizione (stesso segnale causale del classificatore, cambia solo ai confini fence). Walk con una sola DraftPolicy(8) per richiesta, la configurazione si legge a ogni round (equivale a cambiarla al primo round che parte >= confine). Selezione sulle 4 fold di training: per dominio, inizializzazione delle due celle a 2_cf del dominio, ascesa per coordinate 2 passate (cella in_code=0 poi 1), per cella si prova ogni configurazione della griglia e si tiene se migliora strettamente i tok/s aggregati delle richieste di training del dominio; pareggi -> si tiene la corrente.",
+  "cls_cf": "come run_hca ma con TUTTE le scelte dentro il training della fold: base = 1_cf della fold; insieme di azioni A = fino a 8 configurazioni piu' scelte dall'oracolo (3) in-sample R0 U R1 calcolato sulle sole richieste di training (conteggio segmenti, pareggi -> indice minore) piu' 1_cf; poi soglie e tabella come in run_hca. (In run_hca A e (1) venivano dall'intero tune: piccola fuga di informazione, corretta qui.)",
+  "insample_ceilings": "(2) oracolo per richiesta e (3) oracolo greedy per segmento come in run_hca, calcolati sulle richieste stesse: tetti ottimistici, non decisionali. Anche (1), 2_cf, 3_cf, cls selezionati sull'intero tune e valutati sul tune sono riportati come in-sample.",
+  "R0_only": "variante R0-solo di (3) in-sample come in run_hca, solo descrittiva; nessuna versione cross-fitted R0-solo."
+ },
+ "criteria_decision": {
+  "H-CA_scende_per_rho": "g_d = tokps(2_cf)/tokps(1_cf) - 1 sul tune cross-fitted, per dominio d in {code, chat, edit}. Per quel rho H-CA SCENDE se g_d < 0.03 in tutti e tre i domini. Insieme di switch R0 U R1 (2_cf e' a configurazione fissa per richiesta e quindi ammissibile; 3_cf e cls usano switch R1).",
+  "classifier_per_rho": "cattura_d = (tokps(cls_cf) - tokps(1_cf)) / (tokps(2_cf) - tokps(1_cf)) sui domini con g_d >= 0.03. NO-GO per quel rho se la cattura < 0.50 in tutti questi domini (se nessun dominio ha g_d >= 0.03: 'non applicabile', H-CA gia' scesa). Descrittivo: cattura rispetto al tetto (2) in-sample e cattura di 3_cf.",
+  "rho_combination": "verdetti separati per flat (rho=0.19617814763445762) e steep (rho=0.538461538461537); se concordano il verdetto e' quello; se discordano il verdetto e' 'dipende dall'hardware' (da decidere solo sulle misure AMD). Questo sostituisce la combinazione 'in almeno uno dei due scenari' di run_hca.criteria.",
+  "point_estimates": "decisioni sulle stime puntuali; IC95 bootstrap riportati"
+ },
+ "b_counts": "output: richieste tune per dominio x fold; round del tune per dominio x cella del classificatore (16 celle) nella walk cross-fitted e in quella in-sample; numero di segmenti per dominio; nessun conteggio per singola richiesta.",
+ "licence": {
+  "rule": "/workspace/strata-policy e' sincronizzato su un fork PUBBLICO; edit_np (edit) DA ESCLUDERE, ID Dolly/MBPP/Spec-Bench esclusi. Tutto cio' che si scrive sotto /workspace/strata-policy o /workspace/strata-plus contiene SOLO aggregati (per dominio, fold, cella): niente req_id, hash di prompt, prompt_ids, sequenze di token, testo dei dataset, linguaggi dei fence. Dettagli per richiesta solo in memoria o /tmp.",
+  "line_119_discrepancy": "run_hca.json riga 119 dice che il linguaggio del fence e' 'registrato nel JSON per descrizione': NON viene scritto negli output di eval (licenza); non entra in nessuna regola."
+ },
+ "outputs": "results/v2/hca/hca_results.json e results/v2/hca/REPORT.md (italiano), solo aggregati, con sha256 degli input.",
+ "script": "replay/hca_v2.py (nuovo, sola lettura): verifica sha256 di run_hca.json, di questo addendum e di hca.py; importa le funzioni di hca.py senza modificarle.",
+ "exec": "nice -n 19, OMP/OPENBLAS/MKL_NUM_THREADS=1, inizio (con hash) e fine+rc in /workspace/strata-plus/cpu_busy_policy.log"
+}

@@ -1438,3 +1438,85 @@ Lettura read-only, nessuna build/test. sha256 verificati: P_T12_MEASURE_v3.md 33
 - D2 ok (verificato). Fallback runtime T=9..12 con persist: `fused_gr_read_persist` esce con `n_tok > st.max_t` a L3056 prima di `hcp::launch` (L3060); chiamante verify.cpp L1367 passa al percorso default. hc_persist_parity.cpp usa TM=8 (L26, loop L85): coerente.
 - D3 ok (verificato). Caso 4b in s2_expert_grouped_parity.cpp L427-445: gruppi del caso 4 con sizes ≤ 8 (L379), quindi max_group=8 valido; bitwise vs kernel vecchi (twice), riferimento host e vs run max_group=0 (r_g0, L415/L425); fallimento incrementa g_fail. `<cstring>` incluso (L37). Esito del test: non eseguito (P).
 - Verdetto: delta OK. P-T12 congelabile su e441f3a; restano a Bench il gate AMD (parità P1/P2 delle <8>, registri/occupancy vs 7dd5cf1, s(T≤8) ±1%) e la condizione (1).
+
+## §11 Mappa manopole H-CA (7dd5cf1)
+
+Fonte: /workspace/Strata @7dd5cf1 (sola lettura). e441f3a (pt12_worktree) è citato solo per ciò che esiste solo lì. Righe di generate.cpp salvo diversa indicazione. "CLI" = loop spec dopo `if (o.serve) {` (L8354 … `return 0;` L15693); "serve" = il blocco L8354-15693.
+
+| manopola | parsing file:riga | granularità oggi | limite di compilazione | stato |
+|---|---|---|---|---|
+| `--spec` (S) | L2608 `o.spec = atoi` (nessun clamp); default L654 (=2 Metal) / L656 (=0); auto-alzato all'avvio L3208-3211 e L3215-3219 con letterale `8 // kVerifyMaxT` | solo all'avvio: buffer Verifier dimensionati su max_t (verify.cpp L757-1088), init rifiuta >kVerifyMaxT/cpu::MAXT (verify.cpp L721-722); per round si usa T ≤ S | kVerifyMaxT=8 (verify_kernels.hpp L21), cpu::MAXT=8 (cpu/expert.hpp L143), kFusedGrMaxT=8 (fused_gr.hpp L68), DraftPolicy::kMaxT=8 (draft_policy.hpp L25), `exec_[9]`/`exec_nr_[9]` letterali (verify.hpp L547-548) | implementato (solo all'avvio) |
+| `--mtp-max-t` (S_mtp) | L2673 `max(0, …)`; default 0 = --spec (L779); CLI S_mtp L16426, serve L11173 `min(mtp_max_t, S)` | all'avvio (S_mtp const), applicato via `mtp.set_max_drafts(S_mtp-1)` (L16427 / L11174-11176, setter runtime mtp.hpp L58) | mtp.load rifiuta max_t>kVerifyMaxT (mtp.cpp L266) | implementato (solo all'avvio; il setter permetterebbe di abbassarlo a runtime) |
+| cap lookup/suffix (S-1) | nessun flag: CLI `sfx.propose(o.spec - 1, …)` L16557; serve `sfx.propose(S - 1, …)` L14897; pipelined `propose(2*S-1)` + `min(k, S-1)` L14468/L14471; `choose` clampa a `max_t_-1` (draft_policy.cpp L131, L137) | per round (k ≤ S-1, T scelto da choose) | come --spec; cap 12 esiste solo in e441f3a; 16 chiuso da static_assert | implementato (per round, entro S) |
+| `--suffix-draft` | L2672 `max(0, …)`; default 3 (L777); è il `min_match` di SuffixDrafter (suffix_drafter.hpp L23), non un cap; max_match=64 (L16428 / L11177) | solo all'avvio | nessuno | implementato (solo all'avvio) |
+| `--spec-min-p` | L2630 `atof` (nessun clamp CLI); default 0.0 (L705); serve: `req_spec_min_p` L12317, override per richiesta L12351 `clamp(0,1)` | CLI: letto da `o.` ogni round (L16512, L16529, L16540-16542); serve: per richiesta | nessuno | implementato (per round in CLI, per richiesta in serve) |
+| `--lookup-chain` / `--lookup-chain-min` | L2674 `clamp(…, 0, 7)`; L2675 `max(3, …)`; default 0 / 3 (L783-784) | alza S all'avvio (L3215-3219); per round `min(o.lookup_chain, room - T)` CLI L16575, `min(o.lookup_chain, S - T)` serve L14910, poi `policy.chain` (L16580 / L14916) | 8 letterale L3218; chain ≤ kVerifyMaxT-1 (L14781/L14810) | implementato (avvio + per round) |
+| STRATA_SPEC_COST (+ _COST_TABLE) | env CLI L16402, serve L11179; tabella L16432-16442 (`ms[DraftPolicy::kMaxT]` L16434) → `seed_costs` | per round, aggiornato online | DraftPolicy::kMaxT=8 | implementato (per round, online) |
+| STRATA_SPEC_T_CYCLE | env L16390-16396, valori `1..o.spec`; applicato L16553 | per round (solo CLI, bench) | ≤ o.spec | implementato (per round, solo CLI) |
+
+### Note per manopola
+
+- **--spec.** (a) L2608, nessun clamp al parsing. L3208-3211: con suffix_draft>0, spec≥2 e mtp_max_t==0 diventa `mtp_max_t = spec; spec = min(spec+2, 8)`. L3215-3219: con lookup_chain>0 alza a `min(max(base, mtp_max_t)+lookup_chain, 8)`. (b) Fissato all'avvio: CLI `ver.init(…, o.spec, …)` L16139; in Verifier::init `T = max_t` dimensiona i buffer (verify.cpp L757, stampa L1088) e `max_t_` limita ogni run (`T > max_t_` → errore, L2843/L2875). I grafi vengono catturati in modo lazy alla prima volta di ogni T (`capture(T)` verify.cpp L2454-2456, `exec_[T]`). Solo con le pipeline windows si cattura tutto all'avvio: `capture_all` L4174-4179, chiamato in generate.cpp L9305. In CLI, se la cattura va in OOM, `win_cap = T-1` (L16531, L16613). (c) Abbassare T per round è gratis (resta ≤ max_t_). Alzare S oltre il valore di avvio vuol dire rifare init/riallocare e catturare nuovi grafi. Oltre 8 bisogna cambiare le costanti di compilazione. Alcuni buffer sono fissi a kVerifyMaxT (h_nf_ verify.cpp L773, d_spec_ L3173). (d) Implementato (solo all'avvio).
+- **--mtp-max-t.** (a) L2673; default 0 = S. (b) S_mtp è const all'avvio (L16426 / L11173). Il drafter viene caricato con `mtp_t = pipeline_windows>=2 ? kVerifyMaxT : o.spec` (L5470) e ristretto con `set_max_drafts(S_mtp-1)`, un setter inline (mtp.hpp L58) che a runtime si potrebbe abbassare. Oggi però non c'è un override per round né per richiesta. (c) mtp.cpp L266: `max_t > kVerifyMaxT` → errore. (d) Implementato (solo all'avvio). Renderlo per richiesta è plausibile: serve una chiave nel parser L12336-12352 più `set_max_drafts` per richiesta. Non conto i punti.
+- **Cap lookup/suffix.** Il cap è S-1, non un flag (L16557 CLI, L14897 serve). choose limita a `min(lookup_k, max_t_-1)` (draft_policy.cpp L131/L137). **Cap 12: esiste solo nella patch congelata e441f3a**: lì kVerifyMaxT=12, cpu::MAXT=12, kFusedGrMaxT=12, `exec_[kVerifyMaxT+1]`; diff 7dd5cf1..e441f3a = 19 file, +193/−59. In e441f3a i letterali L3216/L3224 restano `8` e DraftPolicy::kMaxT resta 8 (quindi la policy clampa max_t_ a 8, draft_policy.cpp L30). **16: chiuso dallo static_assert** `kVerifyMaxT * 10 <= kResidentPlanMax` (verify_kernels.cu L1281, kResidentPlanMax=128 L1280, a sua volta ≤128 per L1283) e `cpu::MAXT * 10 <= kMaxWindowEntries` (=128, expert_source.cpp L4758-4759): 160 > 128.
+- **--suffix-draft.** È la lunghezza minima del match (SuffixDrafter(min_match, max_match=64, cap)), non la lunghezza della proposta.
+- **--spec-min-p.** CLI: letto direttamente da `o.spec_min_p` a ogni round, senza copie in struct. Lo usano la scelta di T (L16540-16542), il drafter `mtp.draft(…, (float) o.spec_min_p)` L16529 / `draft_first` L16412, che nel drafter tronca la catena (mtp.cpp L1623, L1689 `pj >= min_p`), e il prefetch PLE dflash2 (L16512). Serve: copiato in `req_spec_min_p` a ogni richiesta (L12317), sovrascrivibile con la chiave `spec_min_p=` (L12351), usato a L14357-14359, L14585-14620, L14885-14887, L15169. Il protocollo engine è a token `key=value`, non JSON. Lato HTTP, serve/server.py L1427-1432 inoltra `sampling.strata_tune.{pcie_frac, spec_min_p}` se in [0,1]. Nessuna chiave per richiesta per spec, mtp_max_t o lookup_chain (non trovato nel parser L12336-12352).
+- **--lookup-chain.** Clamp 0..7 al parsing. All'avvio alza S. Per round la proposta è limitata a `min(lookup_chain, room−T)` (CLI) o `S−T` (serve), con match minimo lookup_chain_min (≥3), e `policy.chain` decide quanti token tenere (STRATA_LOOKUP_CHAIN_FIXED lo disattiva, L16577).
+- **STRATA_SPEC_COST.** Env `=1` (L16402 / L11179). Non è una tabella fissa s(T): attiva `set_robust` e la regola `keep_draft`, collegata a mtp tramite `set_chain_rule` (L16448-16453 / L11183-11188). T viene da `clamp(chain_rows, 1, S_mtp)` (L16539 / L14884). Si aggiorna online: `observe_probs` (L16713 / L15190), `observe`/`observe_chain` (L16714-16715 / L15192-15195), EMA dei costi per bucket di contesto (`set_context`, draft_policy.cpp L76-97). La tabella s(T) iniziale c'è solo con STRATA_SPEC_COST_TABLE (L16432-16442, solo CLI, `seed_costs` con peso 6.0), poi viene sostituita dalle misure. In serve non trovato COST_TABLE.
+- **STRATA_SPEC_T_CYCLE.** Prova che T può già variare per round fino a o.spec senza riallocare: parsing L16390-16396 (scarta v>o.spec), applicazione L16553 `T = t_cycle[rounds % n]`. Solo CLI, bench.
+
+### §11.1 Arbitro per (a′)
+
+1. **choose eseguita con `--spec 8 --mtp-max-t 4` (CLI, greedy, --mtp, --suffix-draft 3 di default): generate.cpp L16560.**
+   - Nessun `--serve`, quindi si salta il blocco L8354-15693 (lì ci sono L14471, pipelined `pick_lookup`, e L14900, serie).
+   - mtp_max_t≠0, quindi L3208 non scatta; lookup_chain=0, quindi L3215 non scatta. Risultato: S=8, verify init a 8 (L16139), S_mtp=4 (L16426), `set_max_drafts(3)` (L16427), `DraftPolicy policy(8)` (L16429).
+   - Per round: T=S_mtp=4 (L16536), perché spec_min_p=0 e senza SPEC_COST i rami L16538-16542 non cambiano T; T_CYCLE è assente.
+   - Poi `if (o.suffix_draft > 0 && !first_window)` (L16556), `k = sfx.propose(7, …)` (L16557), e `policy.choose(4, k, match)` a L16560 solo se k>0 e `sbuf[0] == drafts[0]` (L16559).
+   - Senza proposta lookup choose non viene chiamata e T resta 4. Se la sceglie, il lookup può arrivare a `min(k,7)+1 = 8` (draft_policy.cpp L131/L137).
+   - Dopo: `T = min(T, room)` (L16567-16568).
+2. **ρ: "non trovato"** come nome (rg -i "rho|ρ" su src/spec, include/strata/spec, generate.cpp: zero risultati). Il parametro di soglia di choose è `margin_`: default 0.03 (draft_policy.hpp L29), usato a draft_policy.cpp L138 (`best > base * (1.0 + margin_)`), L211/L223 (`margin_/3`), L248. I due costruttori usano il default (L16429, L11178): nessun env o flag lo configura.
+3. **Costanti (draft_policy.cpp sha256 890649e3c85891acd8c3e7d6de5908591bc81ef92732ecbe6547008efd61224a, coincide).**
+   - kShape L13 = {0.0, 1.0, 1.35, 1.7, 2.05, 2.45, 2.85, 3.25, 3.6};
+   - kCostAlpha L14 = 0.1;
+   - kPriorQ L20 = {0.75, 0.88, 0.93, 0.96} (kPriorN=4.0 L21);
+   - kProbes L22 = 3;
+   - kStaleRounds L25 = 300.0.
+   - In choose (L123-152): `q >= 0.85` a L142 (re-misura stale) e L147 (probe), `cost_n_ < kProbes` a L147.
+   - Le costanti sono definite a L13-25, fuori dall'intervallo L123-151; dentro choose ci sono solo i loro usi.
+   - Reset: in CLI la policy è un oggetto locale costruito una volta per processo (L16429). Un processo CLI = un prompt, quindi parte sempre dai prior (o da STRATA_SPEC_COST_TABLE). Non c'è reset esplicito (nessun `policy =`/reset trovato).
+   - In serve la policy (L11178, «learned over the whole process») non viene resettata tra richieste.
+
+### §11.2 Costo s(T) congelabile in CLI? + percorso di fallback con `--spec 8 --mtp-max-t 4` (7dd5cf1)
+
+**A. Congelare il costo per T: non trovato** (nessun flag, env, setter o argomento del costruttore).
+- Aggiornamento del costo (EMA):
+  - `observe` in draft_policy.cpp L154-162: L157 `clamp_sample`, L158 alpha, L159 EMA, L160 `cost_n_ += 1`, L161 `last_`;
+  - `observe_chain` in draft_policy.cpp L258-266 (L261-264, stessa forma).
+  - Entrambi aggiornano solo `if (round_ms > 0)` (L156 / L260).
+- Timing in CLI:
+  - `round_ms` misurato con Clock a L16702 (t0 al via del round);
+  - chiamate `policy.observe(…, round_ms)` a L16714 e `policy.observe_chain(…, round_ms)` a L16715, entrambe solo se `timed_round = !first_window` (L16585).
+  - In serve: L15190-15195.
+- Interruttori che esistono ma non congelano:
+  - `kCostAlpha = 0.1` è `constexpr` in namespace anonimo (draft_policy.cpp L14): nessun env o flag;
+  - `set_robust(spec_cost)` (setter inline in draft_policy.hpp, chiamato in CLI a L16447). Con robust l'alpha è `max(kCostAlpha, 1/(n+1))` (L158), quindi l'aggiornamento resta sempre ≥ 0.1;
+  - `margin` del costruttore (hpp L29) non tocca i costi;
+  - STRATA_SPEC_COST_TABLE (L16432-16442) chiama `seed_costs(ms, n, 6.0, bucket)`: draft_policy.cpp L67-73, scrive solo i T con `cost_n_ == 0`, peso fisso 6.0 non configurabile. È un prior, non un blocco: con robust alpha=1/7 al primo campione, poi decresce fino a 0.1; senza robust, 0.1 da subito. Funziona solo con STRATA_SPEC_COST=1 (condizione a L16432);
+  - `set_context` (L76-97) copia il bucket di contesto vicino, ma solo con robust.
+- Plausibile, per bloccarlo (non implementato; conto solo i punti):
+  - (1) un flag `frozen_` in DraftPolicy (hpp, privato + setter) con early-out della parte costo in `observe` L156 e `observe_chain` L260;
+  - oppure (2) solo lato chiamante, passare `round_ms = 0` alle due chiamate CLI L16714-16715 sotto un env. Gli `if (round_ms > 0)` L156/L260 saltano già l'EMA e lasciano aggiornare `mtp_tok_` e le acceptance. Effetto collaterale: `last_` non si aggiorna, quindi `stale()` (L116) potrebbe forzare probe dopo 300 round; con (2) va controllato;
+  - per un s(T) fisso noto si aggiunge il seed via COST_TABLE (oggi legato a spec_cost, L16432) o un seed indipendente da spec_cost (1 riga).
+  - (2) richiede 1 env + 2 righe in CLI; (1) richiede hpp + 2 punti in cpp.
+
+**B. Percorso in CLI con `--spec 8 --mtp-max-t 4`** (S=8, S_mtp=4, `set_max_drafts(3)` L16427; lookup_chain=0).
+- Scelta di T prima del gate lookup:
+  - L16536 `int T = S_mtp;` (=4);
+  - L16538-16539: se `use_mtp && spec_cost && !first_window` allora `T = clamp(chain_rows, 1, S_mtp)`;
+  - altrimenti, L16540-16542: se `spec_min_p > 0`, T parte da 1 e cresce finché `dprob[T-1] >= spec_min_p`, fino a S_mtp;
+  - L16551 `if (first_window) T = 1`; L16553 T_CYCLE (se presente).
+- **SPEC_COST off (default), spec_min_p=0:** T = 4 fisso (L16536).
+- **SPEC_COST off, spec_min_p>0:** T = 1 + il numero di draft consecutivi con p ≥ min_p (≤4) (L16540-16542). Il drafter tronca già la catena con `pj >= min_p` (mtp.cpp L1689).
+- **SPEC_COST on:** T = `clamp(chain_rows, 1, 4)` (L16539). chain_rows viene da `keep_draft` dentro `set_chain_rule` (L16448-16453), che sostituisce il test min_p nel drafter (mtp.cpp L1689, `chain_rule_ ? … : pj >= min_p`). Il ramo min_p di L16540 non viene eseguito (else-if).
+- **Gate lookup fallito** (L16556 falso: first_window o suffix_draft=0; k=0 da `sfx.propose(7)` L16557; oppure `sbuf[0] != drafts[0]` L16559): nessun ramo alternativo, T resta quello sopra e `from_sfx=false`. Poi `T = min(T, room)` (L16567-16568). Il blocco chain L16571 è saltato (lookup_chain=0), `T_mtp = T` L16583, `T += 0` L16584. La finestra si riempie con `drafts[i-1]` (L16592-16594): si verifica la catena MTP di T righe.
+- **choose chiamata ma sceglie MTP** (`pk.lookup == false`): solo L16561 assegna T (`if (pk.lookup) { T = pk.t; from_sfx = true; }`). Il `pk.t = clamp(t_mtp,1,max_t_)` (draft_policy.cpp L125) viene ignorato, quindi si va sullo stesso percorso del gate fallito: catena MTP con il T scelto a L16536-16553 (L16551 first_window) (4, oppure troncato da min_p, oppure chain_rows con SPEC_COST). Il round viene poi registrato come MTP: `observe(from_sfx=false, T, …)` a L16714.

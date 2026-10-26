@@ -1,0 +1,31 @@
+{
+ "label": "H-CA addendum 2: regola edit_np sugli output (solo separazione dei file, nessuna modifica al calcolo).",
+ "written": "2026-10-26 ~19:47 CET, Policy (executor)",
+ "timing_disclosure": "Scritto DOPO l'esecuzione di eval (19:42:20-19:44:15 CET, hca_v2.py 4f24bba5..., rc=0): la regola del proprietario e' arrivata a calcolo concluso. Il calcolo NON viene rifatto ne' modificato; questo addendum fissa solo come si dividono gli output gia' prodotti. L'output unico di eval e' rimasto in results/v2/hca/hca_results.json dalle 19:44:15 alle 19:45:34 CET ed e' stato poi spostato (non modificato) in results/v2/hca/edit_np_fitted/hca_results_full_edit_np.json.",
+ "refers_to": {
+  "run_hca.json": "ea2bed9c1438175c279c291652a6e9dd552e14b24d694320befc9338249bf50b",
+  "run_hca_addendum1.json": "c3490e220313ec377e0fbc0f63f0994a228d351d0286b9248ec125a81726c386",
+  "hca_v2.py": "4f24bba56ac734288ae1af3242c7b3ca09386ce3ca602382fe0ed354ad978ef6",
+  "edit_np_fitted/hca_results_full_edit_np.json (output grezzo di eval)": "2d31150b27b757a8cc022c34ed83c7271396ab07ef17613a655e17cdda032cbf"
+ },
+ "rule_owner": "Il classificatore puo' essere stimato in locale includendo edit_np (dominio edit). Nulla di derivato da edit_np puo' essere pubblicato: niente testi, prompt tokenizzati, ID, metriche per richiesta, pesi stimati, feature/soglie stimate. Pubblicabili solo numeri aggregati. Ogni artefatto H-CA derivato anche in parte da edit_np va in file/cartelle con 'edit_np' nel nome.",
+ "rule_lead": "La parte pubblicabile results/v2/hca/ contiene SOLO AL e tok/s stimati aggregati per dominio (e per fold), piu' verdetti, IC, cattura, conteggi di richieste per dominio/fold. Tutto cio' che e' indicizzato dalle 16 celle (compresi i conteggi per cella), tabella, soglie, selezioni per fold, configurazioni scelte (incluso il braccio (1), scelto su dati che includono edit) va in edit_np_fitted/. Nel dubbio, fuori dai file pubblicabili.",
+ "split": {
+  "publishable": {
+   "results/v2/hca/hca_results.json": "per scenario e per (file, dominio): tok/s stimati e AL per braccio, IC95 bootstrap rispetto alla base, guadagni, catture, verdetti; richieste per dominio e per dominio x fold; sha256 degli input",
+   "results/v2/hca/REPORT.md": "italiano, stessi contenuti; le configurazioni scelte sono descritte solo in modo generico"
+  },
+  "edit_np_excluded": {
+   "results/v2/hca/edit_np_fitted/hca_results_full_edit_np.json": "output grezzo di eval (contiene selezioni, tabella, soglie, conteggi per cella, segmenti e posizioni per dominio)",
+   "results/v2/hca/edit_np_fitted/hca_fitted_edit_np.json": "solo artefatti stimati: selezioni per fold, selezione su tutto il tune (braccio 1, 2c, 3c, A, soglie, tabella), conteggi di round per cella, conteggi di segmenti e posizioni"
+  },
+  "dropped_from_publishable_when_in_doubt": [
+   "segmenti per dominio",
+   "posizioni (token) per dominio",
+   "qualsiasi configurazione scelta",
+   "numero di azioni A per fold"
+  ]
+ },
+ "script": "replay/hca_split.py (nuovo, sola lettura): verifica sha256 di run file, addendum 1 e 2 e dell'output grezzo, scrive i due JSON con whitelist esplicita delle chiavi pubblicabili.",
+ "per_fold_metrics": "AL/tok/s per fold non sono stati calcolati da eval; non vengono aggiunti (servirebbe un nuovo calcolo)."
+}

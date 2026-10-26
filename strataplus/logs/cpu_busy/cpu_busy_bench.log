@@ -89,3 +89,14 @@
 2026-10-25 07:34:38 | (in corso) | START agent_v12_tf_d7  (strata-bench) |
 2026-10-25 07:34:38 | 2026-10-25 08:48:50 | agent_v12_tf_d7  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 9 1.097
 2026-10-25 08:49:20 | (in corso) | START agent_v12_live_mtp_k3  (strata-bench) |
+2026-10-26 19:33:44 | (in corso) | START build_tracer_v14_nollamafile (nice 19, taskset -c 7, durante agent_v12_live_mtp_k3: tempi agent_v12 gia' non usabili) (strata-bench) |
+2026-10-26 19:33:44 | 2026-10-26 19:33:48 | build_tracer_v14_nollamafile (nice 19, taskset -c 7, durante agent_v12_live_mtp_k3: tempi agent_v12 gia' non usabili) (strata-bench, 1 processo llama) | exit 0
+2026-10-25 09:02:32 | 2026-10-26 19:04:47 | NOTE box congelato/ripristinato durante agent_v12_live_mtp_k3 (buco nel cpu log cpu_agent_v12_live_mtp_k3.log): finestra senza campioni, tempi agent_v12 non usabili |
+2026-10-26 19:19 | 2026-10-26 19:21 | NOTE carico esterno ~7 core (gitleaks, backup Specu; cfr. cpu_busy_specu.log 19:10-19:18) durante agent_v12_live_mtp_k3 |
+2026-10-26 19:37 | - | NOTE /workspace/strata-bench/cpu_busy_bench.log e' un symlink a /workspace/strata-plus/cpu_busy_bench.log (file reale, riempito da tools/bench_window_log.py PID 321436 dalle righe START/END di campaign.log) |
+2026-10-26 19:53:55 | (in corso) | START download_humanevalfix_9a41762f (nice 19, solo rete+disco, 5 parquet non Python + README; durante agent_v12_live_mtp_k3: tempi agent_v12 gia' non usabili) (strata-bench) |
+2026-10-26 19:53:55 | 2026-10-26 19:54:02 | download_humanevalfix_9a41762f (nice 19, solo rete+disco, 5 parquet non Python + README; durante agent_v12_live_mtp_k3: tempi agent_v12 gia' non usabili) (strata-bench, 1 processo llama) | exit 0
+2026-10-26 19:57:39 | (in corso) | START pip_install_pyarrow (nice 19, per LANG_COUNT_editfix) (strata-bench) |
+2026-10-26 19:57:39 | 2026-10-26 19:57:39 | pip_install_pyarrow (nice 19, per LANG_COUNT_editfix) (strata-bench, 1 processo llama) | 
+2026-10-26 19:57:43 | (in corso) | START venv_pyarrow /tmp/venv_pa (nice 19) (strata-bench) |
+2026-10-26 19:57:43 | 2026-10-26 19:57:47 | venv_pyarrow /tmp/venv_pa (nice 19) (strata-bench, 1 processo llama) | 

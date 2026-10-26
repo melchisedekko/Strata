@@ -1,0 +1,15 @@
+2026-10-26 19:59:03 start
+python 56025 50152
+javascript 52989 49776
+java 20635 18584
+go 5004 4673
+rust 2996 2809
+c++ 4992 4602
+c# 9346 9033
+typescript 5868 5485
+done {'rows_before': 157855, 'rows_after': 145114} dupkeys 0
+
+real	2m1.320s
+user	1m57.302s
+sys	0m1.888s
+2026-10-26 20:01:05 end

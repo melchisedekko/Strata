@@ -294,6 +294,29 @@
 /policy/strata-policy/replay/results/v2/lookup_prefix_replay/lookup_prefix_replay.json
 /policy/strata-policy/replay/results/v2/split_h/split_h.json
 
+# --- Estensione 2026-10-26 20:05 CET (regola del proprietario): niente contenuto GREZZO di dataset di terzi ---
+# Tutto cio' che il team produce va nel backup; i dati scaricati restano locali (riscaricabili dal pin).
+# Fonte: LICENSE_INVENTORY.md sezione 7 (sha256 29bfb7c43a13614a1c01f8239dec019e9cae7dc0957549b60b98649c8d53e0c1).
+# Cartelle di download dei dataset (oggi commitpackft_fc56fe33/, humanevalfix_9a41762f/, e future):
+# solo note/hash/log del team; raw/, selected/, tokenizer/, parquet e card HF restano fuori.
+/bench/strata-bench/datasets/*/**
+!/bench/strata-bench/datasets/*/LICENSE_NOTE*.md
+!/bench/strata-bench/datasets/*/SHA256SUMS
+!/bench/strata-bench/datasets/*/*.sha256
+!/bench/strata-bench/datasets/*/*.log
+# formati di dataset/tokenizer e card HF di terzi, ovunque e anche in futuro
+*.[pP][aA][rR][qQ][uU][eE][tT]
+*.[aA][rR][rR][oO][wW]
+[tT][oO][kK][eE][nN][iI][zZ][eE][rR]*.json
+*[hH][fF][-_][cC][aA][rR][dD]*
+# NoFunEval (codice di terzi con licenze non verificate)
+*[nN][oO][fF][uU][nN][eE][vV][aA][lL]*
+[nN][fF][eE]_*.jsonl
+/logs/tmp_scratch/hfcards/
+# dump API HF (commit dei repo bigcode con utenti): non prodotti dal team
+/logs/tmp_scratch/c0.json
+/logs/tmp_scratch/c1.json
+
 # --- Estensione 2026-10-26 (regola del proprietario): niente di derivato da edit_np sul ramo ---
 # edit_np si puo' usare in locale (anche per stimare il classificatore H-CA), ma testi, prompt
 # tokenizzati, ID, metriche per richiesta e pesi/feature del classificatore non si pubblicano.

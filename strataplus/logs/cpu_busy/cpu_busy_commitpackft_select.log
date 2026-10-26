@@ -1,0 +1,2 @@
+2026-10-26 19:54:10 | (in corso) | START commitpackft_select (nice -n 19, taskset -c 7, 1 thread: download/verifica 8 subset CommitPackFT @fc56fe33, filtro licenze, tokenizzazione Qwen3.5-2B tokenizer.json, nessun modello) (strata-bench) |
+2026-10-26 19:54:10 | 2026-10-26 20:05:04 | commitpackft_select (nice -n 19, taskset -c 7, 1 thread; job principale python 19:59:03-20:01:05, real 2m01s user 1m57s; nessun modello) (strata-bench) | exit 0

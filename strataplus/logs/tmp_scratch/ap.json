@@ -1,0 +1,91 @@
+{
+ "label": "proxy CPU, non AMD",
+ "created": "2026-10-26 19:38:47 CET",
+ "doc": "proxy CPU, non AMD. Post-processing della run (a') vs default (a) con tracer v14 (runs/live_combo_aprime_holdout.md).\nNessuna misura di tempo. Calcola, per ciascun braccio:\n - coerenza: replay di proxy/strata_arbiter_v1.py sui candidati registrati (cand.mtp.probs, cand.lookup.tokens/match, room) e confronto\n   con la scelta registrata (T e lookup); criterio >= 99% round identici, altrimenti il confronto +-3% non si legge;\n - AL live per round = min(accepted+1, committed) (committed gia' clampato a EOS dal tracer v14); per dominio: somma/somma (CRITERIO)\n   e media per prompt delle AL per prompt (somma/somma interna); sia con tutti i round verify sia escludendo first_window;\n - greedy: output_ids identici fra i due bracci; greedy_equal_ref e first_divergence_pos da output_ids vs ref_tokens (--ref ref_holdout_tf.tsv);\n   AL pre-divergenza = round con gen_index+committed <= first_divergence_pos.\nUso: aprime_post.py OUT.json APRIME.jsonl DEFAULT_A.jsonl",
+ "aprime": {
+  "file": "/tmp/a.jsonl",
+  "sha256": "7949ed6b9e5b22d7ad6b8397f409a4b66b43c83b4d4de3760a9a1653c6c83145",
+  "requests": 1,
+  "coherence": {
+   "rounds": 3,
+   "identical": 2,
+   "frac": 0.666667,
+   "pass_ge_99pct": false,
+   "mismatch_first50": [
+    {
+     "req_id": "X",
+     "r": 2,
+     "logged": [
+      8,
+      true
+     ],
+     "replay": [
+      4,
+      false
+     ]
+    }
+   ]
+  },
+  "greedy_equal_ref": {
+   "true": 1,
+   "n": 1,
+   "first_divergence_pos": {}
+  },
+  "AL": {
+   "code": {
+    "prompts": 1,
+    "sumsum_all": 4.333333,
+    "mean_per_prompt_all": 4.333333,
+    "sumsum_excl_first_window": 6.0,
+    "sumsum_pre_divergence": 4.333333,
+    "mean_per_prompt_excl_first_window": 6.0
+   }
+  }
+ },
+ "default_a": {
+  "file": "/tmp/a.jsonl",
+  "sha256": "7949ed6b9e5b22d7ad6b8397f409a4b66b43c83b4d4de3760a9a1653c6c83145",
+  "requests": 1,
+  "coherence": {
+   "rounds": 3,
+   "identical": 2,
+   "frac": 0.666667,
+   "pass_ge_99pct": false,
+   "mismatch_first50": [
+    {
+     "req_id": "X",
+     "r": 2,
+     "logged": [
+      8,
+      true
+     ],
+     "replay": [
+      4,
+      false
+     ]
+    }
+   ]
+  },
+  "greedy_equal_ref": {
+   "true": 1,
+   "n": 1,
+   "first_divergence_pos": {}
+  },
+  "AL": {
+   "code": {
+    "prompts": 1,
+    "sumsum_all": 4.333333,
+    "mean_per_prompt_all": 4.333333,
+    "sumsum_excl_first_window": 6.0,
+    "sumsum_pre_divergence": 4.333333,
+    "mean_per_prompt_excl_first_window": 6.0
+   }
+  }
+ },
+ "greedy_identical_aprime_vs_default": {
+  "common": 1,
+  "identical": 1,
+  "differs": []
+ },
+ "pm3pct_vs_policy_replay": "NON calcolato qui: riferimento = run file di Strata Policy, da fissare"
+}

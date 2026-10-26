@@ -1,9 +1,6 @@
 # File esclusi dal backup (generato da sync.sh)
 
 ## File > 50M (non committati): path, byte, sha256
-    /workspace/strata-bench/datasets/commitpackft_fc56fe33/raw/java/data.jsonl	57628439	c51a331320f4220d6053e3389485916c738fcaccfd583298b7738af834fa19b9
-    /workspace/strata-bench/datasets/commitpackft_fc56fe33/raw/javascript/data.jsonl	128001108	968688a1163c2dbbced0d0f9cf1dd52bc0b626c2ad9b02ff23f5700b2e277f25
-    /workspace/strata-bench/datasets/commitpackft_fc56fe33/raw/python/data.jsonl	135858935	d167da37e1058371c48e057cd8815d03700c867dd8bcf58e61420d4dcd288d73
 
 ## Binari ELF rimossi (output di build, ricostruibili)
     bench/strata-bench/proxy/llama_spec_trace.v11
@@ -41,10 +38,6 @@
     logs/tmp_scratch/jg/oob_pre
 
 ## Esclusi dalla scansione segreti (contenuto sospetto, NON pubblicato)
-    bench/strata-bench/datasets/commitpackft_fc56fe33/raw/c#/data.jsonl
-    bench/strata-bench/datasets/commitpackft_fc56fe33/raw/rust/data.jsonl
-    bench/strata-bench/datasets/commitpackft_fc56fe33/raw/typescript/data.jsonl
-    logs/tmp_scratch/nfe_maintainability.jsonl
 
 ## Esclusi per licenza (decisione del proprietario, 2026-10-26)
 
@@ -66,3 +59,23 @@ Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 
 | `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
 
 Totale tolto dalla testa il 2026-10-26: 292 file (291 del par. 4 + `gen.py`).
+
+## Dati grezzi di terzi (regola del proprietario, 2026-10-26 20:05 CET)
+
+"Tutto quello che il team produce va nel backup, ma il contenuto grezzo di dataset di terzi no."
+Riferimento: `LICENSE_INVENTORY.md` sezione 7 (sha256 29bfb7c43a13614a1c01f8239dec019e9cae7dc0957549b60b98649c8d53e0c1).
+Mai pubblicati (non sono mai arrivati sul fork).
+
+| Esclusi | Motivo |
+|---|---|
+| `bench/strata-bench/datasets/humanevalfix_9a41762f/` tranne `LICENSE_NOTE.md`, `SHA256SUMS` (parquet per linguaggio, card HF) | dataset grezzo bigcode/humanevalpack, riscaricabile dal pin 9a41762f |
+| `bench/strata-bench/datasets/commitpackft_fc56fe33/` tranne `raw_files.sha256`, `select_run.log` (`raw/`, `selected/`, `tokenizer/`, card HF) | dataset grezzo bigcode/commitpackft (licenze per repo miste), riscaricabile dal pin fc56fe33 |
+| qualsiasi altra cartella `datasets/*/`: solo `LICENSE_NOTE*.md`, `SHA256SUMS`, `*.sha256`, `*.log` | regola per download futuri |
+| `*.parquet`, `*.arrow`, `tokenizer*.json`, `*hf_card*`/`*hf-card*` ovunque | formati di dataset/tokenizer e card HF di terzi |
+| `logs/tmp_scratch/nfe_*.jsonl`, `*nofuneval*` | NoFunEval: codice di terzi (repo GitHub, PIE/CodeNet, CodeQL), licenze non verificate |
+| `logs/tmp_scratch/hfcards/` | copie di card HF di terzi |
+| `logs/tmp_scratch/c0.json`, `c1.json` | dump API HF (commit dei repo bigcode, utenti), non prodotti dal team |
+| quarantena: file NUOVI sotto `datasets/`, `*.jsonl` nuovi in `tmp_scratch/`, parquet/arrow | fuori finche' non revisionati (sha256 in `REVIEWED` in `sync.sh`) |
+
+Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
+edit_np), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).

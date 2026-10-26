@@ -1,0 +1,800 @@
+{
+ "pin": "bigcode/commitpackft@fc56fe33c030c6daa414c2b112c932b8eed085e6",
+ "allowed_licenses": [
+  "apache-2.0",
+  "bsd-2-clause",
+  "bsd-3-clause",
+  "cc0-1.0",
+  "isc",
+  "mit",
+  "unlicense"
+ ],
+ "per_language": {
+  "python": {
+   "rows_before": 56025,
+   "rows_after": 50152,
+   "licenses_before": {
+    "mit": 26394,
+    "bsd-3-clause": 9827,
+    "apache-2.0": 9819,
+    "agpl-3.0": 4380,
+    "bsd-2-clause": 2975,
+    "lgpl-2.1": 821,
+    "isc": 543,
+    "mpl-2.0": 528,
+    "unlicense": 389,
+    "cc0-1.0": 205,
+    "artistic-2.0": 85,
+    "epl-1.0": 31,
+    "unknown": 28
+   },
+   "licenses_after": {
+    "mit": 26394,
+    "bsd-3-clause": 9827,
+    "apache-2.0": 9819,
+    "bsd-2-clause": 2975,
+    "isc": 543,
+    "unlicense": 389,
+    "cc0-1.0": 205
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 0,
+    "p25": 27,
+    "p50": 171,
+    "p75": 264,
+    "p90": 318,
+    "p99": 371,
+    "max": 595,
+    "mean": 160.5
+   },
+   "new_tokens": {
+    "min": 1,
+    "p10": 102,
+    "p25": 167,
+    "p50": 251,
+    "p75": 326,
+    "p90": 397,
+    "p99": 660,
+    "max": 900,
+    "mean": 257.2
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 7,
+    "p75": 21,
+    "p90": 45,
+    "p99": 83,
+    "max": 167,
+    "mean": 15.8
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 0,
+    "p25": 93,
+    "p50": 653,
+    "p75": 1026,
+    "p90": 1270,
+    "p99": 1569,
+    "max": 2937,
+    "mean": 627.7
+   }
+  },
+  "javascript": {
+   "rows_before": 52989,
+   "rows_after": 49776,
+   "licenses_before": {
+    "mit": 39495,
+    "apache-2.0": 5863,
+    "bsd-3-clause": 2363,
+    "agpl-3.0": 2190,
+    "isc": 847,
+    "mpl-2.0": 741,
+    "bsd-2-clause": 675,
+    "unlicense": 321,
+    "cc0-1.0": 212,
+    "lgpl-2.1": 102,
+    "unknown": 93,
+    "artistic-2.0": 59,
+    "epl-1.0": 28
+   },
+   "licenses_after": {
+    "mit": 39495,
+    "apache-2.0": 5863,
+    "bsd-3-clause": 2363,
+    "isc": 847,
+    "bsd-2-clause": 675,
+    "unlicense": 321,
+    "cc0-1.0": 212
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 77,
+    "p25": 138,
+    "p50": 219,
+    "p75": 294,
+    "p90": 343,
+    "p99": 397,
+    "max": 736,
+    "mean": 214.3
+   },
+   "new_tokens": {
+    "min": 1,
+    "p10": 100,
+    "p25": 162,
+    "p50": 244,
+    "p75": 320,
+    "p90": 368,
+    "p99": 473,
+    "max": 789,
+    "mean": 241.1
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 5,
+    "p75": 11,
+    "p90": 24,
+    "p99": 64,
+    "max": 127,
+    "mean": 9.6
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 271,
+    "p25": 493,
+    "p50": 791,
+    "p75": 1080,
+    "p90": 1294,
+    "p99": 1634,
+    "max": 3260,
+    "mean": 790.1
+   }
+  },
+  "java": {
+   "rows_before": 20635,
+   "rows_after": 18584,
+   "licenses_before": {
+    "apache-2.0": 10341,
+    "mit": 6399,
+    "bsd-3-clause": 1071,
+    "agpl-3.0": 681,
+    "lgpl-2.1": 612,
+    "epl-1.0": 545,
+    "bsd-2-clause": 499,
+    "unlicense": 168,
+    "mpl-2.0": 163,
+    "cc0-1.0": 56,
+    "isc": 50,
+    "unknown": 31,
+    "artistic-2.0": 19
+   },
+   "licenses_after": {
+    "apache-2.0": 10341,
+    "mit": 6399,
+    "bsd-3-clause": 1071,
+    "bsd-2-clause": 499,
+    "unlicense": 168,
+    "cc0-1.0": 56,
+    "isc": 50
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 0,
+    "p25": 0,
+    "p50": 170,
+    "p75": 275,
+    "p90": 328,
+    "p99": 381,
+    "max": 599,
+    "mean": 154.7
+   },
+   "new_tokens": {
+    "min": 8,
+    "p10": 129,
+    "p25": 202,
+    "p50": 286,
+    "p75": 358,
+    "p90": 484,
+    "p99": 707,
+    "max": 834,
+    "mean": 296.5
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 4,
+    "p50": 11,
+    "p75": 34,
+    "p90": 61,
+    "p99": 96,
+    "max": 147,
+    "mean": 22.0
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 0,
+    "p25": 0,
+    "p50": 688,
+    "p75": 1133,
+    "p90": 1387,
+    "p99": 1684,
+    "max": 2392,
+    "mean": 642.9
+   }
+  },
+  "go": {
+   "rows_before": 5004,
+   "rows_after": 4673,
+   "licenses_before": {
+    "mit": 2656,
+    "apache-2.0": 1378,
+    "bsd-3-clause": 344,
+    "bsd-2-clause": 186,
+    "mpl-2.0": 172,
+    "agpl-3.0": 131,
+    "isc": 50,
+    "unlicense": 49,
+    "unknown": 15,
+    "cc0-1.0": 10,
+    "artistic-2.0": 5,
+    "epl-1.0": 4,
+    "lgpl-2.1": 4
+   },
+   "licenses_after": {
+    "mit": 2656,
+    "apache-2.0": 1378,
+    "bsd-3-clause": 344,
+    "bsd-2-clause": 186,
+    "isc": 50,
+    "unlicense": 49,
+    "cc0-1.0": 10
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 86,
+    "p25": 147,
+    "p50": 218,
+    "p75": 278,
+    "p90": 313,
+    "p99": 363,
+    "max": 575,
+    "mean": 208.9
+   },
+   "new_tokens": {
+    "min": 3,
+    "p10": 112,
+    "p25": 176,
+    "p50": 248,
+    "p75": 306,
+    "p90": 347,
+    "p99": 458,
+    "max": 657,
+    "mean": 240.9
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 5,
+    "p75": 12,
+    "p90": 24,
+    "p99": 58,
+    "max": 105,
+    "mean": 9.7
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 270,
+    "p25": 464,
+    "p50": 685,
+    "p75": 894,
+    "p90": 1053,
+    "p99": 1319,
+    "max": 1679,
+    "mean": 679.2
+   }
+  },
+  "rust": {
+   "rows_before": 2996,
+   "rows_after": 2809,
+   "licenses_before": {
+    "apache-2.0": 1295,
+    "mit": 1225,
+    "bsd-3-clause": 130,
+    "bsd-2-clause": 100,
+    "mpl-2.0": 87,
+    "lgpl-2.1": 50,
+    "agpl-3.0": 43,
+    "unlicense": 31,
+    "isc": 15,
+    "cc0-1.0": 13,
+    "unknown": 7
+   },
+   "licenses_after": {
+    "apache-2.0": 1295,
+    "mit": 1225,
+    "bsd-3-clause": 130,
+    "bsd-2-clause": 100,
+    "unlicense": 31,
+    "isc": 15,
+    "cc0-1.0": 13
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 0,
+    "p25": 27,
+    "p50": 169,
+    "p75": 265,
+    "p90": 327,
+    "p99": 381,
+    "max": 538,
+    "mean": 161.4
+   },
+   "new_tokens": {
+    "min": 14,
+    "p10": 92,
+    "p25": 156,
+    "p50": 242,
+    "p75": 329,
+    "p90": 395,
+    "p99": 651,
+    "max": 788,
+    "mean": 250.9
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 3,
+    "p50": 9,
+    "p75": 21,
+    "p90": 41,
+    "p99": 81,
+    "max": 130,
+    "mean": 15.8
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 0,
+    "p25": 84,
+    "p50": 561,
+    "p75": 892,
+    "p90": 1124,
+    "p99": 1426,
+    "max": 1801,
+    "mean": 546.4
+   }
+  },
+  "c++": {
+   "rows_before": 4992,
+   "rows_after": 4602,
+   "licenses_before": {
+    "mit": 2045,
+    "apache-2.0": 1331,
+    "bsd-3-clause": 853,
+    "bsd-2-clause": 227,
+    "lgpl-2.1": 207,
+    "mpl-2.0": 94,
+    "agpl-3.0": 74,
+    "unlicense": 74,
+    "cc0-1.0": 48,
+    "isc": 24,
+    "epl-1.0": 11,
+    "artistic-2.0": 2,
+    "unknown": 2
+   },
+   "licenses_after": {
+    "mit": 2045,
+    "apache-2.0": 1331,
+    "bsd-3-clause": 853,
+    "bsd-2-clause": 227,
+    "unlicense": 74,
+    "cc0-1.0": 48,
+    "isc": 24
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 0,
+    "p25": 48,
+    "p50": 191,
+    "p75": 280,
+    "p90": 326,
+    "p99": 378,
+    "max": 487,
+    "mean": 172.7
+   },
+   "new_tokens": {
+    "min": 12,
+    "p10": 118,
+    "p25": 182,
+    "p50": 269,
+    "p75": 337,
+    "p90": 406,
+    "p99": 673,
+    "max": 787,
+    "mean": 270.4
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 7,
+    "p75": 22,
+    "p90": 48,
+    "p99": 91,
+    "max": 134,
+    "mean": 16.3
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 0,
+    "p25": 152,
+    "p50": 635,
+    "p75": 956,
+    "p90": 1174,
+    "p99": 1547,
+    "max": 2261,
+    "mean": 600.6
+   }
+  },
+  "c#": {
+   "rows_before": 9346,
+   "rows_after": 9033,
+   "licenses_before": {
+    "mit": 6962,
+    "apache-2.0": 1524,
+    "bsd-3-clause": 304,
+    "agpl-3.0": 150,
+    "bsd-2-clause": 128,
+    "lgpl-2.1": 88,
+    "unlicense": 73,
+    "mpl-2.0": 50,
+    "isc": 24,
+    "cc0-1.0": 18,
+    "epl-1.0": 16,
+    "unknown": 5,
+    "artistic-2.0": 4
+   },
+   "licenses_after": {
+    "mit": 6962,
+    "apache-2.0": 1524,
+    "bsd-3-clause": 304,
+    "bsd-2-clause": 128,
+    "unlicense": 73,
+    "isc": 24,
+    "cc0-1.0": 18
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 34,
+    "p25": 133,
+    "p50": 227,
+    "p75": 306,
+    "p90": 349,
+    "p99": 403,
+    "max": 551,
+    "mean": 213.3
+   },
+   "new_tokens": {
+    "min": 15,
+    "p10": 118,
+    "p25": 183,
+    "p50": 271,
+    "p75": 343,
+    "p90": 389,
+    "p99": 609,
+    "max": 794,
+    "mean": 266.9
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 5,
+    "p75": 14,
+    "p90": 32,
+    "p99": 78,
+    "max": 131,
+    "mean": 12.0
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 132,
+    "p25": 558,
+    "p50": 970,
+    "p75": 1347,
+    "p90": 1607,
+    "p99": 1953,
+    "max": 2724,
+    "mean": 941.4
+   }
+  },
+  "typescript": {
+   "rows_before": 5868,
+   "rows_after": 5485,
+   "licenses_before": {
+    "mit": 4308,
+    "apache-2.0": 834,
+    "agpl-3.0": 275,
+    "bsd-3-clause": 232,
+    "mpl-2.0": 59,
+    "unlicense": 47,
+    "isc": 32,
+    "lgpl-2.1": 30,
+    "bsd-2-clause": 30,
+    "unknown": 10,
+    "epl-1.0": 9,
+    "cc0-1.0": 2
+   },
+   "licenses_after": {
+    "mit": 4308,
+    "apache-2.0": 834,
+    "bsd-3-clause": 232,
+    "unlicense": 47,
+    "isc": 32,
+    "bsd-2-clause": 30,
+    "cc0-1.0": 2
+   },
+   "old_tokens": {
+    "min": 0,
+    "p10": 30,
+    "p25": 122,
+    "p50": 212,
+    "p75": 296,
+    "p90": 345,
+    "p99": 396,
+    "max": 661,
+    "mean": 203.8
+   },
+   "new_tokens": {
+    "min": 7,
+    "p10": 101,
+    "p25": 166,
+    "p50": 252,
+    "p75": 328,
+    "p90": 380,
+    "p99": 584,
+    "max": 783,
+    "mean": 250.1
+   },
+   "changed_lines": {
+    "min": 0,
+    "p10": 2,
+    "p25": 2,
+    "p50": 5,
+    "p75": 14,
+    "p90": 29,
+    "p99": 78,
+    "max": 124,
+    "mean": 11.3
+   },
+   "old_bytes": {
+    "min": 0,
+    "p10": 111,
+    "p25": 446,
+    "p50": 811,
+    "p75": 1133,
+    "p90": 1347,
+    "p99": 1660,
+    "max": 2292,
+    "mean": 781.8
+   }
+  }
+ },
+ "duplicate_keys": 0,
+ "totals": {
+  "rows_before": 157855,
+  "rows_after": 145114
+ },
+ "candidate_caps_not_applied": {
+  "old_tokens[64,1024]&new_tokens<=old_tokens*1.5+256": {
+   "total": 115275,
+   "per_language": {
+    "python": 35411,
+    "javascript": 45894,
+    "java": 11724,
+    "go": 4379,
+    "rust": 1950,
+    "c++": 3370,
+    "c#": 7851,
+    "typescript": 4696
+   },
+   "sum_new_tokens": 28975678,
+   "sum_old_tokens": 26500480
+  },
+  "old_tokens[64,1024]&changed_lines<=40&new_tokens<=old_tokens*1.5+256": {
+   "total": 112870,
+   "per_language": {
+    "python": 34876,
+    "javascript": 44609,
+    "java": 11565,
+    "go": 4288,
+    "rust": 1906,
+    "c++": 3323,
+    "c#": 7711,
+    "typescript": 4592
+   },
+   "sum_new_tokens": 28175236,
+   "sum_old_tokens": 25867560
+  },
+  "old_tokens[128,1024]&new_tokens<=old_tokens*1.5+256": {
+   "total": 98455,
+   "per_language": {
+    "python": 29998,
+    "javascript": 38704,
+    "java": 10517,
+    "go": 3767,
+    "rust": 1650,
+    "c++": 2938,
+    "c#": 6855,
+    "typescript": 4026
+   },
+   "sum_new_tokens": 26804420,
+   "sum_old_tokens": 24852783
+  },
+  "old_tokens[128,1024]&changed_lines<=40&new_tokens<=old_tokens*1.5+256": {
+   "total": 96230,
+   "per_language": {
+    "python": 29517,
+    "javascript": 37502,
+    "java": 10372,
+    "go": 3683,
+    "rust": 1614,
+    "c++": 2895,
+    "c#": 6722,
+    "typescript": 3925
+   },
+   "sum_new_tokens": 26062254,
+   "sum_old_tokens": 24238317
+  },
+  "old_tokens[128,1536]&new_tokens<=old_tokens*1.5+256": {
+   "total": 98455,
+   "per_language": {
+    "python": 29998,
+    "javascript": 38704,
+    "java": 10517,
+    "go": 3767,
+    "rust": 1650,
+    "c++": 2938,
+    "c#": 6855,
+    "typescript": 4026
+   },
+   "sum_new_tokens": 26804420,
+   "sum_old_tokens": 24852783
+  },
+  "old_tokens[128,1536]&changed_lines<=40&new_tokens<=old_tokens*1.5+256": {
+   "total": 96230,
+   "per_language": {
+    "python": 29517,
+    "javascript": 37502,
+    "java": 10372,
+    "go": 3683,
+    "rust": 1614,
+    "c++": 2895,
+    "c#": 6722,
+    "typescript": 3925
+   },
+   "sum_new_tokens": 26062254,
+   "sum_old_tokens": 24238317
+  },
+  "old_tokens[128,2048]&new_tokens<=old_tokens*1.5+256": {
+   "total": 98455,
+   "per_language": {
+    "python": 29998,
+    "javascript": 38704,
+    "java": 10517,
+    "go": 3767,
+    "rust": 1650,
+    "c++": 2938,
+    "c#": 6855,
+    "typescript": 4026
+   },
+   "sum_new_tokens": 26804420,
+   "sum_old_tokens": 24852783
+  },
+  "old_tokens[128,2048]&changed_lines<=40&new_tokens<=old_tokens*1.5+256": {
+   "total": 96230,
+   "per_language": {
+    "python": 29517,
+    "javascript": 37502,
+    "java": 10372,
+    "go": 3683,
+    "rust": 1614,
+    "c++": 2895,
+    "c#": 6722,
+    "typescript": 3925
+   },
+   "sum_new_tokens": 26062254,
+   "sum_old_tokens": 24238317
+  },
+  "old_tokens[256,2048]&new_tokens<=old_tokens*1.5+256": {
+   "total": 47858,
+   "per_language": {
+    "python": 13734,
+    "javascript": 18891,
+    "java": 5637,
+    "go": 1578,
+    "rust": 786,
+    "c++": 1485,
+    "c#": 3694,
+    "typescript": 2053
+   },
+   "sum_new_tokens": 15450901,
+   "sum_old_tokens": 14994675
+  },
+  "old_tokens[256,2048]&changed_lines<=40&new_tokens<=old_tokens*1.5+256": {
+   "total": 46668,
+   "per_language": {
+    "python": 13514,
+    "javascript": 18206,
+    "java": 5570,
+    "go": 1544,
+    "rust": 763,
+    "c++": 1460,
+    "c#": 3627,
+    "typescript": 1984
+   },
+   "sum_new_tokens": 15084917,
+   "sum_old_tokens": 14585734
+  }
+ },
+ "after_filter_old_contents_empty": {
+  "python": 12004,
+  "javascript": 708,
+  "java": 6333,
+  "go": 3,
+  "rust": 638,
+  "c++": 1068,
+  "c#": 847,
+  "typescript": 495
+ },
+ "after_filter_changed_lines_zero": {
+  "python": 47,
+  "javascript": 63,
+  "java": 25,
+  "go": 3,
+  "rust": 3,
+  "c++": 11,
+  "c#": 14,
+  "typescript": 8
+ },
+ "proposed_cap_not_applied": {
+  "rule": "64<=old_tokens<=512 AND 1<=changed_lines<=40 AND new_tokens<=1.5*old_tokens+256",
+  "per_language": {
+   "python": 34839,
+   "javascript": 44551,
+   "java": 11540,
+   "go": 4285,
+   "rust": 1904,
+   "c++": 3315,
+   "c#": 7697,
+   "typescript": 4585
+  },
+  "total": 112716,
+  "sum_new_tokens": 28145423,
+  "sum_old_tokens": 25834688,
+  "mean_new_tokens_per_language": {
+   "python": 245.1,
+   "javascript": 246.7,
+   "java": 265.7,
+   "go": 244.1,
+   "rust": 251.3,
+   "c++": 254.6,
+   "c#": 263.3,
+   "typescript": 251.6
+  },
+  "mean_old_tokens_per_language": {
+   "python": 223.7,
+   "javascript": 228.0,
+   "java": 242.6,
+   "go": 219.5,
+   "rust": 226.9,
+   "c++": 233.2,
+   "c#": 242.6,
+   "typescript": 233.4
+  }
+ }
+}
