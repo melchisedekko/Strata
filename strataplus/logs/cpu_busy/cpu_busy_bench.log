@@ -100,3 +100,5 @@
 2026-10-26 19:57:39 | 2026-10-26 19:57:39 | pip_install_pyarrow (nice 19, per LANG_COUNT_editfix) (strata-bench, 1 processo llama) | 
 2026-10-26 19:57:43 | (in corso) | START venv_pyarrow /tmp/venv_pa (nice 19) (strata-bench) |
 2026-10-26 19:57:43 | 2026-10-26 19:57:47 | venv_pyarrow /tmp/venv_pa (nice 19) (strata-bench, 1 processo llama) | 
+2026-10-25 08:49:20 | 2026-10-26 20:14:05 | agent_v12_live_mtp_k3  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 382 7.615
+2026-10-26 20:14:36 | (in corso) | START agent_v12_live_lookup  (strata-bench) |

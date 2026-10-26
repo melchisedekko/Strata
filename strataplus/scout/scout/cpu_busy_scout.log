@@ -1,0 +1,48 @@
+START 2026-10-26 22:05:13 CET nice -n 19 cmake -S /workspace/scout-local/hfc_worktree -B /workspace/scout-local/hfc_build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSTRATA_NATIVE_EXPERTS=OFF -DSTRATA_BUILD_TESTS=ON
+END 2026-10-26 22:05:14 CET rc=0
+START 2026-10-26 22:05:17 CET nice -n 19 cmake --build hfc_build -j2 --target strata_spec draft_policy_test draft_policy_frozen_test
+END 2026-10-26 22:05:19 CET rc=0
+START 2026-10-26 22:05:23 CET nice -n 19 hfc_build/draft_policy_frozen_test
+END 2026-10-26 22:05:23 CET rc=0
+START 2026-10-26 22:05:23 CET nice -n 19 hfc_build/draft_policy_test
+END 2026-10-26 22:05:23 CET rc=0
+START 2026-10-26 22:05:28 CET nice -n 19 bash -c g++ -std=c++20 -O2 -Iorig/include identity_main.cpp orig/src/draft_policy.cpp -o id_orig && g++ -std=c++20 -O2 -I/workspace/scout-local/hfc_worktree/include identity_main.cpp /workspace/scout-local/hfc_worktree/src/spec/draft_policy.cpp -o id_patched
+END 2026-10-26 22:05:30 CET rc=0
+START 2026-10-26 22:05:30 CET bash -c ./id_orig > out_orig.txt && ./id_patched > out_patched.txt && cmp out_orig.txt out_patched.txt
+END 2026-10-26 22:05:30 CET rc=0
+START 2026-10-26 22:05:40 CET nice -n 19 g++ -std=c++20 -O2 -Wall -Wextra -I/workspace/scout-local/hfc_worktree/include hook_main.cpp /workspace/scout-local/hfc_worktree/src/spec/draft_policy.cpp -o hook_main
+END 2026-10-26 22:05:41 CET rc=0
+START 2026-10-26 22:06:05 CET nice -n 19 git -C /workspace/Strata fetch https://github.com/melchisedekko/Strata.git main
+END 2026-10-26 22:06:07 CET rc=0
+START 2026-10-26 22:06:20 CET nice -n 19 g++ -std=c++20 -O2 -Iinclude src/spec/draft_policy_frozen_test.cpp src/spec/draft_policy.cpp -o /workspace/scout-local/hfc_identity/frozen_test_b24
+END 2026-10-26 22:06:22 CET rc=0
+START 2026-10-26 22:06:22 CET /workspace/scout-local/hfc_identity/frozen_test_b24
+END 2026-10-26 22:06:22 CET rc=0
+START 2026-10-26 22:06:34 CET ./hook_scenarios.sh
+END 2026-10-26 22:06:34 CET rc=0
+START 2026-10-26 22:09:12 CET cmake HIP patch
+START 2026-10-26 22:09:12 CET cmake HIP orig
+END 2026-10-26 22:09:13 CET rc=1 cmake HIP patch
+END 2026-10-26 22:09:14 CET rc=1 cmake HIP orig
+START 2026-10-26 22:09:20 CET cmake HIP gfx1100 orig
+START 2026-10-26 22:09:20 CET cmake HIP gfx1100 patch
+END 2026-10-26 22:09:49 CET rc=0 cmake HIP gfx1100 orig
+END 2026-10-26 22:09:50 CET rc=0 cmake HIP gfx1100 patch
+START 2026-10-26 22:09:55 CET ninja -j1 strata HIP gfx1100 patch (timeout 905s)
+START 2026-10-26 22:09:55 CET ninja -j1 strata HIP gfx1100 orig (timeout 905s)
+PAUSE 2026-10-26 22:12:46 CET build orig HIP (SIGSTOP per far posto ai test host v2)
+START 2026-10-26 22:12:46 CET g++ draft_policy_frozen_test v2
+END 2026-10-26 22:12:48 CET rc=0 g++ draft_policy_frozen_test v2
+START 2026-10-26 22:12:48 CET frozen_test_v2
+END 2026-10-26 22:12:48 CET rc=0 frozen_test_v2
+START 2026-10-26 22:12:48 CET g++ draft_policy_test v2
+END 2026-10-26 22:12:48 CET rc=0 g++ draft_policy_test v2
+START 2026-10-26 22:12:48 CET draft_policy_test v2
+END 2026-10-26 22:12:48 CET rc=0 draft_policy_test v2
+START 2026-10-26 22:12:53 CET g++ hook_main_v2
+END 2026-10-26 22:12:55 CET rc=0 g++ hook_main_v2
+START 2026-10-26 22:12:55 CET ./hook_scenarios_v2.sh
+END 2026-10-26 22:12:55 CET rc=0 ./hook_scenarios_v2.sh
+RESUME 2026-10-26 22:12:55 CET build orig HIP (SIGCONT)
+END 2026-10-26 22:16:15 CET rc=1 ninja -j1 strata HIP gfx1100 patch (timeout 905s)
+END 2026-10-26 22:16:25 CET rc=1 ninja -j1 strata HIP gfx1100 orig (timeout 905s)

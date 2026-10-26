@@ -1,9 +1,9 @@
-# STATUS Strata Bench — aggiornato 2026-10-26 19:58:17 (CET)
+# STATUS Strata Bench — aggiornato 2026-10-26 20:14:44 (CET)
 Etichetta: proxy CPU, non AMD. Nessun push, nessuna PR.
 
 ## Processi in corso (non uccidere)
 - run_agent_v12.sh, PID 376117. È il padre di live_mtp_k3 (PID 437326, llama_spec_trace.v12.nollamafile).
-  - Al momento dell'aggiornamento: 19/23 richieste.
+  - live_mtp_k3 COMPLETATO 23/23 (.ok, exit 0, g9_violations=0), finestra CPU chiusa 20:14:05; segue lookup/combo (automatico).
   - Poi lancia live_lookup e live_combo con gli stessi flag, e alla fine scrive traces/raw/agent_v12/runs.done.
 - run_agent_v12_post_e4_v4.sh, PID 481441 (log logs/run_agent_v12_post_e4_v4.out). Attende runs.done, poi:
   1. annotate;

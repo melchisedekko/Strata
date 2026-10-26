@@ -23,3 +23,5 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_mtp_k3] rep 0 agent_v12-tokenizer-fr#t1: 83 tok, 27 verify + 0 replay rounds, acc 56/81, decode 4686 ms
 [agent_v12_live_mtp_k3] rep 0 agent_v12-tokenizer-fr#t2: 76 tok, 27 verify + 0 replay rounds, acc 49/81, decode 7316 ms
 [agent_v12_live_mtp_k3] rep 0 agent_v12-tokenizer-fr#t3: 128 tok, 50 verify + 0 replay rounds, acc 78/149, decode 15001 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-tokenizer-fr#t4: 117 tok, 51 verify + 0 replay rounds, acc 66/153, decode 14002 ms
+g9_violations=0

@@ -1,0 +1,11 @@
+0.02.514.860 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
+[agent_v12_live_lookup] rep 0 agent_v12-server-option#t0: 70 tok, 50 verify + 0 replay rounds, acc 20/91, decode 4172 ms
+[agent_v12_live_lookup] rep 0 agent_v12-server-option#t1: 45 tok, 27 verify + 0 replay rounds, acc 18/42, decode 2566 ms
+[agent_v12_live_lookup] rep 0 agent_v12-server-option#t2: 50 tok, 30 verify + 0 replay rounds, acc 20/49, decode 5448 ms
+[agent_v12_live_lookup] rep 0 agent_v12-server-option#t3: 39 tok, 22 verify + 0 replay rounds, acc 17/35, decode 2418 ms
+[agent_v12_live_lookup] rep 0 agent_v12-server-option#t4: 92 tok, 59 verify + 0 replay rounds, acc 33/84, decode 10160 ms
+[agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t0: 53 tok, 28 verify + 0 replay rounds, acc 25/56, decode 2268 ms
+[agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t1: 61 tok, 45 verify + 0 replay rounds, acc 16/70, decode 4261 ms
+[agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t2: 57 tok, 41 verify + 0 replay rounds, acc 16/70, decode 5068 ms
+[agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t3: 55 tok, 29 verify + 0 replay rounds, acc 26/84, decode 3732 ms
