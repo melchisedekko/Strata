@@ -19,3 +19,5 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_lookup] rep 0 agent_v12-cuda-kernel#t2: 53 tok, 26 verify + 0 replay rounds, acc 27/63, decode 4612 ms
 [agent_v12_live_lookup] rep 0 agent_v12-cuda-kernel#t3: 58 tok, 31 verify + 0 replay rounds, acc 27/70, decode 5049 ms
 [agent_v12_live_lookup] rep 0 agent_v12-tokenizer-fr#t0: 51 tok, 24 verify + 0 replay rounds, acc 27/42, decode 6887 ms
+[agent_v12_live_lookup] rep 0 agent_v12-tokenizer-fr#t1: 83 tok, 64 verify + 0 replay rounds, acc 19/84, decode 8916 ms
+[agent_v12_live_lookup] rep 0 agent_v12-tokenizer-fr#t2: 52 tok, 25 verify + 0 replay rounds, acc 27/84, decode 4114 ms
