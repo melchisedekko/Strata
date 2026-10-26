@@ -214,7 +214,7 @@ index 0000000..6592c3c
 +
 +}  // namespace strata::spec
 diff --git a/src/program/generate.cpp b/src/program/generate.cpp
-index 7bafd68..0fa590e 100644
+index 7bafd68..d4582a7 100644
 --- a/src/program/generate.cpp
 +++ b/src/program/generate.cpp
 @@ -86,6 +86,7 @@
@@ -225,7 +225,7 @@ index 7bafd68..0fa590e 100644
  #include "strata/spec/draft_source.hpp"
  #include "strata/spec/suffix_drafter.hpp"
  #include "strata/spec/spec_start.hpp"
-@@ -151,6 +152,32 @@ namespace strata::metal_engine { void set_model_shard(const char* shard1); }   /
+@@ -151,6 +152,39 @@ namespace strata::metal_engine { void set_model_shard(const char* shard1); }   /
  #include <vector>
  
  namespace {
@@ -242,6 +242,13 @@ index 7bafd68..0fa590e 100644
 +bool preload_frozen_costs(int S, std::string& err) {
 +    const char* path = std::getenv("STRATA_SPEC_COST_FROZEN");
 +    if (path == nullptr || path[0] == '\0') return true;
++    // v2: la tabella congelata e STRATA_SPEC_JOINT_DET (meccanismo di un'altra patch, non in 7dd5cf1: qui si guarda solo
++    // l'env) non si combinano: nello stesso avvio uno esclude l'altro, rc=1 prima del modello.
++    if (const char* jd = std::getenv("STRATA_SPEC_JOINT_DET"); jd != nullptr && jd[0] != '\0' && std::strcmp(jd, "0") != 0) {
++        err = std::string("STRATA_SPEC_COST_FROZEN e STRATA_SPEC_JOINT_DET=") + jd +
++              " sono entrambe impostate: non si combinano (togliere una delle due, o STRATA_SPEC_JOINT_DET=0)";
++        return false;
++    }
 +    if (!strata::spec::load_frozen_costs_file(path, S, g_frozen_costs, err)) return false;
 +    std::fprintf(stderr, "strata: costo congelato (STRATA_SPEC_COST_FROZEN): file %s sha256 %s (validato prima del modello)\n",
 +                 path, g_frozen_costs.sha_hex.c_str());
@@ -258,7 +265,7 @@ index 7bafd68..0fa590e 100644
  // Windows' WDDM driver model: native Windows, or WSL2 (its GPU goes through /dev/dxg to the Windows driver).  There,
  // pinning a large arena into two CUDA contexts leaves WDDM refusing every later allocation (the 5080 + 3090 rig);
  // a Linux driver has no such limit (#253: the 8 GiB cap cost a 4090 + 3060 split 3x of its prompt speed).
-@@ -3217,6 +3244,13 @@ int main(int argc, char** argv) {
+@@ -3217,6 +3251,13 @@ int main(int argc, char** argv) {
          const int chain_base = o.spec;
          o.spec = std::max(chain_base, std::min(std::max(chain_base, o.mtp_max_t) + o.lookup_chain, 8));  // kVerifyMaxT
      }
@@ -272,7 +279,7 @@ index 7bafd68..0fa590e 100644
      // dflash2-kern: right after the start the resident experts are the profile's, not this text's; a speculative round carries
      // 2-5 tokens, so the adaptive tier (one swap round per adapt_every VERIFY rounds) learned the text 2-5 times slower per
      // token.  For the first STRATA_SPEC_ADAPT_WARM rounds it swaps every STRATA_SPEC_ADAPT_EVERY rounds (set per card by
-@@ -11180,6 +11214,7 @@ int main(int argc, char** argv) {
+@@ -11180,6 +11221,7 @@ int main(int argc, char** argv) {
          strata::spec::DraftPolicy::ChainState chain_st;
          int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
          policy.set_robust(spec_cost);
@@ -280,7 +287,7 @@ index 7bafd68..0fa590e 100644
          if (spec_cost && use_mtp)
              mtp.set_chain_rule([&](int idx, float pj) {
                  const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
-@@ -16445,6 +16480,7 @@ int main(int argc, char** argv) {
+@@ -16445,6 +16487,7 @@ int main(int argc, char** argv) {
              }
          }
          policy.set_robust(spec_cost);
@@ -288,7 +295,7 @@ index 7bafd68..0fa590e 100644
          if (spec_cost && use_mtp)
              mtp.set_chain_rule([&](int idx, float pj) {
                  const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
-@@ -16742,7 +16778,7 @@ int main(int argc, char** argv) {
+@@ -16742,7 +16785,7 @@ int main(int argc, char** argv) {
          if (o.lookup_chain > 0)
              std::printf("%-24s %lld windows, chained drafts accepted %lld of %lld\n", "lookup chain",
                          (long long) chain_windows, (long long) chain_ok, (long long) chain_drafts);

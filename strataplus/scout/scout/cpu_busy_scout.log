@@ -46,3 +46,16 @@ END 2026-10-26 22:12:55 CET rc=0 ./hook_scenarios_v2.sh
 RESUME 2026-10-26 22:12:55 CET build orig HIP (SIGCONT)
 END 2026-10-26 22:16:15 CET rc=1 ninja -j1 strata HIP gfx1100 patch (timeout 905s)
 END 2026-10-26 22:16:25 CET rc=1 ninja -j1 strata HIP gfx1100 orig (timeout 905s)
+START 2026-10-26 22:17:38 CET cmake HIP gfx1100 v2
+END 2026-10-26 22:18:06 CET rc=0 cmake HIP gfx1100 v2
+START 2026-10-26 22:18:06 CET ninja -j2 generate.cpp.o + libstrata_spec.a HIP gfx1100 v2 (timeout 414s)
+END 2026-10-26 22:18:33 CET rc=0 ninja -j2 generate.cpp.o + libstrata_spec.a HIP gfx1100 v2 (timeout 414s)
+START 2026-10-26 22:18:40 CET ninja -j2 strata HIP gfx1100 v2 (timeout 380s)
+END 2026-10-26 22:21:24 CET rc=1 ninja -j2 strata HIP gfx1100 v2 (timeout 380s)
+START 2026-10-26 22:21:56 CET hipcc gfx1201 prova
+END 2026-10-26 22:21:56 CET rc=1 hipcc gfx1201 prova
+NOTE 2026-10-26 22:22:30 CET nessuna build HIP in corso da interrompere (tutte terminate entro 22:21:24); build HIP rinviate: /workspace/scout-local/hfc_hip_build_deferred.sh
+START 2026-10-26 22:23:34 CET g++ -j1 hook_main_v2 (JOINT_DET)
+END 2026-10-26 22:23:35 CET rc=0 g++ -j1 hook_main_v2 (JOINT_DET)
+START 2026-10-26 22:23:35 CET ./hook_scenarios_v2.sh (JOINT_DET)
+END 2026-10-26 22:23:35 CET rc=0 ./hook_scenarios_v2.sh (JOINT_DET)

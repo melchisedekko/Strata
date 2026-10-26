@@ -75,3 +75,21 @@
 2026-10-26 22:16:09 | (in corso) | INIZIO policy-local host build h1_only (nice 19, ninja -j2: strata_spec draft_policy_test joint_gate_test joint_det_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=pending
 2026-10-26 22:16:09 | 2026-10-26 22:16:14 | FINE policy-local host build h1_only (strata_spec draft_policy_test joint_gate_test joint_det_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=0
 2026-10-26 22:16:09 | 2026-10-26 22:16:18 | policy-local stage P-H1: syntax HIP/CUDA generate.cpp | rc=see logs syn_*_h1
+2026-10-26 22:18:10 | (in corso) | INIZIO policy-local host build lang_final (nice 19, ninja -j2: strata_spec draft_policy_test joint_gate_test joint_det_test lang_knob_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=pending
+2026-10-26 22:18:10 | 2026-10-26 22:18:16 | FINE policy-local host build lang_final (strata_spec draft_policy_test joint_gate_test joint_det_test lang_knob_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=0
+2026-10-26 22:18:10 | 2026-10-26 22:18:19 | policy-local stage P-LANG (albero finale): syntax HIP/CUDA generate.cpp + host build (strata_spec + 9 test), nice 19 -j2 | rc=vedi logs syn_*_lang, lang_final
+2026-10-26 22:18:27 | (in corso) | INIZIO policy-local HIP gfx1100 TU-only albero finale (generate.cpp.o + strata_spec), nice 19 ninja -j2, stop entro 22:24 | rc=pending
+2026-10-26 22:18:27 | 2026-10-26 22:19:21 | FINE policy-local HIP gfx1100 TU-only albero finale | rc=0
+2026-10-26 22:19:59 | 2026-10-26 22:20:03 | policy-local run_policy_checks.sh albero finale 4c4a7002 vs b24c6a1d, N=20000, nice 19 | rc=0
+2026-10-26 22:20:17 | 2026-10-26 22:20:17 | policy-local probe clang++-17 --offload-arch=gfx1201 (file vuoto) | rc=1 invalid target ID (ROCm 5.7/clang 17: gfx1201 non supportato)
+2026-10-26 22:28:05 | 2026-10-26 22:28:08 | policy-local v2 H1 host build strata_spec+joint_det_test nice19 -j2 | rc=0
+2026-10-26 22:29:59 | 2026-10-26 22:30:07 | policy-local v2 (albero finale): syntax HIP/CUDA generate.cpp + host build strata_spec+9 test, nice 19, -j2 tot | rc=vedi logs syn_*_v2 v2_host
+2026-10-26 22:30:17 | (in corso) | INIZIO policy-local v2 HIP gfx1100 TU-only (generate.cpp.o + strata_spec), nice 19 ninja -j2, stop entro 22:40 | rc=pending
+2026-10-26 22:30:17 | 2026-10-26 22:31:12 | FINE policy-local v2 HIP gfx1100 TU-only | rc=0
+2026-10-26 22:31:17 | 2026-10-26 22:31:21 | policy-local v2 run_policy_checks.sh (driver sintetico, host) | rc=0
+2026-10-26 22:29:59 | 2026-10-26 22:30:07 | policy-local v2 esito voce precedente: host build rc=0, syntax HIP rc=0, syntax CUDA rc=0; test host 8/8 rc=0 e python serve.test_strata_lang 4/4 OK (22:29-22:31) | rc=0
+2026-10-26 22:39:22 | 2026-10-26 22:39:23 | policy-local serve-trace v1 host build (g++ serve_trace.cpp + serve_trace_test, nice 19, -j1) + test | rc=0 test rc=0
+2026-10-26 22:40:34 | 2026-10-26 22:40:38 | policy-local serve-trace v1 syntax HIP generate.cpp su b24c6a1d+trace e H1v2+LANGv2+trace (nice 19, 2 processi) | rc=vedi riga seguente
+2026-10-26 22:40:49 | 2026-10-26 22:40:53 | policy-local serve-trace v1 syntax HIP: b24+trace rc=0 (131 warn), v2+trace rc=0 (131 warn), 7dd5cf1+trace, 7dd5cf1+HFCv2+trace (vedi logs/st_syn_*.log)
+2026-10-26 22:40:59 | 2026-10-26 22:41:32 | policy-local serve-trace v1 host build strata_spec+tests (b24+trace, v2+trace; 2 processi -j1, nice 19)
+2026-10-26 22:41:42 | serve-trace v1 host build rc: b24+trace=0, v2+trace=0; ctest 4/4 entrambi (serve_trace, suffix_drafter, controller, draft_policy)

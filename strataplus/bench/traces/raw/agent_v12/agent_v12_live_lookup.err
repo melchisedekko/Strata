@@ -9,3 +9,10 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t1: 61 tok, 45 verify + 0 replay rounds, acc 16/70, decode 4261 ms
 [agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t2: 57 tok, 41 verify + 0 replay rounds, acc 16/70, decode 5068 ms
 [agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t3: 55 tok, 29 verify + 0 replay rounds, acc 26/84, decode 3732 ms
+[agent_v12_live_lookup] rep 0 agent_v12-expert-cache#t4: 50 tok, 25 verify + 0 replay rounds, acc 25/56, decode 4590 ms
+[agent_v12_live_lookup] rep 0 agent_v12-installer-fr#t0: 62 tok, 41 verify + 0 replay rounds, acc 22/70, decode 7382 ms
+[agent_v12_live_lookup] rep 0 agent_v12-installer-fr#t1: 82 tok, 66 verify + 0 replay rounds, acc 16/70, decode 5965 ms
+[agent_v12_live_lookup] rep 0 agent_v12-installer-fr#t2: 69 tok, 43 verify + 0 replay rounds, acc 26/56, decode 3787 ms
+[agent_v12_live_lookup] rep 0 agent_v12-installer-fr#t3: 76 tok, 52 verify + 0 replay rounds, acc 24/84, decode 5443 ms
+[agent_v12_live_lookup] rep 0 agent_v12-cuda-kernel#t0: 56 tok, 38 verify + 0 replay rounds, acc 18/63, decode 2730 ms
+[agent_v12_live_lookup] rep 0 agent_v12-cuda-kernel#t1: 93 tok, 69 verify + 0 replay rounds, acc 24/112, decode 8819 ms

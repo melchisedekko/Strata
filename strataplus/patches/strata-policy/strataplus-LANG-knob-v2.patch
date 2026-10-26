@@ -1,0 +1,914 @@
+Strata+ H-LANG v2 (per-request language knob + pipeline T rule + example marker + server.py strata_lang forwarding)
+base: strataplus-H1-arbiter-v2.patch applied on b24c6a1d (= 719b4d66)  commits: 6b7dea81 560464ef
+README: strataplus-LANG-knob-v2.md
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 445865fc..9fa5267d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1558,7 +1558,8 @@ endif()
+ # Plan v0.3 P6: speculation components that need no GPU.
+ add_library(strata_spec STATIC src/spec/suffix_drafter.cpp src/spec/controller.cpp src/spec/draft_policy.cpp
+             src/spec/draft_source.cpp src/spec/pool_source.cpp src/spec/joint_gate.cpp
+-            src/spec/joint_det.cpp)    # Strata+ H1 v1: deterministic arbiter cost table
++            src/spec/joint_det.cpp     # Strata+ H1 v1: deterministic arbiter cost table
++            src/spec/lang_knob.cpp)    # Strata+ H-LANG v1: per-request language table
+ target_include_directories(strata_spec PUBLIC include)
+ if(STRATA_BUILD_TESTS)
+   add_executable(arch_defaults_test src/core/arch_defaults_test.cpp src/core/arch_defaults.cpp)
+@@ -1588,6 +1589,11 @@ if(STRATA_BUILD_TESTS)
+   add_executable(joint_det_test src/spec/joint_det_test.cpp)   # Strata+ H1 v1
+   target_link_libraries(joint_det_test PRIVATE strata_spec)
+   add_test(NAME joint_det_test COMMAND joint_det_test)
++  add_executable(lang_knob_test src/spec/lang_knob_test.cpp)   # Strata+ H-LANG v1
++  target_link_libraries(lang_knob_test PRIVATE strata_spec)
++  target_compile_definitions(lang_knob_test PRIVATE   # Strata+ H-LANG v2: the example file is checked, never loaded by default
++      STRATA_LANG_EXAMPLE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/strataplus/tests/lang_table_EXAMPLE_not_calibrated.json")
++  add_test(NAME lang_knob_test COMMAND lang_knob_test)
+   add_executable(spec_start_test src/spec/spec_start_test.cpp)
+   target_include_directories(spec_start_test PRIVATE include)
+   add_test(NAME spec_start_test COMMAND spec_start_test)
+diff --git a/docs/strataplus_lang_knob.md b/docs/strataplus_lang_knob.md
+new file mode 100644
+index 00000000..56ca1f46
+--- /dev/null
++++ b/docs/strataplus_lang_knob.md
+@@ -0,0 +1,46 @@
++# Strata+ H-LANG v1 - per-request language knob (serve, local, opt-in)
++
++Applies on top of P-H1 (`strataplus-H1-arbiter-v1.patch`). Default: OFF; without the table the engine is upstream:
++the request key `strata_lang=` is skipped like any unknown GEN key and the effective parameters are unchanged.
++
++* Startup: `--spec-lang-table FILE` or `STRATA_SPEC_LANG_TABLE=FILE` (the flag wins). The file is loaded and
++  validated right after argument parsing, before any model load; missing file, malformed JSON, unknown field or out-of-
++  range value -> message on stderr, exit code 1. Never half-applied.
++* Request (serve GEN line): `strata_lang=<name>` (case-insensitive, `[A-Za-z0-9_+#.-]{1,32}`). Missing or unknown
++  language -> global default (`--spec-min-p`, upstream T rule). No language detection.
++* Table (`strataplus.lang_knob.v1`): per language an optional `spec_min_p` in [0,1] and a T rule:
++  `default` (upstream rule with the effective spec_min_p), `min_p` (T = 1 + drafts with prob >= spec_min_p, capped at
++  min(S_mtp, `t_max`, 8)), `fixed` (T = min(`t`, S_mtp, 8); the drafter's min_p is 0 so all T-1 drafts exist).
++  Always T <= S_mtp, kMaxT = 8. S, S_mtp and the lookup cap are never changed per request.
++* spec_min_p precedence: the request's own `spec_min_p=` > the table > `--spec-min-p`.
++* Scope: serial serve GEN loop only. Not applied to BGEN (batched), to the pipeline-windows T, nor to non-first windows
++  when `STRATA_SPEC_COST=1` drives T (the DraftPolicy keeps its own rule there). The SYCL engine accepts the flag/env
++  and prints "ignorata su SYCL"; the qwen35moe path prints a warning. `serve/server.py` does not forward
++  `strata_lang` yet (the GEN key works when the engine is driven directly).
++* Example file (format only, placeholder numbers): `strataplus/tests/lang_table_EXAMPLE_not_calibrated.json`.
++* Tests: ctest `lang_knob_test` (parser, resolution, windows, 200-case flag-off grid = upstream parameters, missing
++  file); `strataplus/tests/greedy_identity.py --lang-table FILE` (prepared, not run: loads a model).
++
++## v2
++
++* **Pipeline windows (serve, `--spec-pipeline` T).** In v1 the pipeline's `t_rule` saw only the language's `spec_min_p`
++  (through `req_spec_min_p`, set by `resolve_lang`).  v2 also applies the language's T rule there: `t_rule` calls
++  `lang_window(lang_c, T, S_mtp, pr + from, avail - from)` when the request matched a language whose rule is not
++  `default`, before the existing clamp `max(1, min(T, 1 + avail - from))`.  So T is never above the chain's outputs,
++  `S_mtp` or 8.  Limit: the pipeline chain is drafted with the pipeline's own floor, so a `fixed` rule there can be
++  cut short by the chain (the serial loop instead drafts with floor 0 for `fixed`).
++* **Example table.** Renamed `strataplus/tests/lang_table_EXAMPLE_not_calibrated.json`; it carries
++  `"example_not_calibrated": true` and a comment "ESEMPIO, non calibrata".  No default path loads it: a table is loaded
++  only from `--spec-lang-table` / `STRATA_SPEC_LANG_TABLE`.  The loader marks a table as an example when
++  `example_not_calibrated` is `true` (it must be a bool) or a top-level `comment`/`_comment`/`source` string contains
++  "ESEMPIO", and `strata serve` then prints `strata: WARNING: <path> is an EXAMPLE language table (ESEMPIO, non
++  calibrata) ...` at startup.
++* **Server forwarding.** `serve/server.py` `StrataEngine.sampling_keys` forwards a request body's `"strata_lang"` as the
++  GEN key `strata_lang=<name>` when it is a plain name (`[A-Za-z0-9_+#.-]{1,32}`, the engine's `valid_name`); anything
++  else is not sent.  Absent field: the GEN/BGEN line is byte-identical to before.  An engine started without a table
++  skips the key (unknown keys are skipped), so behaviour is identical.  Test: `serve/test_strata_lang.py` (stand-in
++  engine, no model).
++* **Not covered.** The CLI (`strata generate`, no requests; its drafter uses `o.spec_min_p`); `--batch`/BGEN slots
++  (parsed, but the batched path has no DraftPolicy/T rule); qwen35/qwen35moe (`strata::qwen35::run`).  Serve has no
++  per-round trace (STRATA_SPEC_TRACE is CLI only): a path tag would go at the serial `lang_window` site and in the
++  pipeline `t_rule` lambda.
+diff --git a/include/strata/spec/lang_knob.hpp b/include/strata/spec/lang_knob.hpp
+new file mode 100644
+index 00000000..a0bfba18
+--- /dev/null
++++ b/include/strata/spec/lang_knob.hpp
+@@ -0,0 +1,73 @@
++// include/strata/spec/lang_knob.hpp - Strata+ H-LANG v1: per-request language knob (serve), OFF by default.
++//
++// Per-request language knob (serve only, serial GEN loop):
++//      --spec-lang-table FILE  or  STRATA_SPEC_LANG_TABLE=FILE   (startup; the flag wins over the env)
++//    Without it the knob is OFF: the request key strata_lang= is skipped like any unknown key.  With it, a GEN line may
++//    carry strata_lang=<name>; the table maps <name> (lowercase, [a-z0-9_+#.-], <= 32 chars) to an optional
++//    spec_min_p and a T rule.  Missing or unknown language -> the global default (--spec-min-p, upstream T rule).
++//    No language detection.  S, S_mtp and the lookup cap are never changed per request.
++//    JSON (schema "strataplus.lang_knob.v1"):
++//      {"schema": "strataplus.lang_knob.v1",
++//       "languages": {"python": {"spec_min_p": 0.3, "t_rule": "min_p", "t_max": 6},
++//                     "rust":   {"t_rule": "fixed", "t": 4},
++//                     "go":     {"spec_min_p": 0.5}}}
++//    t_rule: "default" (upstream rule with the effective spec_min_p; the default when absent),
++//            "min_p"   (T = 1 + the drafts whose prob >= spec_min_p, capped at min(S_mtp, t_max, kMaxT)),
++//            "fixed"   (T = min(t, S_mtp, kMaxT); the drafter's min_p is 0 for that request so all T-1 drafts exist).
++//    Precedence of spec_min_p: the request's own spec_min_p= key > the table's > --spec-min-p.
++//    Optional top-level: "comment"/"_comment"/"source" (strings), "example_not_calibrated" (bool, v2).
++//    Unknown fields / bad values: the table is refused at startup (the engine exits), never half-applied.
++#pragma once
++#include <map>
++#include <string>
++
++namespace strata::spec {
++
++enum class TRule { Default = 0, MinP = 1, Fixed = 2 };
++
++struct LangRule {
++    bool has_min_p = false;
++    double spec_min_p = 0.0;
++    TRule rule = TRule::Default;
++    int t = 0;        // fixed: the window (1..kMaxT)
++    int t_max = 8;    // min_p: cap (1..kMaxT)
++};
++
++class LangTable {
++public:
++    static constexpr int kMaxT = 8;
++    bool load_file(const std::string& path, std::string& err);
++    bool load_text(const std::string& json, std::string& err);
++    /// The rule for `lang` (case-insensitive); nullptr when unknown or empty (-> global default).
++    const LangRule* find(const std::string& lang) const;
++    size_t size() const { return rules_.size(); }
++    std::string describe() const;   // one line for the startup log
++    /// Strata+ H-LANG v2: the table says it is an uncalibrated example ("example_not_calibrated": true, or a top-level
++    /// "comment" containing "ESEMPIO"): the engine prints an explicit warning at startup.  Never loaded by default.
++    bool example() const { return example_; }
++    static bool valid_name(const std::string& lang);   // [A-Za-z0-9_+#.-]{1,32}
++    static std::string lower(const std::string& s);
++private:
++    std::map<std::string, LangRule> rules_;
++    bool example_ = false;
++};
++
++/// What one request runs with (resolve_lang()).
++struct LangChoice {
++    bool matched = false;      // the language was found in the table
++    double spec_min_p = 0.0;   // the floor for the T rule (and the drafter, unless fixed)
++    double draft_min_p = 0.0;  // the drafter's min_p (0 for "fixed")
++    TRule rule = TRule::Default;
++    int t = 0, t_max = LangTable::kMaxT;
++};
++
++/// tab == nullptr (knob off), empty/unknown lang: matched=false, spec_min_p = the request's (req_set) or the global
++/// value, rule Default: exactly upstream.
++LangChoice resolve_lang(const LangTable* tab, const std::string& lang, double global_min_p, bool req_set,
++                        double req_min_p);
++/// The window for a matched MinP / Fixed choice.  dprob: the drafter's top-1 probs (dprob[j] for draft j), n_prob of
++/// them readable.  Default (or !matched): returns t_upstream unchanged.  Never above min(S_mtp, kMaxT) for MinP/Fixed,
++/// never below 1.
++int lang_window(const LangChoice& c, int t_upstream, int S_mtp, const float* dprob, int n_prob);
++
++}  // namespace strata::spec
+diff --git a/serve/server.py b/serve/server.py
+index 76b5a2c7..3c017738 100644
+--- a/serve/server.py
++++ b/serve/server.py
+@@ -86,6 +86,8 @@ from serve.responses import ResponsesError, error_body as responses_error_body
+ from serve import images as images_api  # noqa: E402
+ 
+ IM_END = "<|im_end|>"
++# Strata+ H-LANG v2: a request's "strata_lang" (the engine's LangTable::valid_name: [A-Za-z0-9_+#.-]{1,32})
++STRATA_LANG_RE = re.compile(r"[A-Za-z0-9_+#.\-]{1,32}")
+ IMAGE_PAD = "<|image_pad|>"
+ 
+ 
+@@ -1440,6 +1442,12 @@ class StrataEngine:
+             ac = tune.get("aux_cpus")
+             if isinstance(ac, bool) or (isinstance(ac, (int, float)) and ac in (0, 1)):
+                 keys += f" aux_cpus={int(ac)}"
++        # Strata+ H-LANG v2: "strata_lang": "<name>" - the request's language for the engine's per-request language
++        # table (--spec-lang-table / STRATA_SPEC_LANG_TABLE).  Forwarded as-is when it is a plain name; an engine
++        # without a table skips the key like any unknown one (identical behaviour).  Anything else is not sent.
++        lang = sampling.get("strata_lang")
++        if isinstance(lang, str) and STRATA_LANG_RE.fullmatch(lang):
++            keys += f" strata_lang={lang}"
+         # "strata_checkpoint": false - a one-shot call (a classification, a probe) whose turn no later request
+         # extends: no conversation checkpoint for it (#830).  It still reuses a cached prefix.  Absent = as before.
+         if sampling.get("strata_checkpoint") is False:
+diff --git a/serve/test_strata_lang.py b/serve/test_strata_lang.py
+new file mode 100644
+index 00000000..09baaf7c
+--- /dev/null
++++ b/serve/test_strata_lang.py
+@@ -0,0 +1,99 @@
++"""Strata+ H-LANG v2: a request's "strata_lang" reaches the engine's GEN line; without it nothing changes.
++
++No GPU or model: a stand-in engine (a Python script speaking READY / GEN / T / DONE) logs every GEN line and answers
++the same tokens whatever keys it gets, like an engine started without --spec-lang-table (the knob off skips the key).
++"""
++import json
++from pathlib import Path
++import sys
++import tempfile
++import unittest
++from unittest import mock
++import urllib.request
++
++from serve import server
++
++FAKE = r'''import sys
++from pathlib import Path
++log = Path(sys.argv[sys.argv.index('--gen-log') + 1])
++print('READY 4096 stop', flush=True)
++for line in sys.stdin:
++    line = line.strip()
++    if line == 'QUIT':
++        break
++    if not line.startswith(('GEN ', 'BGEN ')):
++        continue
++    with log.open('a') as f:
++        f.write(line + '\n')
++    print('T 72\nT 105\nDONE 2 20 1 1 stop', flush=True)
++'''
++
++
++class StrataLangKeys(unittest.TestCase):
++    def keys(self, **sampling):
++        return server.StrataEngine.sampling_keys(sampling)
++
++    def test_forwarded_when_a_plain_name(self):
++        for name in ("python", "C++", "c#", "go", "type-script", "x.y_z", "A" * 32):
++            self.assertIn(f" strata_lang={name}", self.keys(temperature=0, strata_lang=name))
++
++    def test_not_sent_otherwise(self):
++        base = self.keys(temperature=0)
++        for bad in (None, "", "py thon", "a=b", "x" * 33, "è", 3, True, ["python"], {"x": 1}, "py\nGEN 1 1"):
++            k = self.keys(temperature=0, strata_lang=bad)
++            self.assertNotIn("strata_lang", k)
++            self.assertEqual(k, base)
++
++    def test_absent_is_identical(self):
++        for s in ({}, {"temperature": 0}, {"temperature": 0.7, "top_p": 0.9, "seed": 3},
++                  {"strata_tune": {"spec_min_p": 0.4}}):
++            k = self.keys(**s)
++            self.assertNotIn("strata_lang", k)
++            self.assertEqual(k, self.keys(**s, strata_lang=None))
++
++
++class StrataLangEndToEnd(unittest.TestCase):
++    def run_requests(self, bodies):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory)
++            script, gen_log = root / 'engine.py', root / 'gen.log'
++            script.write_text(FAKE, encoding='utf-8')
++            real_popen = server.subprocess.Popen
++            with mock.patch.object(server.subprocess, 'Popen', lambda cmd, **kw:
++                                   real_popen([sys.executable, str(script), *cmd[1:]], **kw)):
++                engine = server.StrataEngine('strata', ['--gen-log', str(gen_log)])
++            service = server.Service(engine, server.ByteTokenizer(),
++                                     server.ChatTemplate(Path(__file__).parent / 'chat_template.jinja'))
++            http = server.serve(service, port=0)
++            port = http.server_address[1]
++            replies = []
++            try:
++                for extra in bodies:
++                    body = {'model': 'm', 'stream': False, 'max_tokens': 2, 'temperature': 0,
++                            'messages': [{'role': 'user', 'content': 'hello'}], 'reasoning_effort': 'none', **extra}
++                    req = urllib.request.Request(f'http://127.0.0.1:{port}/v1/chat/completions',
++                                                 data=json.dumps(body).encode(),
++                                                 headers={'Content-Type': 'application/json'})
++                    with urllib.request.urlopen(req, timeout=10) as r:
++                        replies.append(json.loads(r.read())['choices'][0]['message'].get('content'))
++            finally:
++                http.shutdown()
++                http.server_close()
++                engine.close() if hasattr(engine, 'close') else None
++            return replies, gen_log.read_text().splitlines()
++
++    def test_reaches_the_engine_and_off_is_identical(self):
++        replies, gens = self.run_requests([{}, {'strata_lang': 'python'}, {'strata_lang': 'not valid'}])
++        self.assertEqual(len(gens), 3, gens)
++        self.assertNotIn('strata_lang', gens[0])
++        self.assertIn(' strata_lang=python ', gens[1] + ' ')
++        self.assertNotIn('strata_lang', gens[2])
++        # the knob off: the same GEN line apart from the key, and the same reply
++        self.assertEqual(gens[1].replace(' strata_lang=python', ''), gens[0])
++        self.assertEqual(gens[2], gens[0])
++        self.assertEqual(replies[0], replies[1])
++        self.assertEqual(replies[0], replies[2])
++
++
++if __name__ == '__main__':
++    unittest.main()
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 549d2692..6f6c0f9d 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -89,6 +89,7 @@
+ #include "strata/spec/draft_policy.hpp"
+ #include "strata/spec/joint_gate.hpp"   // Strata+ P6
+ #include "strata/spec/joint_det.hpp"    // Strata+ H1 v1: STRATA_SPEC_JOINT_DET
++#include "strata/spec/lang_knob.hpp"    // Strata+ H-LANG v1: --spec-lang-table
+ #include "strata/spec/draft_source.hpp"
+ #include "strata/spec/pool_source.hpp"   // Strata+ P4
+ #include "strata/spec/suffix_drafter.hpp"
+@@ -709,6 +710,9 @@ struct Options {
+     /// Plan v0.3 P6: a draft enters the verify window only while every draft before it (and itself) has at least
+     /// this probability under the draft layer; 0 = always --spec-1 drafts.
+     double spec_min_p = 0.0;
++    /// Strata+ H-LANG v1 (serve, opt-in): --spec-lang-table FILE (or STRATA_SPEC_LANG_TABLE): language -> (spec_min_p,
++    /// T rule) for requests that carry strata_lang=<name> (include/strata/spec/lang_knob.hpp).  Empty = off.
++    std::string spec_lang_table;
+     /// Stop when the model emits an end-of-turn token (<|endoftext|> 248044, <|im_end|> 248046, or --eos-ids).
+     bool stop_eos = false;
+     std::vector<int64_t> eos_ids = {248044, 248046};
+@@ -945,6 +949,8 @@ void usage() {
+                  "                       writes 4; --suffix-draft lets it grow by 2, up to 8, where a repeat is likely)\n"
+                  "  --spec-min-p P       how sure the draft layer must be to extend a verify window by another guess\n"
+                  "                       (setup writes 0.5; --calibrate measures it on this PC, see docs/DETAILS.md)\n"
++                 "  --spec-lang-table F  opt-in (--serve): JSON language -> spec_min_p / T rule for requests with\n"
++                 "                       strata_lang=<name> (also STRATA_SPEC_LANG_TABLE; docs/strataplus_lang_knob.md)\n"
+                  "  --lookup-chain K     opt-in: after the MTP's drafts, add up to K prompt-lookup drafts that continue\n"
+                  "                       them (the window grows to at most 8; default 0 = off)\n"
+                  "  --lookup-chain-min M  the shortest context match --lookup-chain extends on (default 3)\n"
+@@ -2560,6 +2566,11 @@ int main(int argc, char** argv) {
+             if (std::getenv("STRATA_SPEC_JOINT_DET") || std::getenv("STRATA_SPEC_JOINT_COST"))
+                 std::fprintf(stderr, "warning: Strata+ STRATA_SPEC_JOINT_DET / STRATA_SPEC_JOINT_COST ignored on the "
+                                      "qwen35moe engine path (src/qwen35)\n");
++            bool lang_flag = false;   // Strata+ H-LANG v1: same for the language table
++            for (int j = 1; j < argc; ++j) lang_flag |= std::strcmp(argv[j], "--spec-lang-table") == 0;
++            if (lang_flag || std::getenv("STRATA_SPEC_LANG_TABLE"))
++                std::fprintf(stderr, "warning: Strata+ --spec-lang-table / STRATA_SPEC_LANG_TABLE ignored on the qwen35moe "
++                                     "engine path (src/qwen35)\n");
+             return strata::qwen35::run(argc, argv);
+         }
+         break;
+@@ -2786,6 +2797,7 @@ int main(int argc, char** argv) {
+         else if (a == "--adapt-min-gain") o.adapt_min_gain = (float) std::atof(next("--adapt-min-gain"));
+         else if (a == "--adapt-async") { o.adapt_async = std::atoi(next("--adapt-async")) != 0 ? 1 : 0; o.adapt_async_given = o.adapt_async; }
+         else if (a == "--spec-min-p") o.spec_min_p = std::atof(next("--spec-min-p"));
++        else if (a == "--spec-lang-table") o.spec_lang_table = next("--spec-lang-table");   // Strata+ H-LANG v1
+         else if (a == "--stop-eos") o.stop_eos = true;
+         else if (a == "--spec-split") o.spec_split = true;
+         else if (a == "--layer-split") o.layer_split = next("--layer-split");
+@@ -2952,6 +2964,21 @@ int main(int argc, char** argv) {
+         }
+     }
+     if (!plus_h1_validate()) return 1;   // Strata+ H1 v1: before any model load
++    // Strata+ H-LANG v1: the language table is loaded and validated here, before any model load (bad -> exit 1 now)
++    strata::spec::LangTable plus_lang_table;
++    if (o.spec_lang_table.empty())
++        if (const char* lt = std::getenv("STRATA_SPEC_LANG_TABLE"); lt != nullptr && lt[0] != '\0') o.spec_lang_table = lt;
++    if (!o.spec_lang_table.empty()) {
++        std::string err;
++        if (!plus_lang_table.load_file(o.spec_lang_table, err)) {
++            std::fprintf(stderr, "strata: --spec-lang-table / STRATA_SPEC_LANG_TABLE: %s\n", err.c_str());
++            return 1;
++        }
++        if (!o.serve) std::fprintf(stderr, "strata: --spec-lang-table only acts in --serve (ignored here)\n");
++        if (plus_lang_table.example())   // Strata+ H-LANG v2
++            std::fprintf(stderr, "strata: WARNING: %s is an EXAMPLE language table (ESEMPIO, non calibrata): its values are "
++                                 "placeholders, not measured - do not use it for real requests\n", o.spec_lang_table.c_str());
++    }
+ #if defined(STRATA_USE_HIP)
+     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
+         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
+@@ -11371,6 +11398,12 @@ int main(int argc, char** argv) {
+         std::unique_ptr<JointHook> joint;
+         if (strata::spec::JointGate::enabled_from_env())
+             joint = make_joint_hook(use_mtp, o.lookup_chain > 0 ? "--lookup-chain" : nullptr, "strata serve");
++        // Strata+ H-LANG v1: the language table (validated before the model load); null = knob off, strata_lang= ignored
++        const strata::spec::LangTable* lang_tab = o.spec_lang_table.empty() ? nullptr : &plus_lang_table;
++        if (lang_tab != nullptr)
++            std::fprintf(stderr, "strata serve: --spec-lang-table %s: %s (serial GEN loop only; not BGEN, not "
++                                 "--pipeline-windows T, not with STRATA_SPEC_COST=1)\n",
++                         o.spec_lang_table.c_str(), lang_tab->describe().c_str());
+         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
+@@ -12521,6 +12554,8 @@ int main(int argc, char** argv) {
+             // in prompt order.  With them the conversation cache matches a picture by its key and grid, not by its
+             // embedding floats, so a picture encoded again with other bits still matches.  Absent: the embeddings' hash.
+             std::vector<uint64_t> req_img_keys;
++            std::string req_lang;           // Strata+ H-LANG v1: strata_lang=<name> (used only with --spec-lang-table)
++            bool req_spec_min_p_set = false;   // the request named its own spec_min_p (wins over the language table)
+             bool req_pcie_set = false;   // the request names its own share (the measured one holds meanwhile)
+             if (endp != nullptr) {   // GENI takes the same keys (#75: image requests were always greedy); its
+                                      // embedding file path is the first token without an =
+@@ -12548,7 +12583,8 @@ int main(int argc, char** argv) {
+                     else if (key == "penalty_present") req_penalty_present = fv;
+                     else if (key == "seed") req_seed = std::strtoull(tok.c_str() + eq + 1, nullptr, 10);
+                     else if (key == "pcie_frac") { req_pcie_frac = std::clamp((double) fv, 0.0, 1.0); req_pcie_set = true; }
+-                    else if (key == "spec_min_p") req_spec_min_p = std::clamp((double) fv, 0.0, 1.0);
++                    else if (key == "spec_min_p") { req_spec_min_p = std::clamp((double) fv, 0.0, 1.0); req_spec_min_p_set = true; }
++                    else if (key == "strata_lang") req_lang = tok.substr(eq + 1);   // Strata+ H-LANG v1
+                     else if (key == "pipe") req_pipe = std::max(0.0, (double) fv);
+                     else if (key == "aux_cpus") req_aux_cpus = std::atoi(tok.c_str() + eq + 1) != 0 ? 1 : 0;
+                     else if (key == "img_keys") {
+@@ -12567,6 +12603,11 @@ int main(int argc, char** argv) {
+                 }
+             }
+             strata::prefill::Prefill::set_pipe_request(req_pipe);   // every request sets it: none carries over
++            // Strata+ H-LANG v1: knob off / no or unknown strata_lang -> lang_c.spec_min_p == req_spec_min_p, rule Default
++            const strata::spec::LangChoice lang_c =
++                strata::spec::resolve_lang(lang_tab, req_lang, o.spec_min_p, req_spec_min_p_set, req_spec_min_p);
++            req_spec_min_p = lang_c.spec_min_p;
++            const double req_draft_min_p = lang_c.draft_min_p;   // the drafter's floor (0 for t_rule "fixed")
+             std::vector<float> req_bias;
+             std::string bias_error;
+             if (req_bias_present && (o.batch > 0 ||
+@@ -14569,6 +14610,10 @@ int main(int argc, char** argv) {
+                         T = 1;
+                         while (T < S_mtp && from + T - 1 < avail && pr[from + T - 1] >= (float) req_spec_min_p) ++T;
+                     }
++                    // Strata+ H-LANG v2: the language's T rule on the pipeline windows too (min_p / fixed; never above
++                    // the chain's outputs, S_mtp or 8).  Knob off / unknown language: lang_c.matched == false, unchanged.
++                    if (lang_c.matched && lang_c.rule != strata::spec::TRule::Default)
++                        T = strata::spec::lang_window(lang_c, T, S_mtp, pr + from, std::max(0, avail - from));
+                     return std::max(1, std::min(T, 1 + avail - from));
+                 };
+                 // B from the chain's outputs: its row 0 is the guess at index `base`, its drafts follow
+@@ -15097,6 +15142,8 @@ int main(int argc, char** argv) {
+                     T = 1;
+                     while (T < S_mtp && dprob[(size_t) T - 1] >= (float) req_spec_min_p) ++T;
+                 }
++                if (lang_c.matched && use_mtp && !spec_cost)   // Strata+ H-LANG v1: the language's T rule (T <= S_mtp, 8)
++                    T = strata::spec::lang_window(lang_c, T, S_mtp, dprob.data(), (int) dprob.size());
+                 if (first_window) T = merge_T > 0 ? merge_T : 1;
+                 std::copy(dprob.begin(), dprob.begin() + (std::ptrdiff_t) std::min<size_t>(dprob.size(), 8), dwin_s.begin());
+                 const int T_plan_mtp = T;   // Strata+ P3: the MTP window choose() compared against
+@@ -15415,7 +15462,7 @@ int main(int argc, char** argv) {
+                 if (use_mtp && hist_n > 0 && mtp.coupled() && !eos && produced_n < max_new)
+                     mtp.set_draft_history(consumed.data(), (int64_t) consumed.size(), outv[(size_t) a]);
+                 const bool drafted = !use_mtp || eos || produced_n >= max_new ||
+-                                     mtp.draft(T, outv.data(), p, a, drafts.data(), err, dprob.data(), (float) req_spec_min_p);
++                                     mtp.draft(T, outv.data(), p, a, drafts.data(), err, dprob.data(), (float) req_draft_min_p);
+                 {
+                     const Clock::time_point tw3 = Clock::now();
+                     auto msd = [](Clock::time_point a0, Clock::time_point b0) { return std::chrono::duration<double, std::milli>(b0 - a0).count(); };
+diff --git a/src/spec/lang_knob.cpp b/src/spec/lang_knob.cpp
+new file mode 100644
+index 00000000..e12b4c3a
+--- /dev/null
++++ b/src/spec/lang_knob.cpp
+@@ -0,0 +1,294 @@
++// src/spec/lang_knob.cpp - Strata+ H-LANG v1: the per-request language table (lang_knob.hpp).
++// No JSON library in the tree: a small strict parser for the table's subset
++// (objects, strings, numbers, true/false/null; arrays are parsed and rejected where a value is expected).
++#include "strata/spec/lang_knob.hpp"
++
++#include <algorithm>
++#include <cctype>
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++#include <fstream>
++#include <memory>
++#include <sstream>
++#include <vector>
++
++namespace strata::spec {
++
++// ---------------------------------------------------------------- minimal JSON
++namespace {
++struct JVal {
++    enum Kind { Null, Bool, Num, Str, Arr, Obj } kind = Null;
++    bool b = false;
++    double num = 0.0;
++    std::string str;
++    std::vector<JVal> arr;
++    std::vector<std::pair<std::string, JVal>> obj;   // in file order (duplicates refused by the parser)
++};
++
++class JParser {
++public:
++    explicit JParser(const std::string& s) : s_(s) {}
++    bool parse(JVal& out, std::string& err) {
++        if (!value(out, 0, err)) return false;
++        ws();
++        if (i_ != s_.size()) { err = at("trailing characters"); return false; }
++        return true;
++    }
++private:
++    const std::string& s_;
++    size_t i_ = 0;
++    std::string at(const std::string& m) const { return m + " at byte " + std::to_string(i_); }
++    void ws() { while (i_ < s_.size() && (s_[i_] == ' ' || s_[i_] == '\t' || s_[i_] == '\n' || s_[i_] == '\r')) ++i_; }
++    bool lit(const char* w) {
++        const size_t n = std::char_traits<char>::length(w);
++        if (s_.compare(i_, n, w) != 0) return false;
++        i_ += n;
++        return true;
++    }
++    bool string(std::string& out, std::string& err) {
++        if (i_ >= s_.size() || s_[i_] != '"') { err = at("expected a string"); return false; }
++        ++i_;
++        out.clear();
++        while (i_ < s_.size()) {
++            const char c = s_[i_++];
++            if (c == '"') return true;
++            if ((unsigned char) c < 0x20) { err = at("control character in a string"); return false; }
++            if (c != '\\') { out += c; continue; }
++            if (i_ >= s_.size()) break;
++            const char e = s_[i_++];
++            switch (e) {
++                case '"': out += '"'; break;
++                case '\\': out += '\\'; break;
++                case '/': out += '/'; break;
++                case 'b': out += '\b'; break;
++                case 'f': out += '\f'; break;
++                case 'n': out += '\n'; break;
++                case 'r': out += '\r'; break;
++                case 't': out += '\t'; break;
++                case 'u': {   // kept only for ASCII (the table's names and rules are ASCII)
++                    if (i_ + 4 > s_.size()) { err = at("short \\u escape"); return false; }
++                    const std::string h = s_.substr(i_, 4);
++                    char* he = nullptr;
++                    const long cp = std::strtol(h.c_str(), &he, 16);
++                    if (he != h.c_str() + 4 || cp <= 0 || cp > 0x7f) { err = at("non-ASCII \\u escape"); return false; }
++                    out += (char) cp;
++                    i_ += 4;
++                    break;
++                }
++                default: err = at("bad escape"); return false;
++            }
++        }
++        err = at("unterminated string");
++        return false;
++    }
++    bool value(JVal& v, int depth, std::string& err) {
++        if (depth > 16) { err = at("nested too deep"); return false; }
++        ws();
++        if (i_ >= s_.size()) { err = at("unexpected end"); return false; }
++        const char c = s_[i_];
++        if (c == '{') {
++            v.kind = JVal::Obj;
++            ++i_;
++            ws();
++            if (i_ < s_.size() && s_[i_] == '}') { ++i_; return true; }
++            for (;;) {
++                ws();
++                std::string k;
++                if (!string(k, err)) return false;
++                for (const auto& kv : v.obj)
++                    if (kv.first == k) { err = at("duplicate key \"" + k + "\""); return false; }
++                ws();
++                if (i_ >= s_.size() || s_[i_] != ':') { err = at("expected ':'"); return false; }
++                ++i_;
++                JVal x;
++                if (!value(x, depth + 1, err)) return false;
++                v.obj.emplace_back(k, std::move(x));
++                ws();
++                if (i_ < s_.size() && s_[i_] == ',') { ++i_; continue; }
++                if (i_ < s_.size() && s_[i_] == '}') { ++i_; return true; }
++                err = at("expected ',' or '}'");
++                return false;
++            }
++        }
++        if (c == '[') {
++            v.kind = JVal::Arr;
++            ++i_;
++            ws();
++            if (i_ < s_.size() && s_[i_] == ']') { ++i_; return true; }
++            for (;;) {
++                JVal x;
++                if (!value(x, depth + 1, err)) return false;
++                v.arr.push_back(std::move(x));
++                ws();
++                if (i_ < s_.size() && s_[i_] == ',') { ++i_; continue; }
++                if (i_ < s_.size() && s_[i_] == ']') { ++i_; return true; }
++                err = at("expected ',' or ']'");
++                return false;
++            }
++        }
++        if (c == '"') { v.kind = JVal::Str; return string(v.str, err); }
++        if (lit("true")) { v.kind = JVal::Bool; v.b = true; return true; }
++        if (lit("false")) { v.kind = JVal::Bool; v.b = false; return true; }
++        if (lit("null")) { v.kind = JVal::Null; return true; }
++        if (c == '-' || (c >= '0' && c <= '9')) {
++            const char* b = s_.c_str() + i_;
++            char* e = nullptr;
++            const double x = std::strtod(b, &e);
++            if (e == b || !std::isfinite(x)) { err = at("bad number"); return false; }
++            i_ += (size_t) (e - b);
++            v.kind = JVal::Num;
++            v.num = x;
++            return true;
++        }
++        err = at("unexpected character");
++        return false;
++    }
++};
++
++const char* rule_name(TRule r) { return r == TRule::Fixed ? "fixed" : r == TRule::MinP ? "min_p" : "default"; }
++}  // namespace
++
++// ---------------------------------------------------------------- language table
++std::string LangTable::lower(const std::string& s) {
++    std::string o(s);
++    for (char& c : o) c = (char) std::tolower((unsigned char) c);
++    return o;
++}
++
++bool LangTable::valid_name(const std::string& lang) {
++    if (lang.empty() || lang.size() > 32) return false;
++    for (const char c : lang)
++        if (!(std::isalnum((unsigned char) c) || c == '_' || c == '+' || c == '#' || c == '.' || c == '-')) return false;
++    return true;
++}
++
++bool LangTable::load_file(const std::string& path, std::string& err) {
++    std::ifstream f(path, std::ios::binary);
++    if (!f) { err = "cannot open " + path; return false; }
++    std::ostringstream ss;
++    ss << f.rdbuf();
++    if (!load_text(ss.str(), err)) { err = path + ": " + err; return false; }
++    return true;
++}
++
++bool LangTable::load_text(const std::string& json, std::string& err) {
++    JVal root;
++    if (!JParser(json).parse(root, err)) return false;
++    if (root.kind != JVal::Obj) { err = "the top level must be an object"; return false; }
++    std::map<std::string, LangRule> rules;
++    bool have_schema = false, have_langs = false, example = false;
++    for (const auto& [k, v] : root.obj) {
++        if (k == "schema") {
++            if (v.kind != JVal::Str || v.str != "strataplus.lang_knob.v1") {
++                err = "schema must be \"strataplus.lang_knob.v1\"";
++                return false;
++            }
++            have_schema = true;
++        } else if (k == "comment" || k == "_comment" || k == "source") {
++            if (v.kind != JVal::Str) { err = "\"" + k + "\" must be a string"; return false; }
++            if (v.str.find("ESEMPIO") != std::string::npos) example = true;   // Strata+ H-LANG v2
++        } else if (k == "example_not_calibrated") {   // Strata+ H-LANG v2: the example table's marker
++            if (v.kind != JVal::Bool) { err = "\"example_not_calibrated\" must be true or false"; return false; }
++            example = example || v.b;
++        } else if (k == "languages") {
++            if (v.kind != JVal::Obj) { err = "\"languages\" must be an object"; return false; }
++            have_langs = true;
++            for (const auto& [name, e] : v.obj) {
++                if (!valid_name(name)) { err = "language \"" + name + "\": name must match [A-Za-z0-9_+#.-]{1,32}"; return false; }
++                const std::string key = lower(name);
++                if (rules.count(key) != 0) { err = "language \"" + name + "\" listed twice (names are case-insensitive)"; return false; }
++                if (e.kind != JVal::Obj) { err = "language \"" + name + "\" must be an object"; return false; }
++                LangRule r;
++                bool has_t = false, has_tmax = false;
++                for (const auto& [f, x] : e.obj) {
++                    const std::string where = "language \"" + name + "\": ";
++                    if (f == "spec_min_p") {
++                        if (x.kind != JVal::Num || x.num < 0.0 || x.num > 1.0) { err = where + "spec_min_p must be a number in [0, 1]"; return false; }
++                        r.has_min_p = true;
++                        r.spec_min_p = x.num;
++                    } else if (f == "t_rule") {
++                        if (x.kind != JVal::Str) { err = where + "t_rule must be a string"; return false; }
++                        if (x.str == "default") r.rule = TRule::Default;
++                        else if (x.str == "min_p") r.rule = TRule::MinP;
++                        else if (x.str == "fixed") r.rule = TRule::Fixed;
++                        else { err = where + "t_rule must be \"default\", \"min_p\" or \"fixed\""; return false; }
++                    } else if (f == "t" || f == "t_max") {
++                        if (x.kind != JVal::Num || x.num != std::floor(x.num) || x.num < 1 || x.num > kMaxT) {
++                            err = where + f + " must be an integer in [1, " + std::to_string(kMaxT) + "]";
++                            return false;
++                        }
++                        if (f == "t") { r.t = (int) x.num; has_t = true; }
++                        else { r.t_max = (int) x.num; has_tmax = true; }
++                    } else if (f == "comment" || f == "_comment") {
++                        if (x.kind != JVal::Str) { err = where + "comment must be a string"; return false; }
++                    } else {
++                        err = where + "unknown field \"" + f + "\"";
++                        return false;
++                    }
++                }
++                const std::string where = "language \"" + name + "\": ";
++                if (r.rule == TRule::Fixed && !has_t) { err = where + "t_rule \"fixed\" needs \"t\""; return false; }
++                if (r.rule != TRule::Fixed && has_t) { err = where + "\"t\" is only for t_rule \"fixed\""; return false; }
++                if (r.rule != TRule::MinP && has_tmax) { err = where + "\"t_max\" is only for t_rule \"min_p\""; return false; }
++                rules.emplace(key, r);
++            }
++        } else {
++            err = "unknown top-level field \"" + k + "\"";
++            return false;
++        }
++    }
++    if (!have_schema) { err = "missing \"schema\": \"strataplus.lang_knob.v1\""; return false; }
++    if (!have_langs) { err = "missing \"languages\""; return false; }
++    rules_ = std::move(rules);
++    example_ = example;
++    return true;
++}
++
++const LangRule* LangTable::find(const std::string& lang) const {
++    if (lang.empty()) return nullptr;
++    const auto it = rules_.find(lower(lang));
++    return it == rules_.end() ? nullptr : &it->second;
++}
++
++std::string LangTable::describe() const {
++    std::string o = std::to_string(rules_.size()) + " languages:";
++    char b[96];
++    for (const auto& [k, r] : rules_) {
++        if (r.rule == TRule::Fixed) std::snprintf(b, sizeof b, " %s(T=%d)", k.c_str(), r.t);
++        else if (r.rule == TRule::MinP) std::snprintf(b, sizeof b, " %s(min_p%s%.3g,t_max=%d)", k.c_str(),
++                                                      r.has_min_p ? "=" : "", r.has_min_p ? r.spec_min_p : 0.0, r.t_max);
++        else if (r.has_min_p) std::snprintf(b, sizeof b, " %s(spec_min_p=%.3g)", k.c_str(), r.spec_min_p);
++        else std::snprintf(b, sizeof b, " %s(%s)", k.c_str(), rule_name(r.rule));
++        o += b;
++    }
++    return o;
++}
++
++LangChoice resolve_lang(const LangTable* tab, const std::string& lang, double global_min_p, bool req_set,
++                        double req_min_p) {
++    LangChoice c;
++    c.spec_min_p = req_set ? req_min_p : global_min_p;
++    c.draft_min_p = c.spec_min_p;
++    const LangRule* r = tab != nullptr ? tab->find(lang) : nullptr;
++    if (r == nullptr) return c;   // knob off / missing / unknown: exactly upstream
++    c.matched = true;
++    if (!req_set && r->has_min_p) c.spec_min_p = r->spec_min_p;
++    c.rule = r->rule;
++    c.t = r->t;
++    c.t_max = r->t_max;
++    c.draft_min_p = c.rule == TRule::Fixed ? 0.0 : c.spec_min_p;
++    return c;
++}
++
++int lang_window(const LangChoice& c, int t_upstream, int S_mtp, const float* dprob, int n_prob) {
++    if (!c.matched || c.rule == TRule::Default) return t_upstream;
++    const int cap = std::max(1, std::min(S_mtp, LangTable::kMaxT));
++    if (c.rule == TRule::Fixed) return std::clamp(c.t, 1, cap);
++    const int cap2 = std::max(1, std::min(cap, c.t_max));   // MinP
++    int T = 1;
++    while (T < cap2 && T - 1 < n_prob && dprob != nullptr && dprob[T - 1] >= (float) c.spec_min_p) ++T;
++    return T;
++}
++
++}  // namespace strata::spec
+diff --git a/src/spec/lang_knob_test.cpp b/src/spec/lang_knob_test.cpp
+new file mode 100644
+index 00000000..44373581
+--- /dev/null
++++ b/src/spec/lang_knob_test.cpp
+@@ -0,0 +1,116 @@
++// src/spec/lang_knob_test.cpp - Strata+ H-LANG v1: the per-request language table (lang_knob.hpp).
++#include "strata/spec/lang_knob.hpp"
++
++#include <cstdio>
++#include <string>
++
++namespace {
++bool g_fail = false;
++void check(bool ok, const char* what) {
++    std::printf("  %-72s %s\n", what, ok ? "ok" : "FAIL");
++    g_fail |= !ok;
++}
++}  // namespace
++
++int main() {
++    std::printf("lang_knob_test\n");
++    using strata::spec::LangTable;
++    using strata::spec::TRule;
++    {
++        LangTable t;
++        std::string err;
++        const bool ok = t.load_text(R"({"schema":"strataplus.lang_knob.v1","comment":"x",
++            "languages":{"Python":{"spec_min_p":0.3,"t_rule":"min_p","t_max":6},
++                         "rust":{"t_rule":"fixed","t":4},
++                         "go":{"spec_min_p":0.5}}})", err);
++        check(ok && t.size() == 3, "load_text: valid table");
++        if (!ok) std::printf("    err: %s\n", err.c_str());
++        check(t.find("python") != nullptr && t.find("PYTHON") != nullptr, "names are case-insensitive");
++        check(t.find("cobol") == nullptr && t.find("") == nullptr, "unknown / empty language: no rule");
++        // resolve: knob off, unknown, request override, fixed
++        auto c0 = strata::spec::resolve_lang(nullptr, "python", 0.2, false, 0.0);
++        check(!c0.matched && c0.spec_min_p == 0.2 && c0.rule == TRule::Default, "knob off: global spec_min_p, upstream rule");
++        auto c1 = strata::spec::resolve_lang(&t, "cobol", 0.2, false, 0.0);
++        check(!c1.matched && c1.spec_min_p == 0.2, "unknown language: global default");
++        auto c2 = strata::spec::resolve_lang(&t, "python", 0.2, false, 0.0);
++        check(c2.matched && c2.spec_min_p == 0.3 && c2.draft_min_p == 0.3 && c2.rule == TRule::MinP, "table spec_min_p");
++        auto c3 = strata::spec::resolve_lang(&t, "python", 0.2, true, 0.7);
++        check(c3.spec_min_p == 0.7, "request spec_min_p wins over the table");
++        auto c4 = strata::spec::resolve_lang(&t, "rust", 0.2, false, 0.0);
++        check(c4.rule == TRule::Fixed && c4.t == 4 && c4.draft_min_p == 0.0, "fixed: drafter min_p 0");
++        const float pr[7] = {0.9f, 0.8f, 0.7f, 0.2f, 0.9f, 0.9f, 0.9f};
++        check(strata::spec::lang_window(c4, 6, 6, pr, 7) == 4, "fixed T=4 with S_mtp=6");
++        check(strata::spec::lang_window(c4, 6, 3, pr, 7) == 3, "fixed T capped at S_mtp");
++        check(strata::spec::lang_window(c2, 6, 8, pr, 7) == 4, "min_p 0.3: T = 1 + 3 drafts");
++        auto c5 = c2; c5.spec_min_p = 0.0;
++        check(strata::spec::lang_window(c5, 8, 12, pr, 7) == 6, "min_p: capped at t_max=6 (S_mtp 12, kMaxT 8)");
++        check(strata::spec::lang_window(c1, 5, 8, pr, 7) == 5, "unmatched: upstream T unchanged");
++        auto c6 = strata::spec::resolve_lang(&t, "go", 0.2, false, 0.0);
++        check(c6.rule == TRule::Default && c6.spec_min_p == 0.5 && strata::spec::lang_window(c6, 7, 8, pr, 7) == 7,
++              "default rule: only spec_min_p changes, T from the upstream rule");
++    }
++    {   // refused tables
++        const char* bad[] = {
++            R"({"languages":{}})",
++            R"({"schema":"strataplus.lang_knob.v2","languages":{}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{"t_rule":"fixed"}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{"t_rule":"fixed","t":9}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{"spec_min_p":1.5}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{"S":4}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{},"PY":{}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"p y":{}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{"py":{"t":3}}})",
++            R"({"schema":"strataplus.lang_knob.v1","languages":{}} x)",
++        };
++        bool all = true;
++        for (const char* b : bad) {
++            LangTable t;
++            std::string err;
++            if (t.load_text(b, err)) { all = false; std::printf("    accepted: %s\n", b); }
++        }
++        check(all, "malformed tables refused");
++    }
++    {   // H-LANG flag-off identity, exhaustive over a grid: with no table (knob off) - or a table and a request without /
++        // with an unknown strata_lang - the effective parameters are exactly the upstream ones: spec_min_p = the request's
++        // value when it set one, else --spec-min-p; the drafter's floor the same; the T of the upstream rule untouched.
++        LangTable t;
++        std::string err;
++        t.load_text(R"({"schema":"strataplus.lang_knob.v1","languages":{"python":{"spec_min_p":0.3,"t_rule":"fixed","t":2}}})", err);
++        const float pr[8] = {0.95f, 0.5f, 0.05f, 0.7f, 0.3f, 0.99f, 0.01f, 0.6f};
++        long n = 0, bad = 0;
++        for (const LangTable* tab : {(const LangTable*) nullptr, (const LangTable*) &t})
++            for (const char* lang : {"", "cobol", "python"})
++                for (double g : {0.0, 0.1, 0.25, 0.5, 1.0})
++                    for (int rs = 0; rs < 2; ++rs)
++                        for (double rq : {0.0, 0.05, 0.3, 0.9}) {
++                            if (tab != nullptr && std::string(lang) == "python") continue;   // the one matching case
++                            const auto c = strata::spec::resolve_lang(tab, lang, g, rs != 0, rq);
++                            const double up = rs ? rq : g;
++                            bool ok = !c.matched && c.spec_min_p == up && c.draft_min_p == up;
++                            for (int tu = 1; tu <= 12; ++tu)
++                                for (int S = 1; S <= 12; ++S) ok &= strata::spec::lang_window(c, tu, S, pr, 8) == tu;
++                            ++n;
++                            bad += !ok;
++                        }
++        std::printf("    flag-off grid: %ld cases, %ld differ\n", n, bad);
++        check(bad == 0 && n > 0, "knob off / unknown / missing strata_lang: effective params == upstream (grid)");
++        LangTable f;
++        check(!f.load_file("/nonexistent/strataplus_lang.json", err), "load_file: missing file refused");
++    }
++    {   // Strata+ H-LANG v2: the example marker
++        std::string err;
++        LangTable a, b, c, d;
++        const bool ok_a = a.load_text(R"({"schema":"strataplus.lang_knob.v1","example_not_calibrated":true,"languages":{}})", err);
++        const bool ok_b = b.load_text(R"({"schema":"strataplus.lang_knob.v1","comment":"ESEMPIO, non calibrata","languages":{}})", err);
++        const bool ok_c = c.load_text(R"({"schema":"strataplus.lang_knob.v1","example_not_calibrated":false,"languages":{"go":{"spec_min_p":0.5}}})", err);
++        check(ok_a && a.example() && ok_b && b.example() && ok_c && !c.example(), "example marker: field / comment");
++        check(!d.load_text(R"({"schema":"strataplus.lang_knob.v1","example_not_calibrated":"yes","languages":{}})", err),
++              "example marker: non-bool refused");
++#ifdef STRATA_LANG_EXAMPLE_FILE
++        LangTable e;
++        check(e.load_file(STRATA_LANG_EXAMPLE_FILE, err) && e.example() && e.size() > 0, "the repo example file loads and is marked");
++#endif
++    }
++    std::printf(g_fail ? "FAILED\n" : "all ok\n");
++    return g_fail ? 1 : 0;
++}
+diff --git a/strataplus/tests/greedy_identity.py b/strataplus/tests/greedy_identity.py
+index 57ab8c5c..26a587e1 100755
+--- a/strataplus/tests/greedy_identity.py
++++ b/strataplus/tests/greedy_identity.py
+@@ -23,7 +23,7 @@ Token ids are required (no tokenizer is guessed here); make them with the model'
+ 
+ Usage:
+   greedy_identity.py --strata /path/to/strata --engine-args "--native M.gguf --mtp ..." --prompts p.jsonl \
+-      [--lang-table strataplus/tests/lang_table_example.json] [--joint-cost "s1,..,s8;rho_mtp;rho_lu"] \
++      [--lang-table strataplus/tests/lang_table_EXAMPLE_not_calibrated.json] [--joint-cost "s1,..,s8;rho_mtp;rho_lu"] \
+       [--max-new 128] [--configs baseline,joint_det] [--out DIR] [--timeout 600] [--nice 19]
+ 
+ UNCERTAIN / to fix before running (not invented here): the exact ENGINE_ARGS of the target card (model, --mtp /
+diff --git a/strataplus/tests/lang_table_EXAMPLE_not_calibrated.json b/strataplus/tests/lang_table_EXAMPLE_not_calibrated.json
+new file mode 100644
+index 00000000..d12086ff
+--- /dev/null
++++ b/strataplus/tests/lang_table_EXAMPLE_not_calibrated.json
+@@ -0,0 +1,11 @@
++{
++  "schema": "strataplus.lang_knob.v1",
++  "comment": "ESEMPIO, non calibrata - FORMAT EXAMPLE ONLY: the numbers are placeholders, not measured or tuned. Never loaded by default (no default path); the engine warns when it sees this marker.",
++  "example_not_calibrated": true,
++  "languages": {
++    "python": {"spec_min_p": 0.3, "t_rule": "min_p", "t_max": 6},
++    "rust":   {"t_rule": "fixed", "t": 4},
++    "go":     {"spec_min_p": 0.5},
++    "text":   {"t_rule": "default"}
++  }
++}
+diff --git a/sycl/src/program/generate.cpp b/sycl/src/program/generate.cpp
+index e4b95e16..fbf5e3e6 100644
+--- a/sycl/src/program/generate.cpp
++++ b/sycl/src/program/generate.cpp
+@@ -1925,6 +1925,10 @@ int main(int argc, char **argv) try {
+         else if (a == "--adapt-decay") o.adapt_decay = (float) std::atof(next("--adapt-decay"));
+         else if (a == "--adapt-async") o.adapt_async = std::atoi(next("--adapt-async")) != 0 ? 1 : 0;
+         else if (a == "--spec-min-p") o.spec_min_p = std::atof(next("--spec-min-p"));
++        else if (a == "--spec-lang-table") {   // Strata+ H-LANG v1: not implemented on SYCL - accepted, warned, ignored
++            (void) next("--spec-lang-table");
++            std::fprintf(stderr, "warning: --spec-lang-table ignorata su SYCL (Strata+ H-LANG v1 is in the CUDA/HIP engine only)\n");
++        }
+         else if (a == "--stop-eos") o.stop_eos = true;
+         else if (a == "--spec-split") o.spec_split = true;
+         else if (a == "--layer-split") o.layer_split = next("--layer-split");
+@@ -2075,6 +2079,8 @@ int main(int argc, char **argv) try {
+     for (const char* ev : {"STRATA_SPEC_JOINT_DET", "STRATA_SPEC_JOINT_COST"})
+         if (const char* v = std::getenv(ev); v != nullptr && v[0] != '\0')
+             std::fprintf(stderr, "warning: %s ignorata su SYCL (Strata+ H1 v1 is in the CUDA/HIP engine only)\n", ev);
++    if (const char* v = std::getenv("STRATA_SPEC_LANG_TABLE"); v != nullptr && v[0] != '\0')   // Strata+ H-LANG v1
++        std::fprintf(stderr, "warning: STRATA_SPEC_LANG_TABLE ignorata su SYCL (Strata+ H-LANG v1 is in the CUDA/HIP engine only)\n");
+ #if defined(STRATA_USE_HIP)
+     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
+         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
