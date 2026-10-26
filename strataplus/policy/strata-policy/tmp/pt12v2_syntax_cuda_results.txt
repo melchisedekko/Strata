@@ -1,0 +1,27 @@
+CUDA host-only src/kernels/cuda/native_mmvq.cu rc=1 errors=4
+src/kernels/cuda/native_mmvq.cu:1989:28: error: no matching function for call to '__ldcs'
+src/kernels/cuda/native_mmvq.cu:1990:28: error: no matching function for call to '__ldcs'
+src/kernels/cuda/native_mmvq.cu:2141:28: error: no matching function for call to '__ldcs'
+CUDA device-only sm_86 src/kernels/cuda/native_mmvq.cu rc=1 errors=4
+src/kernels/cuda/native_mmvq.cu:1989:28: error: no matching function for call to '__ldcs'
+src/kernels/cuda/native_mmvq.cu:1990:28: error: no matching function for call to '__ldcs'
+src/kernels/cuda/native_mmvq.cu:2141:28: error: no matching function for call to '__ldcs'
+CUDA host-only src/kernels/cuda/native_bf16.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/native_bf16.cu rc=0 errors=0
+CUDA host-only src/kernels/cuda/shared_expert.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/shared_expert.cu rc=0 errors=0
+CUDA host-only src/kernels/cuda/s2_expert_grouped.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/s2_expert_grouped.cu rc=0 errors=0
+CUDA host-only src/kernels/cuda/fused_gr.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/fused_gr.cu rc=0 errors=0
+CUDA host-only src/kernels/cuda/verify_kernels.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/verify_kernels.cu rc=0 errors=0
+CUDA host-only src/kernels/cuda/iq_kernels.cu rc=1 errors=8
+src/kernels/cuda/iq_kernels.cu:1786:5: error: 'alignas' attribute cannot be applied to types
+src/kernels/cuda/iq_kernels.cu:1874:5: error: 'alignas' attribute cannot be applied to types
+src/kernels/cuda/iq_kernels.cu:2139:5: error: 'alignas' attribute cannot be applied to types
+CUDA device-only sm_86 src/kernels/cuda/iq_kernels.cu rc=1 errors=8
+src/kernels/cuda/iq_kernels.cu:1786:5: error: 'alignas' attribute cannot be applied to types
+src/kernels/cuda/iq_kernels.cu:1874:5: error: 'alignas' attribute cannot be applied to types
+src/kernels/cuda/iq_kernels.cu:2139:5: error: 'alignas' attribute cannot be applied to types
+NEG device-only static_assert(kVerifyMaxT==8) rc=1 (atteso !=0)

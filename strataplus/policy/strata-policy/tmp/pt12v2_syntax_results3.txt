@@ -1,0 +1,24 @@
+HIP-host src/core/mtp.cpp (+I ggml) rc=0 errors=0
+CUDA-host src/core/mtp.cpp (+I ggml) rc=0 errors=0
+HIP-host src/kernels/cpu/native_expert.cpp (+I ggml) rc=0 errors=0
+CUDA-host src/kernels/cpu/native_expert.cpp (+I ggml) rc=0 errors=0
+BASELINE b557725 iq_kernels.cu HIP-device rc=1 errors=2
+/tmp/pt12v2_iq_base.cu:2477:16: error: 'alignas' attribute cannot be applied to types
+/tmp/pt12v2_iq_base.cu:2664:16: error: 'alignas' attribute cannot be applied to types
+BASELINE b557725 iq_kernels.cu CUDA host-only rc=1 errors=8
+      1 1786:5: error: 'alignas' attribute cannot be applied to types
+      1 1873:5: error: 'alignas' attribute cannot be applied to types
+      1 2138:5: error: 'alignas' attribute cannot be applied to types
+      1 2477:16: error: 'alignas' attribute cannot be applied to types
+      1 2479:5: error: 'alignas' attribute cannot be applied to types
+      1 2664:16: error: 'alignas' attribute cannot be applied to types
+      1 2777:5: error: 'alignas' attribute cannot be applied to types
+      1 4394:5: error: expected a for, while, or do-while loop to follow '#pragma unroll'
+1786:5: error: 'alignas' attribute cannot be applied to types
+1874:5: error: 'alignas' attribute cannot be applied to types
+2139:5: error: 'alignas' attribute cannot be applied to types
+2478:16: error: 'alignas' attribute cannot be applied to types
+2480:5: error: 'alignas' attribute cannot be applied to types
+2665:16: error: 'alignas' attribute cannot be applied to types
+2778:5: error: 'alignas' attribute cannot be applied to types
+4395:5: error: expected a for, while, or do-while loop to follow '#pragma unroll'

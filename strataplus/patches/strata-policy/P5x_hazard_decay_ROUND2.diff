@@ -1,0 +1,70 @@
+# P5x — MTP hazard decay 0.999 (Scout bug c). BRACCIO DEL GIRO 2, NON APPLICATO (decisione di Strata Lead:
+# cambia il comportamento della policy, non è una correzione). Si applica sopra 051326a (P1-P5 con fix a/b/d).
+# Parte 1: C++ (patchwork, git apply -p1). Parte 2: replay sim2.py (applicare a parte, replay/, patch -p1).
+diff --git a/src/spec/joint_gate.cpp b/src/spec/joint_gate.cpp
+index c804b9d..89fae04 100644
+--- a/src/spec/joint_gate.cpp
++++ b/src/spec/joint_gate.cpp
+@@ -10,6 +10,7 @@ namespace {
+ constexpr double kPB[6] = {0.3, 0.6, 0.8, 0.9, 0.95, 0.99};
+ constexpr int kMB[4] = {4, 6, 12, 24};
+ constexpr int kTRows = 8;          // th_ rows / n_t_ entries: window sizes T = 1..kTRows
++constexpr double kHmDecay = 0.999;  // forgetting of the per-bucket MTP hazards (same as the marginal ones)
+ static_assert(strata::spec::JointGate::kD + 1 == kTRows, "window sizes must fit the cost rows");
+ int trow(int t) { return std::clamp(t, 1, kTRows) - 1; }   // T > 8 (e.g. an engine chain window) -> last row
+ int pbucket(double p) { int b = 0; while (b < 6 && kPB[b] <= p) ++b; return b; }   // searchsorted(side="right")
+@@ -212,7 +213,7 @@ void JointGate::observe(const Choice& c, int a, double cost, int mtp_acc, const
+         for (int j = 0; j < std::min({obs + (fail ? 1 : 0), c.d, kD}); ++j) {   // c.d > kD: no row
+             const int b = pbucket((double) mtp_p[j]);
+             const bool ok = j < obs;
+-            hm_s_[j][b] += ok; hm_f_[j][b] += !ok;
++            hm_s_[j][b] = kHmDecay * hm_s_[j][b] + ok; hm_f_[j][b] = kHmDecay * hm_f_[j][b] + !ok;
+             hmm_s_[j] = 0.999 * hmm_s_[j] + ok; hmm_f_[j] = 0.999 * hmm_f_[j] + !ok;
+         }
+     }
+diff --git a/src/spec/joint_gate_test.cpp b/src/spec/joint_gate_test.cpp
+index 66f9fda..0d60bf1 100644
+--- a/src/spec/joint_gate_test.cpp
++++ b/src/spec/joint_gate_test.cpp
+@@ -112,6 +112,19 @@ int main() {
+         check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
+         check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
+     }
++    {   // MTP hazards forget (Scout bug c): after a long reliable phase, a regime change is learned within ~1/(1-0.999)
++        JointGate g;
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const int lu_acc[2] = {0, 0};
++        auto depth = [&]() { JointGate::Choice c; if (g.start(none, 100, &c)) return 0;
++                             int d = 0; while (true) { ++d; if (!g.keep(hi, nullptr, d)) break; } return d; };
++        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
++                                         g.observe(c, 7, 1.0, 7, hi, none, lu_acc); }
++        const int before = depth();
++        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
++                                         g.observe(c, 0, 1.0 + 0.05 * 7, 0, hi, none, lu_acc); }
++        check(before >= 5 && depth() <= 2, "decay: confident drafts that stop being accepted are no longer drafted deep");
++    }
+     std::printf(g_fail ? "FAIL\n" : "PASS\n");
+     return g_fail ? 1 : 0;
+ }
+# --- Parte 2: replay/strata_sim/sim2.py ---
+--- a/strata_sim/sim2.py
++++ b/strata_sim/sim2.py
+@@ -325,6 +325,9 @@
+ MB = np.array([4, 6, 12, 24])
+ 
+ 
++HM_DECAY = 0.999   # P5x round 2: per-bucket MTP hazards forget like the marginal ones
++
++
+ class CostRLS:
+     """Online cost model C ~ v[T] + r_mtp*d + r_lu*k (RLS, forgetting). Never sees costs of actions not taken."""
+ 
+@@ -510,7 +513,7 @@
+             for j in range(min(obs + (1 if fail else 0), d, DMAX)):
+                 b = int(np.searchsorted(PB, q["mtp_p"][i][j], side="right"))
+                 ok = j < obs
+-                self.hm_s[j, b] += ok; self.hm_f[j, b] += (not ok)
++                self.hm_s[j, b] = HM_DECAY * self.hm_s[j, b] + ok; self.hm_f[j, b] = HM_DECAY * self.hm_f[j, b] + (not ok)   # P5x round 2
+                 self.hmm_s[j] = 0.999 * self.hmm_s[j] + ok; self.hmm_f[j] = 0.999 * self.hmm_f[j] + (not ok)
+         for s in self.srcs:
+             kk = int(q[s + "_k"][i])

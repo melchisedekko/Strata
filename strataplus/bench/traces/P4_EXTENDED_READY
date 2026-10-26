@@ -1,0 +1,1 @@
+{"created":"2026-10-25 02:10:42 CET","file":"/workspace/strata-plus/traces/cost_p4_cpu.json","sha256":"e51712c64b52c0ff7159dcf3e47ac100f29ba9c4f7342360a85e81c42bf8c34c","models":["qwen35-2b-mtp-q4_k_m","qwen35-2b-mtp-q8_0"],"grid":"T=1..12, d=0..8","label":"proxy CPU, modello denso, non AMD"}

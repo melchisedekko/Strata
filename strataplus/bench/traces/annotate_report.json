@@ -1,0 +1,70 @@
+{
+ "base_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 30
+ },
+ "base_r1": {
+  "requests": 30,
+  "greedy_equal_ref": 30
+ },
+ "base_r2": {
+  "requests": 30,
+  "greedy_equal_ref": 30
+ },
+ "live_combo_k3_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 20
+ },
+ "live_combo_k3_r1": {
+  "requests": 30,
+  "greedy_equal_ref": 20
+ },
+ "live_combo_k3_r2": {
+  "requests": 30,
+  "greedy_equal_ref": 20
+ },
+ "live_lookup_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 19
+ },
+ "live_lookup_r1": {
+  "requests": 30,
+  "greedy_equal_ref": 19
+ },
+ "live_lookup_r2": {
+  "requests": 30,
+  "greedy_equal_ref": 19
+ },
+ "live_mtp_k1_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k2_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k3_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k3_r1": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k3_r2": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k5_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "live_mtp_k7_r0": {
+  "requests": 30,
+  "greedy_equal_ref": 17
+ },
+ "tf_d7": {
+  "requests": 30,
+  "greedy_equal_ref": 30
+ }
+}

@@ -1,0 +1,6 @@
+HIP-host src/core/mtp.cpp rc=0
+CUDA-host src/core/mtp.cpp rc=0
+HIP-host src/kernels/cpu/native_expert.cpp rc=0
+CUDA-host src/kernels/cpu/native_expert.cpp rc=0
+CUDA-device clang -x cuda src/kernels/cuda/shared_expert.cu rc=1
+/workspace/rocm-hdr/cudawhl/x/nvidia/cuda_runtime/include/cuda_fp16.h:4492:10: fatal error: 'nv/target' file not found

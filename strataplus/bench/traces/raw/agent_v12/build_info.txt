@@ -1,0 +1,8 @@
+6c31c21e6cbc4b59d9ea20990d9875737302b619b18d0e0e8e87df112e858cfe  ./proxy/llama_spec_trace.v12.nollamafile
+911d6a298c348e58274163cd7ad45d4a769bb98371773b9a2277a22a00b36189  proxy/llama_spec_trace_v12.cpp
+	libllama-common.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libllama-common.so.0 (0x00007f7769400000)
+	libllama.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libllama.so.0 (0x00007f7768e00000)
+	libggml-base.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml-base.so.0 (0x00007f7769338000)
+	libggml.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml.so.0 (0x00007f7769907000)
+	libggml-cpu.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml-cpu.so.0 (0x00007f7767e0e000)
+GGML_LLAMAFILE:BOOL=OFF

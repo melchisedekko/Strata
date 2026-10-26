@@ -1,0 +1,11 @@
+0.01.458.604 I cmn          init: llama threadpool init, n_threads = 6
+0.01.592.355 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
+[agent_v12_live_mtp_k3] rep 0 agent_v12-server-option#t0: 67 tok, 25 verify + 0 replay rounds, acc 42/75, decode 3996 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-server-option#t1: 36 tok, 12 verify + 0 replay rounds, acc 24/36, decode 2393 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-server-option#t2: 50 tok, 16 verify + 0 replay rounds, acc 34/48, decode 5238 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-server-option#t3: 39 tok, 11 verify + 0 replay rounds, acc 28/33, decode 2121 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-server-option#t4: 102 tok, 33 verify + 0 replay rounds, acc 69/99, decode 11116 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t0: 53 tok, 14 verify + 0 replay rounds, acc 39/42, decode 2132 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t1: 68 tok, 23 verify + 0 replay rounds, acc 46/69, decode 3885 ms
+[agent_v12_live_mtp_k3] rep 0 agent_v12-expert-cache#t2: 56 tok, 21 verify + 0 replay rounds, acc 35/63, decode 4343 ms

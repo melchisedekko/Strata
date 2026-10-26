@@ -1,0 +1,761 @@
+diff --git a/include/strata/core/verify.hpp b/include/strata/core/verify.hpp
+index dc6613d..d066885 100644
+--- a/include/strata/core/verify.hpp
++++ b/include/strata/core/verify.hpp
+@@ -27,6 +27,7 @@
+ #include "strata/core/layer.hpp"
+ #include "strata/core/session.hpp"
+ #include "strata/kernels/sampler.hpp"
++#include "strata/kernels/verify_kernels.hpp"   // STRATA+ P-T12 measure: kVerifyMaxT per gli array sotto
+ 
+ #include <cuda_runtime.h>
+ 
+@@ -517,8 +518,8 @@ private:
+     std::vector<unsigned long long> prof_h_;
+     double prof_sum_[2][kProfPer] = {};   // [GDN / QSA layers][stage]
+     int64_t prof_windows_ = 0;
+-    double prof_t_sum_[9][2][kProfPer] = {};   // the same per window size T (1..8), for profile_by_t_report
+-    int64_t prof_t_win_[9] = {};
++    double prof_t_sum_[::strata::kernels::kVerifyMaxT + 1][2][kProfPer] = {};   // the same per window size T (1..kVerifyMaxT), for profile_by_t_report   // STRATA+ P-T12 measure: [9] -> [kVerifyMaxT + 1]; v2: commento 1..8 -> 1..kVerifyMaxT
++    int64_t prof_t_win_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
+     bool rs_on_ = false;                      // STRATA_ROUTE_STATS
+     unsigned long long* rs_dev_ = nullptr;    // [9 T][n_layers][8 rows]: experts of row r that no earlier row of the window routed to
+     int64_t rs_win_[9] = {};
+@@ -533,7 +534,7 @@ private:
+     float* ple_val_ = nullptr;
+     int last_t_ = 0;
+     int64_t last_pos0_ = 0;
+-    int32_t last_tokens_[8] = {};
++    int32_t last_tokens_[::strata::kernels::kVerifyMaxT] = {};   // STRATA+ P-T12 measure: [8] -> [kVerifyMaxT]
+     int64_t n_vocab_ = 0;
+     cudaStream_t cs_ = nullptr;
+     cudaStream_t sh_cs_ = nullptr;
+@@ -544,9 +545,9 @@ private:
+     cudaStream_t df_side_[2] = {};
+     cudaEvent_t df_fork_ = nullptr;
+     cudaEvent_t df_join_[2] = {};
+-    cudaGraphExec_t exec_[9] = {};
+-    cudaGraphExec_t exec_nr_[9] = {};   // #871: the doorbell variant of a stage that is all-resident otherwise
+-    bool launched_[9] = {}, launched_nr_[9] = {};   ///< this graph has been launched once (early_ple_flag: a cold first launch raises the PLE flag first)
++    cudaGraphExec_t exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
++    cudaGraphExec_t exec_nr_[::strata::kernels::kVerifyMaxT + 1] = {};   // #871: the doorbell variant of a stage that is all-resident otherwise   // STRATA+ P-T12 measure
++    bool launched_[::strata::kernels::kVerifyMaxT + 1] = {}, launched_nr_[::strata::kernels::kVerifyMaxT + 1] = {};   ///< this graph has been launched once (early_ple_flag: a cold first launch raises the PLE flag first)   // STRATA+ P-T12 measure
+     // fork 34a35db (STRATA_SIDE_MIXER=1): the GDN gates and the QSA indexer on a branch of the window's graph beside the
+     // mixer's projections, joined before the recurrence / the attention
+     cudaStream_t side_ = nullptr;
+@@ -613,7 +614,7 @@ private:
+     void set_plan_slot(int grp);
+     bool split_ = false;   // opt-in (--spec-split): exact but slower, see the overlap study
+     std::function<bool(cudaStream_t, std::string&)> pre_launch_;   // set_pre_launch
+-    int groups_[9] = {};
++    int groups_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure
+     float* h_ymiss_ = nullptr;   float* m_ymiss_ = nullptr;     // T * k * n_embd
+ 
+     // device
+diff --git a/include/strata/kernels/cpu/expert.hpp b/include/strata/kernels/cpu/expert.hpp
+index 16dcabd..9fe92cf 100644
+--- a/include/strata/kernels/cpu/expert.hpp
++++ b/include/strata/kernels/cpu/expert.hpp
+@@ -140,7 +140,7 @@ void s2_expert_vnni_q(const uint8_t* blob, const ActQ& a1, float* out, ExpertScr
+ /// ONCE per block for all tokens; only the VNNI dot and the accumulation run per token. Every token's output
+ /// is bitwise equal to `s2_expert_vnni_q` on that token (same operation order per token). Legacy activation
+ /// contract only; with `expert_set_oracle_q8_0(true)` it falls back to one `s2_expert_vnni_q` per token.
+-inline constexpr int MAXT = 8;
++inline constexpr int MAXT = 12;   // STRATA+ P-T12 measure: 8 -> 12 (MAXT * 10 = 120 <= 128)
+ /// Plan v0.3 P4: the expert in row ranges, so several threads can share one expert.  `s2_expert_gu_rows` writes
+ /// ff[r] = silu(gate_r . x) * (up_r . x) for r in [r0, r1) (of FF); `s2_expert_down_rows` writes out[r] for r in
+ /// [r0, r1) (of H) from the intermediate's quantized image.  Together with `act_quant_q8_1(ff, FF, a2)` in
+diff --git a/include/strata/kernels/fused_gr.hpp b/include/strata/kernels/fused_gr.hpp
+index 6483802..156e98d 100644
+--- a/include/strata/kernels/fused_gr.hpp
++++ b/include/strata/kernels/fused_gr.hpp
+@@ -65,7 +65,7 @@ void fused_gr_quantize_q8_0(const uint16_t* bf16, uint8_t* out, int64_t n_blocks
+ /// once for all of them.  `a[t]` is token t's arguments (its own R, pending write, lo, rs, inject, mixed; the four
+ /// weight pointers and eps must be the same for every t); `xn_scratch` is n_tok * hc * n_embd floats.  Every
+ /// token's outputs are bitwise `fused_gr_read(a[t])`.
+-constexpr int kFusedGrMaxT = 8;
++constexpr int kFusedGrMaxT = 12;   // STRATA+ P-T12 measure: 8 -> 12 (verify.cpp FusedGrArgs fa[kFusedGrMaxT] riempito per t < T)
+ /// Returns true when it also wrote the q8_1 images (every token's q8_mixed set and this read supports it).
+ bool fused_gr_read_multi(const FusedGrArgs* a, int n_tok, float* xn_scratch, void* stream,
+                          unsigned long long* stamp_buf = nullptr, int stamp_i0 = 0);
+diff --git a/include/strata/kernels/s2_expert_grouped.hpp b/include/strata/kernels/s2_expert_grouped.hpp
+index af6f52f..fc3c061 100644
+--- a/include/strata/kernels/s2_expert_grouped.hpp
++++ b/include/strata/kernels/s2_expert_grouped.hpp
+@@ -99,7 +99,8 @@ void moe_hit_add(float* parts, const float* hit_out, const int32_t* dst, const i
+ /// once for all of its entries.  Counts are read from device memory; every entry is bitwise the per-entry kernel.
+ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start, const int32_t* n_groups,
+                     const int32_t* ent_dst, const int32_t* ent_tok, int64_t cap_groups, int64_t cap_entries,
+-                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream);
++                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream,
++                    int max_group = 0);   // STRATA+ P-T12 measure v2: tokens of the call (<= 8: GMAX 8 of 7dd5cf1)
+ /// Plan v0.3 P6: the groups for `moe_grouped_s2` when every expert id is resident at base + id * blob (the MTP
+ /// layer's 512 experts): counts[0] groups, counts[1] entries; entry dst = routing index, tok = index / k_per_tok.
+ void moe_group_resident(const int32_t* ids, int n, int k_per_tok, const uint8_t* base, int64_t blob,
+diff --git a/include/strata/kernels/verify_kernels.hpp b/include/strata/kernels/verify_kernels.hpp
+index a5e3518..09a50b1 100644
+--- a/include/strata/kernels/verify_kernels.hpp
++++ b/include/strata/kernels/verify_kernels.hpp
+@@ -18,7 +18,7 @@
+ 
+ namespace strata::kernels {
+ 
+-inline constexpr int kVerifyMaxT = 8;
++inline constexpr int kVerifyMaxT = 12;   // STRATA+ P-T12 measure: 8 -> 12 (solo misura s(12)/s(8))
+ 
+ /// For token t of T: conv over [history(3) | qkv_0 .. qkv_t] -> SiLU -> L2 norm of the q/k heads -> h[t].
+ /// `history` is NOT written, but with `commit` (one token): it then keeps the token, as gdn_conv_commit.  Bitwise
+diff --git a/src/core/mtp.cpp b/src/core/mtp.cpp
+index f4b82b3..927d370 100644
+--- a/src/core/mtp.cpp
++++ b/src/core/mtp.cpp
+@@ -1128,7 +1128,7 @@ bool MtpDrafter::record_rest(int step_row, cudaStream_t cs, std::string& err) {
+                            grp_start_, grp_counts_, hit_dst_, hit_slot_, cs);
+         quantize_q8_0_scaled(mixed_, hit_xq_, hit_xs_, (int64_t) T * N, cs);
+         moe_grouped_s2(grp_ptr_, grp_start_, grp_counts_, hit_dst_, hit_slot_, (int64_t) T * K, (int64_t) T * K, hit_xq_,
+-                       hit_xs_, hit_scratch_, parts_, cs);
++                       hit_xs_, hit_scratch_, parts_, cs, (int) T);   // STRATA+ P-T12 measure v2: T token
+         g_mp.stamp(10, cs);
+         if (branch_on) {
+             if (cudaStreamWaitEvent(cs, sh_join_, 0) != cudaSuccess) { err = "mtp: the shared expert's join"; return false; }
+diff --git a/src/core/remote_experts.cpp b/src/core/remote_experts.cpp
+index 6e68495..e6d8119 100644
+--- a/src/core/remote_experts.cpp
++++ b/src/core/remote_experts.cpp
+@@ -343,7 +343,8 @@ bool RemoteExperts::begin(int64_t layer, const float* x, const int32_t* ids, int
+     } else {
+         strata::kernels::quantize_q8_0_scaled(zero_copy_ ? z_x_ : d_x_, d_q8_, d_scales_, n_tok * H, s);
+         strata::kernels::moe_grouped_s2(d_ptr_, d_start_, d_count_, d_dst_, d_tok_,
+-                                        groups_, (int64_t) dst_.size(), d_q8_, d_scales_, d_scratch_, zero_copy_ && !reduce ? z_out_ : d_out_, s);
++                                        groups_, (int64_t) dst_.size(), d_q8_, d_scales_, d_scratch_, zero_copy_ && !reduce ? z_out_ : d_out_, s,
++                                        (int) n_tok);   // STRATA+ P-T12 measure v2: n_tok token
+     }
+     const uint64_t compact_bytes = (uint64_t) (reduce ? n_tok : dst_.size()) * H * sizeof(float);
+     if (reduce) {
+diff --git a/src/core/verify.cpp b/src/core/verify.cpp
+index 3d6f48b..1db6ad1 100644
+--- a/src/core/verify.cpp
++++ b/src/core/verify.cpp
+@@ -2100,7 +2100,7 @@ bool Verifier::record_window(int T, cudaStream_t cs, std::string& err) {
+                                       nat_xq_ + (size_t) tb * (N / 32) * 36, hit_scratch_, dst_buf, cs, gy);
+             } else {
+                 moe_grouped_s2(gp, gs, gn, p_dst, p_tok, cap, cap, hit_xq_ + (size_t) tb * (N / 32) * 34,
+-                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs);
++                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs, n);   // STRATA+ P-T12 measure v2: n token
+             }
+         };
+         bool hits_in_combine = false;
+@@ -2355,7 +2355,7 @@ std::string Verifier::profile_by_t_report() {
+                                           "(gap)", "head", "hc0 norm", "hc0 down", "hc0 up", "hc1 norm", "hc1 down", "hc1 up"};
+     std::string out;
+     char b[96];
+-    for (int T = 1; T <= 8; ++T) {
++    for (int T = 1; T <= strata::kernels::kVerifyMaxT; ++T) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
+         if (prof_t_win_[T] == 0) continue;
+         double total = 0;
+         std::snprintf(b, sizeof b, "T%d (n=%lld):", T, (long long) prof_t_win_[T]);
+@@ -2754,7 +2754,7 @@ void Verifier::accumulate_profile(const unsigned long long* stamps) {
+     double before[2][kProfPer];
+     std::memcpy(before, prof_sum_, sizeof before);
+     accumulate_profile_inner(stamps);
+-    if (last_t_ >= 1 && last_t_ <= 8) {
++    if (last_t_ >= 1 && last_t_ <= strata::kernels::kVerifyMaxT) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
+         for (int k = 0; k < 2; ++k)
+             for (int i = 0; i < kProfPer; ++i) prof_t_sum_[last_t_][k][i] += prof_sum_[k][i] - before[k][i];
+         ++prof_t_win_[last_t_];
+diff --git a/src/kernels/cpu/pool.cpp b/src/kernels/cpu/pool.cpp
+index cdcc8d7..6ebb7d1 100644
+--- a/src/kernels/cpu/pool.cpp
++++ b/src/kernels/cpu/pool.cpp
+@@ -1317,8 +1317,39 @@ int ExpertPool::phase_tasks(int64_t rows) const {
+     return tasks_ == 0 ? 3 * (n_ + (host_works_ ? 1 : 0)) : (int) (std::min)(rows, (int64_t) tasks_);
+ }
+ 
++// STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
++// Un job con nt > 8 token diventa job da <= 8 token consecutivi (stesso blob e fmt, act/nact/out agli stessi offset):
++// i kernel CPU multi-token restano quelli esistenti (<= 8), il blob dell'expert viene letto una volta per blocco.
++static bool pt12_split_over8(const ExpertJobMulti* jobs, int n, std::vector<ExpertJobMulti>& sub) {
++    bool any = false;
++    for (int e = 0; e < n; ++e) any = any || jobs[e].nt > 8;
++    if (!any) return false;
++    sub.clear();
++    for (int e = 0; e < n; ++e) {
++        const ExpertJobMulti& j = jobs[e];
++        if (j.nt <= 8) { sub.push_back(j); continue; }
++        for (int t0 = 0; t0 < j.nt; t0 += 8) {
++            ExpertJobMulti s;
++            s.blob = j.blob;
++            s.fmt = j.fmt;
++            s.nt = (std::min)(8, j.nt - t0);
++            for (int t = 0; t < s.nt; ++t) {
++                s.act[t] = j.act[t0 + t];
++                s.out[t] = j.out[t0 + t];
++                s.nact[t] = j.nact[t0 + t];
++            }
++            sub.push_back(s);
++        }
++    }
++    return true;
++}
++
+ void ExpertPool::run_split_multi(ExpertJobMulti* jobs, int n) {
+     if (n <= 0) return;
++    {   // STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
++        std::vector<ExpertJobMulti> sub;
++        if (pt12_split_over8(jobs, n, sub)) { run_split_multi(sub.data(), (int) sub.size()); return; }
++    }
+     if (n > kMaxSplitMulti || expert_oracle_q8_0_enabled()) {
+         // one token at a time through the single-token path (the oracle contract has no multi kernel)
+         std::vector<ExpertJob> single;
+@@ -1358,6 +1389,10 @@ void ExpertPool::run_split_multi(ExpertJobMulti* jobs, int n) {
+ 
+ void ExpertPool::run_split_multi_native(const NativeFmt& f, ExpertJobMulti* jobs, int n) {
+     if (n <= 0) return;
++    {   // STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
++        std::vector<ExpertJobMulti> sub;
++        if (pt12_split_over8(jobs, n, sub)) { run_split_multi_native(f, sub.data(), (int) sub.size()); return; }
++    }
+     const auto t0 = std::chrono::steady_clock::now();
+     // more distinct experts than buffers: run them in batches
+     for (int b0 = 0; b0 < n; b0 += kMaxSplitMulti) {
+diff --git a/src/kernels/cuda/fused_gr.cu b/src/kernels/cuda/fused_gr.cu
+index 576e5d6..d1561c4 100644
+--- a/src/kernels/cuda/fused_gr.cu
++++ b/src/kernels/cuda/fused_gr.cu
+@@ -214,6 +214,11 @@ struct GrMulti {
+     float* xn;
+     int T;
+ };
++static_assert(sizeof(GrMulti) <= 4096, "GrMulti is passed by value: kernel parameters are limited to 4 KB");   // STRATA+ P-T12 measure
++// STRATA+ P-T12 measure v2: a T <= 8 launch uses the MAX_T = 8 instances of 7dd5cf1 (its kFusedGrMaxT), not the
++// default MAX_T = 12 ones: the same kernels, registers and shared memory as the base at T <= 8.
++constexpr int kGrBaseMaxT = 8;
++static_assert(kGrBaseMaxT <= kFusedGrMaxT, "the base instances must fit the arrays");
+ 
+ 
+ // S26 STRATA_QFUSE=1: the q8_1 image of `mixed`, written by the up kernels below. A q8_1 block is 32 columns and an
+@@ -1092,14 +1097,20 @@ int down_chunk(bool staged, int* tile_out) {
+         tile[dev] = tv;
+         int want = (int) (kFusedGrMaxT * tv * sizeof(float));
+         if (optin > 0 && want > optin) want = optin;
++        int want8 = (int) (kGrBaseMaxT * tv * sizeof(float));   // STRATA+ P-T12 measure v2: the base's value for its instances
++        if (optin > 0 && want8 > optin) want8 = optin;   // STRATA+ P-T12 measure v2
+         if (small_tile) {
+             cudaFuncSetAttribute(gr_down_multi_kernel<1280>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
+             cudaFuncSetAttribute(gr_down_multi_kernel<1280, kFusedGrMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
+-            cudaFuncSetAttribute(gr_down_multi_kernel<1280, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
++            cudaFuncSetAttribute(gr_down_multi_kernel<1280, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2: era want
++            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
++            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
+         } else {
+             cudaFuncSetAttribute(gr_down_multi_kernel<2560>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
+             cudaFuncSetAttribute(gr_down_multi_kernel<2560, kFusedGrMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
+-            cudaFuncSetAttribute(gr_down_multi_kernel<2560, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
++            cudaFuncSetAttribute(gr_down_multi_kernel<2560, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2: era want
++            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
++            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
+         }
+         auto set_staged_attr = [&](auto kernel, int max_t) {
+             int ws = (int) (2 * max_t * H_TILE * sizeof(float));
+@@ -1115,6 +1126,7 @@ int down_chunk(bool staged, int* tile_out) {
+         set_staged_attr(gr_down_staged_kernel<5, true>, 5);
+         set_staged_attr(gr_down_staged_kernel<6, true>, 6);
+         set_staged_attr(gr_down_staged_kernel<4, false>, 4);
++        set_staged_attr(gr_down_staged_kernel<kGrBaseMaxT, false>, kGrBaseMaxT);   // STRATA+ P-T12 measure v2
+         set_staged_attr(gr_down_staged_kernel<kFusedGrMaxT, false>, kFusedGrMaxT);
+         cudaGetLastError();      // drop any error the attempt left behind
+         // The opt-in is a promise a pre-Volta card does not keep: an sm_60 answers 65536 and accepts the
+@@ -1301,18 +1313,23 @@ void launch_multi(const GrMulti& m, int variant, cudaStream_t st, unsigned long
+             else if (exact_t && ct == 5) gr_down_staged_kernel<5, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+             else if (exact_t && ct == 6) gr_down_staged_kernel<6, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+             else if (max4) gr_down_staged_kernel<4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
++            else if (ct <= kGrBaseMaxT) gr_down_staged_kernel<kGrBaseMaxT, false><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+             else gr_down_staged_kernel<><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+         } else if (tv == 1280) {
+             if (q8w) {   // STRATA_HC_REQ8
+                 if (max4) gr_down_multi_kernel<1280, 4, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
++                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+                 else gr_down_multi_kernel<1280, kFusedGrMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+             } else if (max4) gr_down_multi_kernel<1280, 4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
++            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+             else gr_down_multi_kernel<1280><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+         } else {
+             if (q8w) {   // STRATA_HC_REQ8
+                 if (max4) gr_down_multi_kernel<2560, 4, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
++                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+                 else gr_down_multi_kernel<2560, kFusedGrMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+             } else if (max4) gr_down_multi_kernel<2560, 4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
++            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+             else gr_down_multi_kernel<2560><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
+         }
+     }
+@@ -1323,46 +1340,50 @@ void launch_multi(const GrMulti& m, int variant, cudaStream_t st, unsigned long
+ #endif
+ #if !STRATA_GR_FAST_BUILD
+     if (!q8w && m.a[0].q8_mixed != nullptr && qfuse_hc_local()) {
+-        switch (no_multi_gr ? kFusedGrMaxT : n_tok) {
++        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+             case 1: gr_up_q32_kernel<1, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+             case 2: gr_up_q32_kernel<2, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+             case 3: gr_up_q32_kernel<3, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+             case 4: gr_up_q32_kernel<4, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+             case 5: gr_up_q32_kernel<5, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+             case 6: gr_up_q32_kernel<6, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
++            case 7: case 8: gr_up_q32_kernel<kGrBaseMaxT, false><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+             default: gr_up_q32_kernel<kFusedGrMaxT, false><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
+         }
+         return;
+     }
+ #endif
+     if (q8w) {   // STRATA_HC_REQ8: the up kernel on int8 rows
+-        switch (no_multi_gr ? kFusedGrMaxT : n_tok) {
++        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+             case 1: gr_up_multi_kernel<1, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 2: gr_up_multi_kernel<2, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 3: gr_up_multi_kernel<3, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 4: gr_up_multi_kernel<4, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 5: gr_up_multi_kernel<5, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 6: gr_up_multi_kernel<6, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
++            case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+             default: gr_up_multi_kernel<kFusedGrMaxT, false, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         }
+     } else if (n_tok >= 3 && up75_on()) {   // T 1-2: gr_up_multi_kernel is as fast or faster (fused_gr_bench, cold)
+-        switch (no_multi_gr ? kFusedGrMaxT : n_tok) {
++        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+             case 1: gr_up75_kernel<1, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 2: gr_up75_kernel<2, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 3: gr_up75_kernel<3, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 4: gr_up75_kernel<4, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 5: gr_up75_kernel<5, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+             case 6: gr_up75_kernel<6, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
++            case 7: case 8: gr_up75_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+             default: gr_up75_kernel<kFusedGrMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         }
+     } else
+-    switch (no_multi_gr ? kFusedGrMaxT : n_tok) {
++    switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+         case 1: gr_up_multi_kernel<1, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         case 2: gr_up_multi_kernel<2, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         case 3: gr_up_multi_kernel<3, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         case 4: gr_up_multi_kernel<4, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         case 5: gr_up_multi_kernel<5, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+         case 6: gr_up_multi_kernel<6, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
++        case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+         default: gr_up_multi_kernel<kFusedGrMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
+     }
+ }
+@@ -2176,7 +2197,10 @@ void launch_q8(const GrMulti& m, float* scratch, cudaStream_t st, unsigned long
+         case 5: launch_q8_t<5>(m, part, ssg, st, stamp_buf, stamp_i0); break;
+         case 6: launch_q8_t<6>(m, part, ssg, st, stamp_buf, stamp_i0); break;
+         case 7: launch_q8_t<7>(m, part, ssg, st, stamp_buf, stamp_i0); break;
+-        default: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;
++        case 8: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;   // STRATA+ P-T12 measure: era il default (troncava T > 8)
++        default:   // STRATA+ P-T12 measure: guardia, STRATA_HC_Q8 non supporta T > 8
++            std::fprintf(stderr, "STRATA measurement patch: fused_gr STRATA_HC_Q8 path called with T=%d > 8\n", m.T);
++            std::exit(1);
+     }
+ }
+ 
+diff --git a/src/kernels/cuda/iq_kernels.cu b/src/kernels/cuda/iq_kernels.cu
+index d2f2e34..827b32c 100644
+--- a/src/kernels/cuda/iq_kernels.cu
++++ b/src/kernels/cuda/iq_kernels.cu
+@@ -1857,8 +1857,9 @@ __global__ void __launch_bounds__(256) native_gu_kernel(const unsigned long long
+ }
+ 
+ // native_gu_kernel with the group's entries taken GRP_NC at a time, each weight part decoded once per pass.
+-// A group has at most one entry per token of the window (kVerifyMaxT = 8; setup writes --spec 4, and a split window
+-// has halves of <= 4), so 4 takes such windows in one pass; 8 would take ~64-80 registers against ~48 (ptxas -v).
++// A group has at most one entry per token of the window (kVerifyMaxT = 12 in the P-T12 measurement build, 8 in 7dd5cf1;
++// setup writes --spec 4, and a split window has halves of <= 4), so 4 takes such windows in one pass (a 12-row window
++// takes up to 3); 8 would take ~64-80 registers against ~48 (ptxas -v).   // STRATA+ P-T12 measure v2: commento aggiornato
+ constexpr int GRP_NC = 4;
+ 
+ template<int TG, bool STAGE_GRID = kStageIqGrid<TG>, bool SUB16 = true>
+diff --git a/src/kernels/cuda/native_bf16.cu b/src/kernels/cuda/native_bf16.cu
+index 1f4b98a..f424254 100644
+--- a/src/kernels/cuda/native_bf16.cu
++++ b/src/kernels/cuda/native_bf16.cu
+@@ -295,12 +295,12 @@ bool bf16_gemv_fp32_mmvf_multi_aux(const float* x, int64_t ldx, const uint16_t*
+ void bf16_gemv_fp32_mmvf_multi(const float* x, int64_t ldx, const uint16_t* w, float* y, int64_t ldy,
+                                int64_t n_in, int64_t n_out, int n_tok, void* stream) {
+     if (n_tok == 1 && ldy >= n_out) { bf16_gemv_fp32_mmvf(x, w, y, n_in, n_out, stream); return; }
+-    if (n_tok < 1 || n_tok > 8 || n_in <= 0 || (n_in & 1) != 0 || n_out <= 0 || (ldx & 1) != 0 || x == nullptr ||
++    if (n_tok < 1 || n_tok > 12 || n_in <= 0 || (n_in & 1) != 0 || n_out <= 0 || (ldx & 1) != 0 || x == nullptr ||   // STRATA+ P-T12 measure: 8 -> 12
+         w == nullptr || y == nullptr || (reinterpret_cast<uintptr_t>(x) & 7u) != 0)
+-        throw std::invalid_argument("bf16_gemv_fp32_mmvf_multi: 1..8 rows, even n_in/ldx, aligned pointers");
++        throw std::invalid_argument("bf16_gemv_fp32_mmvf_multi: 1..12 rows, even n_in/ldx, aligned pointers");   // STRATA+ P-T12 measure
+     const cudaStream_t st = (cudaStream_t) stream;
+     static const bool rows = [] { const char* v = std::getenv("STRATA_MMVF_ROWS"); return v && v[0] == '1'; }();
+-    if (rows && n_out >= 64) {
++    if (rows && n_out >= 64 && n_tok <= 8) {   // STRATA+ P-T12 measure: launch_rows ha NT <= 8, oltre il kernel multi
+         const int ni = (int) n_in, no = (int) n_out;
+         switch (mmvf_block_size(n_in)) {
+             case 32: launch_rows<32>(x, ldx, w, y, ldy, ni, no, n_tok, st); break;
+@@ -325,6 +325,8 @@ void bf16_gemv_fp32_mmvf_multi(const float* x, int64_t ldx, const uint16_t* w, f
+         case 4: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 4, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
+         case 5: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 5, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
+         case 6: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 6, true>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
++        case 9: case 10: case 11: case 12: /* STRATA+ P-T12 measure: 9..12 righe */ \
++            launch_pdl(bf16_f32_mmvf_multi_kernel<N, 12, false>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
+         default: launch_pdl(bf16_f32_mmvf_multi_kernel<N, 8, false>, dim3((unsigned) n_out), dim3(N), 0, st, x, ldx, w, y, ldy, (int) n_in, n_tok); break; \
+     } break
+     switch (mmvf_block_size(n_in)) {
+diff --git a/src/kernels/cuda/native_mmvq.cu b/src/kernels/cuda/native_mmvq.cu
+index 05f9b42..004a189 100644
+--- a/src/kernels/cuda/native_mmvq.cu
++++ b/src/kernels/cuda/native_mmvq.cu
+@@ -826,7 +826,7 @@ __global__ void native_small_mmvq_kernel(const Weight* __restrict__ w,
+ // row) value is accumulated over kbx in the same order, summed across warps in the same order and reduced with
+ // the same warp tree as the ncols = 1 kernel, so every column is BITWISE equal to a single-column call on that
+ // column (checked by bench/micro/native_mmvq_multi.cpp). The ncols = 1 kernels are untouched.
+-constexpr int MAX_NCOLS = 8;
++constexpr int MAX_NCOLS = 12;   // STRATA+ P-T12 measure: 8 -> 12
+ 
+ // Each format splits its dot product into `load` (everything that depends only on the weight block: codes,
+ // unpacked scales, block scale) and `apply` (the activation loads and the original *_impl expression). `load` runs
+@@ -1516,7 +1516,11 @@ void launch_multi(const void* weights, const void* x_q8_1, float* y, int n_in, i
+         case 6: launch_multi_n<F, 6>(weights, x_q8_1, y, n_in, n_out, s); break;
+         case 7: launch_multi_n<F, 7>(weights, x_q8_1, y, n_in, n_out, s); break;
+         case 8: launch_multi_n<F, 8>(weights, x_q8_1, y, n_in, n_out, s); break;
+-        default: throw std::invalid_argument("native MMVQ multi-column launch requires 2 <= ncols <= 8");
++        case 9: launch_multi_n<F, 9>(weights, x_q8_1, y, n_in, n_out, s); break;     // STRATA+ P-T12 measure
++        case 10: launch_multi_n<F, 10>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
++        case 11: launch_multi_n<F, 11>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
++        case 12: launch_multi_n<F, 12>(weights, x_q8_1, y, n_in, n_out, s); break;   // STRATA+ P-T12 measure
++        default: throw std::invalid_argument("native MMVQ multi-column launch requires 2 <= ncols <= 12");   // STRATA+ P-T12 measure
+     }
+ }
+ 
+@@ -1797,7 +1801,7 @@ void validate_shape(int n_in, int ncols, int block_elems = Q8K) {
+     if (n_in <= 0 || n_in % block_elems != 0) {
+         throw std::invalid_argument("native MMVQ requires n_in > 0 and divisible by its block element count");
+     }
+-    if (ncols < 1 || ncols > MAX_NCOLS) throw std::invalid_argument("native MMVQ requires 1 <= ncols <= 8");
++    if (ncols < 1 || ncols > MAX_NCOLS) throw std::invalid_argument("native MMVQ requires 1 <= ncols <= 12");   // STRATA+ P-T12 measure
+ }
+ void validate_pointer(const void* p) {
+     if (!p || reinterpret_cast<std::uintptr_t>(p) % 4 != 0) {
+@@ -2051,6 +2055,7 @@ bool q8_packed_shape(int n_in, int n_out) {   // the shapes native_q8_0_packed_k
+ }
+ 
+ bool q8_packed_mmvq(const void* weights, const void* x_q8_1, float* y, int n_in, int n_out, int ncols, void* stream) {
++    if (ncols > 8) return false;   // STRATA+ P-T12 measure: il packed ha ncols <= 8, oltre resta il layout GGUF
+     auto& registry = q8_packed_registry();
+ #if !defined(__HIPCC__)
+     if (q8_sm60_on() && !registry.empty()) {
+@@ -2203,6 +2208,7 @@ void q6_packed_launch(const Q6Packed& w, const Q81Block* x, float* y, cudaStream
+ }
+ 
+ bool q6_packed_mmvq(const void* weights, const void* x_q8_1, float* y, int n_in, int n_out, int ncols, void* stream) {
++    if (ncols > 8) return false;   // STRATA+ P-T12 measure: il packed ha ncols <= 8, oltre resta il layout GGUF
+     auto& registry = q6_packed_registry();
+     if (registry.empty() || g_q6_bypass || (ncols > 1 && !g_multi_exact)) return false;
+     const auto found = registry.find(weights);
+diff --git a/src/kernels/cuda/s2_expert_grouped.cu b/src/kernels/cuda/s2_expert_grouped.cu
+index bff8b21..29b696e 100644
+--- a/src/kernels/cuda/s2_expert_grouped.cu
++++ b/src/kernels/cuda/s2_expert_grouped.cu
+@@ -823,7 +823,7 @@ namespace {
+ // arithmetic is `row_dot_s2_q8`'s, chunk by chunk in the same lane order, so every entry is bitwise the per-entry
+ // hit kernel's.
+ constexpr int GU_CHUNKS = (H / 32 + 31) / 32;   // 3: chunks of a gate/up row per lane (80 chunks / 32 lanes)
+-constexpr int GMAX = 8;                          // entries per group (tokens routed to one expert in a window)
++constexpr int GMAX = 12;                         // entries per group (tokens routed to one expert in a window)   // STRATA+ P-T12 measure: 8 -> 12
+ // a group holds one entry per token of the window routed to its expert, and the kernels below keep at
+ // most GMAX of them (`min(..., GMAX)`): a longer window would drop entries without a word.
+ static_assert(GMAX >= kVerifyMaxT, "a verify window's group can exceed GMAX entries");
+@@ -850,6 +850,7 @@ __device__ __forceinline__ float chunk_dot(uint2 cb, const int* xw, float dw, fl
+ // Gate/up: a block = GU_ROWS rows of ONE group.  The group's activations (each entry's token row of x_q8_0 and
+ // its fp32 scales) are staged once into shared memory as aligned words; each warp then walks its rows, loading
+ // each lane's code chunks once and dotting them with every entry.
++template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
+ __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long long* __restrict__ grp_ptr,
+                                                          const int32_t* __restrict__ grp_start,
+                                                          const int32_t* __restrict__ n_groups,
+@@ -857,11 +858,11 @@ __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long lon
+                                                          const uint8_t* __restrict__ x_q8_0,
+                                                          const float* __restrict__ x_scales,
+                                                          float* __restrict__ gate_up, int cap_entries) {
+-    __shared__ int xs_q[GMAX][H / 4];          // the entries' int8 activations as words (2560 B each)
+-    __shared__ float xs_d[GMAX][H / 32];
++    __shared__ int xs_q[GM][H / 4];          // the entries' int8 activations as words (2560 B each); STRATA+ P-T12 measure v2: GMAX -> GM
++    __shared__ float xs_d[GM][H / 32];   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int g = blockIdx.y;
+     if (g >= *n_groups) return;
+-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
++    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
+     for (int i = t; i < ne * (H / 32); i += blockDim.x) {
+         const int k = i / (H / 32), c = i - k * (H / 32);
+@@ -912,6 +913,7 @@ __global__ void __launch_bounds__(256) gu_grouped_kernel(const unsigned long lon
+ 
+ // Down: a block = D_ROWS rows of ONE group; the entries' quantized intermediates staged once.  A down row is 20
+ // chunks, so lanes 0..19 each hold one chunk, as in the per-entry kernel.
++template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
+ __global__ void __launch_bounds__(256) down_grouped_kernel(const unsigned long long* __restrict__ grp_ptr,
+                                                            const int32_t* __restrict__ grp_start,
+                                                            const int32_t* __restrict__ n_groups,
+@@ -919,11 +921,11 @@ __global__ void __launch_bounds__(256) down_grouped_kernel(const unsigned long l
+                                                            const uint8_t* __restrict__ h_q8_0,
+                                                            const float* __restrict__ h_scales,
+                                                            float* __restrict__ out) {
+-    __shared__ int hs_q[GMAX][FF / 4];
+-    __shared__ float hs_d[GMAX][FF / 32];
++    __shared__ int hs_q[GM][FF / 4];   // STRATA+ P-T12 measure v2: GMAX -> GM
++    __shared__ float hs_d[GM][FF / 32];   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int g = blockIdx.y;
+     if (g >= *n_groups) return;
+-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
++    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
+     for (int i = t; i < ne * (FF / 32); i += blockDim.x) {
+         const int k = i / (FF / 32), c = i - k * (FF / 32);
+@@ -985,6 +987,7 @@ __device__ __forceinline__ void stage_chunk(const uint8_t* __restrict__ xb, floa
+     xs_dh[i] = make_int2(__float_as_int(dx), hx);
+ }
+ 
++template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
+ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long long* __restrict__ grp_ptr,
+                                                            const int32_t* __restrict__ grp_start,
+                                                            const int32_t* __restrict__ n_groups,
+@@ -993,18 +996,18 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
+                                                            const float* __restrict__ x_scales,
+                                                            float* __restrict__ gate_up, int cap_entries) {
+     constexpr int NC = H / 32;
+-    __shared__ int xs_w[8 * GMAX * NC];          // 20 KB: word j of entry k's chunk c at [j][k * NC + c]
+-    __shared__ int2 xs_dh[GMAX * NC];            // 5 KB: (dx as bits, hx)
++    __shared__ int xs_w[8 * GM * NC];          // 20 KB: word j of entry k's chunk c at [j][k * NC + c]; STRATA+ P-T12 measure v2: GMAX -> GM
++    __shared__ int2 xs_dh[GM * NC];            // 5 KB: (dx as bits, hx); STRATA+ P-T12 measure v2: GMAX -> GM
+     const int g = blockIdx.y;
+     if (g >= *n_groups) return;
+-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
++    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
+     for (int i = t; i < ne * NC; i += blockDim.x) {
+         const int k = i / NC, c = i - k * NC;
+         const int tok = ent_tok[e0 + k];
+         const uint8_t* xb = x_q8_0 + (size_t) tok * (size_t) NC * 34 + (size_t) c * 34;
+         const float dx = x_scales ? x_scales[(size_t) tok * NC + c] : f16_ld(xb);
+-        stage_chunk<GMAX * NC>(xb, dx, xs_w, xs_dh, i);
++        stage_chunk<GM * NC>(xb, dx, xs_w, xs_dh, i);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     }
+     __syncthreads();
+     const uint8_t* blob = (const uint8_t*) grp_ptr[g];
+@@ -1034,7 +1037,7 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
+                 const int at = k * NC + c;
+                 int X[8];
+ #pragma unroll
+-                for (int j = 0; j < 8; ++j) X[j] = xs_w[j * (GMAX * NC) + at];
++                for (int j = 0; j < 8; ++j) X[j] = xs_w[j * (GM * NC) + at];   // STRATA+ P-T12 measure v2: GMAX -> GM
+                 const int2 dh = xs_dh[at];
+                 const float dx = __int_as_float(dh.x);
+                 acc0 += dw0[q] * dx * (float) (chunk_s(m0[q], X) - dh.y);
+@@ -1051,6 +1054,7 @@ __global__ void __launch_bounds__(256) gu_grouped_t_kernel(const unsigned long l
+     }
+ }
+ 
++template <int GM = GMAX>   // STRATA+ P-T12 measure v2: GMAX di 7dd5cf1 (8) a T <= 8, GMAX (12) oltre
+ __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long long* __restrict__ grp_ptr,
+                                                              const int32_t* __restrict__ grp_start,
+                                                              const int32_t* __restrict__ n_groups,
+@@ -1059,17 +1063,17 @@ __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long
+                                                              const float* __restrict__ h_scales,
+                                                              float* __restrict__ out) {
+     constexpr int NC = FF / 32;
+-    __shared__ int hs_w[8 * GMAX * NC];
+-    __shared__ int2 hs_dh[GMAX * NC];
++    __shared__ int hs_w[8 * GM * NC];   // STRATA+ P-T12 measure v2: GMAX -> GM
++    __shared__ int2 hs_dh[GM * NC];   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int g = blockIdx.y;
+     if (g >= *n_groups) return;
+-    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GMAX);
++    const int e0 = grp_start[g], ne = min(grp_start[g + 1] - e0, GM);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     const int t = threadIdx.x, lane = t & 31, warp = t >> 5;
+     for (int i = t; i < ne * NC; i += blockDim.x) {
+         const int k = i / NC, c = i - k * NC;
+         const uint8_t* xb = h_q8_0 + (size_t) (e0 + k) * (size_t) NC * 34 + (size_t) c * 34;
+         const float dx = h_scales ? h_scales[(size_t) (e0 + k) * NC + c] : f16_ld(xb);
+-        stage_chunk<GMAX * NC>(xb, dx, hs_w, hs_dh, i);
++        stage_chunk<GM * NC>(xb, dx, hs_w, hs_dh, i);   // STRATA+ P-T12 measure v2: GMAX -> GM
+     }
+     __syncthreads();
+     const uint8_t* blob = (const uint8_t*) grp_ptr[g];
+@@ -1093,7 +1097,7 @@ __global__ void __launch_bounds__(256) down_grouped_t_kernel(const unsigned long
+                 const int at = k * NC + c;
+                 int X[8];
+ #pragma unroll
+-                for (int j = 0; j < 8; ++j) X[j] = hs_w[j * (GMAX * NC) + at];
++                for (int j = 0; j < 8; ++j) X[j] = hs_w[j * (GM * NC) + at];   // STRATA+ P-T12 measure v2: GMAX -> GM
+                 const int2 dh = hs_dh[at];
+                 const float dx = __int_as_float(dh.x);
+                 acc0 += dw0 * dx * (float) (chunk_s(m0, X) - dh.y);
+@@ -1168,9 +1172,13 @@ void moe_group_resident(const int32_t* ids, int n, int k_per_tok, const uint8_t*
+ 
+ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start, const int32_t* n_groups,
+                     const int32_t* ent_dst, const int32_t* ent_tok, int64_t cap_groups, int64_t cap_entries,
+-                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream) {
++                    const uint8_t* x_q8_0, const float* x_scales, void* scratch, float* out, void* stream,
++                    int max_group) {   // STRATA+ P-T12 measure v2
+     if (cap_groups <= 0 || cap_entries <= 0) return;
+     cudaStream_t cs = (cudaStream_t) stream;
++    // STRATA+ P-T12 measure v2: a group holds at most one entry per token, so a call of <= 8 tokens fits the
++    // GMAX = 8 instances of 7dd5cf1; 0 (unknown: the parity harness) keeps GMAX
++    const bool g8 = max_group >= 1 && max_group <= 8;
+     const uint64_t gu_bytes = ((uint64_t) cap_entries * (uint64_t) (2 * FF) * 4 + 15) & ~15ull;
+     const uint64_t q8_bytes = ((uint64_t) cap_entries * (uint64_t) (FF / 32) * 34 + 15) & ~15ull;
+     float* gate_up = (float*) scratch;
+@@ -1180,11 +1188,15 @@ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start,
+     {
+         const dim3 grid((unsigned) (2 * FF / GU_ROWS), (unsigned) cap_groups);
+         if (fast)
+-            gu_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
+-                                                      gate_up, (int) cap_entries);
++            if (g8) gu_grouped_t_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
++                                                                 gate_up, (int) cap_entries);   // STRATA+ P-T12 measure v2
++            else gu_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales,
++                                                           gate_up, (int) cap_entries);
+         else
+-            gu_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
+-                                                    (int) cap_entries);
++            if (g8) gu_grouped_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
++                                                               (int) cap_entries);   // STRATA+ P-T12 measure v2
++            else gu_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_tok, x_q8_0, x_scales, gate_up,
++                                                         (int) cap_entries);
+         check("moe_grouped_s2/gu", stream);
+     }
+     // #783 PR-k (stuchapin909): SwiGLU and the scaled Q8_0 quantize of its result in one kernel (gate_up still gets the
+@@ -1222,9 +1234,11 @@ void moe_grouped_s2(const unsigned long long* grp_ptr, const int32_t* grp_start,
+         const dim3 grid((unsigned) (H / D_ROWS), (unsigned) cap_groups);
+         const float* hs = x_scales != nullptr ? h_scales : nullptr;
+         if (fast)
+-            down_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
++            if (g8) down_grouped_t_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);   // STRATA+ P-T12 measure v2
++            else down_grouped_t_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
+         else
+-            down_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
++            if (g8) down_grouped_kernel<8><<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);   // STRATA+ P-T12 measure v2
++            else down_grouped_kernel<<<grid, 256, 0, cs>>>(grp_ptr, grp_start, n_groups, ent_dst, h_q8_0, hs, out);
+         check("moe_grouped_s2/down", stream);
+     }
+ }
+diff --git a/src/kernels/cuda/shared_expert.cu b/src/kernels/cuda/shared_expert.cu
+index bee0da9..ed9d326 100644
+--- a/src/kernels/cuda/shared_expert.cu
++++ b/src/kernels/cuda/shared_expert.cu
+@@ -216,8 +216,8 @@ void shared_expert_multi(int n_tok, const float* x, const uint16_t* x_bf16, cons
+                          const uint16_t* gate_inp_bf16, float* gate, float* up, float* g, float* out, int64_t n_embd,
+                          int64_t n_ff, void* stream, const void* x_q8_1_ready, int lfuse) {
+     const bool gate_deferred = (lfuse & 1) != 0, pair = (lfuse & 2) != 0;
+-    if (n_tok < 1 || n_tok > 8 || !nw.q8_1 || !nw.gate_data || !nw.up_data || !nw.down_data || !stream)
+-        throw std::invalid_argument("shared_expert_multi: needs 1..8 tokens, native weights, scratch and a stream");
++    if (n_tok < 1 || n_tok > 12 || !nw.q8_1 || !nw.gate_data || !nw.up_data || !nw.down_data || !stream)   // STRATA+ P-T12 measure: 8 -> 12
++        throw std::invalid_argument("shared_expert_multi: needs 1..12 tokens, native weights, scratch and a stream");   // STRATA+ P-T12 measure
+     cudaStream_t cs = (cudaStream_t) stream;
+     // the activation's q8_1: the caller's (STRATA_VERIFY_QDEDUP, x_q8_1_ready) or the descriptor's, else quantized here
+     const void* x_q8_1 = x_q8_1_ready ? x_q8_1_ready : nw.x_q8_1;
+diff --git a/src/kernels/cuda/verify_kernels.cu b/src/kernels/cuda/verify_kernels.cu
+index a9f570b..14d04f9 100644
+--- a/src/kernels/cuda/verify_kernels.cu
++++ b/src/kernels/cuda/verify_kernels.cu
+@@ -1053,6 +1053,7 @@ void gdn_conv_ab_multi(const float* history, const float* qkv, const float* conv
+         case 4: gdn_conv_ab_kernel<4, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+         case 5: gdn_conv_ab_kernel<5, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+         case 6: gdn_conv_ab_kernel<6, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
++        case 7: case 8: gdn_conv_ab_kernel<8, false><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;   // STRATA+ P-T12 measure v2: era il default <8> di 7dd5cf1
+         default: gdn_conv_ab_kernel<kVerifyMaxT, false><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+     }
+     check("gdn_conv_ab_multi");
+@@ -1102,6 +1103,7 @@ void gdn_ab_multi(const float* x, const uint16_t* w_alpha, const uint16_t* w_bet
+         case 4: gdn_ab_multi_kernel<4, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+         case 5: gdn_ab_multi_kernel<5, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+         case 6: gdn_ab_multi_kernel<6, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
++        case 7: case 8: gdn_ab_multi_kernel<8, false><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;   // STRATA+ P-T12 measure v2: era il default <8> di 7dd5cf1
+         default: gdn_ab_multi_kernel<kVerifyMaxT, false><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+     }
+     check("gdn_ab_multi");
+@@ -1146,6 +1148,10 @@ void gdn_step_norm_multi(float* state, const float* h, int conv_channels, const
+     if (split && (t_out_begin >= n_tok || n_tok - t_out_begin >= 2)) {
+         const dim3 grid((unsigned) h_v, S / GS_COLS), block(GS_COLS, RG);
+         if (t_out_begin >= n_tok) {   // no outputs (the commit): the state only
++            if (n_tok <= 8)   // STRATA+ P-T12 measure v2: a T <= 8 l'istanza <8> di 7dd5cf1
++                gdn_state_replay_kernel<8><<<grid, block, 0, (cudaStream_t) stream>>>(
++                    state, h, conv_channels, gate, beta, h_k, h_v, n_tok, n_keep);
++            else
+             gdn_state_replay_kernel<kVerifyMaxT><<<grid, block, 0, (cudaStream_t) stream>>>(
+                 state, h, conv_channels, gate, beta, h_k, h_v, n_tok, n_keep);
+         } else {
+diff --git a/src/prefill/prefill.cpp b/src/prefill/prefill.cpp
+index 6cb888e..8e88f82 100644
+--- a/src/prefill/prefill.cpp
++++ b/src/prefill/prefill.cpp
+@@ -3857,7 +3857,7 @@ bool Prefill::run_impl(const int64_t* tokens, int64_t n, int64_t pos0, std::stri
+                                 ++nstream;
+                                 // a blob the CPU reads from RAM: page-locked, or any other that is not assembled into a
+                                 // short-lived buffer (the arena's unpinned part, the mapped experts.bin's pages)
+-                                if (c <= strata::kernels::cpu::MAXT && (m.src->pinned(l, e) || !m.src->transient(l, e)))
++                                if (c <= 8 && (m.src->pinned(l, e) || !m.src->transient(l, e)))   // STRATA+ P-T12 measure: era cpu::MAXT (ora 12), il prefill resta a 8
+                                     cand.emplace_back(c, e);
+                             }
+                             std::sort(cand.begin(), cand.end());
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 7bafd68..2ebe955 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -2793,6 +2793,12 @@ int main(int argc, char** argv) {
+         }
+         }
+     }
++    // STRATA+ P-T12 measure v2: --serve (con o senza --mtp) ha ancora array per slot/finestra a 8 (verify.hpp batch,
++    // generate.cpp dwin_s / t2_rej / slots): fuori perimetro, si esce prima di qualunque allocazione o query al device
++    if (o.serve) {
++        std::fprintf(stderr, "build di misura P-T12: --serve non supportato (array batch a 8), usare solo la CLI\n");
++        return 2;
++    }
+ #if defined(STRATA_USE_HIP)
+     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
+         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
+@@ -16405,6 +16411,9 @@ int main(int argc, char** argv) {
+         if (const char* tf = std::getenv("STRATA_SPEC_TRACE"); tf != nullptr && tf[0] != '\0') spec_trace = std::fopen(tf, "w");
+         std::vector<double> t_cycle_ms((size_t) o.spec + 1, 0.0);
+         std::vector<int64_t> t_cycle_n((size_t) o.spec + 1, 0), t_cycle_seen((size_t) o.spec + 1, 0);
++        // STRATA+ P-T12 measure: miss CPU per larghezza (ExpertDispatch::multi_misses / multi_entries, delta del round) e round con miss
++        std::vector<int64_t> t_cycle_miss((size_t) o.spec + 1, 0), t_cycle_ent((size_t) o.spec + 1, 0),
++            t_cycle_rmiss((size_t) o.spec + 1, 0);
+         // plan v0.3 P6: with a native pack the first window is the last prompt token alone (it produces the first
+         // generated token and the MTP's first cell); otherwise the token loop already did that.
+         bool first_window = native_pack;
+@@ -16606,6 +16615,7 @@ int main(int argc, char** argv) {
+             if (adapt_nowait()) apply_pending(false);
+                 else if (pending.empty() || ++pending_age >= adapt_lag()) apply_pending(true);
+             if (use_mtp && mtp.prob() && !from_sfx && T_mtp > 1 && o.spec_corrupt <= 0) ver.set_spec_q(mtp.spec_q(), T_mtp - 1);
++            const int64_t pt12_miss0 = drive.d.multi_misses, pt12_ent0 = drive.d.multi_entries;   // STRATA+ P-T12 measure
+             if (!ver.run(T, window.data(), p, &drive_pool_multi, &drive, outv.data(), err)) {
+                 // The graph of a window size is captured the first time it is used, and the draft source took VRAM: when the capture runs
+                 // out of memory the window gets one row narrower (the widths below it are already captured) instead of the run failing.
+@@ -16709,6 +16719,10 @@ int main(int argc, char** argv) {
+             if (!t_cycle.empty() && timed_round && T <= o.spec && t_cycle_seen[(size_t) T]++ > 0) {
+                 t_cycle_ms[(size_t) T] += round_ms;
+                 ++t_cycle_n[(size_t) T];
++                const int64_t pt12_dm = drive.d.multi_misses - pt12_miss0;   // STRATA+ P-T12 measure
++                t_cycle_miss[(size_t) T] += pt12_dm;
++                t_cycle_ent[(size_t) T] += drive.d.multi_entries - pt12_ent0;
++                if (pt12_dm > 0) ++t_cycle_rmiss[(size_t) T];
+             }
+             if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin.data(), T_mtp - 1, a);
+             if (timed_round && chain_n == 0) policy.observe(from_sfx, T, a, sfx_match, round_ms);
+@@ -16748,6 +16762,14 @@ int main(int argc, char** argv) {
+             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
+                 if (t_cycle_n[i] > 0) std::printf(" T%zu:%.2f(n=%lld)", i, t_cycle_ms[i] / (double) t_cycle_n[i], (long long) t_cycle_n[i]);
+             std::printf("\n");
++            // STRATA+ P-T12 measure: stessi round della riga sopra; v2: somma per round su tutti i layer, formato senza spazi
++            std::printf("%-24s", "window CPU miss/round (sum over all layers; ent = entries/round, all layers; rmiss/rnomiss = rounds with/without a miss):");
++            for (size_t i = 1; i < t_cycle_ms.size(); ++i)
++                if (t_cycle_n[i] > 0)
++                    std::printf(" T%zu:%.2f(ent=%.2f,rmiss=%lld,rnomiss=%lld)", i,   // STRATA+ P-T12 measure v2
++                                (double) t_cycle_miss[i] / (double) t_cycle_n[i], (double) t_cycle_ent[i] / (double) t_cycle_n[i],
++                                (long long) t_cycle_rmiss[i], (long long) (t_cycle_n[i] - t_cycle_rmiss[i]));
++            std::printf("\n");
+             {   // STRATA_VERIFY_PROFILE / STRATA_ROUTE_STATS: the same split per window width (bench only)
+                 const std::string pt = ver.profile_by_t_report();
+                 if (!pt.empty()) std::printf("GPU stages per window width (ms):\n%s", pt.c_str());

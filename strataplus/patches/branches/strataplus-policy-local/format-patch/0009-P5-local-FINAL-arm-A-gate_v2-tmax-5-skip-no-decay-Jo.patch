@@ -1,0 +1,201 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Bolla (coordinator)" <bolla@users.noreply.github.com>
+Date: Sun, 25 Oct 2026 04:33:11 +0100
+Subject: [PATCH 09/11] P5 local FINAL: arm A (gate_v2 tmax=5, skip, no decay)
+ = JointGate defaults for STRATA_SPEC_JOINT=1 (Strata Lead decision 25/10);
+ enabled_from_env(); arm-A defaults test; LIMITS in headers/docs. No env var:
+ upstream 7dd5cf18 behaviour.
+
+---
+ docs/strataplus_joint_gate.md        | 17 +++++++++++++
+ include/strata/spec/draft_policy.hpp | 13 ++++++++++
+ include/strata/spec/joint_gate.hpp   | 18 ++++++++++++-
+ src/spec/joint_gate.cpp              |  6 +++++
+ src/spec/joint_gate_test.cpp         | 38 +++++++++++++++++++++++++++-
+ 5 files changed, 90 insertions(+), 2 deletions(-)
+
+diff --git a/docs/strataplus_joint_gate.md b/docs/strataplus_joint_gate.md
+index f3094f2..de5b7ec 100644
+--- a/docs/strataplus_joint_gate.md
++++ b/docs/strataplus_joint_gate.md
+@@ -1,6 +1,23 @@
+ # Strata+ P5 — joint source+depth gate: engine wiring (DESIGN, not compiled)
+ 
+ 
++## Final local configuration (Strata Lead decision, 25/10/2026): arm A
++
++`STRATA_SPEC_JOINT=1` selects JointGate with `JointGate::Options()` as is = **arm A**: tmax=5 (windows T<=5, d<=4),
++skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard decay (frozen_params_v3.json, sha256 37bf1996...).
++`JointGate::enabled_from_env()` reads the variable; without it nothing changes (DraftPolicy, upstream 7dd5cf18).
++C++ defaults == replay GateV2(tmax=5, skip=True) round by round (replay/tests/test_arm_a_default_parity.py: tune
++tf_d7 x P1/P2/P4 x rho band + 0.26 x cost V1/V2, and the synthetic domains; nothing tuned on the holdout).
++
++**LIMITS**
++- Single sequence only (CLI and the --serve GEN loop). batch_step / BGEN does not use DraftPolicy: no effect for parallel > 1.
++- tok/s are ESTIMATED by the replay on a CPU proxy (Qwen3.5-2B Q4_K_M), not AMD measurements.
++- Holdout v1.1: vs the default a gain in all three domains in the rho band 0.06-0.15; vs k=3 no cell clearly worse.
++- Vs STRATA_SPEC_COST=1, chat: no gain and one cell clearly worse (chat, P1, rho 0.0791: -1.4% [-2.8; -0.2]). This agrees
++  with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++- Holdout v1.1 is used: any future comparison needs a new holdout.
++- The engine wiring below (generate.cpp) is still a DESIGN: not written/compiled here (CUDA headers).
++
+ **Scope (Strata Lead decision): single sequence only.**  JointGate / gate_v2 replaces DraftPolicy where DraftPolicy
+ runs: the CLI generation loop and the GEN loop of `--serve` (one request served alone).  The batch path
+ (`batch_step`, `BGEN <slot>`, generate.cpp ~11519 at 7dd5cf18) does not call DraftPolicy: each slot verifies 2 rows
+diff --git a/include/strata/spec/draft_policy.hpp b/include/strata/spec/draft_policy.hpp
+index 193017d..9d9e60e 100644
+--- a/include/strata/spec/draft_policy.hpp
++++ b/include/strata/spec/draft_policy.hpp
+@@ -13,6 +13,19 @@
+ // and takes the lookup window only when its best E/cost beats the MTP's by `margin`. Costs are the measured round
+ // times per window size (EMA; sizes not seen yet are scaled from seen ones by a prior shape), so the policy adapts
+ // to the machine and the context length. It only chooses which drafts to verify: the output is unchanged.
++//
++// Strata+ (local): with STRATA_SPEC_JOINT=1 the JointGate (joint_gate.hpp, arm A: tmax=5) takes this policy's place;
++// without it this class runs unchanged (upstream 7dd5cf18).
++// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
++//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
++//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
++//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
++//     llama.cpp); none is an AMD measurement.
++//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
++//     0.06-0.15; vs k=3, no cell clearly worse.
++//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
++//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
+ #pragma once
+ 
+ #include <array>
+diff --git a/include/strata/spec/joint_gate.hpp b/include/strata/spec/joint_gate.hpp
+index d079ed0..3cf116c 100644
+--- a/include/strata/spec/joint_gate.hpp
++++ b/include/strata/spec/joint_gate.hpp
+@@ -16,6 +16,19 @@
+ // RLS on one-hot(T) + rho_mtp*d + rho_lu*k (optimistic prior, monotone in T); frozen() keeps the seeded table.
+ // SCOPE: single sequence only (CLI and the --serve GEN loop, where DraftPolicy runs).  The batch path (batch_step /
+ // BGEN) uses one MTP draft per slot and never calls DraftPolicy or this gate: no effect on parallel > 1 serving.
++// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
++//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
++//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
++//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
++//     llama.cpp); none is an AMD measurement.
++//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
++//     0.06-0.15; vs k=3, no cell clearly worse.
++//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
++//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
++// DEFAULTS = arm A: tmax=5 (windows T<=5, d<=4), skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard
++// decay.  STRATA_SPEC_JOINT=1 (enabled_from_env()) selects this gate with Options() as is; without the variable nothing
++// changes (DraftPolicy, upstream 7dd5cf18 behaviour).  Engine wiring in generate.cpp: see docs/strataplus_joint_gate.md.
+ #pragma once
+ #include <array>
+ #include <cstdint>
+@@ -30,7 +43,7 @@ public:
+         bool use_src[kSrc] = {true, false};
+         bool mtp = true, skip = true, conf_stop = false;
+         double gamma = 0.5, eta = 0.35;
+-        int tmax = 8;
++        int tmax = 5;   // arm A (Strata Lead decision); arm B (tmax=8) is round 2, needs a new holdout then AMD
+     };
+     struct Lookup { int k = 0, match = 0, agree = -1; };   // agree: first lookup draft == first MTP draft (-1 unknown)
+     enum Src { kNone = 0, kMtp = 1, kLookup = 2, kPool = 3 };
+@@ -60,6 +73,9 @@ public:
+     /// `rem` for start(): tokens still allowed after the next one, bounded by max_new AND by the context window (the
+     /// engine stops when p + T > max_context; max_context <= 0 = no context bound).  Never negative.
+     static int remaining(int max_new, int produced, int max_context, int pos);
++    /// STRATA_SPEC_JOINT=1: use this gate (with the arm-A defaults of Options()) instead of DraftPolicy.  Unset or any
++    /// other value: false, DraftPolicy as upstream.
++    static bool enabled_from_env();
+     double cost_pred(int t, int d, int k) const;   // t clamped to 1..8
+     int tmax() const { return o_.tmax; }
+ 
+diff --git a/src/spec/joint_gate.cpp b/src/spec/joint_gate.cpp
+index c804b9d..a0bdf8e 100644
+--- a/src/spec/joint_gate.cpp
++++ b/src/spec/joint_gate.cpp
+@@ -3,6 +3,7 @@
+ 
+ #include <algorithm>
+ #include <cmath>
++#include <cstdlib>
+ 
+ namespace strata::spec {
+ 
+@@ -24,6 +25,11 @@ void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
+ 
+ JointGate::JointGate() : JointGate(Options()) {}
+ 
++bool JointGate::enabled_from_env() {
++    const char* v = std::getenv("STRATA_SPEC_JOINT");
++    return v != nullptr && v[0] == '1';
++}
++
+ JointGate::JointGate(const Options& o) : o_(o) {
+     o_.tmax = std::clamp(o_.tmax, 1, kD + 1);   // expect()/th_ have room for T <= kD + 1 = 8 only
+     const double pri[7] = {0.15, 0.45, 0.7, 0.85, 0.92, 0.97, 0.99};
+diff --git a/src/spec/joint_gate_test.cpp b/src/spec/joint_gate_test.cpp
+index 66f9fda..2b52654 100644
+--- a/src/spec/joint_gate_test.cpp
++++ b/src/spec/joint_gate_test.cpp
+@@ -4,6 +4,7 @@
+ #include <algorithm>
+ #include <cmath>
+ #include <cstdio>
++#include <cstdlib>
+ 
+ namespace {
+ bool g_fail = false;
+@@ -17,7 +18,9 @@ int main() {
+     using strata::spec::JointGate;
+     const JointGate::Lookup none[2] = {};
+     {   // confident MTP chains on a flat verify cost are drafted deep; unconfident ones stop early
+-        JointGate g;
++        // (written for the full window: explicit tmax=8 since the default became arm A, tmax=5)
++        JointGate::Options o8; o8.tmax = 8;
++        JointGate g(o8);
+         const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
+         const float lo[7] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
+         for (int r = 0; r < 300; ++r) {   // learn: hi chains accept fully, lo chains fail at once; flat cost 1.0
+@@ -112,6 +115,39 @@ int main() {
+         check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
+         check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
+     }
++    {   // arm A = the defaults (Strata Lead decision 25/10/2026): tmax=5, skip, prompt lookup only, no conf_stop
++        const JointGate::Options d;
++        check(d.tmax == 5 && d.skip && d.mtp && !d.conf_stop && d.use_src[0] && !d.use_src[1],
++              "defaults = arm A: tmax=5, skip, mtp, lookup only, no conf_stop");
++        JointGate g;
++        check(g.tmax() == 5, "JointGate() has tmax 5");
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        JointGate::Lookup lu[2] = {{7, 40, 1}, {}};
++        const int lu_acc[2] = {7, 0};
++        int maxt = 0, maxd = 0, maxlt = 0;   // klu = lookup PROPOSAL length (cost term), not the window
++        for (int r = 0; r < 300; ++r) {   // flat cost, everything accepted: the widest allowed window wins
++            JointGate::Choice c;
++            const bool look = r % 3 == 0;
++            if (!g.start(look ? lu : none, 100, &c)) {
++                int dd = 0;
++                while (true) { ++dd; if (!g.keep(hi, nullptr, dd)) break; }
++                maxd = std::max(maxd, dd);
++                c = g.finish(hi, dd, look ? lu : none);
++            }
++            maxt = std::max(maxt, c.t); maxd = std::max(maxd, c.d);
++            if (c.src == JointGate::kLookup) maxlt = std::max(maxlt, c.t);
++            g.observe(c, c.t - 1, 1.0, 7, hi, look ? lu : none, lu_acc);
++        }
++        check(maxt == 5 && maxd <= 4 && maxlt >= 2 && maxlt <= 5, "arm A: windows (MTP and lookup) reach T=5, never more; d<=4");
++        unsetenv("STRATA_SPEC_JOINT");
++        const bool off = !JointGate::enabled_from_env();
++        setenv("STRATA_SPEC_JOINT", "0", 1);
++        const bool zero = !JointGate::enabled_from_env();
++        setenv("STRATA_SPEC_JOINT", "1", 1);
++        const bool on = JointGate::enabled_from_env();
++        unsetenv("STRATA_SPEC_JOINT");
++        check(off && zero && on, "STRATA_SPEC_JOINT: unset/0 -> off (DraftPolicy), 1 -> on");
++    }
+     std::printf(g_fail ? "FAIL\n" : "PASS\n");
+     return g_fail ? 1 : 0;
+ }
+-- 
+2.47.3
+

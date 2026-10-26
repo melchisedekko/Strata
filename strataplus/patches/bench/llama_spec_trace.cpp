@@ -1,0 +1,379 @@
+#include <map>
+#include <sstream>
+// llama_spec_trace.cpp - strata-plus, PROXY CPU. Derived from llama.cpp examples/speculative-simple (MIT) @ d327bf1f.
+// Local tool, never pushed. Modes:
+//   --mode base : target only, one token per forward (greedy reference y)
+//   --mode live : llama.cpp draft-mtp exactly as speculative-simple (live run, gate V1), every round logged
+//   --mode tf   : teacher-forced: at EVERY position the MTP drafts Dmax tokens (logged), the target verifies only
+//                 id_last (so the committed sequence is y by construction) -> one round row per position (piano.md §6 rule 4)
+// In every round the Strata SuffixDrafter (strata-src/src/spec/suffix_drafter.cpp, linked) proposes up to Dmax lookup
+// tokens on prompt+committed: logged as cand.lookup. Counterfactual acceptance vs y is added by tools/annotate.py.
+// Requires the local patch patches/llamacpp-draft-mtp-probs.patch (draft probabilities: result_p).
+#include "arg.h"
+#include "common.h"
+#include "sampling.h"
+#include "speculative.h"
+#include "log.h"
+#include "llama.h"
+#include "strata/spec/suffix_drafter.hpp"
+
+#include <algorithm>
+#include <chrono>
+#include <clocale>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using Clock = std::chrono::steady_clock;
+static double ms_since(Clock::time_point t) { return std::chrono::duration<double, std::milli>(Clock::now() - t).count(); }
+
+static std::string jget(const std::string& line, const std::string& key) {
+    const std::string k = "\"" + key + "\": \"";
+    size_t i = line.find(k);
+    if (i == std::string::npos) return "";
+    i += k.size();
+    std::string o;
+    for (; i < line.size() && line[i] != '"'; ++i) {
+        if (line[i] == '\\' && i + 1 < line.size()) {
+            char c = line[++i];
+            if (c == 'n') o += '\n'; else if (c == 't') o += '\t'; else if (c == 'r') o += '\r';
+            else if (c == 'u') {
+                unsigned cp = std::stoul(line.substr(i + 1, 4), nullptr, 16); i += 4;
+                if (cp >= 0xD800 && cp <= 0xDBFF && line.compare(i + 1, 2, "\\u") == 0) {
+                    unsigned lo = std::stoul(line.substr(i + 3, 4), nullptr, 16); i += 6;
+                    cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
+                }
+                if (cp < 0x80) o += (char) cp;
+                else if (cp < 0x800) { o += (char) (0xC0 | (cp >> 6)); o += (char) (0x80 | (cp & 0x3F)); }
+                else if (cp < 0x10000) { o += (char) (0xE0 | (cp >> 12)); o += (char) (0x80 | ((cp >> 6) & 0x3F)); o += (char) (0x80 | (cp & 0x3F)); }
+                else { o += (char) (0xF0 | (cp >> 18)); o += (char) (0x80 | ((cp >> 12) & 0x3F)); o += (char) (0x80 | ((cp >> 6) & 0x3F)); o += (char) (0x80 | (cp & 0x3F)); }
+            } else o += c;
+        } else o += line[i];
+    }
+    return o;
+}
+static void jtoks(FILE* f, const std::vector<llama_token>& v, size_t n) {
+    std::fputc('[', f);
+    for (size_t i = 0; i < n && i < v.size(); ++i) std::fprintf(f, "%s%d", i ? "," : "", v[i]);
+    std::fputc(']', f);
+}
+
+int main(int argc, char ** argv) {
+    std::setlocale(LC_NUMERIC, "C");
+    // our own args first (removed from argv before common_params_parse)
+    std::string prompts, out, mode = "live", tag = "run", dataset_note, live_src = "mtp", ref_path;
+    int limit = 0, dmax = 7, reps = 1, p4_reps = 20;
+    std::vector<char*> rest{argv[0]};
+    for (int i = 1; i < argc; ++i) {
+        std::string a = argv[i];
+        if (a == "--prompts") prompts = argv[++i];
+        else if (a == "--out") out = argv[++i];
+        else if (a == "--mode") mode = argv[++i];
+        else if (a == "--tag") tag = argv[++i];
+        else if (a == "--limit") limit = std::atoi(argv[++i]);
+        else if (a == "--dmax") dmax = std::atoi(argv[++i]);
+        else if (a == "--reps") reps = std::atoi(argv[++i]);
+        else if (a == "--live-src") live_src = argv[++i];
+        else if (a == "--p4-reps") p4_reps = std::atoi(argv[++i]);
+        else if (a == "--ref") ref_path = argv[++i];
+        else rest.push_back(argv[i]);
+    }
+    std::string flags;
+    for (size_t i = 1; i < rest.size(); ++i) { flags += rest[i]; flags += ' '; }
+    int rargc = (int) rest.size();
+    common_params params;
+    common_init();
+    if (!common_params_parse(rargc, rest.data(), params, LLAMA_EXAMPLE_SPECULATIVE)) return 1;
+    const bool tf = mode == "tf";
+    // diagnostics (greedy-equality check): draft = the reference greedy output y (yright: always accepted, T=dmax+1)
+    // or y with every token shifted by one id (ywrong: always rejected, T=dmax+1, full rollback every round)
+    const bool ydiag = mode == "live" && (live_src == "yright" || live_src == "ywrong");
+    const bool lookup_only = mode == "live" && (live_src == "lookup" || ydiag);
+    std::map<std::string, std::vector<llama_token>> ref;
+    if (!ref_path.empty()) {
+        std::ifstream f(ref_path); std::string l;
+        while (std::getline(f, l)) {
+            const size_t t = l.find('\t'); if (t == std::string::npos) continue;
+            std::vector<llama_token> v; std::stringstream ss(l.substr(t + 1)); std::string x;
+            while (std::getline(ss, x, ',')) if (!x.empty()) v.push_back(std::atoi(x.c_str()));
+            ref[l.substr(0, t)] = v;
+        }
+    }
+    const bool combo = mode == "live" && live_src == "combo";
+    const bool base = mode == "base" || lookup_only;   // lookup-only: no MTP context at all
+    const int mtp_k = tf ? dmax : params.speculative.draft.n_max;   // MTP depth actually drafted per round
+    // size the context (n_rs_seq rollback window, outputs) for the longest draft we may verify (lookup up to dmax)
+    params.speculative.draft.n_max = std::max(params.speculative.draft.n_max, dmax);
+    const auto output_limits = common_speculative_get_output_limits(params.n_batch, params.n_parallel, std::max(common_speculative_n_max(&params.speculative), dmax));
+    params.n_outputs_max = output_limits.total;
+    params.n_outputs_max_per_seq = output_limits.per_seq;
+
+    llama_backend_init();
+    auto llama_init_tgt = common_init_from_params(params);
+    llama_model * model_tgt = llama_init_tgt->model();
+    llama_context * ctx_tgt = llama_init_tgt->context();
+    const llama_vocab * vocab = llama_model_get_vocab(model_tgt);
+    common_speculative_init_result_ptr spec_init;
+    llama_context * ctx_dft = nullptr;
+    if (!base) {
+        common_params params_dft = common_base_params_to_speculative(params);
+        spec_init = common_speculative_init_from_params(params_dft, model_tgt, ctx_tgt);
+        params.speculative.draft.ctx_tgt = ctx_tgt;
+        params.speculative.draft.ctx_dft = spec_init->context();
+        ctx_dft = params.speculative.draft.ctx_dft;
+    }
+    const bool use_ckpt_tgt = common_context_can_seq_rm(ctx_tgt) == COMMON_CONTEXT_SEQ_RM_TYPE_FULL;
+    const bool use_ckpt_dft = ctx_dft && common_context_can_seq_rm(ctx_dft) == COMMON_CONTEXT_SEQ_RM_TYPE_FULL;
+    std::fprintf(stderr, "use_ckpt_tgt=%d use_ckpt_dft=%d mode=%s\n", (int) use_ckpt_tgt, (int) use_ckpt_dft, mode.c_str());
+
+    struct P { std::string id, cat, src, text; };
+    std::vector<P> ps;
+    { std::ifstream f(prompts); std::string l; while (std::getline(f, l)) if (!l.empty()) ps.push_back({jget(l, "id"), jget(l, "category"), jget(l, "source"), jget(l, "prompt")}); }
+    if (limit > 0 && (int) ps.size() > limit) ps.resize(limit);
+    FILE * fo = std::fopen((out + ".jsonl").c_str(), "w");
+    if (!fo) return 1;
+
+    for (int rep = 0; rep < reps; ++rep)
+    for (const P & pr : ps) {
+        const std::string chat = "<|im_start|>user\n" + pr.text + "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
+        std::vector<llama_token> inp = common_tokenize(ctx_tgt, chat, true, true);
+        if ((int) inp.size() + params.n_predict + dmax + 4 > (int) llama_n_ctx(ctx_tgt) || llama_n_batch(ctx_tgt) < (uint32_t) inp.size()) {
+            std::fprintf(stderr, "skip %s: prompt %zu tokens\n", pr.id.c_str(), inp.size());
+            continue;
+        }
+        llama_memory_clear(llama_get_memory(ctx_tgt), true);
+        if (ctx_dft) llama_memory_clear(llama_get_memory(ctx_dft), true);
+        const llama_seq_id seq_id = 0;
+        common_sampler_ptr smpl(common_sampler_init(model_tgt, params.sampling));
+        common_speculative * spec = nullptr;
+        if (!base) {
+            spec = common_speculative_init(params.speculative, 1);
+            if (!spec) { std::fprintf(stderr, "spec init failed\n"); return 1; }
+        }
+        strata::spec::SuffixDrafter sfx;
+        sfx.append(inp.data(), inp.size());
+        std::vector<int32_t> lbuf((size_t) dmax);
+        const auto t_enc = Clock::now();
+        {
+            common_batch batch_prompt(ctx_tgt);
+            for (size_t i = 0; i + 1 < inp.size(); ++i) batch_prompt.add(inp[i], i, seq_id, false);
+            llama_process(ctx_tgt, LLAMA_PROCESS_TYPE_DECODE, batch_prompt.get());
+            if (spec && !common_speculative_process(spec, batch_prompt)) { std::fprintf(stderr, "spec prompt failed\n"); return 1; }
+        }
+        const double prefill_ms = ms_since(t_enc);
+        if (mode == "p4") {
+            const int n0 = (int) inp.size() - 1;
+            const int NREP = p4_reps;
+            common_prompt_checkpoint pck;   // full rollback via state checkpoint (hybrid GDN memory cannot drop all T rows)
+            pck.update_pos(n0, llama_memory_seq_pos_min(llama_get_memory(ctx_tgt), seq_id), llama_memory_seq_pos_max(llama_get_memory(ctx_tgt), seq_id));
+            pck.update_tgt(ctx_tgt, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY);
+            auto fwd = [&](int T) {
+                common_batch b(ctx_tgt);
+                for (int i = 0; i < T; ++i) b.add(inp[(size_t) i % inp.size()], n0 + i, seq_id, true);
+                const auto t0 = Clock::now();
+                llama_process(ctx_tgt, LLAMA_PROCESS_TYPE_DECODE, b.get());
+                llama_synchronize(ctx_tgt);
+                const double ms = ms_since(t0);
+                GGML_ASSERT(pck.load_tgt(ctx_tgt, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY));
+                llama_memory_seq_rm(llama_get_memory(ctx_tgt), seq_id, pck.pos_max + 1, -1);
+                return ms;
+            };
+            llama_tokens ptgt(inp.begin(), inp.end() - 1);
+            if (spec) common_speculative_begin(spec, seq_id, ptgt);
+            auto drf = [&](int d) {
+                llama_tokens res; std::vector<float> rp;
+                auto & dp = common_speculative_get_draft_params(spec, seq_id);
+                dp = { true, d, n0, inp.back(), &ptgt, &res };
+                dp.result_p = &rp;
+                const auto t0 = Clock::now();
+                common_speculative_draft(spec);
+                llama_synchronize(ctx_dft);
+                const double ms = ms_since(t0);
+                llama_memory_seq_rm(llama_get_memory(ctx_dft), seq_id, n0, -1);
+                return std::make_pair(ms, (int) res.size());
+            };
+            for (int w = 0; w < 3; ++w) { for (int T = 1; T <= dmax + 1; ++T) fwd(T); if (spec) drf(dmax); }
+            for (int rr = 0; rr < NREP; ++rr) {
+                for (int j = 0; j <= dmax; ++j) {
+                    const int T = (rr % 2 == 0) ? j + 1 : dmax + 1 - j;   // alternate ascending/descending order
+                    std::fprintf(fo, "{\"type\":\"p4\",\"label\":\"proxy CPU, modello denso, non AMD\",\"run_id\":\"%s\",\"req_id\":\"%s\",\"ctx_len\":%d,\"rep\":%d,\"what\":\"verify\",\"T\":%d,\"ms\":%.4f}\n", tag.c_str(), pr.id.c_str(), n0 + 1, rr, T, fwd(T));
+                }
+                if (spec) for (int j = 1; j <= dmax; ++j) {
+                    const int d = (rr % 2 == 0) ? j : dmax + 1 - j;
+                    auto pm = drf(d);
+                    std::fprintf(fo, "{\"type\":\"p4\",\"label\":\"proxy CPU, modello denso, non AMD\",\"run_id\":\"%s\",\"req_id\":\"%s\",\"ctx_len\":%d,\"rep\":%d,\"what\":\"mtp_draft\",\"depth\":%d,\"got\":%d,\"ms\":%.4f}\n", tag.c_str(), pr.id.c_str(), n0 + 1, rr, d, pm.second, pm.first);
+                }
+                {   // lookup: Strata SuffixDrafter propose(dmax) on the prompt history, averaged over 1000 calls
+                    const auto t0 = Clock::now();
+                    volatile int acc = 0;
+                    for (int q = 0; q < 1000; ++q) acc += sfx.propose(dmax, lbuf.data());
+                    const double ms = ms_since(t0) / 1000.0;
+                    const auto t1 = Clock::now();
+                    for (int q = 0; q < 1000; ++q) sfx.append(inp[(size_t) q % inp.size()]);
+                    const double ms_app = ms_since(t1) / 1000.0;
+                    std::fprintf(fo, "{\"type\":\"p4\",\"label\":\"proxy CPU, modello denso, non AMD\",\"run_id\":\"%s\",\"req_id\":\"%s\",\"ctx_len\":%d,\"rep\":%d,\"what\":\"lookup\",\"ms\":%.6f,\"append_ms\":%.6f,\"k\":%d}\n", tag.c_str(), pr.id.c_str(), n0 + 1, rr, ms, ms_app, (int) acc);
+                }
+            }
+            std::fflush(fo);
+            std::fprintf(stderr, "[%s] p4 %s ctx %d done\n", tag.c_str(), pr.id.c_str(), n0 + 1);
+            if (spec) common_speculative_free(spec);
+            continue;
+        }
+        llama_token id_last = inp.back();
+        llama_tokens prompt_tgt(inp.begin(), inp.end() - 1);
+        int n_past = (int) inp.size() - 1;
+        if (spec) common_speculative_begin(spec, seq_id, prompt_tgt);
+        common_batch batch_tgt(ctx_tgt);
+        llama_tokens draft, mtp_cand;
+        std::vector<float> mtp_p;
+        common_prompt_checkpoint ckpt;
+        std::vector<llama_token> output;
+        int n_predict = 0, r = 0;
+        bool has_eos = false, replay = false;
+        double dec_ms = 0, draft_ms_tot = 0, verify_ms_tot = 0, proc_ms_tot = 0;
+        int n_verify = 0, n_drafted = 0, n_accept = 0, n_replay = 0;
+        const auto t_dec = Clock::now();
+        while (true) {
+            double draft_ms = 0, lookup_ms = 0;
+            replay = !draft.empty();
+            std::string src_used = "mtp";
+            // lookup candidate (Strata SuffixDrafter) on prompt + committed, every round
+            int lk = 0, lmatch = 0;
+            if (!replay) {
+                const auto tl = Clock::now();
+                lk = sfx.propose(dmax, lbuf.data());
+                lmatch = sfx.last_match();
+                lookup_ms = ms_since(tl);
+            }
+            if (!replay) {
+                mtp_cand.clear(); mtp_p.clear();
+                if (spec) {
+                    ckpt.update_pos(prompt_tgt.size(), llama_memory_seq_pos_min(llama_get_memory(ctx_tgt), seq_id),
+                                    llama_memory_seq_pos_max(llama_get_memory(ctx_tgt), seq_id));
+                    if (use_ckpt_dft) ckpt.update_dft(ctx_dft, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY);
+                    int n_draft_max = (int) llama_n_ctx(ctx_tgt) - n_past - 2;
+                    if (!tf && params.n_predict >= 0) n_draft_max = std::min(n_draft_max, params.n_predict - n_predict - 1);
+                    n_draft_max = std::max(n_draft_max, 0);
+                    auto & dp = common_speculative_get_draft_params(spec, seq_id);
+                    dp = { true, std::min(n_draft_max, mtp_k), n_past, id_last, &prompt_tgt, &mtp_cand };
+                    dp.result_p = &mtp_p;
+                    const auto td = Clock::now();
+                    common_speculative_draft(spec);
+                    draft_ms = ms_since(td);
+                    if (!tf) draft = mtp_cand;   // live: verify the MTP draft; tf: verify nothing
+                    if (!draft.empty() && use_ckpt_tgt) ckpt.update_tgt(ctx_tgt, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY);
+                    if (use_ckpt_dft) GGML_ASSERT(ckpt.load_dft(ctx_dft, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY));
+                    llama_memory_seq_rm(llama_get_memory(ctx_dft), seq_id, ckpt.pos_max + 1, -1);
+                    if (combo && lk > 0 && !mtp_cand.empty() && lbuf[0] == mtp_cand[0] && lk > (int) mtp_cand.size()) {
+                        // Strata-like rule (strata-src generate.cpp:16556-16563): suffix only if it agrees with the head's 1st token
+                        draft.assign(lbuf.begin(), lbuf.begin() + std::min(lk, n_draft_max));
+                        src_used = "lookup";
+                    }
+                } else if (lookup_only) {
+                    int n_draft_max = (int) llama_n_ctx(ctx_tgt) - n_past - 2;
+                    if (params.n_predict >= 0) n_draft_max = std::min(n_draft_max, params.n_predict - n_predict - 1);
+                    n_draft_max = std::max(n_draft_max, 0);
+                    draft.assign(lbuf.begin(), lbuf.begin() + std::min(lk, n_draft_max));
+                    src_used = "lookup";
+                    if (ydiag) {
+                        const auto & y = ref.at(pr.id);
+                        draft.clear();
+                        for (int i = 0; i < std::min(dmax, n_draft_max) && output.size() + i < y.size(); ++i)
+                            draft.push_back(live_src == "yright" ? y[output.size() + i] : (y[output.size() + i] + 1) % llama_vocab_n_tokens(vocab));
+                        src_used = live_src;
+                    }
+                    if (use_ckpt_tgt) GGML_ASSERT(false && "lookup-only with checkpointed target not implemented");
+                } else if (use_ckpt_tgt) {
+                    ckpt.update_pos(prompt_tgt.size(), llama_memory_seq_pos_min(llama_get_memory(ctx_tgt), seq_id),
+                                    llama_memory_seq_pos_max(llama_get_memory(ctx_tgt), seq_id));
+                }
+            }
+            const int pos = n_past;
+            const auto tv = Clock::now();
+            batch_tgt.clear();
+            batch_tgt.add(id_last, n_past++, seq_id, true);
+            for (size_t i = 0; i < draft.size(); ++i) batch_tgt.add(draft[i], n_past + i, seq_id, true);
+            llama_process(ctx_tgt, LLAMA_PROCESS_TYPE_DECODE, batch_tgt.get());
+            const double fwd_ms = ms_since(tv);
+            const auto tp = Clock::now();
+            if (spec && !common_speculative_process(spec, batch_tgt)) { std::fprintf(stderr, "spec process failed\n"); break; }
+            const double proc_ms = ms_since(tp);
+            common_sampler_ptr smpl_save;
+            if (use_ckpt_tgt) smpl_save.reset(common_sampler_clone(smpl.get()));
+            const size_t n_draft = draft.size();
+            const auto ts = Clock::now();
+            auto ids = common_sampler_sample_and_accept_n(smpl.get(), ctx_tgt, draft);
+            const double verify_ms = fwd_ms + ms_since(ts);
+            const bool partial = use_ckpt_tgt && ids.size() - 1 < n_draft;
+            // ---- round row (strataplus.v1) ----
+            std::fprintf(fo, "{\"type\":\"round\",\"schema\":\"strataplus.v1\",\"label\":\"proxy CPU\",\"run_id\":\"%s\",\"req_id\":\"%s\",\"rep\":%d,\"r\":%d,"
+                             "\"pos\":%d,\"gen_index\":%d,\"ctx_len\":%d,\"ctx_bucket\":%d,\"source\":\"%s\",\"k_proposed\":%zu,\"T\":%zu,\"proposal\":",
+                         tag.c_str(), pr.id.c_str(), rep, r, pos, (int) output.size(), pos + 1, pos < 6144 ? 0 : pos < 24576 ? 1 : 2,
+                         replay ? "replay" : (n_draft > 0 ? src_used.c_str() : "none"), n_draft, n_draft + 1);
+            jtoks(fo, draft, draft.size());
+            std::fprintf(fo, ",\"cand\":{\"mtp\":{\"tokens\":");
+            jtoks(fo, replay ? llama_tokens{} : mtp_cand, (size_t) -1);
+            std::fprintf(fo, ",\"probs\":[");
+            if (!replay) for (size_t i = 0; i < mtp_p.size(); ++i) std::fprintf(fo, "%s%.4f", i ? "," : "", mtp_p[i]);
+            std::fprintf(fo, "]},\"lookup\":{\"tokens\":");
+            std::vector<llama_token> lv(lbuf.begin(), lbuf.begin() + lk);
+            jtoks(fo, lv, lv.size());
+            std::fprintf(fo, ",\"match\":%d}},\"accepted\":%zu,\"committed\":%zu,\"target_tokens\":", lmatch, ids.size() - 1, partial ? (size_t) 0 : ids.size());
+            jtoks(fo, ids, ids.size());
+            std::fprintf(fo, ",\"partial_restore\":%s,\"ms_measured\":{\"draft\":%.3f,\"lookup\":%.4f,\"verify\":%.3f,\"mtp_process\":%.3f},"
+                             "\"policy\":\"llamacpp-%s-%s\",\"domain\":\"%s\"}\n",
+                         partial ? "true" : "false", draft_ms, lookup_ms, verify_ms, proc_ms, mode.c_str(), live_src.c_str(), pr.cat.c_str());
+            ++r;
+            if (replay) ++n_replay; else { ++n_verify; n_drafted += (int) n_draft; n_accept += (int) ids.size() - 1; }
+            draft_ms_tot += draft_ms; verify_ms_tot += verify_ms; proc_ms_tot += proc_ms;
+            if (partial) {   // recurrent target (Qwen3.5 GDN): restore the checkpoint and re-run the accepted tokens
+                draft = std::move(ids);
+                GGML_ASSERT(ckpt.load_tgt(ctx_tgt, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY));
+                llama_memory_seq_rm(llama_get_memory(ctx_tgt), seq_id, ckpt.pos_max + 1, -1);
+                if (ctx_dft) {
+                    GGML_ASSERT(ckpt.load_dft(ctx_dft, seq_id, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY));
+                    llama_memory_seq_rm(llama_get_memory(ctx_dft), seq_id, ckpt.pos_max + 1, -1);
+                }
+                prompt_tgt.resize(ckpt.n_tokens);
+                smpl = std::move(smpl_save);
+                n_past = (int) prompt_tgt.size();
+                continue;
+            }
+            if (spec) common_speculative_accept(spec, seq_id, ids.size() - 1);
+            n_past += ids.size() - 1;
+            n_predict += ids.size();
+            for (size_t i = 0; i < ids.size(); ++i) {
+                prompt_tgt.push_back(id_last);
+                id_last = ids[i];
+                output.push_back(id_last);
+                sfx.append(id_last);
+                if (llama_vocab_is_eog(vocab, id_last)) { has_eos = true; break; }
+            }
+            draft.clear();
+            llama_memory_seq_rm(llama_get_memory(ctx_tgt), seq_id, n_past, -1);
+            if (ctx_dft) llama_memory_seq_rm(llama_get_memory(ctx_dft), seq_id, n_past, -1);
+            if ((params.n_predict >= 0 && n_predict >= params.n_predict) || has_eos) break;
+        }
+        dec_ms = ms_since(t_dec);
+        if (params.n_predict >= 0 && (int) output.size() > params.n_predict) output.resize(params.n_predict);
+        std::fprintf(fo, "{\"type\":\"request\",\"schema\":\"strataplus.v1\",\"label\":\"proxy CPU\",\"run_id\":\"%s\",\"engine\":\"llamacpp\",\"engine_rev\":\"d327bf1f0780f87b8c01b367b61853b0c291d7c4+strataplus-local-patch\","
+                         "\"model\":\"%s\",\"flags\":\"%s--mode %s --live-src %s --dmax %d\",\"dataset\":\"%s\",\"domain\":\"%s\",\"req_id\":\"%s\",\"session_id\":null,\"turn\":0,\"rep\":%d,"
+                         "\"prompt_tokens\":%zu,\"prompt_ids\":",
+                     tag.c_str(), params.model.path.c_str(), flags.c_str(), mode.c_str(), live_src.c_str(), dmax, pr.src.c_str(), pr.cat.c_str(), pr.id.c_str(), rep, inp.size());
+        jtoks(fo, inp, inp.size());
+        std::fprintf(fo, ",\"output_tokens\":%zu,\"output_ids\":", output.size());
+        jtoks(fo, output, output.size());
+        std::fprintf(fo, ",\"verify_rounds\":%d,\"replay_rounds\":%d,\"drafted\":%d,\"accepted\":%d,\"prefill_ms\":%.3f,\"decode_ms\":%.3f,"
+                         "\"draft_ms\":%.3f,\"verify_ms\":%.3f,\"mtp_process_ms\":%.3f,\"use_ckpt_tgt\":%s}\n",
+                     n_verify, n_replay, n_drafted, n_accept, prefill_ms, dec_ms, draft_ms_tot, verify_ms_tot, proc_ms_tot, use_ckpt_tgt ? "true" : "false");
+        std::fflush(fo);
+        std::fprintf(stderr, "[%s] rep %d %s: %zu tok, %d verify + %d replay rounds, acc %d/%d, decode %.0f ms\n", tag.c_str(), rep,
+                     pr.id.c_str(), output.size(), n_verify, n_replay, n_accept, n_drafted, dec_ms);
+        if (spec) common_speculative_free(spec);
+    }
+    std::fclose(fo);
+    llama_backend_free();
+    return 0;
+}

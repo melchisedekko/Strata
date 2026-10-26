@@ -1,0 +1,50 @@
+[
+ {
+  "block": "q4km_main_b4",
+  "reason": "ps.log 1/23 snapshot con processo estraneo >20% CPU (python3 /tmp/jg/dryrun.py)"
+ },
+ {
+  "block": "q4km_main_b5",
+  "reason": "ps.log 10/23 snapshot (python3 holdout_v11.py, /tmp/jg/tune_v11_dry.py)"
+ },
+ {
+  "block": "q4km_llamafile_off_b7",
+  "reason": "ps.log 8/24 snapshot (python in /workspace/strata-policy/.venv, suffix_drafter_test_plain)"
+ },
+ {
+  "block": "q4km_main_b8",
+  "reason": "ps.log 5/23 snapshot (cc1plus, tests/test_arm_a_default_parity.py)"
+ },
+ {
+  "block": "q4km_ctrl_ub256",
+  "reason": "ps.log 15/75 snapshot (clang++-17, apt-get install ROCm, cc1plus)"
+ },
+ {
+  "block": "q4km_ctrl_t8",
+  "reason": "ps.log 18/33 snapshot (dpkg-deb, cc1plus, git index-pack); interrotto a meta'"
+ },
+ {
+  "block": "q4km_main_b4_a1",
+  "reason": "exit 0; 5 intervalli 2 s con carico estraneo >=0.5 core (max 1.229); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ },
+ {
+  "block": "q4km_main_b4_a2",
+  "reason": "exit 0; 13 intervalli 2 s con carico estraneo >=0.5 core (max 1.225); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ },
+ {
+  "block": "q4km_main_b4_a3",
+  "reason": "exit 0; 5 intervalli 2 s con carico estraneo >=0.5 core (max 1.222); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ },
+ {
+  "block": "q4km_main_b5_a1",
+  "reason": "exit 0; 6 intervalli 2 s con carico estraneo >=0.5 core (max 1.202); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ },
+ {
+  "block": "q4km_main_b5_a2",
+  "reason": "exit 0; 10 intervalli 2 s con carico estraneo >=0.5 core (max 1.327); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ },
+ {
+  "block": "q4km_main_b5_a3",
+  "reason": "exit 0; 6 intervalli 2 s con carico estraneo >=0.5 core (max 1.197); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+ }
+]

@@ -1,0 +1,44 @@
+{
+ "name": "run_lookup_only_replay",
+ "written_at_CET": "2026-10-25 07:06:50",
+ "approval": "Lead, 07:06 CET: 'si' anche al replay allineato alla run live di Bench'",
+ "purpose": "pre-registrare l'AL del replay lookup-only PRIMA dei dati della run live di Bench (holdout v1.1, lookup-only, bracci dmax 7/12/16, build ON). Bench riportera' l'AL sulla richiesta intera e sul prefisso comune con il riferimento.",
+ "method": {
+  "drafter": "strata::spec::SuffixDrafter(min_match=3, max_match=64), propose(max_k=dmax); lo stesso drafter rigenerato dei report precedenti: binding ctypes strata_sim/native.py NativeSuffixDrafter(3, 64, 1<<15) sulla lib di produzione native/libstrata_spec_capi.so; append(prompt_ids), poi scan(y, max_k=dmax) teacher-forced (a ogni posizione p la proposta e' fatta con la storia prompt + y[:p], e y[p] viene aggiunto dopo)",
+  "lookup_only": "a ogni round si propone il candidato del drafter tagliato a dmax (scan con max_k=dmax); senza candidato (k=0) il round produce 1 token senza draft",
+  "acceptance": "teacher-forced: acc = lcp(cand[:dmax], y[p:p+dmax]), con il limite di coda a = min(acc, n-p-1) (il token corretto deve esistere nel riferimento)",
+  "AL": "token emessi per round, compreso il token corretto: AL = sum(a+1)/round = n/round su ogni richiesta; la traiettoria avanza di p += a+1 sul riferimento y",
+  "arms_dmax": [
+   7,
+   12,
+   16
+  ],
+  "data": "holdout v1.1 teacher-forced (riferimento y greedy del proxy llama.cpp 2B, 'proxy CPU, non AMD'), per dominio code/chat/edit; tutte le richieste di ciascun file come caricate da strata_sim/postprocess.load_tf (come nei report precedenti)",
+  "ci95": "bootstrap percentile sulle richieste, B=2000, seed 0, rapporto delle somme (sum token / sum round)",
+  "extra_outputs": [
+   "quota di round con un candidato (k>0) per dominio e braccio",
+   "istogramma delle accettazioni a per round (a=0..dmax, separando i round senza candidato)",
+   "per richiesta: n, round, quota con candidato (per poter restringere in seguito al prefisso comune; non calcolato ora)"
+  ],
+  "check": "con dmax=7, il candidato tagliato (k e token) e l'accettazione devono coincidere con quelli delle tracce (lk_k, lk_tok, lk_acc): 0 discrepanze attese; altrimenti fermarsi e riportarlo"
+ },
+ "inputs_sha256": {
+  "holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "traces_dir": "/workspace/strata-plus/traces/v1.1 (shas coincide con MANIFEST.sha256)",
+  "strata_sim/native.py": "6bc1af8e4987ce0384a3eb42214471fd24859251ff7c5ddb54da94ccd049a758",
+  "strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40",
+  "native/libstrata_spec_capi.so": "8fb27b0d1ca6bfeb58d2e9a1a45d28cc779f1feb7ef1662b2eb6d524608b055b"
+ },
+ "comparison_note": "il replay va confrontato con l'AL live sul PREFISSO COMUNE con il riferimento: dopo la prima divergenza la traiettoria live non e' piu' il riferimento teacher-forced, quindi lookup e accettazioni live non sono confrontabili con il replay",
+ "reading_criterion": "descrittivo: per ogni dominio e braccio si riporta (AL live sul prefisso comune - AL replay)/AL replay in %. NON e' un test go/no-go.",
+ "limits": [
+  "proxy 2B (llama.cpp), 'proxy CPU, non AMD'",
+  "uscite <=128 token",
+  "molta copia dal prompt in code/edit",
+  "il replay usa il riferimento intero; restringerlo al prefisso comune richiede i dati live e non e' calcolato ora",
+  "solo AL, nessun tok/s"
+ ],
+ "not_computed": "nient'altro"
+}

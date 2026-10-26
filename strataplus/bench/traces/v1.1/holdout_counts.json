@@ -1,0 +1,12 @@
+{
+ "holdout_tf_d7": {
+  "files": [
+   "holdout_chat_tf_d7.jsonl",
+   "holdout_code_tf_d7.jsonl",
+   "holdout_edit_tf_d7.jsonl"
+  ],
+  "requests": 90,
+  "rounds": 10957,
+  "note": "holdout chiuso: solo conteggi, nessuna metrica"
+ }
+}

@@ -1,0 +1,1 @@
+./proxy/llama_spec_trace -m <model> --spec-type draft-mtp --spec-draft-n-max 7 -t 6 --temp 0 -n 8 -c 4096 -b 4096 -ub 512 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-reps 20 --tag <tag> --out <out>

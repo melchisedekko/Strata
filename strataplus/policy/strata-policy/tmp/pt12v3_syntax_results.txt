@@ -1,0 +1,5 @@
+HIP-device gfx1100 src/kernels/cuda/fused_gr.cu rc=0 errors=0
+CUDA host-only sm_86 src/kernels/cuda/fused_gr.cu rc=0 errors=0
+CUDA device-only sm_86 src/kernels/cuda/fused_gr.cu rc=0 errors=0
+HIP-host clang++-17 src/kernels/s2_expert_grouped_parity.cpp rc=0 errors=0
+CUDA-host g++ src/kernels/s2_expert_grouped_parity.cpp rc=0 errors=0

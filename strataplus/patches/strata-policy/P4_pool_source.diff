@@ -1,0 +1,311 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 989f5cd..39a154c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1532,7 +1532,7 @@ endif()
+ #     features, and the fallback exists for tests, exactly as P2.S3 specifies.
+ # Plan v0.3 P6: speculation components that need no GPU.
+ add_library(strata_spec STATIC src/spec/suffix_drafter.cpp src/spec/controller.cpp src/spec/draft_policy.cpp
+-            src/spec/draft_source.cpp)
++            src/spec/draft_source.cpp src/spec/pool_source.cpp)
+ target_include_directories(strata_spec PUBLIC include)
+ if(STRATA_BUILD_TESTS)
+   add_executable(arch_defaults_test src/core/arch_defaults_test.cpp src/core/arch_defaults.cpp)
+@@ -1550,6 +1550,9 @@ if(STRATA_BUILD_TESTS)
+   add_executable(draft_policy_test src/spec/draft_policy_test.cpp)
+   target_link_libraries(draft_policy_test PRIVATE strata_spec)
+   add_test(NAME draft_policy_test COMMAND draft_policy_test)
++  add_executable(pool_source_test src/spec/pool_source_test.cpp)
++  target_link_libraries(pool_source_test PRIVATE strata_spec)
++  add_test(NAME pool_source_test COMMAND pool_source_test)
+   add_executable(spec_start_test src/spec/spec_start_test.cpp)
+   target_include_directories(spec_start_test PRIVATE include)
+   add_test(NAME spec_start_test COMMAND spec_start_test)
+diff --git a/include/strata/spec/pool_source.hpp b/include/strata/spec/pool_source.hpp
+new file mode 100644
+index 0000000..20edfd1
+--- /dev/null
++++ b/include/strata/spec/pool_source.hpp
+@@ -0,0 +1,49 @@
++// include/strata/spec/pool_source.hpp - Strata+ P4 (local draft, H2): a persistent cross-request lookup pool.
++//
++// A DraftSource over the committed text of EVERY request this process served (prompts and outputs), not reset
++// between requests: a repeat of an earlier request's text (the same file edited again, the same boilerplate, a
++// session's previous turns) can be drafted even when the current request has not seen it.  Registered through
++// extra_draft_sources() (register_pool_from_env()); the engine asks it beside the request's own text.
++//
++// Two things the SuffixDrafter alone does not give a persistent pool:
++//  - eviction: the drafter stops indexing once its table is full; the pool keeps a copy of its text and, when it
++//    reaches `capacity` tokens, rebuilds the drafter from the newest half (the oldest text is forgotten);
++//  - a match gate: the pool proposes only on a match of at least `gate` tokens.  The offline replay (E1, replay
++//    v2) finds that on independent requests short pool matches are mostly coincidental and cost windows (a
++//    regression unless gate >= 12), while on sessions a gate of 6-12 pays.
++#pragma once
++#include "strata/spec/draft_source.hpp"
++#include "strata/spec/suffix_drafter.hpp"
++
++#include <cstddef>
++#include <cstdint>
++#include <vector>
++
++namespace strata::spec {
++
++class PoolSource final : public DraftSource {
++public:
++    /// `capacity`: tokens kept (the newest; eviction halves).  `gate`: the shortest match proposed on.
++    explicit PoolSource(size_t capacity = 1u << 20, int gate = 12, int max_match = 64);
++    const char* name() const override { return "pool"; }
++    void reset() override {}   // persistent: a new request does not clear the pool
++    void append(const int32_t* tokens, size_t n) override;
++    int propose(const int32_t* tail, int n_tail, int n_pending, int max_k, int32_t* out, int* match) override;
++    size_t size() const { return text_.size(); }
++    int gate() const { return gate_; }
++    size_t evictions() const { return evictions_; }
++
++private:
++    void evict();
++    size_t capacity_;
++    int gate_, max_match_;
++    SuffixDrafter d_;
++    std::vector<int32_t> text_;   // what d_ indexes, in order (kept for the rebuild)
++    size_t evictions_ = 0;
++};
++
++/// STRATA_LOOKUP_POOL=<capacity tokens>[,<gate>] (e.g. 1048576,12): registers one PoolSource with
++/// extra_draft_sources().  Call once at startup, before the first request; returns whether a pool was registered.
++bool register_pool_from_env();
++
++}  // namespace strata::spec
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 4e1e565..f96b983 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -87,6 +87,7 @@
+ #include "strata/program/message_boundary.hpp"
+ #include "strata/spec/draft_policy.hpp"
+ #include "strata/spec/draft_source.hpp"
++#include "strata/spec/pool_source.hpp"   // Strata+ P4
+ #include "strata/spec/suffix_drafter.hpp"
+ #include "strata/spec/spec_start.hpp"
+ #include "strata/program/batch_groups.hpp"
+@@ -1093,6 +1094,9 @@ void extra_sources_reset() {
+ void extra_sources_append(const int32_t* t, size_t n) {
+     for (auto& src : strata::spec::extra_draft_sources()) src->append(t, n);
+ }
++// Strata+ P4: the extra sources (a registered persistent pool) see the context whenever one is registered, not only
++// with --lookup-chain - the pool is also offered to the main lookup arm (see the serve loop's lookup proposal)
++bool extra_sources_on(int lookup_chain) { return lookup_chain > 0 || !strata::spec::extra_draft_sources().empty(); }
+ 
+ bool parse_i64_list(const char* s, std::vector<int64_t>& out, std::string& err) {
+     out.clear();
+@@ -11175,6 +11179,7 @@ int main(int argc, char** argv) {
+         // --pipeline-windows 2 loads the drafter with 8 rows: the serial loop's chain keeps its own length
+         else if (use_mtp && mtp.max_t() > S_mtp) mtp.set_max_drafts(S_mtp - 1);
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
++        strata::spec::register_pool_from_env();   // Strata+ P4: STRATA_LOOKUP_POOL=<cap>[,<gate>], once per process
+         strata::spec::DraftPolicy policy(S);   // MTP or lookup window, learned over the whole process
+         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
+         strata::spec::DraftPolicy::ChainState chain_st;
+@@ -14181,13 +14186,14 @@ int main(int argc, char** argv) {
+                 sfx.reset();
+                 for (int64_t t : ids) sfx.append((int32_t) t);
+             }
+-            if (o.lookup_chain > 0) {
++            if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
+                 extra_sources_reset();
+                 for (int64_t t : ids) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+             }
+             bool first_window = true;
+             int64_t produced_n = 0, sfx_windows = 0, sfx_drafts = 0, sfx_ok = 0;
+             int64_t chain_windows = 0, chain_drafts = 0, chain_ok = 0;   // --lookup-chain's own counts
++            int64_t pool_windows = 0;   // Strata+ P4: lookup proposals taken from the pool (not the request's text)
+             int64_t t2_rej[8] = {}, t2_hit[8] = {};   // STRATA_MTP_TOP2: rejections inside the MTP drafts by depth, runner-up hits
+             int64_t dp_tested[8] = {}, dp_ok[8] = {};   // STRATA_SPEC_DEPTH=1: MTP drafts tested / accepted by depth
+             std::vector<int32_t> cbuf((size_t) S, 0), ctail;
+@@ -14902,8 +14908,17 @@ int main(int argc, char** argv) {
+                 std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
+                 for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
+                 if (o.suffix_draft > 0 && !first_window) {
+-                    const int k = sfx.propose(S - 1, sbuf.data());
+-                    sfx_match = sfx.last_match();
++                    int k = 0;
++                    if (strata::spec::extra_draft_sources().empty()) {
++                        k = sfx.propose(S - 1, sbuf.data());
++                        sfx_match = sfx.last_match();
++                    } else {   // Strata+ P4: the request's own text and the pool; the longer match wins (ties: own)
++                        int psrc = -1;
++                        const int nt = chain_tail(sfx, nullptr, 0, ctail);
++                        k = strata::spec::propose_from_sources(lookup_src, ctail.data(), nt, 0, S - 1, 1, sbuf.data(),
++                                                               &sfx_match, &psrc);
++                        if (psrc > 0) ++pool_windows;
++                    }
+                     if (k > 0 && (!use_mtp || sbuf[0] == drafts[0])) {
+                         cf_k = k;
+                         const strata::spec::DraftPolicy::Pick pk = policy.choose(T, k, sfx_match);
+@@ -15163,7 +15178,7 @@ int main(int argc, char** argv) {
+                     strata::core::progress_beat();
+                     ++produced_n;
+                     if (sfx_on) sfx.append(outv[(size_t) i]);
+-                    if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
++                    if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
+                     eos = std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
+                 }
+                 std::fflush(stdout);
+@@ -15672,6 +15687,8 @@ int main(int argc, char** argv) {
+             if (o.lookup_chain > 0)
+                 std::fprintf(stderr, "strata serve: lookup chain: %lld of %lld windows, %lld of %lld chained drafts accepted\n",
+                              (long long) chain_windows, (long long) dec_windows, (long long) chain_ok, (long long) chain_drafts);
++            if (!strata::spec::extra_draft_sources().empty())   // Strata+ P4
++                std::fprintf(stderr, "strata serve: lookup pool: %lld lookup proposals from the pool\n", (long long) pool_windows);
+             if (std::getenv("STRATA_SPEC_DEPTH") != nullptr)
+                 std::fprintf(stderr, "strata serve: spec depth: accepted/tested %lld/%lld %lld/%lld %lld/%lld %lld/%lld %lld/%lld\n",
+                              (long long) dp_ok[0], (long long) dp_tested[0], (long long) dp_ok[1], (long long) dp_tested[1],
+@@ -16445,6 +16462,7 @@ int main(int argc, char** argv) {
+         const int S_mtp = o.mtp_max_t > 0 ? std::min(o.mtp_max_t, o.spec) : o.spec;
+         if (use_mtp && S_mtp < o.spec) mtp.set_max_drafts(S_mtp - 1);
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
++        strata::spec::register_pool_from_env();   // Strata+ P4 (here the pool sees context; the lookup arm is the serve loop's)
+         strata::spec::DraftPolicy policy(o.spec);   // MTP or lookup window (see draft_policy.hpp)
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // STRATA_SPEC_COST: the window the cost-aware rule kept in the MTP chain just drafted
+@@ -16482,7 +16500,7 @@ int main(int argc, char** argv) {
+             for (int64_t t : o.tokens) sfx.append((int32_t) t);
+             for (int64_t t : produced) sfx.append((int32_t) t);
+         }
+-        if (o.lookup_chain > 0) {
++        if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
+             extra_sources_reset();
+             for (int64_t t : o.tokens) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+             for (int64_t t : produced) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+@@ -16702,7 +16720,7 @@ int main(int argc, char** argv) {
+             for (int i = 0; i <= a && (int64_t) produced.size() < max_new && !eos; ++i) {
+                 produced.push_back(outv[(size_t) i]);
+                 if (sfx_on) sfx.append(outv[(size_t) i]);
+-                if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
++                if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
+                 eos = o.stop_eos && std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
+                 if (!follow.empty()) { follow_differ += fdiff[(size_t) i]; ++follow_emitted; }
+             }
+diff --git a/src/spec/pool_source.cpp b/src/spec/pool_source.cpp
+new file mode 100644
+index 0000000..57c0313
+--- /dev/null
++++ b/src/spec/pool_source.cpp
+@@ -0,0 +1,57 @@
++// src/spec/pool_source.cpp - see include/strata/spec/pool_source.hpp (Strata+ P4, local draft).
++#include "strata/spec/pool_source.hpp"
++
++#include <algorithm>
++#include <cstdlib>
++#include <memory>
++
++namespace strata::spec {
++
++// The drafter gets 2x the pool's capacity of room, so it never reaches its own "table full" state before evict().
++PoolSource::PoolSource(size_t capacity, int gate, int max_match)
++    : capacity_(std::max<size_t>(capacity, 1024)), gate_(std::max(gate, 3)), max_match_(std::max(max_match, gate_)),
++      d_(3, max_match_, 2 * capacity_ + 4096) {
++    text_.reserve(capacity_ + 1024);
++}
++
++void PoolSource::append(const int32_t* tokens, size_t n) {
++    if (n == 0) return;
++    if (text_.size() + n > capacity_) evict();
++    text_.insert(text_.end(), tokens, tokens + n);
++    d_.append(tokens, n);
++}
++
++void PoolSource::evict() {
++    const size_t keep = capacity_ / 2;
++    if (text_.size() > keep) text_.erase(text_.begin(), text_.end() - (std::ptrdiff_t) keep);
++    d_.reset();
++    d_.append(text_.data(), text_.size());
++    ++evictions_;
++}
++
++int PoolSource::propose(const int32_t* tail, int n_tail, int n_pending, int max_k, int32_t* out, int* match) {
++    *match = 0;
++    // the pool's own history ends with the current request's committed context (append() saw it), so as for
++    // PromptLookupSource only the pending drafts are passed on
++    n_pending = std::clamp(n_pending, 0, n_tail);
++    const int k = d_.propose_after(tail + (n_tail - n_pending), n_pending, max_k, out);
++    if (k <= 0 || d_.last_match() < gate_) return 0;
++    *match = d_.last_match();
++    return k;
++}
++
++bool register_pool_from_env() {
++    const char* v = std::getenv("STRATA_LOOKUP_POOL");
++    if (v == nullptr || *v == '\0') return false;
++    char* end = nullptr;
++    const unsigned long long cap = std::strtoull(v, &end, 10);
++    int gate = 12;
++    if (end != nullptr && *end == ',') gate = std::atoi(end + 1);
++    if (cap == 0) return false;
++    for (const auto& s : extra_draft_sources())
++        if (s && dynamic_cast<const PoolSource*>(s.get()) != nullptr) return true;   // registered once
++    extra_draft_sources().push_back(std::make_unique<PoolSource>((size_t) cap, gate));
++    return true;
++}
++
++}  // namespace strata::spec
+diff --git a/src/spec/pool_source_test.cpp b/src/spec/pool_source_test.cpp
+new file mode 100644
+index 0000000..6e886f0
+--- /dev/null
++++ b/src/spec/pool_source_test.cpp
+@@ -0,0 +1,54 @@
++// src/spec/pool_source_test.cpp - Strata+ P4: the persistent pool survives reset(), gates short matches, evicts.
++#include "strata/spec/pool_source.hpp"
++
++#include <cstdio>
++#include <cstdlib>
++#include <vector>
++
++namespace {
++bool g_fail = false;
++void check(bool ok, const char* what) {
++    std::printf("  %-64s %s\n", what, ok ? "ok" : "FAIL");
++    g_fail |= !ok;
++}
++}  // namespace
++
++int main() {
++    using strata::spec::PoolSource;
++    std::vector<int32_t> a;
++    for (int i = 0; i < 200; ++i) a.push_back(1000 + i);   // request 1: a distinctive run
++    {
++        PoolSource p(1 << 16, 12);
++        p.append(a.data(), a.size());
++        p.reset();                                          // request 2 starts
++        std::vector<int32_t> r2 = {7, 8, 9};
++        r2.insert(r2.end(), a.begin() + 50, a.begin() + 70);   // repeats 20 tokens of request 1
++        p.append(r2.data(), r2.size());
++        int32_t out[8]; int m = 0;
++        const int k = p.propose(r2.data(), (int) r2.size(), 0, 8, out, &m);
++        check(k > 0 && out[0] == a[70] && m >= 12, "pool: an earlier request's text is proposed after reset()");
++        std::vector<int32_t> r3 = {5, 5, 5};
++        r3.insert(r3.end(), a.begin() + 120, a.begin() + 125);   // only a 5-token repeat
++        p.append(r3.data(), r3.size());
++        const int k3 = p.propose(r3.data(), (int) r3.size(), 0, 8, out, &m);
++        check(k3 == 0 && m == 0, "pool: matches shorter than the gate propose nothing");
++    }
++    {
++        PoolSource p(2048, 12);
++        p.append(a.data(), a.size());
++        std::vector<int32_t> filler;
++        for (int i = 0; i < 3000; ++i) filler.push_back(50000 + (i * 7919) % 40000);
++        for (size_t i = 0; i < filler.size(); i += 100) p.append(filler.data() + i, 100);
++        check(p.evictions() > 0 && p.size() <= 2048, "pool: capacity bounded, oldest text evicted");
++        std::vector<int32_t> q(a.begin() + 50, a.begin() + 70);
++        p.append(q.data(), q.size());
++        int32_t out[8]; int m = 0;
++        check(p.propose(q.data(), (int) q.size(), 0, 8, out, &m) == 0, "pool: evicted text is no longer proposed");
++        std::vector<int32_t> f(filler.end() - 400, filler.end() - 380);
++        p.append(f.data(), f.size());
++        const int k = p.propose(f.data(), (int) f.size(), 0, 8, out, &m);
++        check(k > 0 && out[0] == *(filler.end() - 380), "pool: indexing continues after eviction");
++    }
++    std::printf(g_fail ? "FAIL\n" : "PASS\n");
++    return g_fail ? 1 : 0;
++}

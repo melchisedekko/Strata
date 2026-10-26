@@ -1,0 +1,9 @@
+V1 rule_B {'no_worse_vs_baselines': False, 'beats_A_code_or_edit': True, 'passes': False} B>A code/edit 30 B_vs_A band {'better': 33, 'worse': 1, 'neutral': 11} B_rounds {'total': 43314, 'T8': 10535, 'share_T8': 0.24322389989379878, 'T_ge9': 0, 'maxT': 8}
+   A {'default': (0, 0), 'spec_cost': (1, 0), 'k3': (0, 0)}
+   B {'default': (0, 0), 'spec_cost': (2, 0), 'k3': (0, 0)}
+   H {'default': (0, 0), 'spec_cost': (4, 0), 'k3': (0, 0)}
+V2 rule_B {'no_worse_vs_baselines': False, 'beats_A_code_or_edit': True, 'passes': False} B>A code/edit 30 B_vs_A band {'better': 31, 'worse': 1, 'neutral': 13} B_rounds {'total': 43306, 'T8': 10231, 'share_T8': 0.23624901861173972, 'T_ge9': 0, 'maxT': 8}
+   A {'default': (0, 0), 'spec_cost': (1, 0), 'k3': (0, 0)}
+   B {'default': (0, 0), 'spec_cost': (2, 0), 'k3': (0, 0)}
+   H {'default': (0, 0), 'spec_cost': (4, 0), 'k3': (0, 0)}
+VERDICT A {'requests': 90, 'per_domain': {'code': 30, 'chat': 30, 'edit': 30}, 'rounds': 10957, 'sessions_per_domain': {'code': 30, 'chat': 30, 'edit': 30}, 'target_mismatch': 0}

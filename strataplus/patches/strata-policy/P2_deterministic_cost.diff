@@ -1,0 +1,67 @@
+diff --git a/include/strata/spec/draft_policy.hpp b/include/strata/spec/draft_policy.hpp
+index 88970c8..eb8e4f7 100644
+--- a/include/strata/spec/draft_policy.hpp
++++ b/include/strata/spec/draft_policy.hpp
+@@ -58,6 +58,10 @@ public:
+     /// STRATA_SPEC_COST: a round time far above what is known for that width (the first use of a width captures its graph; a stalled
+     /// round) counts as a tenth of a sample, so one capture cannot price a width out of use.  Off: the cost EMA as it always was.
+     void set_robust(bool on) { robust_ = on; }
++    /// STRATA_SPEC_COST_FROZEN=1 (Strata+ P2, deterministic cost mode): the round costs stay what seed_costs() put in
++    /// (STRATA_SPEC_COST_TABLE); measured round times are not learned.  Lets an A/B (or the offline replay) compare
++    /// policies on one fixed cost table, free of timing noise.  Acceptance statistics are still learned.
++    void set_frozen_costs(bool on) { frozen_ = on; }
+ 
+     /// COST-AWARE MTP WINDOW (STRATA_SPEC_COST=1): the MTP chain is drafted one step at a time; after draft j (probability p_j)
+     ///   E_j = 1 + q_0 + .. + q_j,  q_i = prod_{k<=i} a(p_k)   a() = the acceptance measured for MTP drafts of that probability
+@@ -92,6 +96,7 @@ private:
+     std::array<double, kBuckets> cok_{}, cbad_{};          // chained lookup drafts, the same (reached rounds only)
+     double rounds_ = 0;                                    // rounds observed so far
+     bool robust_ = false;
++    bool frozen_ = false;                                  // set_frozen_costs()
+     double clamp_sample(int t, double ms) const;
+     static constexpr int kPBuckets = 8;
+     std::array<double, kPBuckets> pa_ok_{}, pa_n_{};       // MTP drafts reached / accepted by probability bucket (decayed)
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 7bafd68..e8ff4f2 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -11180,6 +11180,8 @@ int main(int argc, char** argv) {
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
+         policy.set_robust(spec_cost);
++        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
++        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
+         if (spec_cost && use_mtp)
+             mtp.set_chain_rule([&](int idx, float pj) {
+                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
+@@ -16445,6 +16447,8 @@ int main(int argc, char** argv) {
+             }
+         }
+         policy.set_robust(spec_cost);
++        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
++        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
+         if (spec_cost && use_mtp)
+             mtp.set_chain_rule([&](int idx, float pj) {
+                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
+diff --git a/src/spec/draft_policy.cpp b/src/spec/draft_policy.cpp
+index ffd9bbb..d27606c 100644
+--- a/src/spec/draft_policy.cpp
++++ b/src/spec/draft_policy.cpp
+@@ -153,7 +153,7 @@ DraftPolicy::Pick DraftPolicy::choose(int t_mtp, int lookup_k, int match) const
+ 
+ void DraftPolicy::observe(bool lookup, int t, int accepted, int match, double round_ms) {
+     t = std::clamp(t, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         round_ms = clamp_sample(t, round_ms);
+         const double alpha = robust_ ? std::max(kCostAlpha, 1.0 / (cost_n_[bk_][t] + 1.0)) : kCostAlpha;   // a running mean for the first samples
+         cost_[bk_][t] = cost_n_[bk_][t] > 0 ? (1.0 - alpha) * cost_[bk_][t] + alpha * round_ms : round_ms;
+@@ -257,7 +257,7 @@ int DraftPolicy::chain(int t_mtp, double p_mtp, int k_avail, int match) const {
+ 
+ void DraftPolicy::observe_chain(int t_mtp, int k, int accepted, int match, double round_ms) {
+     const int t = std::clamp(t_mtp + k, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         round_ms = clamp_sample(t, round_ms);
+         const double alpha = robust_ ? std::max(kCostAlpha, 1.0 / (cost_n_[bk_][t] + 1.0)) : kCostAlpha;   // a running mean for the first samples
+         cost_[bk_][t] = cost_n_[bk_][t] > 0 ? (1.0 - alpha) * cost_[bk_][t] + alpha * round_ms : round_ms;

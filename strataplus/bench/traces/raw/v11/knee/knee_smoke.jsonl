@@ -1,0 +1,12 @@
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":0,"what":"verify","T":1,"ms":42.1693}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":1,"what":"verify","T":6,"ms":91.9425}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":2,"what":"verify","T":7,"ms":105.8562}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":3,"what":"verify","T":8,"ms":106.5763}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":4,"what":"verify","T":9,"ms":108.9177}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":0,"pos":5,"what":"verify","T":10,"ms":107.0420}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":0,"what":"verify","T":10,"ms":106.8506}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":1,"what":"verify","T":9,"ms":109.3891}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":2,"what":"verify","T":8,"ms":107.2581}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":3,"what":"verify","T":7,"ms":107.8785}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":4,"what":"verify","T":6,"ms":90.9863}
+{"type":"p4","label":"proxy CPU, modello denso, non AMD","run_id":"knee_smoke","req_id":"HumanEval/18","ctx_len":117,"rep":1,"pos":5,"what":"verify","T":1,"ms":40.6083}

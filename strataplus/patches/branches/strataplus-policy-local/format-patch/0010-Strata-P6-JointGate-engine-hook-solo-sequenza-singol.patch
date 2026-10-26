@@ -1,0 +1,192 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Strata Policy <policy@local>
+Date: Sun, 25 Oct 2026 04:44:13 +0100
+Subject: [PATCH 10/11] Strata+ P6: JointGate engine hook (solo sequenza
+ singola, STRATA_SPEC_JOINT=1)
+
+CLI loop and the serial GEN loop of --serve only; never batch_step/BGEN or
+--pipeline-windows. Without STRATA_SPEC_JOINT=1 the hook pointer is null and
+every P6 branch is skipped: additions only, no upstream line changed.
+---
+ src/program/generate.cpp | 116 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 116 insertions(+)
+
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 13ad3ad..aa9de99 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -86,6 +86,7 @@
+ #include "strata/program/draft_kv_plan.hpp"
+ #include "strata/program/message_boundary.hpp"
+ #include "strata/spec/draft_policy.hpp"
++#include "strata/spec/joint_gate.hpp"   // Strata+ P6
+ #include "strata/spec/draft_source.hpp"
+ #include "strata/spec/pool_source.hpp"   // Strata+ P4
+ #include "strata/spec/suffix_drafter.hpp"
+@@ -1123,6 +1124,78 @@ int plus_lcp(const int32_t* prop, int k, const int32_t* outv, int a, bool* censo
+ // with --lookup-chain - the pool is also offered to the main lookup arm (see the serve loop's lookup proposal)
+ bool extra_sources_on(int lookup_chain) { return lookup_chain > 0 || !strata::spec::extra_draft_sources().empty(); }
+ 
++// ---- Strata+ P6 begin: JointHook ----
++// Strata+ P6: JointGate (include/strata/spec/joint_gate.hpp, arm A: tmax=5, skip, no decay) in the engine.
++// SOLO SEQUENZA SINGOLA: the CLI generation loop and the serial GEN loop of --serve.  Never batch_step / BGEN (one MTP
++// draft per slot, no DraftPolicy there) and never the --pipeline-windows path (it keeps DraftPolicy).
++// Exists only with STRATA_SPEC_JOINT=1 (JointGate::enabled_from_env()); without it the loops hold a null pointer and
++// skip every P6 branch, so the default path is the upstream one.
++// Minimal hook: the MTP drafts of a round are made as upstream at the end of the previous round (mtp.draft); the gate
++// decides, at the round start, the source (none / MTP / prompt lookup) and the depth over the drafts already made
++// (start(), keep() up to the drafts available, finish()), then observes the round with full information (both
++// sources scored on the a+1 committed tokens, censored: the counterfactual feedback of P3).  It does not yet skip
++// or stop the MTP draft itself, so the draft time a skip/stop would save is not saved here.
++struct JointHook {
++    using G = strata::spec::JointGate;
++    G gate;
++    G::Choice c;                          // the round in progress
++    G::Lookup lu[G::kSrc];
++    int d_avail = 0, k_lu = 0;
++    float p[G::kD] = {};                  // the MTP drafts' top-1 probs (0 past d_avail)
++    int32_t mtp[G::kD] = {}, lk[G::kD] = {};   // the drafts of both sources, kept for observe()
++
++    static G::Options options(bool use_mtp) {
++        G::Options o;                     // arm A as is
++        o.mtp = use_mtp;
++        return o;
++    }
++    explicit JointHook(bool use_mtp) : gate(options(use_mtp)) {}
++
++    /// Round start (not the first window).  t_plan: the MTP window the engine's own rule allows (its drafts usable
++    /// this round); k / match: the lookup proposal in `sbuf` (k = 0: none); rem: JointGate::remaining(...), bounded by
++    /// max_new and the context.  Returns the window T and sets *from_lookup.
++    int decide(int t_plan, const int32_t* drafts, const float* dprob, int k, int match, const int32_t* sbuf, int rem,
++               bool use_mtp, bool* from_lookup) {
++        d_avail = use_mtp ? std::clamp(t_plan - 1, 0, G::kD) : 0;
++        k_lu = std::clamp(k, 0, G::kD);
++        for (int j = 0; j < G::kD; ++j) {
++            p[j] = j < d_avail ? dprob[j] : 0.0f;
++            mtp[j] = j < d_avail ? drafts[j] : -1;
++            lk[j] = j < k_lu ? sbuf[j] : -1;
++        }
++        lu[0] = G::Lookup{k_lu, k_lu > 0 ? match : 0, k_lu > 0 && d_avail > 0 && lk[0] == mtp[0] ? 1 : 0};
++        lu[1] = G::Lookup{};
++        if (!gate.start(lu, rem, &c)) {   // the MTP's turn: depth by the value test, over the drafts made
++            int d = 0;
++            while (d < d_avail) {
++                ++d;
++                if (!gate.keep(p, nullptr, d)) break;
++            }
++            c = gate.finish(p, d, lu);
++        }
++        *from_lookup = c.src == G::kLookup && c.t > 1;
++        if (c.src == G::kNone) c.t = 1;
++        return std::max(1, c.t);
++    }
++    /// After the commit (a drafts accepted, `ms` the round's measured time): full-information feedback.
++    void observe(int a, double ms, const int32_t* outv) {
++        auto lcp = [&](const int32_t* v, int n) { int i = 0; while (i < n && i <= a && v[i] == outv[i]) ++i; return i; };
++        const int lu_acc[G::kSrc] = {lcp(lk, k_lu), 0};
++        gate.observe(c, a, ms, lcp(mtp, d_avail), p, lu, lu_acc);
++    }
++};
++// STRATA_SPEC_JOINT=1 and nothing in the way: the hook; otherwise null (the caller has checked enabled_from_env())
++std::unique_ptr<JointHook> make_joint_hook(bool use_mtp, const char* blocked_by, const char* who) {
++    if (blocked_by != nullptr) {
++        std::fprintf(stderr, "%s: STRATA_SPEC_JOINT=1 ignored with %s (DraftPolicy as upstream)\n", who, blocked_by);
++        return nullptr;
++    }
++    std::fprintf(stderr, "%s: STRATA_SPEC_JOINT=1: JointGate (arm A, tmax=5) chooses source and depth "
++                         "(solo sequenza singola)\n", who);
++    return std::make_unique<JointHook>(use_mtp);
++}
++// ---- Strata+ P6 end: JointHook ----
++
+ bool parse_i64_list(const char* s, std::vector<int64_t>& out, std::string& err) {
+     out.clear();
+     std::string text(s);
+@@ -11206,6 +11279,10 @@ int main(int argc, char** argv) {
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
+         strata::spec::register_pool_from_env();   // Strata+ P4: STRATA_LOOKUP_POOL=<cap>[,<gate>], once per process
+         strata::spec::DraftPolicy policy(S);   // MTP or lookup window, learned over the whole process
++        // Strata+ P6 (solo sequenza singola): STRATA_SPEC_JOINT=1 - JointGate decides in the serial GEN loop instead
++        std::unique_ptr<JointHook> joint;
++        if (strata::spec::JointGate::enabled_from_env())
++            joint = make_joint_hook(use_mtp, o.lookup_chain > 0 ? "--lookup-chain" : nullptr, "strata serve");
+         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
+@@ -14943,6 +15020,25 @@ int main(int argc, char** argv) {
+                 int cf_k = 0;   // Strata+ P3: the gated lookup proposal not taken (scored after the round)
+                 std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
+                 for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
++                if (joint && !first_window) {   // Strata+ P6, solo sequenza singola: JointGate picks source and depth
++                    int k = 0;
++                    if (o.suffix_draft > 0) {   // the same lookup proposal as the branch below (P4 pool included)
++                        if (strata::spec::extra_draft_sources().empty()) {
++                            k = sfx.propose(S - 1, sbuf.data());
++                            sfx_match = sfx.last_match();
++                        } else {
++                            int psrc = -1;
++                            const int nt = chain_tail(sfx, nullptr, 0, ctail);
++                            k = strata::spec::propose_from_sources(lookup_src, ctail.data(), nt, 0, S - 1, 1, sbuf.data(),
++                                                                   &sfx_match, &psrc);
++                            if (psrc > 0) ++pool_windows;
++                        }
++                        lk_raw = k;
++                    }
++                    const int rem = strata::spec::JointGate::remaining((int) max_new, (int) produced_n,
++                                                                        (int) o.max_context, (int) p);
++                    T = joint->decide(T, drafts.data(), dprob.data(), k, sfx_match, sbuf.data(), rem, use_mtp, &from_sfx);
++                } else
+                 if (o.suffix_draft > 0 && !first_window) {
+                     int k = 0;
+                     if (strata::spec::extra_draft_sources().empty()) {
+@@ -15259,6 +15355,8 @@ int main(int argc, char** argv) {
+                     const bool fail_seen = acc < t_other - 1 && acc <= a;
+                     policy.observe_counterfactual(other_is_lookup, t_other, acc, fail_seen, sfx_match);
+                 }
++                if (joint && timed_round && !eos)   // Strata+ P6, solo sequenza singola: the gate's full-information feedback
++                    joint->observe(a, std::chrono::duration<double, std::milli>(Clock::now() - round0).count(), outv.data());
+                 if (timed_round && !eos && chain_n == 0)
+                     policy.observe(from_sfx, T, a, sfx_match,
+                                    std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
+@@ -16537,6 +16635,12 @@ int main(int argc, char** argv) {
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
+         strata::spec::register_pool_from_env();   // Strata+ P4 (here the pool sees context; the lookup arm is the serve loop's)
+         strata::spec::DraftPolicy policy(o.spec);   // MTP or lookup window (see draft_policy.hpp)
++        // Strata+ P6 (solo sequenza singola): STRATA_SPEC_JOINT=1 - JointGate decides in this loop instead
++        std::unique_ptr<JointHook> joint;
++        if (strata::spec::JointGate::enabled_from_env())
++            joint = make_joint_hook(use_mtp, o.lookup_chain > 0 ? "--lookup-chain"
++                                             : std::getenv("STRATA_SPEC_T_CYCLE") != nullptr ? "STRATA_SPEC_T_CYCLE" : nullptr,
++                                    "strata generate");
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // STRATA_SPEC_COST: the window the cost-aware rule kept in the MTP chain just drafted
+         if (const char* tab = std::getenv("STRATA_SPEC_COST_TABLE"); spec_cost && tab != nullptr && tab[0] != '\0') {
+@@ -16665,6 +16769,17 @@ int main(int argc, char** argv) {
+             if (!t_cycle.empty() && !first_window) T = t_cycle[(size_t) (rounds % (int64_t) t_cycle.size())];
+             bool from_sfx = false;
+             int sfx_match = 0;
++            if (joint && !first_window) {   // Strata+ P6, solo sequenza singola: JointGate picks source and depth
++                int k = 0;
++                if (o.suffix_draft > 0) {
++                    k = sfx.propose(o.spec - 1, sbuf.data());
++                    sfx_match = sfx.last_match();
++                }
++                // the context bound includes the VRAM cap on the window (win_cap), so the clamp to `room` below is a no-op
++                const int64_t ctx = std::min<int64_t>(o.max_context, p + win_cap);
++                const int rem = strata::spec::JointGate::remaining((int) max_new, (int) produced.size(), (int) ctx, (int) p);
++                T = joint->decide(T, drafts.data(), dprob.data(), k, sfx_match, sbuf.data(), rem, use_mtp, &from_sfx);
++            } else
+             if (o.suffix_draft > 0 && !first_window) {
+                 const int k = sfx.propose(o.spec - 1, sbuf.data());
+                 sfx_match = sfx.last_match();
+@@ -16823,6 +16938,7 @@ int main(int argc, char** argv) {
+                 ++t_cycle_n[(size_t) T];
+             }
+             if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin.data(), T_mtp - 1, a);
++            if (joint && timed_round) joint->observe(a, round_ms, outv.data());   // Strata+ P6, solo sequenza singola
+             if (timed_round && chain_n == 0) policy.observe(from_sfx, T, a, sfx_match, round_ms);
+             else if (timed_round) policy.observe_chain(T_mtp, chain_n, a, cm, round_ms);
+             if (rounds % 64 == 0)
+-- 
+2.47.3
+

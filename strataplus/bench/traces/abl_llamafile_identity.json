@@ -1,0 +1,69 @@
+{
+ "schema": "abl_llamafile.v1",
+ "label": "proxy CPU, non AMD",
+ "created": "2026-10-25 06:48:55 CET",
+ "setup": "q4_k_m, -t 6, --temp 0, -n 128, -c 512 -b 512 -ub 512, --no-repack, diag_prompts.jsonl (12; 2 saltati >512 tok -> 10). base=T1 greedy; ywrong_T2=verify a 2 token con draft sempre sbagliato (acc 0/127), output deve = base se il verify batch-2 e' bit-identico a T1",
+ "binaries": {
+  "on": "proxy/llama_spec_trace.v11.bin -> build/bin/libggml-cpu (GGML_LLAMAFILE ON)",
+  "off": "proxy/llama_spec_trace.v11.nollamafile -> build-nollamafile/bin/libggml-cpu (GGML_LLAMAFILE OFF)"
+ },
+ "same_T_identity": {
+  "on: base vs ywrong_T2": {
+   "identical": 4,
+   "n": 10,
+   "first_divergence_pos": {
+    "HumanEval/36": 98,
+    "HumanEval/57": 99,
+    "mtbench-86": 28,
+    "mtbench-87": 26,
+    "mtbench-90": 12,
+    "mtbench-91": 36
+   }
+  },
+  "off: base vs ywrong_T2": {
+   "identical": 10,
+   "n": 10,
+   "first_divergence_pos": {}
+  }
+ },
+ "cross_build": {
+  "base on vs off": {
+   "identical": 5,
+   "n": 10,
+   "first_divergence_pos": {
+    "HumanEval/18": 21,
+    "mtbench-86": 37,
+    "mtbench-87": 27,
+    "mtbench-90": 12,
+    "mtbench-91": 34
+   }
+  },
+  "ywrong_T2 on vs off": {
+   "identical": 3,
+   "n": 10,
+   "first_divergence_pos": {
+    "HumanEval/18": 21,
+    "HumanEval/36": 98,
+    "HumanEval/57": 99,
+    "mtbench-86": 28,
+    "mtbench-87": 26,
+    "mtbench-90": 45,
+    "mtbench-91": 34
+   }
+  }
+ },
+ "cpu_windows_CET": {
+  "on_base": "06:41:21-06:43:16 (orfano senza pre-check, non monitorato)",
+  "on_ywrong_T2": "06:43:46-06:45:01 (8 intervalli >=0.5, max 1.102: carico mio di preparazione agent_v12, non di altri agenti; test di identita' insensibile al timing)",
+  "off_base": "06:45:32-06:46:31 (0, max 0.105)",
+  "off_ywrong_T2": "06:47:01-06:48:18 (0, max 0.14)"
+ },
+ "files": {
+  "abl_llamafile_on_base.jsonl": "31ab765f61ea0ff71b1e648437a5684f47369c92f7baf50f6c39a0f93d43ef45",
+  "abl_llamafile_on_ywrong_T2.jsonl": "7ab217855ac43df2d39e545a740a68ef257a577ff4b6bac834cb0124a7b41a95",
+  "abl_llamafile_off_base.jsonl": "7db7b2c6a5a3cb40a4a64bc6cbf6d8aaa3cd3284ac077b794406cada5898120f",
+  "abl_llamafile_off_ywrong_T2.jsonl": "ef76ac6fdbfe97e776524407b3e42cc5968ddcbe8fc75310563c591abd99a332",
+  "abl_llamafile_on_ref.tsv": "ad0b7843f5ad7a423c5caa6ac4220408776d57aa39b900b92e056ddde9b17953",
+  "abl_llamafile_off_ref.tsv": "368d1930d83e32b3f254481380752a0f88335f6486460879dcdf30135d197d26"
+ }
+}

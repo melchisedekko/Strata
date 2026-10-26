@@ -1,0 +1,2 @@
+./proxy/llama_spec_trace.v12.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --no-spec-draft-backend-sampling -t 6 --temp 0 -n 128 -ub 512 --no-repack --dmax 7 -c 131072 -b 131072 --spec-draft-n-max 3 --mode base --prompts datasets/agent_v12_alloc.jsonl
+./proxy/llama_spec_trace.v12.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --no-spec-draft-backend-sampling -t 6 --temp 0 -n 128 -ub 512 --no-repack --dmax 7 -c 65536 -b 65536 --spec-draft-n-max 7 --mode tf --live-src mtp --prompts datasets/agent_v12_pilot.jsonl

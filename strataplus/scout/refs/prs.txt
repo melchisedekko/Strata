@@ -1,0 +1,267 @@
+######## 16016
+Deterministic inference mode (CUDA): RMSNorm, MatMul, Attention, KV-cache | OPEN | 2025-09-15T18:27:38Z
+**Title:** Deterministic inference mode (CUDA): RMSNorm, MatMul, Attention, KV-cache
+
+**Summary**
+Adds an **opt-in deterministic mode** that makes CUDA inference **bit-identical** for identical inputs—independent of batch size, prompt chunking, or concurrency. When enabled, RMSNorm, dense MatMul, and Attention use **batch-invariant, fixed-reduction** kernels and a **stable, padded KV-cache layout**.
+
+**Motivation**
+
+* Research & implementation inspired by Thinking Machines’ analysis of batch invariance and reduction order in LLM inference: [[Defeating Nondeterminism in LLM Inference](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/)](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/).
+* This work underpins reproducibility guarantees needed by Steadytext: [[steadytext.julep.ai](https://steadytext.julep.ai/)](https://steadytext.julep.ai).
+
+**What’s included**
+
+* **Deterministic RMSNorm** (fixed per-row reduction order; batch-invariant).
+* **Deterministic MatMul** for FP16/BF16 (fixed tiling, **no split-K**, FP32 accumulation).
+* **Deterministic Attention** (fixed split-size over KV, stable softmax reduction, unified KV path; KV cache aligned/padded so **chunked vs one-shot prefill are identical**).
+* **MoE `mul_mat_id`** path made deterministic.
+* **Off by default**; normal fast paths unchanged.
+
+**Usage**
+
+* Build: `-DGGML_DETERMINISTIC=ON`
+* Run: `--deterministic` (or `GGML_DETERMINISTIC=1`)
+* For fully reproducible generation: `temperature=0, top_k=1, top_p=1`.
+
+**Scope & perf**
+
+* Targets **CUDA** (BF16/FP16). CPU is already deterministic; other GPU backends unchanged.
+* **Throughput trade-off** in deterministic mode; default builds/perf unaffected when flag is off.
+
+**Tests**
+
+* New t
+--- @creatorrr 2025-09-15T18:29:21Z: @ggerganov this is my first PR here. It's well tested and full disclosure contains vibe code from gpt-5 / codex. But I wanted to get a sense of direction so please take a look and let me know if this is how you'd have gone about this yourself. And what all to change for it to become merge-worthy. Happy to redo / break it up as long as the conceptual direction aligns
+--- @JohannesGaessler 2025-09-15T18:52:29Z: I don't want to maintain guarantees for bit-for-bit identical results as the batch size is varied. Determinism for prompt caching should be handled in llama.cpp by caching the logit distribution of the last prompt eval. Determinism for batched inference should be handled by allowing users to submit prompts as a batch to ensure that they're always executed in the exact same order.
+--- @JohannesGaessler 2025-09-15T18:55:37Z: BTW, as I kind of implied in my previous post, you can already get bit-for-bit identical results by disabling prompt caching and using only a single slot for the HTTP server.
+######## 28109
+tests: add gated delta net batch invariance test | OPEN | 2026-08-31T18:19:08Z
+Adds `test_gated_delta_net_batch_invariance` to `test-backend-ops`.
+
+### Why
+
+Speculative decoding evaluates a batch of drafted tokens against the same state that one-token decoding would have used. For a recurrent op that means consuming `n` tokens in one call has to produce the same result as `n` calls of one token — otherwise enabling speculation changes the output, even though it is lossless under greedy sampling by construction.
+
+Nothing in the suite currently checks that for `GGML_OP_GATED_DELTA_NET`.
+
+### What it does
+
+Builds one batched `ggml_gated_delta_net` call and a serial chain that threads the state from step to step, then compares them with `memcmp` and `max_err() = 0`. Both the per-token outputs and the final recurrent state are compared, over `n_tokens {1, 2, 3, 4, 5, 8}`.
+
+### Testing
+
+- `test-backend-ops test -o GATED_DELTA_NET_BATCH_INVARIANCE -b CUDA0` on an RTX 5080 Laptop: **6/6 passed**.
+- This is regression coverage, not a bug report — the op is invariant on CUDA today. I have not run it on other backends.
+- Test-only change; no kernel or dispatch code is touched, so I did not re-run the full suite.
+
+--- @ggml-gh-bot 2026-08-31T18:24:10Z: Hi @cuhawk, thanks for your contribution!
+
+Per our [contribution guidelines](https://github.com/ggml-org/llama.cpp/blob/master/CONTRIBUTING.md), the automated PR checker found the following issue(s) that need your attention:
+
+- **PR Template not respected**: Please respect the [template](https://github.com/ggml-org/llama.cpp/blob/master/.github/pull_request_template.md?plain=1) when creating a new pull request. Make sure to fill out all required sections. <!-- PR_TEMPLATE -->
+
+- **Multiple open 
+######## 28488
+Spec dec bug tests | OPEN | 2026-09-06T11:50:52Z
+## Overview
+
+Added tests for reproduction of 7+1 issues reported at #25618 
+Supposed to be a draft PR. When fixing these issues one by one, we can include related test so that CI stays green.
+
+<!-- Describe what this PR does and why. Be concise but complete -->
+
+## Additional information
+
+<!-- You can provide more details and link related discussions here. Delete this section if not applicable -->
+CPU 23/23 OK, Vulkan0 12/23 (11 red by design: 4 MMVQ + 1 RMS + 2 P021 + 2 DMMV + 2 DMMV_VIEW, all with max_abs/RMS details).
+
+Bugs 1,2,3 needs host assert
+Bugs 4, 5, 5b, 6, 7, don't need host assert
+
+### Testing
+```
+cmake -B build -DGGML_VULKAN=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target test-backend-ops -j 12
+
+# All batch-invariance tests, Vulkan (9 fail) vs CPU (20/20 pass)
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "BATCH"
+./build/bin/test-backend-ops test -b CPU -j 8 -p "BATCH"
+
+# Per-bug (Vulkan fails, CPU passes same command with -b CPU)
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "MMVQ_BATCH"   # Bug 6: 4/8 FAIL 0.11-0.20
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "RMS_BATCH"    # Bug 7: 1/4 FAIL 2.3e-07
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "P021_BATCH"   # Bug 4: 2/2 FAIL 0.021
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "DMMV_BATCH"   # Bug 5: 2/2 FAIL 0.071
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "DMMV_VIEW"    # Bug 5b: 2/2 FAIL 26.4 vs naive
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "FA_BATCH"     # control: 2/2 OK
+./build/bin/test-backend-ops test -b Vulkan0 -j 8 -p "nogqa"        # control: 3/3 OK vs naive
+```
+
+## Requirements
+
+<!-- IMPORTANT: Please do NOT delete this section, otherwise your PR may be rejected -->
+
+- I have read and
+--- @ggml-gh-bot 2026-09-06T11:55:16Z: Hi @Ankk98, thanks for your contribution!
+
+Per our [contribution guidelines](https://github.com/ggml-org/llama.cpp/blob/master/CONTRIBUTING.md), the automated PR checker found the following issue(s) that need your attention:
+
+- **Multiple open PRs from a new contributor**: We limit new contributors (those without a previously merged PR) to **1 open PR at a time**. You currently have 2 open PRs. <!-- PR_LIMIT -->
+
+---
+
+_Please note that maintainers reserve the right to make final decisions on PRs
+######## 27441
+metal : skinny-batch mul_mm tiles + deterministic split-K for small-batch decode | OPEN | 2026-08-20T13:27:36Z
+This is a draft that we will keep iterating on: the description and commit messages will be revised before marking ready for review.
+
+Adds two Metal matmul kernels for small batches (8 < `ne11` <= 32) — the speculative-decoding verify/draft regime:
+
+- `kernel_mul_mm_s`: `mul_mm` with 32x16 tiles instead of 64x32. The stock tile pads N to 32 and launches `ne01/64` threadgroups, which under-fills the GPU at these sizes (on M3/M4, `pp16 == pp32` in wall time).
+- split-K variant (4 slices) for shapes with few row tiles. Partials are written to scratch at the tail of the dst allocation (same pattern as `mul_mat_id`) and summed by a fixed-order reduce, so results are deterministic.
+
+Kernel selection is unchanged by default: mv-ext keeps `ne11` 2..8, the mm branch keeps its stock break-even and uses the new tiles for 8 < `ne11` <= 32. `ne11` > 32 and tensor-API devices (M5+) use the stock path. `GGML_METAL_MM_SKINNY_MAX=0` restores stock behavior; `GGML_METAL_MM_SPLITK`, `GGML_METAL_MM_MIN`, `GGML_METAL_MV_EXT_MAX/_R1` are available for tuning.
+
+Companion to #27383 — DSpark verify/draft batches run at `ne11` ~ 8..16. The kernels themselves are model-independent.
+
+Numbers so far (M4 Max, 36 GB): `llama-bench -p 10` on LFM2.5-2.6B F16 goes 334 -> 460 t/s; end-to-end speculative decoding on a 150-prompt suite at temp 0 goes 1.84x -> 2.27x mean speedup, accept length unchanged. tg and large-batch pp are unaffected. Split-K changes f16 summation order, so occasional greedy ties differ from the stock kernel; outputs are bit-reproducible run to run.
+
+End-to-end speculative decoding, this branch + #27383 merged (LFM2.5-2.6B F16 target + block-9 DSpark drafter, M4 Max, temp 0, speedup vs the same server without spec flags; accept length identical between configs):
+
+| dataset | accept |
+--- @ggml-gh-bot 2026-08-20T13:32:46Z: Hi @tugot17, thanks for your contribution!
+
+Per our [contribution guidelines](https://github.com/ggml-org/llama.cpp/blob/master/CONTRIBUTING.md), the automated PR checker found the following issue(s) that need your attention:
+
+- **AI-generated content**: While code is allowed to be generated by AI, please write the PR description and commit messages on your own without the help of AI. <!-- AI_DETECTED -->
+
+---
+
+_Please note that maintainers reserve the right to make final decisions on PRs. If yo
+--- @vishn9893 2026-08-23T13:23:24Z: @fernando-neto-ai this seems to be the solution.. This isn't really a generic Metal optimization atp It's an optimization of the exact bottleneck created by speculative decoding..
+any plans of updating the PR yet? 
+--- @discobot 2026-08-31T10:19:21Z: this pr seems to be omitting batch sizes 4-8 and leaving master path active there, and it really shouldn't, see benchmarks: 
+
+| b | master | this PR (default) | this PR, GGML_METAL_MM_MIN=3 GGML_METAL_MV_EXT_MAX=3 |
+|------|--------|-------------------|------------------------------------------------------|
+| 4     | 94.6   | 95.8              | 108.6                                                |
+| 5     | 91.0    | 91.7              | 125.1                                                |
+|
+######## 28108
+CUDA: batch-invariant flash-attn for narrow widths on SM120 | CLOSED | 2026-08-31T18:14:54Z
+### Problem
+
+The flash-attention dispatch picks the narrowest template instance that fits `Q->ne[1]`. Speculative decoding varies `ne[1]` from step to step — 1 for the reference decode, 3–4 for the verification pass at the default `--spec-draft-n-max 3` — so one logical computation is served by two instances that differ in tile geometry, and therefore in KV loop and combine order. They cannot agree bitwise.
+
+Speculative decoding is lossless under greedy sampling by construction, since the target model ratifies every drafted token. On SM120 today it is not: enabling it changes the generated text.
+
+### Reproduction
+
+`test_flash_attn_ext_batch_invariance` (added here) compares one batched pass against per-token serial passes with `memcmp` and `max_err() = 0`, over `n_kv {2048, 7168, 16384}` × `n_tokens {1, 2, 3, 4}`.
+
+On an RTX 5080 Laptop, current master:
+
+```
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=3,n_kv=2048)    FAIL
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=4,n_kv=2048)    FAIL
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=3,n_kv=7168)    FAIL
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=4,n_kv=7168)    FAIL
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=3,n_kv=16384)   FAIL
+FLASH_ATTN_EXT_BATCH_INVARIANCE(n_tokens=4,n_kv=16384)   FAIL
+6/12 tests passed
+```
+
+`n_tokens` 1 and 2 pass; the failures are exactly the widths a 3-token draft produces.
+
+End to end, Qwen3.8-27B-UD-Q3_K_XL, `--temp 0 --seed 1 -fa on`, 640 tokens, same prompt:
+
+| run | vs. non-speculative reference |
+|---|---|
+| `--spec-type ngram-mod`, master | **diverges** — different text from the first paragraph on |
+| `--spec-type ngram-mod`, this PR | **byte identical** |
+
+A low-entropy prompt (verbatim code edit) produced identical output either way, so whether it is user-visible depends on how close the top-2 logits are
+--- @ggml-gh-bot 2026-08-31T18:20:03Z: Hi @cuhawk, thanks for your contribution!
+
+Per our [contribution guidelines](https://github.com/ggml-org/llama.cpp/blob/master/CONTRIBUTING.md), the automated PR checker found the following issue(s) that need your attention:
+
+- **PR Template not respected**: Please respect the [template](https://github.com/ggml-org/llama.cpp/blob/master/.github/pull_request_template.md?plain=1) when creating a new pull request. Make sure to fill out all required sections. <!-- PR_TEMPLATE -->
+
+- **AI-generated c
+--- @JohannesGaessler 2026-09-21T14:38:30Z: According to the llama.cpp [AI usage policy](https://github.com/ggml-org/llama.cpp/blob/master/CONTRIBUTING.md#ai-usage-policy):
+
+>It is strictly prohibited to use AI to write your posts for you (bug reports, feature requests, pull request descriptions, Github discussions, responding to humans, ...).
+#### 27407
+closed 2026-10-09T01:23:33Z NOT_PLANNED
+## Summary
+
+With speculative decoding enabled (`temp 0`, fixed seed, otherwise identical settings), greedy output diverges from the identical non-speculative run. The divergence is **deterministic** (reruns are byte-identical) and is classified as **CUDA numerical divergence under batched speculative verification**, not a logic bug: the plain `draft-simple` path — which exercises batched verification with none of the DFlash2 code — reproduces it on one workload, while the DFlash2 path amplifies it (diverges on both workloads tested, and earlier).
+
+Outputs remain coherent; this is a bit-exactness concern only, and speculative acceptance is unaffected. No fix is claimed here — this is a documentation/confirmation request.
+
+## Environment
+
+- llama.cpp at PR #27342 head: `5ecbe1ac17ec0484c5b44af0bd580cdc9c428ed4` (local build, MSVC 19.44, CUDA 12.4, sm_86)
+- OS: Windows 11 x86_64
+- GPU: NVIDIA RTX 3090 Ti 24 GB
+- Target: `empero-ai/Qwen3.8-27B-Ridge-GGUF` `Qwen3.8-27B-Ridge-3.7bpw.gguf` (IQ2_M)
+- Draft: `incoai/Qwen3.8-27B-DFlash2-GGUF` `Qwen3.8-27B-DFlash2-Q4_K_M.gguf` (1,143,006,752 bytes; SHA-256 `18a380efc9b7ed8d88677fc895f5c11ae170653434ee378f7348f715c14d0594`)
+
+## Repro (llama-cli, 6 runs)
+
+Baseline (`--spec-type none`):
+
+```
+llama-cli -m <target> -ngl 999 --flash-attn on -c 8192 \
+  --cache-type-k q4_0 --cache-type-v q4_0 -b 256 -ub 128 -t 8 \
+  --temp 0 -s 42 --no-display-prompt -no-cnv -st \
+  -n 256 -f prompt_short.txt < nul
+```
+
+Speculative variants add:
+
+```
+  -md <draft> --spec-draft-ngl 999 --spec-draft-n-max 7 --spec-draft-p-min 0 \
+  --spec-type draft-simple        # or draft-dflash
+```
+
+Run the same with `-n 512 -f prompt_coding.txt`. Note: `--draft-model` is **not** a valid flag in this build; use `-md` (cli) / `--spec-draft-model` (server).
+
+## Results (token-level, same-vocab `llama-tokenize`)
+
+| workload | none vs draft-simple | none vs draft-dflash |
+|---|---|---|
+| short (n=256) | diverge at gen-token ~109 | diverge at gen-token ~49 |
+| coding (n=512) | **identical 512/512** | diverge at gen-token ~372 |
+
+Stripped-output MD5 (static banner/prompt-echo removed; generation content only):
+
+| run | short | coding |
+|---|---|---|
+| none | `db0b78ede21fcb32543217e5cbfd437f` (1330 B) | `1d69d9619a1bde9249dac21e6fccaf99` (2482 B) |
+| draft-simple | `c55e97dec9b537272f72dc578e1f00dc` (1346 B) | `1d69d9619a1bde9249dac21e6fccaf99` (2482 B) — **= none** |
+| draft-dflash | `25dfca084f4cec36bc8f71f5eaa8da24` (1401 B) | `24d531f596c8aa41c1119ea01bd824d
+--- @thc1006 2026-08-24T15:59:42Z: Second CUDA data point, on a different quantisation and OS, plus a width structure that may narrow this.
+
+RTX 3090 (sm_86), driver 610.43.02, Debian 13, built from `c060ca9` with CUDA 13.3. Target is `unsloth/Qwen3.8-27B-GGUF` `UD-Q4_K_XL` rather than your IQ2_M and KV is `q8_0` rather than `q4_0`, so this is a different point in the same space. `-c 8192 -fa on --parallel 1`, greedy, `cache_prompt: false`, 400 tokens, 25 prompts, 5 passes, fresh server per arm per pass. The `draft-dflash` arms are PR #27342 at `d1a522f` and are compared only against a no-speculation baseline built from that sa
+--- @Apoze 2026-08-25T17:51:05Z: Hi,
+I ran in a similar problem. Did some diging with an AI agent and ended up with some tests, resutts and a fix for my case on an RTX 5090. Here are more informations:
+
+Test Environment:
+RTX 5090 (SM120), CUDA 13.3, pilote 610.88
+Base tested: f1357e499
+
+Symptom:
+Vanilla and MTP being deterministic but diverging in greedy.
+
+Root causes identified:
+1) An incorrect MMVF selection order;
+2) Different Flash Attention paths and reductions depending on batch width.
+
+Results after fix:
+- Exact vanilla ↔ MTP parity for n_max = 1..3;
+- divergence still present for n_max >= 4 (not fixed in my branch).
+
+
+--- @github-actions 2026-10-09T01:23:32Z: This issue was closed because it has been inactive for 14 days since being marked as stale.

@@ -1,0 +1,106 @@
+{
+ "name": "run_breakeven_dprime",
+ "written_at_CET": "2026-10-25 08:03:22",
+ "status": "scritto PRIMA di aprire tracce e di calcolare (d'). Prima di scriverlo: sha256 delle tracce e degli script; letti solo il codice di lookup_rule_al.py/lookup_rule_al_addendum.py, i run file hashati, generate.cpp @7dd5cf18 (L3208-3219, L11173-11174, L14881-14897) e gli AL gia' pubblicati di (a),(a'),(d) in lookup_rule_al_addendum.json/lookup_rule_al.json per il controllo di coerenza. Nessun numero di (d') esiste.",
+ "request_lead_0801_sostanza": "pareggio PARAMETRICO di (d') = MTP 3 draft (4 righe, come (a') --spec 8 --mtp-max-t 4) + lookup fino a 12 token, contro (a') 3/7 e contro (a) 3/5 (installata --spec 4); oracolo e regola con gate; per dominio code/edit/chat; tune decisionale, holdout gia' usato solo descrittivo.",
+ "inputs_sha256": {
+  "traces_v1.1/tf_d7_p30.jsonl (tune)": "87efe507324b2a79b89c21a6736f1478094bf53385d9471694dc71b291d9abfa",
+  "traces_v1.1/holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "traces_v1.1/holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "traces_v1.1/holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "replay/lookup_rule_al.py": "2d1923dae2ff823161a823ee371e1f8f4f9706c8bf960f3ae13c77b0bc05ae66",
+  "replay/lookup_rule_al_addendum.py (funzioni riusate verbatim)": "b402c026c5a1a5627590fa209e54b5f324ed8552e94b38aeca1ea0b3408f58d9",
+  "replay/run_lookup_rule.json": "43785c4ba35f44a3824064ce972b4eaba48ffaa68adede7a847ea7df070daec2",
+  "replay/run_lookup_rule_addendum.json": "f151f9852e0fd551c44ff3d13a864613006b75b901c1ac201f60268fbe370a64",
+  "results/v2/lookup_rule_al/lookup_rule_al.json": "50f26aed7de0ba904e7e8a7d1860e9f6a0e92ec8e2ca38192037bba86468ff46",
+  "results/v2/lookup_rule_al_addendum/lookup_rule_al_addendum.json": "07fa2bec404516e6265b9a8b82994bc1ba697680cd8cab31174c00ba762f7848",
+  "results/v2/ceiling_installed_cfg/ceiling_installed_cfg.json": "da1f9a1f1bb420740ea955c0c8fad7113dd64d8f3f00e80f91fd51826b6849c0",
+  "strata_sim/native.py": "6bc1af8e4987ce0384a3eb42214471fd24859251ff7c5ddb54da94ccd049a758",
+  "strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40",
+  "native/libstrata_spec_capi.so": "8fb27b0d1ca6bfeb58d2e9a1a45d28cc779f1feb7ef1662b2eb6d524608b055b"
+ },
+ "arms": {
+  "a": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 5,
+   "engine": "--spec 4 installata, suffix on: generate.cpp L3208-3211 -> mtp_max_t=4, spec=6"
+  },
+  "a_prime": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 7,
+   "engine": "--spec 8 --mtp-max-t 4 (equivalente a --spec 4 --lookup-chain 2 senza lookup concatenato, come nell'addendum)"
+  },
+  "d_prime": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 12,
+   "engine": "nessuna configurazione attuale (kVerifyMaxT=8): e' la patch T=12"
+  },
+  "d_reference_only": {
+   "mtp_max_drafts": 7,
+   "lookup_max_tokens": 12,
+   "note": "solo per il controllo di coerenza"
+  }
+ },
+ "row_convention": {
+  "declared": "etichetta T del braccio = finestra di verify nominale del braccio, come gia' usata: (a') T=8 (--spec 8), (d) 7/12 -> T=12 (addendum: s(12)/s(8)); quindi (d') 3/12 -> T_d'=12; (a) T_a=6 (spec effettivo installato con suffix on, L3208-3211 = righe massime effettive 1+5).",
+  "rows_per_arm_label_vs_replay_max": {
+   "a": {
+    "label_T": 6,
+    "replay_max_rows_mtp": 4,
+    "replay_max_rows_lookup": 6
+   },
+   "a_prime": {
+    "label_T": 8,
+    "replay_max_rows_mtp": 4,
+    "replay_max_rows_lookup": 8
+   },
+   "d_prime": {
+    "label_T": 12,
+    "replay_max_rows_mtp": 4,
+    "replay_max_rows_lookup": 13
+   }
+  },
+  "inherited_off_by_one": "nel replay (come per (d)) il lookup a 12 token occupa fino a 1+12=13 righe effettive, mentre l'etichetta e' T=12; nel motore (sfx.propose(S-1), L14897) una finestra S=12 proporrebbe al massimo 11 token. Mantengo la convenzione di (d) come chiesto; lo segnalo come anomalia. Il costo per round usa comunque le righe effettive del round.",
+  "literal_alternative": "il messaggio chiama (a) '--spec 4': riporto anche s(12)/s(4) come lettura letterale alternativa, etichettata, senza sceglierla"
+ },
+ "implementation_fixed_before_numbers": {
+  "functions": "prompts, walk_oracle, walk_rule, rho_star, fmt_rho copiate verbatim da lookup_rule_al_addendum.py (b402c026)",
+  "lookup": "NativeSuffixDrafter(3,64,1<<15) + append(prompt_ids) + scan(y, 16, want_tokens) per richiesta; candidato tagliato a min(k16, L_col)",
+  "rule": "regola min(match, L_col) con gate sbuf[0]==drafts[0] (lk_tok16[i][0]==mtp_tok[i][0]); altrimenti ramo MTP con --spec-min-p 0.5 e tetto MTP della colonna (S_mtp=4)",
+  "oracle": "walk_oracle di ceiling_installed_cfg (tie -> lookup; T oracolo = 1+min(k16,L) se vince lookup, 1+mtp_cap se vince MTP; min(T,n-i))",
+  "series": [
+   "oracolo",
+   "regola con gate"
+  ],
+  "cost_model": "PARAMETRICO s(T)=1+rho(T-1), T = righe effettive del round; draft MTP e lookup a costo zero",
+  "metric": "M(rho)=sum(a+1)/sum(s(T_round)) per dominio e split",
+  "rho_star": "rho sopra il quale (d') smette di battere la base nel metro; griglia [0,2] passo 0.0005 + bisezione 40 passi; '>2' se batte su tutta la griglia; 'mai' se non batte a rho=0; forma chiusa (R_base-R_d')/(X_d'-X_base) come controllo",
+  "pairs": {
+   "d_prime_vs_a_prime": "ratio s(12)/s(8)=(1+11rho*)/(1+7rho*)",
+   "d_prime_vs_a": "ratio s(12)/s(6)=(1+11rho*)/(1+5rho*); alternativa letterale s(12)/s(4)=(1+11rho*)/(1+3rho*)"
+  },
+  "comparison": "like-for-like: oracolo vs oracolo, gate vs gate",
+  "bootstrap": "B=2000 seed 0 sulle sessioni (=richieste v1.1), stesso ordine di ciclo dell'addendum (code,chat,edit x tune,holdout) -> stesse repliche; IC95 percentile; rapporto IC95 = rapporto agli estremi di rho* (monotono)",
+  "ratio_max_by_construction": {
+   "s12/s8": {
+    "sup_rho_inf": "11/7=1.5714",
+    "at_rho_2": "23/15=1.5333"
+   },
+   "s12/s6": {
+    "sup_rho_inf": "11/5=2.2",
+    "at_rho_2": "23/11=2.0909"
+   },
+   "s12/s4": {
+    "sup_rho_inf": "11/3=3.6667",
+    "at_rho_2": "23/7=3.2857"
+   }
+  },
+  "breakeven_exists": "pareggio in rho>0 esiste se e solo se R_d' < R_base (d' batte la base a rho=0) e X_d' > X_base; altrimenti 'mai' o nessun incrocio",
+  "outputs": "AL di (d') oracolo e gate (IC95), quota di cattura, quota round lookup; per ogni coppia: rho*, IC95, forma chiusa, rapporto e IC95, R e X",
+  "consistency_checks": "AL ricalcolati di (a),(a'),(d) per oracolo e gate == lookup_rule_al_addendum.json / lookup_rule_al.json (uguaglianza esatta, assert), letti dal file. Valori attesi dal messaggio (holdout gate code 4.88/5.91/8.27, edit 4.63/5.43/7.26, chat (a)/(a') 2.28/2.29) confrontati arrotondati a 2 decimali",
+  "decision": "la lettura decisionale e' sul tune; holdout v1.1 gia' usato: solo descrittivo, nessun parametro scelto su di esso. Nessuna soglia go/no-go fissata da me.",
+  "label": "proxy CPU, AL, parametrico",
+  "out": "results/v2/breakeven_dprime/{breakeven_dprime.json, REPORT.md}",
+  "exec": "nice -n 19, OMP/OPENBLAS/MKL_NUM_THREADS=1, finestra CPU in /workspace/strata-plus/cpu_busy_policy.log"
+ }
+}

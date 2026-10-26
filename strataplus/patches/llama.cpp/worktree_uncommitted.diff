@@ -1,0 +1,88 @@
+# llama.cpp working tree diff (non committato) su d327bf1f0780f87b8c01b367b61853b0c291d7c4
+diff --git a/common/speculative.cpp b/common/speculative.cpp
+index 4305ac6..246a3ac 100644
+--- a/common/speculative.cpp
++++ b/common/speculative.cpp
+@@ -1828,6 +1828,29 @@ struct common_speculative_impl_draft_mtp : public common_speculative_impl {
+ 
+                 auto * smpl = smpls[seq_id].get();
+ 
++                // E4 (proxy CPU, non AMD): STRATA_DRAFT_VOCAB=<file int32 ids> restricts the MTP draft to Strata's draft
++                // vocab subset (= argmax over the reduced lm_head rows). Needs --no-spec-draft-backend-sampling.
++                {
++                    static std::vector<char> keep; static bool init = false;
++                    if (!init) {
++                        init = true;
++                        if (const char * fv = std::getenv("STRATA_DRAFT_VOCAB")) {
++                            FILE * f = std::fopen(fv, "rb");
++                            if (f) {
++                                keep.assign(llama_vocab_n_tokens(llama_model_get_vocab(llama_get_model(ctx_dft))), 0);
++                                int32_t t; size_t n = 0;
++                                while (std::fread(&t, 4, 1, f) == 1) { if (t >= 0 && t < (int32_t) keep.size()) { keep[t] = 1; n++; } }
++                                std::fclose(f);
++                                fprintf(stderr, "STRATA_DRAFT_VOCAB: %zu ids of %zu\n", n, keep.size());
++                            }
++                        }
++                    }
++                    if (!keep.empty() && !llama_get_sampled_logits_ith(ctx_dft, i_last[seq_id])) {
++                        float * lgm = llama_get_logits_ith(ctx_dft, i_last[seq_id]);
++                        if (lgm) for (size_t v = 0; v < keep.size(); ++v) if (!keep[v]) lgm[v] = -INFINITY;
++                    }
++                }
++
+                 const llama_token id_sampled = common_sampler_sample(smpl, ctx_dft, i_last[seq_id], true);
+                 const float * h_row = llama_get_embeddings_nextn_ith(ctx_dft, i_last[seq_id]);
+ 
+@@ -1857,11 +1880,34 @@ struct common_speculative_impl_draft_mtp : public common_speculative_impl {
+ 
+                 result.push_back(id);
+ 
++                if (dp.result_p) { // strata-plus local patch: log the draft's probability (sampler: softmax over top_k=10)
++                    dp.result_p->push_back(cur_p->data[0].p);
++                }
++                if (dp.result_pg || dp.result_ent) { // strata-plus local patch: full-vocab softmax (temp 1) of the MTP logits
++                    // needs the CPU draft sampler (--no-spec-draft-backend-sampling): with backend sampling only the
++                    // top_k=10 logits leave the graph and the full row is not available -> NaN
++                    const int nv = llama_vocab_n_tokens(llama_model_get_vocab(llama_get_model(ctx_dft)));
++                    const float * lg = llama_get_sampled_logits_ith(ctx_dft, i_last[seq_id]) ? nullptr : llama_get_logits_ith(ctx_dft, i_last[seq_id]);
++                    if (!lg) {
++                        if (dp.result_pg)  dp.result_pg->push_back(NAN);
++                        if (dp.result_ent) dp.result_ent->push_back(NAN);
++                    } else {
++                        float mx = lg[0];
++                        for (int v = 1; v < nv; ++v) mx = std::max(mx, lg[v]);
++                        double z = 0.0, zl = 0.0;
++                        for (int v = 0; v < nv; ++v) { const double e = std::exp((double) lg[v] - mx); z += e; zl += e * ((double) lg[v] - mx); }
++                        if (getenv("SP_DBG")) { int am = 0; for (int v = 1; v < nv; ++v) if (lg[v] > lg[am]) am = v; fprintf(stderr, "SPDBG id=%d am=%d lg_id=%f mx=%f pg=%f psamp=%f\n", id, am, lg[id], mx, std::exp((double) lg[id] - mx) / z, cur_p->data[0].p); }
++                        if (dp.result_pg)  dp.result_pg->push_back((float) (std::exp((double) lg[id] - mx) / z));
++                        if (dp.result_ent) dp.result_ent->push_back((float) (std::log(z) - zl / z));
++                    }
++                }
++
+                 if (dp.result_q) {
+                     dp.result_q->emplace_back(cur_p->data, cur_p->data + cur_p->size);
+                 }
+ 
+-                if (params.n_max <= (int) result.size()) {
++                // strata-plus local patch: also honour the per-call cap dp.n_max (as draft-simple does)
++                if (params.n_max <= (int) result.size() || (dp.n_max > 0 && dp.n_max <= (int) result.size())) {
+                     drafting[seq_id] = false;
+                     n_drafting--;
+                     continue;
+diff --git a/common/speculative.h b/common/speculative.h
+index 4262327..471f0ad 100644
+--- a/common/speculative.h
++++ b/common/speculative.h
+@@ -76,6 +76,12 @@ struct common_speculative_draft_params {
+     // candidate distribution per drafted token; set it to make draft-simple, draft-mtp and draft-dflash (DFlash2 only) sample
+     std::vector<std::vector<llama_token_data>> * result_q = nullptr;
+ 
++    // strata-plus local patch (not upstream): top-1 candidate probability per drafted token (draft-mtp only)
++    std::vector<float> * result_p = nullptr;
++    // strata-plus local patch: greedy top-1 probability (full-vocab softmax, temp 1) and entropy (nat) per drafted token
++    std::vector<float> * result_pg  = nullptr;
++    std::vector<float> * result_ent = nullptr;
++
+     // the target's temp and seed, read only when the drafter samples probabilistically
+     float    temp = 1.0f;
+     uint32_t seed = LLAMA_DEFAULT_SEED;

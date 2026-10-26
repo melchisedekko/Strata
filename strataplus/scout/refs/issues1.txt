@@ -1,0 +1,948 @@
+######## 23335
+Eval bug: draft-mtp changes deterministic output on Qwen3.6 MTP model
+CLOSED 2026-05-19T11:47:40Z closed:2026-05-19T15:24:14Z
+https://github.com/ggml-org/llama.cpp/issues/23335
+---BODY---
+### Name and Version
+
+```sh
+llama-server --version                                                                                                                                                    
+version: 9216 (1ff0fc138)
+built with AppleClang 21.0.0.21000101 for Darwin arm64
+
+Platform: macOS 26.5, arm64
+GPU backend: Metal
+Hardware: Apple M4 Pro
+Model: Qwen3.6-27B-Q4_K_M.gguf
+Model metadata includes:
+general.architecture = qwen35
+qwen35.nextn_predict_layers = 1
+```
+
+### Operating systems
+
+Mac
+
+### GGML backends
+
+Metal
+
+### Hardware
+
+M4 Macbook Pro
+
+### Models
+
+unsloth/Qwen3.6-27B-MTP-GGUF - which is a Qwen3.6-27B-Q4_K_M.gguf
+
+### Problem description & steps to reproduce
+
+`draft-mtp` changes the committed token stream for a Qwen3.6 MTP GGUF model under deterministic sampling. In `llama-server`, the same prompt and request body produce one token stream with no speculative decoding, and different token streams when `--spec-type draft-mtp` is enabled. This happens with an explicit fixed seed and `temperature: 0`.
+
+The request body is identical for all runs:
+```sh
+curl -s http://127.0.0.1:8080/completion \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"<|im_start|>system\nYou are concise and helpful.<|im_end|>\n<|im_start|>user\nWrite ten sentences about local on-device language models.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n","n_predict":64,"temperature":0,"top_p":0.9,"top_k":40,"min_p":0,"repeat_penalty":1.3,"repeat_last_n":16,"seed":1234,"cache_prompt":false,"stream":false,"return_tokens":true}'
+```
+
+The full logs are down in the console log area below, but the pattern is:
+
+```console
+no speculative decoding: output A
+draft-mtp width 1:     output B
+draft-mtp width 2:     output C
+draft-mtp width 3:     output C
+draft-mtp width 4:     output C
+```
+
+So, enabling draft-mtp changes the committed token stream with --spec-draft-n-max 1 or higher. The width-1 run is notable because it looks like all tokens were accepted but the output still differs from the no-MTP case:
+```console
+draft_n: 31
+draft_n_accepted: 31
+```
+
+Expected behavior: Speculative decoding should not change the committed token stream. With the same prompt, same sampler settings, explicit seed:1234, and temperature:0, `draft-mtp` should produce the same tokens as no speculative decoding.
+
+Actual behavior: `draft-mtp` from #22673 produces different committed tokens from the no-speculative baseline. The exact divergent output depends on `--spec-draft-n-max`. `llama-completion` does not appear to support `--spec-type` so this repro is only in `llama-server`.
+
+(This issue corrects #23302 which did not use a fixed seed.)
+
+### First Bad Commit
+
+_No response_
+
+### Relevant log output
+
+<details>
+<summary>Logs</summary>
+<!-- Copy-pasted short logs go into the "console" area here -->
+
+```console
+
+Query is the same for all:
+$ curl -s http://127.0.0.1:8080/completion \                                              
+  -H 'Content-Type: application/json' \                                          
+  -d '{"prompt":"<|im_start|>system\nYou are concise and helpful.<|im_end|>\n<|im_start|>user\nWrite ten sentences about local on-device language models.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n","n_predict":64,"temperature":0,"top_p":0.9,"top_k":40,"min_p":0,"repeat_penalty":1.3,"repeat_last_n":16,"seed":1234,"cache_prompt":false,"stream":false,"return_tokens":true}'
+
+No MTP
+* Server:
+llama-server -m '/Users/james/Library/Group Containers/group.com.ca
+--- @carbocation 2026-05-19T12:28:48Z: On release [b9222](https://github.com/ggml-org/llama.cpp/releases/tag/b9222) with the same commands in llama-server, the pattern is different, with the results matching no-MTP up to width 2 and then diverging:
+
+```console
+no speculative decoding:       output A
+draft-mtp width 1:             output A
+draft-mtp width 2:             output A
+draft-mtp width 3:             output B
+draft-mtp width 4:             output B
+```
+--- @am17an 2026-05-19T13:13:32Z: Can you try the original model? i.e. in BF16 or at least Q8_0. 
+--- @ggerganov 2026-05-19T13:41:02Z: This is expected - we use different kernels for different batch sizes.
+--- @carbocation 2026-05-19T15:24:02Z: @am17an with a Q8_0 (`-hf unsloth/Qwen3.6-27B-MTP-GGUF:Q8_0`), now I do *not* reproduce the same issue. So this looks specific to the Q4_K_M quantization / kernel paths. (And regardless, it sounds like my expectations about identical MTP/non-MTP behavior were wrong due to the point that Georgi raised.)
+
+So with Q8_0 everything agrees:
+
+```console
+no speculative decoding:       output A
+draft-mtp width 1:             output A
+draft-mtp width 2:             output A
+draft-mtp width 3:             output A
+draft-mtp width 4:             output A
+draft-mtp width 5:             output A
+```
+
+<details>
+
+```console
+Query used for each:
+
+$ curl -s http://127.0.0.1:8080/completion \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"<|im_start|>system\nYou are concise and helpful.<|im_end|>\n<|im_start|>user\nWrite ten sentences about local on-device language models.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n","n_predict":64,"temperature":0,"top_p":0.9,"top_k":40,"min_p":0,"repeat_penalty":1.3,"repeat_last_n":16,"seed":1234,"cache_prompt":false,"stream":false,"return_tokens":true}'
+```
+
+Server command and query result
+
+```console
+
+No-MTP:
+
+llama-server -hf unsloth/Qwen3.6-27B-MTP-GGUF:Q8_0 --ctx-size 32768 --batch-size 2048 --ubatch-size 2048 --gpu-layers all --spec-draft-n-max 1 --spec-draft-n-min 0 --temp 0 --top-p 0.9 --top-k 40 --min-p 0 --host 127.0.0.1 --port 8080 --no-ui
+
+{"index":0,"content":"1. Local on-device language models run directly within a device's hardware, eliminating the need for constant internet connectivity.\n2. This architecture significantly enhances user privacy by keeping sensitive data and prompts strictly on the local machine.\n3. By processing information locally, these models reduce latency and provide faster response times com
+--- @am17an 2026-05-19T15:28:44Z: Yes if you keep everything in F32 for flash attention you *may* approximate batch-invariant behavior. i.e. batch (t1, t2, t3) vs 3 batches (t1), (t2), (t3) are numerically close, because we do most other things in F32 accumulation. 
+--- @D1rk-D1ggler 2026-05-21T19:17:34Z: To chime in, I am experiencing the same issue. I do data extraction in strict JSON schema output (Temperature 0) and enabling MTP introduces drift, Qewn3.6-27B passes my 150 cases extraction reference benchmark at 100%, but turning MTP on drops that number to 97% - it consistently skips or misclassifies a small number of (same) cases. This is reproducible across runs.
+I am using Q6_K_XL, so this does not only occur on Q4_K_M . I'm on a RTX5090 so Q8 is not an option for me
+--- @agnaylor 2026-10-11T19:57:30Z: Question on MTP vs non-MTP divergence (follows #23302 / this thread), with SYCL data from a different backend.
+
+Setup: Intel Arc Pro B70 (SYCL), ghcr.io/ggml-org/llama.cpp:full-intel-b10853, Qwen3.8-27B Q4_K_M (arch qwen35, `nextn_predict_layers = 1`, MTP layer embedded), `-fa on`, q8_0 KV, `--parallel 1`, `--spec-type draft-mtp --spec-draft-p-min 0.75`.
+
+Greedy (temperature 0) output compared by md5 against the same server without speculation:
+
+| task | n-max 0 | n-max 2 | n-max 3 |
+|---|---|---|---|
+| 296-token Python function | A | A (identical) | A (identical) |
+| 700-token prose essay | B | C (differs) | D (differs) |
+
+Speed gain was real: 26.5 tok/s baseline to 35 (prose) / 46-52 (code) / 43-46 (thinking mode), acceptance 78-98%. The divergent text reads as coherent. Unlike the b9222 report above (identical up to width 2), here it already differs at width 2.
+
+Questions for the maintainers:
+1. Is divergence at n-max 2 on SYCL expected, for the reason given above (different kernels for different batch sizes)?
+2. Is there a supported way to make draft verification batch-invariant, for example keeping flash attention in F32, and does the SYCL backend have an equivalent switch? What is its cost?
+3. For quality, is there a recommended check beyond comparing outputs (for instance comparing logits or KL divergence of the verified path against the baseline), since one report in this thread saw a task-level drop (100% to 97%) on a strict-JSON extraction benchmark with MTP on?
+
+We are running a task-level quality comparison (hard reasoning tasks, thinking on, MTP n-max 3 vs the same model without MTP) and will post the result here if useful.
+
+--- @agnaylor 2026-10-11T20:25:20Z: Follow-up with the task-level quality result I mentioned (same setup as my comment above: Arc Pro B70, SYCL, b10853, Qwen3.8-27B Q4_K_M, thinking on, effort medium, `--reasoning-budget 8192`, `--spec-type draft-mtp --spec-draft-n-max 3 --spec-draft-p-min 0.75`, temperature 1.0).
+
+Seven hard reasoning/coding tasks (programmatically scored, 3 runs each), MTP run compared with an earlier no-MTP run of the same harness, tasks and scorer (a different session on the same machine, so not a same-hour A/B):
+
+| | no MTP | MTP n-max 3 |
+|---|---|---|
+| mean of per-task medians | 0.988 | 0.957 |
+| decode (median) | 25.2 tok/s | 47.0 tok/s (1.87x) |
+| median seconds per task | 266 | 146 |
+
+Per task the scores are equal or better on 6 of 7 (json_patch 0.92 to 1.00); the whole difference is one task, rle_bitset (1.00, 1.00, 1.00 without MTP versus 0.60, 1.00, 0.70 with it). With 3 runs per cell and temperature 1.0 that is inside what I would call noise, but it is also not proof of no effect, so I will re-run that task with more samples. No crashes or garbage output in any run.
+
+Take-away so far: on this backend the speedup is large and the divergence from non-speculative output did not show up as a systematic quality loss in thinking mode, though one task may be sensitive. Happy to run a specific check if the maintainers have one in mind.
+
+--- @arthw 2026-10-14T03:16:43Z: @agnaylor 
+
+MTP shouldn't impact the content of output.
+
+In following test, what's the detailed input of `700-token prose essay`?
+Is it possible to reproduce it by `llama-completion` or `llama-cli` with fixed input for test `700-token prose essay`?
+So that we could check it easily.
+
+|task | n-max 0 | n-max 2 | n-max 3|
+|-- | -- | -- | --|
+|296-token Python function | A | A (identical) | A (identical)|
+|700-token prose essay | B | C (differs) | D (differs)|
+
+Since this issue is closed, could you create new issue for your case with a reproduce example?
+
+Thank you!
+
+
+######## 25618
+Eval bug: Speculative decoding (draft-mtp / draft-dspark): greedy output diverges from vanilla on quantized targets
+OPEN 2026-07-13T11:55:59Z closed:null
+https://github.com/ggml-org/llama.cpp/issues/25618
+---BODY---
+## Summary
+
+Under greedy sampling (`temperature=0`, `top_k=1`), **draft-model** speculative decoding can produce different text than a non-speculative run when the **target is quantized** (e.g. Q4_K_M). The same setups match on a **bf16 target**. **Ngram** speculation on the same quantized target stays lossless even when drafts are accepted.
+
+This contradicts the expected property that speculative decoding is lossless for greedy decode (draft proposes; target verifies).
+
+Related: https://github.com/ggml-org/llama.cpp/pull/25173 (`draft-dspark`), but the issue is **not DSpark-only**.
+
+## Environment (local repro)
+
+- Hardware: AMD Strix Halo iGPU
+- Backend: Vulkan (`-DGGML_VULKAN=ON`)
+- Branch: PR #25173
+- Others have also reported similar mismatches on **CUDA** (not re-run here)
+
+## Expected
+
+Greedy speculative output == greedy vanilla output for the same target weights / seed / prompt.
+
+## Actual / evidence
+
+Probe prompt (thinking off):
+
+> What happens when a browser requests https://example.com? Five bullet points.
+
+### Matrix (Vulkan)
+
+| Setup | Spec active? | Match vanilla? |
+|-------|----------------|----------------|
+| Qwen3-8B **Q4_K_M**, vanilla ×2 | n/a | **OK** (deterministic) |
+| Qwen3-8B **Q4_K_M**, `ngram-simple` (drafted, 0 accepted) | yes | **OK** |
+| Qwen3-8B **Q4_K_M**, `ngram-mod` (4/8 accepted) | yes | **OK** |
+| Qwen3-8B **Q4_K_M**, `draft-dspark` n_max=7 | yes (e.g. 80/336) | **BUG** |
+| Qwen3-8B **Q4_K_M**, `draft-dspark`, `-fa off` | yes | **BUG** (still) |
+| Qwen3-8B **bf16**, `draft-dspark` n_max=7 (4 prompts) | yes | **OK** (4/4) |
+| Gemma-4-12B Q4 + `draft-mtp` n_max=4 | yes (169/340) | **BUG** |
+
+Example Q4 DSpark fork (both `finish=stop`):
+
+- vanilla: `...checks if it has a cached copy of the website's SSL/TLS certificate...`
+- dspark: `...checks if the system has a valid certificate for **example.com**...`
+
+## What this is / is not
+
+- **Is quantization-related:** yes (Q4 breaks; bf16 OK for DSpark).
+- **Is not “all speculative”:** ngram paths match on the same Q4 target, including with accepts.
+- **Is not DSpark/DFlash-only:** Gemma **MTP** also diverges on Q4.
+- **Is not Qwen-only:** Gemma-4 + MTP also fails.
+- **Is not vanilla Q4 nondeterminism:** two vanilla Q4 runs match.
+- **Is not FA-only:** DSpark still mismatches with `-fa off`.
+- **Target weights likely fine:** ngram uses the same greedy accept/verify sampler path (`common_sampler_sample_and_accept_n` in server) and stays lossless → points to **draft-model speculative paths** (MTP / DSpark: draft ctx, KV, embd/injection, multi-token target batching) interacting badly with **quantized** target compute—not permanent weight corruption.
+- **Type-cast root cause:** not isolated; path-dependent Q4 numerics remain a plausible contributor.
+
+
+
+### Operating systems
+
+Linux
+
+### GGML backends
+
+Vulkan
+
+### Hardware
+
+```
+ankk98@ankk98-workstation:~/repos/llama.cpp$ fastfetch
+             .',;::::;,'.                 ankk98@ankk98-workstation
+         .';:cccccccccccc:;,.             -------------------------
+      .;cccccccccccccccccccccc;.          OS: Fedora Linux 44 (Workstation Edition) x86_64
+    .:cccccccccccccccccccccccccc:.        Host: ROG Flow Z13 GZ302EA_GZ302EA (1.0)
+  .;ccccccccccccc;.:dddl:.;ccccccc;.      Kernel: Linux 7.1.3-200.fc44.x86_64
+ .:ccccccccccccc;OWMKOOXMWd;ccccccc:.     Uptime: 4 hours, 48 mins
+.:ccccccccccccc;KMMc;cc;xMMc;ccccccc:.    Packages: 4 (appimage), 31 (flatpak), 3569 (rpm)
+,cccccccccccccc;MMM.;cc;;WW:;cccccccc,    Shell: bas
+--- @Ankk98 2026-07-13T12:00:49Z: Faced this issues while doing dspark algo poc as well.
+https://github.com/Ankk98/llama.cpp/tree/ft-dspark-qwen3
+--- @Ankk98 2026-07-13T16:23:57Z: - Bug is in parallel target verify, not drafting
+- Fits the n_max boundary. n_max=1 (batch of 2: [S, D0]) was OK; n_max≥2 (batch of 3+) was buggy. Sequential never puts 3+ tokens in one target decode.
+--- @Ankk98 2026-07-13T17:49:05Z: - Bug is live parallel verify logits
+- Needs real speculative state (DSpark drafts + accumulated KV)
+- Flips are sparse but real in the server loop
+- There are potentially 2 bugs (Flash-attn path, Non-FA path)
+--- @Ankk98 2026-07-13T17:49:57Z: **Issue 1 - FA GQA packed path for multi-token queries.** Speculative verify runs flash attention with `neq1 > 1` (several query tokens at once). Vulkan’s GQA-packed FA path treated `N <= 8` as “use GQA packing,” then overwrote `N` with `gqa_ratio` and remapped workgroups as if there were a single query token. That is only valid for single-token decode, so multi-token parallel verify disagreed with sequential FA and drifted logits (e.g. wrong-draft windows with `n_win >= 4`). Fix: only enable that packing when `neq1 == 1`.
+
+**Issue 2 - FA-off KxQ used GEMM instead of p021.** With flash attention off, scores are `mul_mat` of permuted F16 K (cache view) and F32 Q. The correct Vulkan path is `mul_mat_vec_p021`, but the dispatch required `dst->ne[1] == 1`, so multi-token verify fell through to general `mul_mat_q_f16` GEMM. That path is not bitexact with single-token p021 on strided/permuted KV, so parallel vs sequential argmax flipped (classic `279` vs `432` at cut=4). Fix: extend p021 to `ncols_y > 1` with token-major Q indexing.
+
+**Issue 3 - FA packed vs generic path mismatch after rejects.** Even after Issue 1’s gate, single-token decode still used the GQA-packed FA kernel while multi-token verify used the generic FA kernel. Those two paths are not bitexact, so K/V written for accepted token S during parallel verify disagreed with what sequential decode would have written; after reject + `seq_rm`, greedy continuation could still diverge. Fix: disable the packed path so single- and multi-token decode share one FA implementation.
+
+**Issue 4 - FA tile sizes and split_k depended on N.** Scalar flash-attn tuning chose different block shapes / AMD subgroup sizes for `n_rows == 1` vs `n_rows > 1`, and `split_k` scaled with token count. Parallel verify (N>1) and sequential decod
+--- @sidran 2026-07-18T07:33:06Z: I have not done as rigorous testing but something with MTP is broken. When enabled, output semantically seems fine but its not contextually. I disable MTP and regen that same answer and everything seems fine.
+Using B10066, Vulkan, Qwen 3.6 27B Heretic Q4KM
+B9775 did not have this problem and that I am very sure.
+
+Ran it using:
+--model "D:\LLMs\Qwen3.6-27B-uncensored-heretic-v2-Native-MTP-Preserved-Q4_K_M.gguf" ^
+  --ctx-size 40960 ^
+  --gpu-layers 18 ^
+  --flash-attn on ^
+  --fit off ^
+  --parallel 1 ^
+  --temp 0.80 ^
+  --top-k 0 ^
+  --top-p 1.00 ^
+  --min-p 0.02 ^
+  --jinja ^
+  --cache-type-k q8_0 ^
+  --cache-type-v q8_0 ^
+  --reasoning off ^
+  --spec-type draft-mtp ^
+  --spec-draft-n-max 2 ^
+  --tools read_file,write_file,edit_file,get_datetime
+
+I remove two MTP lines for no MTP.
+--- @dbsanfte 2026-08-08T11:06:35Z: Hi, I'm the developer of Llaminar and I've been working on MTP myself.
+
+https://github.com/Llaminar/llaminar
+
+The key to MTP working is a property called *batch invariance*. The DeepSeek DSpark paper is quite clear about this. Here's also the vLLM doc on the topic: 
+
+https://docs.vllm.ai/en/latest/features/batch_invariance/
+
+A kernel that does a batched/grouped decode for e.g. M=3 must be bitwise identical to the serial decode result (unbatched) for rows 1,2,3. This is an obligatory invariant and it touches every kernel in the codebase. Cosine/KL is not enough. 0.999999999 is not enough. It must be *bitwise identical*.
+
+All GEMM/GEMV kernels need to be batch invariant, and proven to be so. Floating point reduction orders need to be identical. 
+
+That's how you fix this. Even one ULP difference is enough to cause MTP to diverge. 
+
+I speak from experience here, I had to rewrite most of my math kernels in order to stop this drift, absolute pain 😅
+--- @YavorGIvanov 2026-08-10T12:42:01Z: I can reproduce the quantized-target divergence on Apple Metal with the current
+upstream `llama.cpp` commit `9ba73fd1f5bc882d4cb58101a99e99f4f326506c`.
+
+Configuration:
+
+- MacBook Air M4, 24 GB unified memory; Metal build.
+- Target: `Qwen/Qwen3-4B` converted to `Q4_K_M`.
+- Draft: `deepseek-ai/dspark_qwen3_4b_block7`, BF16 GGUF.
+- `--spec-type draft-dspark --spec-draft-n-max 7 --temp 0 --top-k 1 -np 1 -c 4096 --jinja`.
+- Requests use `chat_template_kwargs: {"enable_thinking": false}`, `max_tokens=128`.
+
+I ran a fixed 10-prompt regression set and compared complete assistant-message
+objects, not just token counts. Baseline versus DSpark was 9/10 equal. The
+failure was this prompt:
+
+> Explain the difference between rm -r and rm -rf in two concise sentences.
+
+Baseline emitted 50 tokens; DSpark emitted 56, with 38 accepted draft tokens
+out of 126. The two answers differ semantically (baseline describes the
+non-empty-directory behavior, while DSpark describes read-only-file forcing).
+
+The relevant raw artifacts are SHA-256
+`69b96f41f16de46434d48915475a111ecb021694c424389a90c9d3e1476ea552`
+(baseline Q4) and
+`460cf22a0f74ee6e4e9e7d97bac55d3f4ab93bd425de1f5a46c19ecf11770996`
+(DSpark Q4).
+
+As a control, I repeated the identical 10 prompts with the unquantized BF16
+target and got 10/10 equal complete messages, including this prompt. BF16 raw
+artifact hashes are
+`c0fdfb85b5848cfea4073d5a98f447c98f1cbca6307d51129ae85fad3c5c7d8a`
+(baseline) and
+`d467b63b6875931c78a0c22af88c407b33f4591c10779dd2c536a679bb80f8d6`
+(DSpark).
+
+So this looks consistent with a quantized-target/batched verification
+invariance issue rather than a general DSpark draft-model mismatch. I can
+provide the prompt fixture and full response JSON if that would help.
+
+--- @sidran 2026-08-10T23:43:08Z: I did a more rigorous test and version b10354 does not seem to have this output divergence. Maybe it was a strange web UI bug which happens sometimes when chunks of context are somehow inherited to separate sessions.
+--- @snick525 2026-08-15T02:23:01Z: I reproduced repeatable baseline-vs-MTP divergence on current `master`. A small control matrix shows two useful conditional associations on this setup, but does not by itself identify the causal kernel.
+
+This was a direct API comparison with a fresh server for every run, not a Web UI comparison. Each variant used ABBA order (`vanilla`, `MTP`, `MTP`, `vanilla`). In the two fresh launches per mode, both vanilla normalized outputs were byte-identical to each other and both MTP normalized outputs were byte-identical to each other. Where marked BUG, the two modes produced different text in those repeated launches; the exact-template completion variant also returned different token IDs.
+
+## Environment
+
+- llama.cpp commit: `9d57ce456c94d241dde672b2db9cf18879766568`
+- `llama-server` SHA-256: `56ca512b63cbd29d54d0444f3c73a03fad55f8c4488ba53d39bed5a98fd8bb2a`
+- Build: Release, GNU C++, `GGML_VULKAN=ON`, CUDA/HIP off
+- OS: Arch Linux, kernel `7.1.4-arch1-1`
+- GPU: AMD Radeon AI PRO R9700 (RADV GFX1201)
+- Mesa/RADV: `26.1.5-arch1.1`
+- Vulkan instance/API: `1.4.350` / `1.4.354`
+- Target: [`unsloth/Qwen3.8-27B-GGUF`, revision `4604b899a826000505a834e623272db5b7fd62f6`, `Qwen3.8-27B-Q6_K.gguf`](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4604b899a826000505a834e623272db5b7fd62f6/Qwen3.8-27B-Q6_K.gguf), 22,884,407,264 bytes, SHA-256 `ade6d6615688aafa1dcfc9f5b4e1a66447bc02f8e099a006a10f9263f22f8ccc`
+- Draft: [`a4lg/Qwen3.8-27B-MTP-ONLY-GGUF`, revision `8aa7a21a5e287ffbe56edc608c2ceda1a90d047e`, `Qwen3.8-27B-MTP-ONLY-Q8_0.gguf`](https://huggingface.co/a4lg/Qwen3.8-27B-MTP-ONLY-GGUF/blob/8aa7a21a5e287ffbe56edc608c2ceda1a90d047e/Qwen3.8-27B-MTP-ONLY-Q8_0.gguf), 3,164,006,688 bytes, SHA-256 `cbf60a0c48b431bb61f1d49b8948dc88ac29c398d6dbdbbb2e6e89ef77eacc9a`
+
+## Server and request
+
+V
+--- @aic0d3r 2026-08-15T18:23:55Z: **Additional data point: ROCm/gfx1151 (AMD Strix Halo), Qwen3.8-27B**
+
+Same symptom on a new backend/model combo — quantized target + external `draft-dspark` parallel verify breaks. Current mainline (b10442 era, includes #25173):
+
+**Setup**
+- Target: `unsloth/Qwen3.8-27B-GGUF` UD-Q5_K_XL (quantized, 20.2 GB)
+- Draft: `RadixArk/Qwen3.8-27B-DSpark` (1.4B) via GGUF — tested **two independent conversions** (erlidev Q8_0 + BF16, magnitudedev Q8_0)
+- `llama-server --spec-type draft-dspark --spec-draft-n-max 7 -ngld all -fa on`, f16 KV, temp 0, 1024-token decode workload
+
+**Result**
+- **16.7% draft acceptance / 2.16 tok/pass** (1650/9870 draft tokens) — byte-identical across both conversions, Q8_0 and BF16 draft quants, and n-max 7 vs 64
+- Same drafter checkpoint in SGLang on DGX Spark reaches 3.3–4.9 tok/step, so the drafter itself is fine
+- Draft GGUF metadata verified: `dflash.block_size=7`, `dflash.target_layers=[53]`, draft vocab == target vocab (PAD248319) — nothing off in the conversion
+
+**Contrast on the same target**: in-checkpoint `draft-mtp` (n-max 3) accepts at 58–62% and gives 16.8–17.8 t/s — the target model is spec-friendly; only the external dspark verify collapses.
+
+**Interpretation**: matches the quantized-target pattern above; here the drift manifests as low acceptance (rejected tokens) rather than visible divergence, since our benchmark is greedy temp-0 — a drifted logit just fails verification.
+
+Backend: ROCm/HIP gfx1151 (not Vulkan/Metal — first report on this backend AFAICT).
+
+--- @aic0d3r 2026-08-16T01:42:47Z: **Follow-up: not the quantized-verify bug — narrowed to the draft path**
+
+Reran with an **unquantized BF16 target** (54.7GB, same drafter GGUF, same flags, ROCm/gfx1151):
+
+| target | draft quants tested | n-max | acceptance |
+|---|---|---|---|
+| Q5_K_XL (quant) | Q8_0, BF16 (2 conversions) | 1 / 7 / 64 | 16.7% (1650/9870) |
+| **BF16 (unquantized)** | Q8_0 | 7 | **15.0%** (1569/10440) |
+
+Acceptance does **not** recover on the unquantized target — so the low acceptance is *not* the quantized-target verify drift this issue describes. It's also invariant to draft quant and even to n-max=1 (anchor-only still 16.7%, identical draft counts) — the very first drafted token already disagrees with the target ~83% of the time.
+
+Conclusion: the break is in llama.cpp's **DSpark draft generation** (target-layer feature extraction feeding the drafter, or the markov/block decode), or in the GGUF conversion of this specific drafter — but two independent conversions (erlidev, magnitudedev, both via llama.cpp's converter) behave byte-identically, and the same RadixArk checkpoint reaches 3.3-4.9 tok/step in SGLang. Startup also logs `[spec] failed to measure draft model memory: failed to create llama_context from model` (continues anyway) — possibly related.
+
+Happy to bisect further (dump draft tokens, check feature extraction) if useful.
+
+--- @frizikk 2026-08-20T08:13:24Z: Independent Strix Halo/Vulkan reproduction and prompt-sensitivity follow-up to [the F16-V control above](https://github.com/ggml-org/llama.cpp/issues/25618#issuecomment-5300052037).
+
+## Summary
+
+I can independently reproduce the reported **byte-exact F16-V PASS** for the original prose prompt. However, using the same models, runtime, server flags, `/apply-template` -> `/completion` path, and exact reporter sampling contract on five other prompts gives **0/5 exact parity**. Repeating those five prompts with a separate fixed sampling contract also gave 0/5 with the same first mismatch locations.
+
+This suggests that the F16-V control is genuinely exact for the reported trajectory, but does not generally restore baseline/MTP invariance. In this test range the initial divergence is prompt-dependent rather than caused by the request sampler.
+
+## Environment and pinned artifacts
+
+- llama.cpp commit: `9d57ce456c94d241dde672b2db9cf18879766568`
+- source tree: `1210db073bc7451c953630c6c04f34352cacf8fa`
+- isolated `llama-server`: build `10438`, GNU 16.2.1, Release, `GGML_VULKAN=ON`, CUDA/HIP off
+- `llama-server` SHA-256: `e6942222e852278470e440ce32147f4af4ee93c5c463901f876650faab40fb13`
+- OS: CachyOS Linux, kernel `7.1.8-1-cachyos`
+- GPU: AMD Radeon 8060S Graphics / RADV STRIX_HALO (`0x1586`)
+- Mesa/RADV: `26.2.0-arch3.1`
+- Vulkan instance/device API: `1.4.357` / `1.4.354`
+- Target: `Qwen3.8-27B-Q6_K.gguf`, 22,884,407,264 bytes, SHA-256 `ade6d6615688aafa1dcfc9f5b4e1a66447bc02f8e099a006a10f9263f22f8ccc`
+- MTP draft: `Qwen3.8-27B-MTP-ONLY-Q8_0.gguf` / byte-identical `mtp-Qwen3.8-27B-Q8_0.gguf`, 3,164,006,688 bytes, SHA-256 `cbf60a0c48b431bb61f1d49b8948dc88ac29c398d6dbdbbb2e6e89ef77eacc9a`
+
+The model hashes and llama.cpp commit exactly match the earlier report. The draft was downloade
+--- @frizikk 2026-08-20T09:27:29Z: Follow-up with source-level and controlled runtime results on Vulkan (RADV Strix Halo), based on exact `llama.cpp` base `9d57ce456c94d241dde672b2db9cf18879766568`.
+
+I applied PR #26358 at head `20a1114e5e465d18c99e62e1ce9b01aefaf0cdd3` and tested Qwen3.8-27B Q6_K + Q8_0 MTP, FA on, F16 K/V, `--spec-draft-n-max 1`, deterministic greedy requests. Baseline and candidate received the same prompt bytes generated through `/apply-template` and then sent to `/completion`.
+
+## What the patch fixes
+
+The previously failing code prompt now has exact 384/384 token and text parity on fresh processes. The candidate accepted 181/201 draft tokens.
+
+Raw target-logit instrumentation also confirmed that the pre-patch divergence occurs before sampling. At the original first mismatch:
+
+- baseline: token 548 = `24.319630`, token 320 = `24.295303`
+- speculative target row: token 320 = `24.301819`, token 548 = `24.298832`
+
+The small batch-dependent logit change flips the greedy argmax. This is consistent with the FA GQA packing path being incorrectly used for a multi-token speculative verification batch.
+
+As an independent stock-runtime control, disabling FA for both roles produced exact 384/384 token and text parity for this prompt (baseline 9.2733 tok/s, candidate 15.0254 tok/s, 175/208 drafts accepted). The raw logits remained slightly different, but both paths retained token 320 as the greedy winner at the corresponding step (`24.326015` baseline versus `24.349403` speculative target). This further localizes the original token flip to the FA-enabled path while showing that token parity does not imply bit-identical logits.
+
+## Full five-prompt result
+
+Using the patched build with one reused server process: 1/5 exact.
+
+Using a fresh process for every prompt and role: 4/5 exact:
+
+- code: PASS,
+--- @snick525 2026-08-22T01:29:16Z: Another data point on the quantized-target pattern, on RDNA4 with a larger model and a higher-precision quant. Confirms your matrix, and adds one control I did not see there.
+
+### Environment
+
+- **Hardware:** AMD Radeon AI PRO R9700, 32 GB, gfx1201 (RDNA4)
+- **Backend:** Vulkan (radv)
+- **Build:** upstream master `b10433-5-g9d57ce45`, clean tree, no local patches
+- **Target:** `Dirk-Qwen3.8-27B-UD-Q6_K_XL.gguf` — a Qwen3.8-27B finetune, MTP head intact (866 tensors, matching stock Qwen3.8-27B)
+- **Speculation:** native `--spec-type draft-mtp`, `n-max` 2 and 4
+- **Sampling:** `temperature 0, top_k 1, top_p 1, min_p 0, seed 42, max_tokens 400`; server `--seed 42 --parallel 1`
+
+Server command, identical in every config except the speculative flags:
+
+```
+llama-server -m Dirk-Qwen3.8-27B-UD-Q6_K_XL.gguf -ngl 999 -c 65536 -ub 2048 -cram 24576 \
+  --parallel 1 -fa on -ctk f16 -ctv f16 --reasoning on --reasoning-budget 24000 --jinja \
+  --reasoning-format deepseek --no-prefill-assistant --seed 42 --top-k 20 \
+  [ --spec-type none | --spec-type draft-mtp --spec-draft-n-max {2,4} -ngld 999 ]
+```
+
+### Result: diverges on Q6_K_XL, so this is not confined to Q4
+
+```
+IDENTICAL  short factual prompt      nomtp vs n-max 2 and n-max 4
+DIVERGES   multi-step reasoning      vs n-max 4    first difference at byte 9
+DIVERGES   code generation           vs n-max 2 @ byte 204,  n-max 4 @ byte 561
+DIVERGES   ~4k-token summarisation   vs n-max 2 @ byte 61,   n-max 4 @ byte 288
+```
+
+`n-max 2` diverges as well as `n-max 4`, so it is not limited to wide draft windows.
+
+The divergences are not cosmetic once they occur. The reasoning prompt splits at the first content token after `<think>\n` into two different solution approaches:
+
+```
+nomtp : <think>\nWe need to move 10 crates: six 130 kg, four 95 k
+--- @snick525 2026-08-22T02:11:18Z: Follow-up with two results that narrow this, plus a KV-cache axis I have not seen discussed here.
+
+Same setup as my previous comment (R9700 / gfx1201, Vulkan, Qwen3.8-27B **Q6_K_XL** target, greedy `temperature 0, top_k 1, top_p 1, seed 42`). I additionally built #27342 to get a second, structurally different drafter — DFlash2, an external 2B draft model — so the MTP head is no longer the only speculation type in the comparison.
+
+### 1. The divergence is drafter-independent
+
+At `-c 65536`, f16 KV, against a `--spec-type none` baseline on the same binary:
+
+```
+DIVERGES  draft-mtp        / code prompt   first difference at byte 204
+DIVERGES  draft-dflash Q4  / code prompt   first difference at byte 204
+DIVERGES  draft-dflash Q8  / code prompt   first difference at byte 204
+DIVERGES  draft-dflash BF16/ code prompt   first difference at byte 204
+LOSSLESS  all four         / reasoning prompt
+```
+
+The same byte, for the built-in MTP head and an unrelated external neural drafter, at three drafter quantizations, across two context sizes (16384 and 65536) and two different builds. Whatever is drifting is on the **target/verify** side; the drafter is not a variable in it.
+
+### 2. Drafter quantization has no effect whatsoever
+
+```
+DFlash2 Q4_K_M vs Q8_0 vs BF16:  byte-identical outputs, both prompts, both context sizes
+acceptance:                      draft=347 accepted=283, identical across all three
+```
+
+Consistent with `common_sampler_sample_and_accept_n` emitting only the target's own token — a drafter can only change output by proposing different tokens, and here even a Q4 drafter proposes identically. So drafter precision can be ruled out as a factor for anyone bisecting this.
+
+### 3. KV-cache quantization makes it worse, and is itself lossy
+
+Swapping `-ctk f16 -ctv f16` for
+--- @F-Mangini 2026-08-22T20:32:01Z: Corroborating this on a different model, OS, and GPU: the official LFM2.5 DSpark pair also diverges with a quantized target, while an F16 target preserves greedy parity.
+
+Environment:
+
+- llama.cpp b10566 (`bb4caa754`), Vulkan build
+- Windows 11, NVIDIA GTX 1660 SUPER 6 GB, driver 551.76
+- target: `LiquidAI/LFM2.5-2.6B-GGUF` Q8_0, SHA-256 `36587fdf27bdfc69caf2637273679a0870ec155162161bde6fd16e8c70bdb757`
+- draft: `LiquidAI/LFM2.5-2.6B-DSpark-GGUF` Q8_0, SHA-256 `85a98fafd9af1328b6876fd1360d7ed69e74c6cefc14dd07fb6306e1940386c87`
+
+Minimal raw `/completion` reproduction, without a chat template. The server used:
+
+`-c 4096 -np 1 -fa on -ngl 99 --cache-type-k f16 --cache-type-v f16`
+
+Request parameters were `temperature=0`, `seed=42`, and `n_predict=256`.
+
+```text
+prompt:
+Implement an LRU cache in Python with type hints and a short test. Return code only.
+
+vanilla Q8_0 target:
+SHA-256(output) = 2eeb8174392c06d9b652fb3180d16733799e7a96e7aa8c43238c21a5fa1dda2a
+
+same target + DSpark, --spec-draft-n-max 1:
+SHA-256(output) = a8d38c694dff3aabdf77df13dfe9772357cf7e8c40c30bf44e7844e507524d9f
+draft accepted = 107 / 147
+```
+
+Additional controls:
+
+- Q8_0 target with DSpark loaded but `--spec-draft-p-min 1`, resulting in zero draft tokens, exactly matches the vanilla Q8_0 output.
+- Repeating the active Q8_0 DSpark run is deterministic, but consistently differs from vanilla.
+- F16 target with the same Q8_0 draft produces byte-identical greedy output to the F16 vanilla target while accepting 40/64 proposed tokens, tested over 64 generated tokens.
+- The Q8_0 mismatch remains with `--spec-draft-n-max 1` and target KV in F16, so it is not caused by a larger speculative block or quantized target KV.
+
+The `n_max=1` result may be especially relevant because it differs from the boundary reported 
+--- @frizikk 2026-08-24T07:44:06Z: Correction and operator-level follow-up to my earlier source-isolation comment: the `GDN_AR`/`GDN_CH` and post-rollback differences I reported were valid downstream observations, but they were not yet the earliest causal operators. A later one-checkpoint-at-a-time bisect, with full generation-logit hashes used as a Heisenberg/validity guard, found earlier Vulkan shape-dependent boundaries.
+
+Tested locally on pinned llama.cpp sources with Qwen3.8-27B Q6_K target + Q8_0 MTP, FA on, F16 K/V, `--spec-draft-n-max 1`, greedy sampling. These are diagnostic results, not a proposed production fix.
+
+### 1. First confirmed boundary: Q8_0 x F32 MUL_MAT
+
+In the natural generation-1 layer-0 graph:
+
+- operation: `linear_attn_out-0`, `MUL_MAT`
+- weight: Q8_0 `[6144, 5120]`
+- activation: F32
+- baseline path (`N=1`): `mul_mat_vec_q8_0_f32_f32`
+- speculative verification (`N=2`): `quantize_q8_1_x4` + Q8_0 x Q8_1 MMVQ
+- direct predecessor `final_output-0`: exact, `0/6144` differences
+- output: `5120/5120` different, max abs `0.0102958679`, RMS `0.00048364485`
+
+A standalone Vulkan replay reproduced both captured outputs bit-for-bit. Routing the real `N=2` fixture through the same non-MMVQ F32 path as `N=1` made row 0 bit-exact. CPU row 0 was also exact. This confirms the path switch and F32-to-Q8_1 staging as the cause of this boundary, not sampling or the drafter.
+
+A narrow local diagnostic gate removed this boundary in a fresh `n_predict=2` baseline/MTP run: generation 0 remained exact, the layer-0 predecessor and output were exact, and one draft token was generated and accepted. Full generation-1 logits still differed (`248040/248320`), however, so this is not a complete fix.
+
+### 2. Next confirmed boundary: ADD -> RMS reduction path
+
+With the Q8_0 boundary removed, bounded layer bisecti
+--- @thc1006 2026-08-24T14:01:14Z: First CUDA numbers in this thread, I think. Every reproduction here is Vulkan, Metal or ROCm, and the report itself says others saw the same on CUDA but that it was not re-run. Worth linking though: #27407 is a CUDA sm_86 reproduction of the same divergence under batched verification, filed on 2026-08-19 and not referenced from this thread, on an RTX 3090 Ti with an IQ2_M target. The data below is posted there as well.
+
+@ggerganov asked for the width at which it starts on CUDA. I do not have that, because I never ran `--spec-draft-n-max 1`. What I do have is a second boundary further up, where every width already diverges but the fork *position* changes, plus a line in ggml-cuda that changes at the same width.
+
+### Setup
+
+RTX 3090, sm_86, driver 610.43.02, Debian 13. Built from `c060ca9`, CUDA 13.3, `CMAKE_CUDA_ARCHITECTURES=86`. The `draft-dflash` arms are PR #27342 at `d1a522f`, built with identical flags and compared only against a no-speculation baseline from that same branch, never against the master one.
+
+Target `unsloth/Qwen3.8-27B-GGUF` `UD-Q4_K_XL`, sha256 `3f227079003add25...`
+
+```
+-ngl 999 -c 8192 -fa on -ctk q8_0 -ctv q8_0 --parallel 1 --jinja
+```
+
+Greedy, `cache_prompt: false`, 400 tokens, 25 prompts, 5 passes, fresh server per arm per pass.
+
+### Fork position, grouped by verification width
+
+Character index of the first difference from the baseline. `w` is `n_max + 1`. Widths 3, 4 and 6 are `draft-mtp`, widths 5 and 8 are `draft-dflash`.
+
+```
+prompt                     w=3     w=4     w=5     w=6     w=8
+chat_advice                650     650     830     830     830
+chat_desk_robot            345     345     345     345     345
+chat_disagree              363     363     308     308     308
+chat_music                same    same     175     175     175
+chat_
+--- @thc1006 2026-08-26T11:54:11Z: The standing explanation for this class of divergence is that different batch sizes take different kernels ([#23335](https://github.com/ggml-org/llama.cpp/issues/23335#issuecomment-4488338528)). I ran the missing `--spec-draft-n-max 1` cases to put numbers on that: where it starts, whether the rates track the dispatch boundaries, and whether the boundary itself is causal.
+
+**Divergence starts immediately at width 2** (`--spec-draft-n-max 1`), the smallest speculative width there is. There is no non-divergent onset threshold; it is present as soon as anything is verified in a batch at all. At width 2, 57 of 75 requests differed from the non-speculative baseline. That is consistent with the batch-invariance framing raised earlier in this thread: the invariant is already violated at M=2.
+
+The rates group, and the groups coincide with the dispatch boundaries in `ggml/src/ggml-cuda/mmvq.cu`:
+
+| Widths (`n-max` + 1) | `mmvq.cu` dispatch (`ncols_dst`) | Identical | Median shared prefix |
+| --- | --- | ---: | ---: |
+| 2, 3, 4 | 2..4 (4 warps) | 24.0% | 0.240 |
+| 5, 6, 7, 8 | 5..8 (2 warps) | 20.0% | 0.228 |
+| 9 | above `MMVQ_MAX_BATCH_SIZE 8`, leaves the kernel | 12.0% | 0.172 |
+
+So the rate groups do follow the dispatch table. But the table is not the cause.
+
+**Important negative result: the warp count is not the mechanism.** I ran a forced-warp intervention using four builds from one configure, with the `MMVQ_PARAMETERS_GENERIC` table edited up at widths 5 to 8 and down at 3 and 4. SASS confirms the edit reached the machine code and only there: 92 and 46 `mul_mat_vec_q` kernels at exactly those `ncols_dst`, and Ampere dispatches every quantized type through MMVQ at ne11 1 to 8, so the edited kernels are the ones that run.
+
+The forced builds moved the kernel's runtime by up to
+--- @Ankk98 2026-09-06T07:52:19Z: ## Latest Summary
+
+Vulkan spec verify vs vanilla - master@7620399 - all 6 reported bugs still present, none merged:
+
+Root cause: batch-invariance violation - N>1 batched verify must be bit-exact to serial N=1 decode for row 0, currently N-dependent dispatch/reduction - 1 ULP flips greedy argmax at near-ties. Quant Q4/Q6/Q8/IQ2 and ctk/ctv q8_0 amplify but not cause.
+
+1. FA GQA pack for multi-token ggml/src/ggml-vulkan/ggml-vulkan.cpp:10992 if(N<=8 && qk_ratio>1...) {N=gqa_ratio; workgroups_y/=gqa_ratio} overwrites token count, shaders flash_attn.comp:115, flash_attn_cm1.comp:97, flash_attn_base.glsl:164 index Q/mask/O via gqa_iq1/m_stride=0 valid only for N==1. Fix: gate only N==1 (PR #26358). Confirmed: frizikk:13 logit 548:24.319 vs 320:24.295 flip, 4/5 PASS after gate.
+
+2. FA tuning N-dependent ggml-vulkan.cpp:10989:11002 get_fa_tuning_params(...,N,...) -> 3787:get_fa_tuning_params_scalar block_rows/block_cols/row_split/subgroup_size/workgroup_size differ N==1:1x64 vs N==2:2x32 or N>1 -> coopmat etc. Fix: force N=1 tuning for N<=8 spec batches. Confirmed: frizikk:17 standalone replay.
+
+3. FA split_k N-dependent ggml-vulkan.cpp:11050:11060 if(gqa_ratio>1 && workgroups_x<=Br) split_k= cores*2/(workgroups_x*workgroups_y...) else Tr*workgroups_y... - N>1 changes split_k/split_kv reduction tree. Fix: split_k=1 for N<=8.
+
+4. FA-off KxQ p021 vs GEMM ggml-vulkan.cpp:10169:9874 dispatch requires dst->ne[1]==1 and ggml_is_permuted, GGML_ASSERT(ne11==1):9898:9999 - N>1 falls to mul_mat_q_f16 GEMM not bit-exact with strided/permuted F16 KV p021 on N==1. Fix: extend p021 to ncols_y>1 token-major Q. Reproduced FA-off BUG with F16 KV (snick525:9).
+
+5.
+    a. FA-off V*kq DMMV dual-batch ggml-vulkan.cpp:9664:9800 batch_n=ne11>1; GGML_ASSERT(ne11==1||ne12*ne13==1) overloads batch_stri
+--- @Ankk98 2026-09-06T12:00:47Z: I have added a draft PR with tests to reproduce this: #28488
+Hopefully, this will help in the process of fixing these bugs.
+--- @makoni 2026-09-07T19:22:08Z: Another CUDA data point, this time on consumer Blackwell and on a different
+quant family than the RTX 3090 numbers above. It does not add a new mechanism —
+it lines up with the batch-invariance reading — but sm_120 and IQ-family weights
+were not covered in this thread yet.
+
+### Setup
+
+RTX 5080 Laptop (16 GB), sm_120, driver 595.84, Ubuntu 26.04, kernel 7.0.0-31.
+Built from `b74f590e` (tag `b10835`), CUDA 13.3, `CMAKE_CUDA_ARCHITECTURES=120`,
+host compiler g++-13.
+
+Target `unsloth/Qwen3.8-27B-GGUF` `UD-IQ3_S`, sha256
+`d847e2c1e4aa276e4b7b8e9ad7628050e61e165d49ab995407bc36677a6f3864`. It is a
+mixed-type file, which may matter here: of 866 tensors, 360 are F32 and the
+quantized ones are 127 IQ3_S, 98 Q8_0, 88 IQ4_XS, 77 IQ3_XXS, 23 Q4_K, 21
+IQ2_S, 16 Q5_K, 16 Q3_K, 12 IQ2_XS, 12 IQ2_XXS, 7 Q6_K, 6 Q2_K, 2 IQ1_S,
+1 IQ4_NL.
+
+```
+--device CUDA0 -ngl 99 -fa on -ctk q4_0 -ctv q4_0 -np 1 -c 90112
+--temp 0 --top-k 1 --top-p 1.0 --min-p 0.0 --seed 7
+--reasoning-format deepseek --reasoning-preserve
+```
+
+The MTP arm adds `--spec-type draft-mtp -ctkd q4_0 -ctvd q4_0`.
+`--spec-draft-n-max` left at its default of 3, so w=4 in the grouping used
+earlier in this thread. Fresh server per arm, two runs per arm, one request,
+`max_tokens` 700.
+
+### Result
+
+Each arm is byte-identical across its own two runs. The two arms differ from
+each other.
+
+```
+plain:  run 1 == run 2   (405 bytes)
+mtp:    run 1 == run 2   (375 bytes)
+plain  !=  mtp
+```
+
+Draft acceptance in the MTP arm: 0.872 (272 accepted / 312 generated), mean
+accepted length 3.62.
+
+### The fork
+
+The prompt asked for a Rust `merge_intervals`. First difference is at character
+index 128, and it is one token:
+
+```
+shared prefix     ...v.sort_unstable_by_key(|&(a, _)| a);\n    let mut res
+plain continues   ult = Vec::new();\n    for (start, 
+--- @dan-arnold 2026-09-10T16:58:59Z: **Reproduced on Q8 — Qwen3.6-35B-A3B-MTP-GGUF, UD-Q8_K_XL**
+
+Wanted to add a data point at a higher precision level than what's currently in this thread (Q4_K_M / Q4). I reproduced the same divergence-under-greedy-decoding behavior on Q8_K_XL, which is much closer to bf16 numerically, so this doesn't look like it's purely a low-bit-quantization artifact.
+
+**Environment:**
+- Model: `unsloth/Qwen3.6-35B-A3B-MTP-GGUF, UD-Q8_K_XL`
+- llama.cpp: 0.4.0-dev (build 10830, commit 465e49b9c)
+- Backend: `llama-server` (via llama-swap), CUDA 13.3
+- GPU: RTX 4080 Laptop, 12GB VRAM; CPU: AMD 7845HX, 64GB system RAM
+- Relevant flags: `-fa 1 -ctk q4_0 -ctv q4_0 --spec-type draft-mtp --spec-draft-n-max 2 -ngl 99 --n-cpu-moe 35 -c 131072`
+
+**Method:**
+Two otherwise-identical llama-server instances, same weights, same flags, differing only in `--spec-type draft-mtp --spec-draft-n-max 2` present vs. absent. Each prompt below sent to both via /v1/chat/completions with `"temperature": 0, "seed": 42`.
+
+**Determinism control:** before attributing anything to draft-mtp, I ran the non-speculative backend twice with identical request/seed/temp=0 to rule out generic GPU/cuBLAS reduction-order nondeterminism as a confound — the two runs came back byte-identical. So the baseline itself is stable; only introducing draft-mtp changes the output.
+
+**Prompt 1 (short, templated — a single Terraform resource block):**
+
+> You are configuring AWS infrastructure with Terraform (AWS provider ~> 5.0).
+> Write a single aws_instance resource block named "web" that satisfies all
+> of the following:
+> - AMI: ami-0abcdef1234567890, instance_type: t3.medium, subnet_id: subnet-0123456789abcdef0
+> - Root volume: gp3, 100 GiB, encrypted
+> - One additional EBS volume attached at /dev/sdf: gp3, 50 GiB, encrypted
+> - Enforc
+--- @skoulik-claude 2026-09-16T00:22:28Z: **Metal: the two places where a verify batch stops matching a single-token decode**
+
+Adding a Metal data point, with the kernels isolated. The setup differs from the reports above: the target is **Q8_0 with an f16 KV cache** (`-fa on --swa-full`, Apple M1 Max, Gemma 4 26B-A4B with its in-checkpoint MTP drafter, n-max 2). So neither a quantized KV cache nor a K-quant target is needed.
+
+**What breaks.** Speculative decoding only works if the target model computes the same thing for a token whether that token is decoded on its own or verified as one row of a batch. On Metal it computes something slightly different, in two places:
+
+1. **`mul_mv` against `mul_mv_ext`.** One token goes to `kernel_mul_mv_<type>_f32`, which multiplies int8 by float and applies the block scale once at the end, with a threadgroup per token. Two to eight tokens go to `kernel_mul_mv_ext_*`, which dequantizes to float4 first, accumulates float4 dot products over a strided set of chunks, and reduces across lanes with halving shuffles. Different scaling point, different assignment of values to threads, different reduction tree. `nxpsg` also depends on the token count itself (16 when the row length divides by 256 and there are fewer than 3 tokens, else 8), so batches of 2 and of 3 disagree with each other too — which is why every `--spec-draft-n-max` value produces its own outputs.
+2. **`flash_attn_ext_vec`'s simdgroup count.** `nsg` doubles while `2*nwg*nsg*ncpsg < ne11`, i.e. past a padded KV length of 2048 and again past 4096, and the KV length is padded in steps of 256. A verify batch reaches the boundary one or two positions before plain decoding does, so at exactly those positions the same query is reduced by a different number of workers.
+
+**Measured.** Comparing a 1-token decode against row 0 o
+--- @msb-msb 2026-09-22T17:11:42Z: **CUDA sm_86, v0.4.0 release, Qwen3.6-35B-A3B UD-Q4_K_M + external DFlash drafter (width 16): same divergence, with a no-drafter control that isolates it to the target's batched logits**
+
+Adding a data point on the release build and on an external block-diffusion drafter against a MoE + Gated
+DeltaNet hybrid target, plus one control I did not see in the thread: reproducing the argmax flip with **no
+drafter loaded at all**, by scoring the same prefix as a batch.
+
+### Setup
+
+- llama.cpp **v0.4.0** (`5266f24`), CUDA 12.4 toolkit, `CMAKE_CUDA_ARCHITECTURES=86`, `GGML_NATIVE=OFF`, gcc-13
+- RTX 3090 24 GB, driver 580.178.04, Ubuntu 26.04, PCIe slot at gen 3
+- Target: `unsloth/Qwen3.6-35B-A3B-GGUF` `Qwen3.6-35B-A3B-UD-Q4_K_M.gguf`, sha256 `ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61`, fully resident (`-ngl 99`), f16 KV, `-fa on -c 8192 -np 1`
+- Draft: `z-lab/Qwen3.6-35B-A3B-DFlash` at HF revision `f181eece` (2026-06-19 weights), converted with v0.4.0's own `convert_hf_to_gguf.py --target-model-dir <Qwen/Qwen3.6-35B-A3B tree>` to F16 and quantized to Q8_0 with v0.4.0's `llama-quantize` (Q8_0 sha256 `17f7a3989c4b49392d79b9801f606cf8b627f0f97055a693d6044999d1a64634`); GGUF metadata `dflash.block_size=16`, `dflash.target_layers=[2,7,12,17,23,28,33,38]`, SWA 4096 on 5 of 6 layers
+- Speculative arm adds `-md <draft> -ngld 99 --spec-type draft-dflash --spec-draft-n-max 15` (block 16 minus the anchor, so every verify batch is **16 tokens**, above `MMVQ_MAX_BATCH_SIZE`)
+- Requests: raw `/completion`, no chat template, `temperature 0, seed 42, n_predict 192, cache_prompt false`; the nine prompts of am17an's gist (code, prose, QA, translation, math). Fresh server per arm; each arm run three times and byte-identical to itself every time (both arms are deterministic).
+
+--- @tczank 2026-09-24T19:15:51Z: **RX 7900 XTX (RDNA3, Mesa 26.2.3) + Qwen3.8-27B IQ3_XXS draft-mtp: repro, and #26358 head tested bit-exact-no-effect**
+
+Built current master (`5cf3a3528`) and the same + cherry-pick of `227c27c91` (#26358 fix, test commit dropped per @0cc4m's note) for Vulkan on this rig: RX 7900 XTX, RADV Mesa 26.2.3-arch1.1, Arch. Model: `Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp` (embedded MTP). Method: llama-server, greedy (temperature 0, top_k 1, seed 42), 200-token completions, 4 prompts x 2 passes per mode, one server per mode (fresh process). MTP active: acceptance 0.68-0.94, mean verify len 2.4 at n-max 2.
+
+| KV / width | clean spec-caused divergence (both modes self-stable) |
+|---|---|
+| q4_0, n-max 2 | yes — p1, first diff byte 873 |
+| q4_0, n-max 1 | yes — p1, byte **873 — identical flip position** |
+| f16, n-max 2 | yes — p3: vanilla identical across passes; both MTP passes differ (@596, @726) |
+| control prompt p4 | all equal in all configs |
+
+Two observations from the data:
+
+1. **Quantized KV is not required** (f16 reproduces), and the flip position is **width-independent** (byte 873 at both n-max 1 and 2) — one near-tie flip, not accumulating drift, and any N>1 verify seems sufficient (consistent with the batch-invariance framing).
+2. **The #26358 head has zero effect here**: outputs are bit-for-bit identical between master and master+fix — 0/16 files differ with q4_0 KV, 0/16 with f16 KV. The gate conditions are met during verify in master (fused qkv dims imply qk_ratio = 2; verify N = 2..3; batch 1), so base engages GQA packing for multi-token queries and fix does not — yet the results are identical: on RDNA3 the packed and unpacked paths are numerically equivalent for these shapes. This is consistent with @frizikk's 4/5, 1 residual prompt: the remaining divergence is in the ge
+--- @tczank 2026-09-26T02:45:52Z: **Still reproduces on current master (`a02c7f58c`) and on the packaged v0.5.0 build — RX 7900 XTX / RADV.**
+
+Re-ran the fresh-process protocol with a new 4-prompt set (original harness/outputs lost to a machine wipe): greedy 200 tokens, temp 0 / top_k 1 / seed 42, IQ3_XXS-mtp, KV q4_0, `-dev Vulkan0`, one fresh server per mode, 2 passes + a second fresh launch of each mode to verify determinism.
+
+**Per-launch determinism: 8/8** — every fresh process reproduces its first-request output bit-identically (vanilla and MTP).
+
+**Fresh-session cross-mode (first request vs first request): 3/4 diverge**
+
+| prompt | byte | vanilla | MTP |
+|---|---|---|---|
+| microwave | 409 | "- Contains a cathode and an anode (magnetron)" | "- Uses a cathode and anode with a resonant cavity" |
+| TCP/UDP | 325 | "simply transmits datagrams" | "simply sends datagrams" |
+| story | — | identical | identical |
+| planets | 187 | "…no atmosphere to retain heat" | "…experiences extreme temperature variations" |
+
+All three are plausible paraphrase near-ties, consistent with the batched-logits framing.
+
+**New observation — both effects flip the same tie:** on the two prompts where vanilla was session-unstable, MTP's first request came out **byte-identical to vanilla's second request** (p1 `sha256 4fc0eca9…`, p2 `05f67ba9…`). One specific near-tie pair per prompt; session state after the first request and N>1 verify both resolve it to the same alternate branch, while fresh vanilla resolves to the other. I also reproduce the 2/4 in-session vanilla flip documented above (p1, p2, same offsets as the cross-mode divergence).
+
+**Packaged `llama-cpp 0.5.0-1` (build 11146, `7fe450e193`): 4/4 cross-mode divergence** (bytes 615/318/564/780), and its vanilla differs from master's on 4/4 (409/325/564/254) — first flip 
+--- @radupotop 2026-10-03T16:26:01Z: I did some additional testing on my Strix Halo machine
+with the `unsloth/Qwen3.8-27B-GGUF` model, BF16 and quant Q8_0.
+
+My results are very similar to @Ankk98's
+
+This is running on llama.cpp b11361 built from source yesterday with Vulkan support enabled.
+
+Each model was run with the following drafters:
+
+* MTP Q4_0 (from the same unsloth repo) -- `n-max 3`
+* DFlash Q4_K_M, Q8_0 and BF16 (from `z-lab/Qwen3.8-27B-DFlash2-GGUF`) -- `n-max 3` and `n-max 7`
+* baseline: no draft
+
+and recorded the outputs from each combination to individual logs. 
+
+I'm using `--temp 0.0`, `--top-k 1` and `--reasoning off`, keeping the prompt and the other settings identical: 
+
+```
+llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q8_0 \
+    -hfd z-lab/Qwen3.8-27B-DFlash2-GGUF:Q8_0 \
+    --spec-type draft-dflash --spec-draft-n-max 7 \
+    # --spec-type draft-mtp --spec-draft-n-max 3 \
+    -ngl all -fa on -c 16384 -n 2048 -st --simple-io \
+    --temp 0.0 --top-k 1 --reasoning off \
+    -f prompts/02-archlinux-pkgbuild-vulnscan-instructions.txt \
+    | tee -a strix-halo/ctx16384-n2048/output.log
+```
+
+(I later verified that top-k=1 has no effect when temp=0.0 is set.)
+
+The most interesting result is the `BF16` target: all tested outputs were identical,
+regardless of whether MTP was used, or whether DFlash used a Q4_K_M, Q8_0 or BF16 drafter.
+
+| Target | Drafter | Method / n-max | Result vs no-draft baseline |
+|---|---|---|---|
+| BF16 | none | -- | baseline |
+| BF16 | MTP Q4_0    | n-max=3 | Token-identical to BF16 no-draft |
+| BF16 | DFlash Q4   | n-max=7 | Token-identical to BF16 no-draft |
+| BF16 | DFlash Q8_0 | n-max=7 | Token-identical to BF16 no-draft |
+| BF16 | DFlash BF16 | n-max=7 | Token-identical to BF16 no-draft |
+
+With a `Q8_0` target I consistently see small greedy-decoding differences. 
+The amou
+--- @henfiber 2026-10-03T22:09:06Z: Is this discrepancy also present with the new `--spec-type-sampling probabilistic` (PR #27694 ) that was merged yesterday? 
+
+(The new param applies to draft_simple and MTP only)
+--- @makoni 2026-10-09T14:03:15Z: I've asked Claude Code to do some testing for me and it confirmed that this commit from @Apoze fixes the MTP divergence for Qwen3.8-27B on my RTX 5080 (HP laptop): https://github.com/Apoze/llama.cpp/commit/6263445513416ef93fd5d05391299f33c64702fa . As-is it slows down normal decode at long context, and the MoE model (Qwen3.6-35B-A3B) needed two more changes. I can share a diff if you're interested.
+
+<details>
+<summary>The report from Claude</summary>
+
+**Setup**
+- RTX 5080 Laptop 16 GB (sm_120), driver 595.99.02, CUDA 13.3, Linux
+- llama.cpp b11513 (`71ad0590f`), `-DGGML_CUDA_FA_QUANTS=all`
+- Qwen3.8-27B, unsloth `UD-IQ3_S` (dense, IQ + K-quant mix, no F16/F32 matmuls), KV `q4_0`, `-fa on`
+- Qwen3.6-35B-A3B, unsloth `UD-Q4_K_M` (MoE, experts Q4_K/Q5_K/Q6_K; `ffn_gate_inp`, `ssm_alpha`, `ssm_beta` are F32), KV `q4_0`, `-ncmoe 21`
+- MTP: `--spec-type draft-mtp -ctkd q4_0 -ctvd q4_0`; DFlash2: `z-lab/Qwen3.8-27B-DFlash2-GGUF` Q4_K_M
+
+**Protocol**
+- `llama-server -np 1`, temperature 0, seed 1, `max_tokens` 512, fresh server per configuration
+- 3 requests per server: a 67,448-token prompt (llama.cpp `src/*.cpp`), a follow-up sharing that prefix (66,932 tokens from cache), a 33-token prompt
+- md5 of the returned text; control = same build without speculation
+
+**Unpatched b11513**: all 3 answers differ from control for both MTP (n-max 3) and DFlash2 (n-max 7) on the 27B.
+
+**Changes** (all gated to NVIDIA Ada+ and batches of at most 4 tokens)
+1. FA, based on @Apoze's branch `fix/cuda-speculative-batch-invariance` (commit `626344551`): quantized-KV FA stays on the vec kernel for `Q->ne[1] <= 4`, and `parallel_blocks` no longer depends on `ntiles_KV`.
+   - As-is, the branch sets `parallel_blocks = max_blocks_per_sm` with no wave-efficiency search. Single-token decode at 67k droppe
+--- @sjvrensburg 2026-10-18T19:11:45Z: A data point from a second backend: **Vulkan (RADV) on AMD Strix Halo** (Ryzen AI Max+ 395,
+Radeon 8060S iGPU, gfx1151, 128 GB unified memory, Fedora). It agrees with the report above:
+draft-model speculation changes greedy output on quantized targets. We have seen it with draft-mtp
+and draft-dflash, on four model/drafter pairs, most recently on an IQ2_XXS target with LiLiCorr.
+
+**Method.** `temperature: 0`, six fixed prompts (short factual, arithmetic, one open-ended
+explanation), output capped at a few hundred tokens. Two servers from the same GGUF with identical
+flags, one with the drafter and one without; outputs compared byte for byte. A divergence
+reproduces exactly across repeat runs. For the last row we also compared four ~300-word prose
+answers (400-token cap, temp 0) from the same two servers.
+
+| Target (quant) | Drafter | Build | Identical at temp 0 |
+|---|---|---|---|
+| Ornith-1.5-9B (`qwen35`, Q4_K_M) | MTP head, `--spec-type draft-mtp` | upstream b10582, Vulkan | **0/6**, first divergence within 15–90 chars |
+| Gemma-4-26B-A4B (UD-Q4_K_M) | gemma4-assistant Q4_K_M, `draft-mtp` | upstream b10582, Vulkan | **2/4** (four of the prompts), diverged at char 80 and 137 |
+| Ornith-1.5-35B-A3B and a fine-tune of it (4-bit K-quants) | `Ornith-1.5-35B-A3B-DFlash` Q8_0, `draft-dflash`, n-max 3 | Nathanw1014/strix-halo-llamacpp v0.7.6.1 (Vulkan fork) | **5/6** on both models |
+| Nemotron-3.5-Bolt-74B-A9B (IQ2_XXS experts, NVFP4 Mamba layers) | its LiLiCorr drafter, `draft-dflash`, n-max 6 | upstream b11696 (`ceefd16da`), Vulkan | **6/6** on the short prompts, but **4/4** 300–400-token prose answers at temp 0 changed (337→374, 317→301, 400→369, 347→329 tokens); tool calls and code were identical |
+
+Three observations that may help to localise it:
+
+1. **Output does not d
+######## 28111
+CUDA: mul_mat is not batch-invariant for IQ quants at n=5 and n=8 on SM120
+OPEN 2026-08-31T18:20:46Z closed:null
+https://github.com/ggml-org/llama.cpp/issues/28111
+---BODY---
+### Summary
+
+On SM120, `mul_mat` with IQ quants is not batch-invariant for `n` of 5 and 8: evaluating `n` columns in one call gives a bitwise different result from `n` calls of one column. `n` of 1 through 4 agree.
+
+This matters for speculative decoding, which is lossless under greedy sampling by construction — the target model ratifies every drafted token — so the verification pass must agree with what one-token decoding would have computed. Where it does not, enabling speculation changes the output.
+
+This is separate from #28108, which covers the same class of problem in flash attention. This one I have not fixed.
+
+### Reproduction
+
+The test below is not in the tree; it is the one I used, and I am happy to open it as a PR if that is useful — I have kept it out of #28108 deliberately, since a test that fails on master would turn CI red with no accompanying fix.
+
+It builds one batched `ggml_mul_mat` and a serial chain of single-column `ggml_mul_mat` calls over the same weights, concatenates both, and compares with `memcmp` at `max_err() = 0`. Shapes are Qwen3.8 dense projections.
+
+```
+MUL_MAT_BATCH_INVARIANCE(type_a=iq3_s,m=17408,n=1,k=5120): OK
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=10240,n=1,k=5120): OK
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=5120,n=1,k=17408): OK
+... n=2, n=3, n=4 all OK ...
+MUL_MAT_BATCH_INVARIANCE(type_a=iq3_s,m=17408,n=5,k=5120): FAIL
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=10240,n=5,k=5120): FAIL
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=5120,n=5,k=17408): FAIL
+MUL_MAT_BATCH_INVARIANCE(type_a=iq3_s,m=17408,n=8,k=5120): FAIL
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=10240,n=8,k=5120): FAIL
+MUL_MAT_BATCH_INVARIANCE(type_a=iq4_xs,m=5120,n=8,k=17408): FAIL
+12/18 tests passed
+```
+
+All three geometries fail at exactly `n=5` and `n=8`, and `ERR` is 1.0 against a tolerance of 0, i.e. the results differ at all rather than by a small amount.
+
+### What I checked
+
+The obvious suspect is the MMVQ to MMQ crossover, so I varied it with the runtime override. It is not the cause, and lowering the threshold makes things worse rather than better:
+
+| `GGML_CUDA_MMVQ_MAX` equivalent | result |
+|---|---|
+| default | 12/18 |
+| 4 | 12/18, unchanged |
+| 1 | 3/18 |
+
+Lowering it routes the *batched* side to MMQ while the serial reference stays on MMVQ, so the two sides run different kernels and disagree everywhere. That suggests the divergence at `n=5`/`n=8` is within MMVQ itself — a per-`ncols` specialization changing accumulation order — rather than a kernel switch.
+
+Worth noting alongside #26079, which added per-hardware tuning of that crossover for throughput: the crossover point also determines this correctness property, and nothing currently tests it.
+
+### Environment
+
+- RTX 5080 Laptop, SM120, `CMAKE_CUDA_ARCHITECTURES=120a-real`, Release, CUDA 12.9, Windows / MSVC
+- master at `41ef91f7c`, unmodified apart from the added test
+- Reproduces identically with and without the flash-attention change in #28108, so the two are independent
+
+--- @mndodd 2026-09-01T01:48:54Z: SYCL has a similar issue with MMVQ and MMQ.
+--- @mndodd 2026-09-01T13:39:28Z: Please open a PR for MUL_MAT_BATCH_INVARIANCE.  I'm tracking down the issue on the SYCL side.
+--- @siavashnorouzi 2026-10-02T06:54:22Z: I retested this on the current master (207bdab950) and the issue is still reproducible on an RTX 5090 (SM 120). 
+
+By doing the same serial-vs-batched MUL_MAT invariance test, I get:
+
+IQ3_S,  m=17408, k=5120:  n=1..4 PASS, n=5..8 FAIL
+IQ4_XS, m=10240, k=5120:  n=1..4 PASS, n=5..8 FAIL
+IQ4_XS, m=5120,  k=17408: n=1..4 PASS, n=5..8 FAIL
+
+So we still observe that the batch-invariance failure starts at `n >= 5`. Forcing the number of warps at 2 or 4 irrespective of `n` fixes the issue (restores invariance) but it affects the performance of this kernel. So I don't yet have a root cause to address both the invariance and performance at the same time but still continuing to investigate.  
+--- @Incorrectone 2026-10-17T20:27:17Z: I tried to recreate this issue on the latest git build and it still reproduces on my RTX 5060ti 8gb card. (M=10240, K=5120)  
+
+The solution of just forcing generic's (blackwell) nwarp count to 2 does work without a penalty (but i have not tested it in much detail to identify some hidden costs that may occur with some varying kernel sizes)
+
+I also tried emulating a nwarp count 4 tmp_shared reduction tree when nwarp count was 2, to test a common reduction tree, it works! but with a penalty (though it is be my implementation that is causing the slowdown)
+
+I am trying restructure the loop to derive a reference tree width from calc_nwarps. So that every reduction at any nwarp gets a same reduction tree in mmvq. 
+
+I will write and show results (for any penalty too) for a "canonical" reduction tree if i am able to make it happen.
+

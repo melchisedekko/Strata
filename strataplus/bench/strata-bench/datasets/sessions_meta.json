@@ -1,0 +1,17 @@
+{
+ "edit_np": {
+  "url": "<URL non pubblicato>",
+  "sha256": "<sha256 non pubblicato>",
+  "fields": [
+   "<campo istruzione breve>",
+   "before",
+   "tests"
+  ]
+ },
+ "mt-bench": {
+  "url": "https://raw.githubusercontent.com/lm-sys/FastChat/587d5cfa1609a43d192cedb8441cac3c17db105d/fastchat/llm_judge/data/mt_bench/question.jsonl",
+  "sha256": "119565adbab82227089cefdb44c8d7e2cf04dc0a0ec233634c82e7d4e2a944f7"
+ },
+ "agent_turns_bench": 30,
+ "mtbench2": 20
+}

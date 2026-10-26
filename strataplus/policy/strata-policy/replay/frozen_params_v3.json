@@ -1,0 +1,341 @@
+{
+ "status": "CONGELATO (v3). Conferma di Strata Lead alle 02:14 CET: accettato il P4 e51712c6…; per il congelamento vale SOLO il 2B Q4_K_M (il Q8_0 resta come dato di controllo e non entra nella policy).",
+ "frozen_at": "2026-10-25 02:15:32 CET (UTC+1)",
+ "supersedes": [
+  "frozen_params.json (v1, 6339f04b…)",
+  "frozen_params_v2.json (7b5e484c…)",
+  "frozen_params_v3_PREPARED_NOT_FROZEN.json (9afda007…, scritta CON il decadimento: NON VALIDA)",
+  "frozen_params_v3_READY_PENDING_P4_CONFIRM.json (stesso contenuto, prima della conferma del Lead)"
+ ],
+ "scope": "Solo sequenza singola (CLI e loop GEN di --serve). Il batch (batch_step/BGEN) usa solo MTP, un draft per slot, e non chiama DraftPolicy: nessun guadagno vale per parallel>1. H2a (pool persistente, in pausa fino alle tracce di sessione) e H2b (batch_step oltre 2 righe/slot con pool per slot, dopo gate_v2, serve GPU) fuori ambito.",
+ "code": {
+  "branch": "strataplus-policy-local (solo locale, nessuna push)",
+  "base": "7dd5cf18",
+  "head_commit": "051326aa2931e04a9fbdd226f6592cf66e53516e",
+  "p5_fixes_applied": {
+   "a": "limiti di indice: tmax clamp a 1..8, trow() clamp T in 1..8, loop MTP limitato a kD",
+   "b": "seed_costs() per partire da costi congelati",
+   "d": "remaining(max_new, produced, max_context, pos) (solo wiring)"
+  },
+  "p5_not_applied": "(c) decadimento hazard MTP (HM_DECAY 0.999): rimandato al giro 2 per decisione del Lead, patches/P5x_hazard_decay_ROUND2.diff, NON applicato",
+  "sha256": {
+   "patches/P5_joint_gate.diff": "cfecef8c7aaaf3b94c7fbe1537793a161acf2335ce978f56274238936a0f4396",
+   "patches/ALL_P1-P5_cumulative.diff (git apply pulito su 7dd5cf1, albero = 051326a)": "aed3c0b17fa1d14f5bbeddaa79092dc5ad7d22b971aff325550d44d6bb822bbb",
+   "patches/P5x_hazard_decay_ROUND2.diff (NON applicato)": "60cbab3ad6f2c1e2912d733ff4ca99341d4348d2336eec9c1224c654018dd120",
+   "src/spec/joint_gate.cpp": "49128cff1c91338f507c87c99702aa491eec0568d9b30a5d44db241e32edfc02",
+   "include/strata/spec/joint_gate.hpp": "62627e6a616e76b2a9212273f3c414367fc71141010d33399536b74c8f196ada",
+   "src/spec/draft_policy.cpp": "1bbfe0b10b8ace34bc6ac53144baa90541343833408cb3d10a0e4ecd027ffabb",
+   "src/spec/suffix_drafter.cpp": "aeee3eb16627642e9e07c9765fd4946938b5c764f51304500403908d75e67325",
+   "replay/native/libstrata_spec_capi_p3.so (build da 051326a)": "4e8384481e7b2e130b2b236dbd94b98097093731de5e55759a84e17f50d407d1",
+   "replay/native/strata_spec_capi_p3.cpp": "8f70eca5414c7c03d8d4d4707069e00e4a49ee5a74a1fc14103462486aeace5d",
+   "replay/strata_sim/sim2.py (senza decadimento; load_p4 lo/hi forza la chiave Q4_K_M, la variante mid usata qui non cambia)": "2d61419b62b1faaa5745420a601ca4fb7164130e9e5db776a5486922f38859a8",
+   "replay/verify_ab.py": "1f9ca77264742f498c0ea576f2e26d2781715f4634eddde482c077ca73f2a424",
+   "replay/split_h.py": "ae56a4202ce12ef0f30ca5f64a1c3a97585bf6b761190a41ee170def69984d5c",
+   "replay/tests/parity_count.py": "aa604cb53f16cd2b623e1ed72ba7093ecf3d342d74298ce5f16a0b7ab4b4ff04",
+   "replay/tests/test_joint_gate_parity.py": "1c241180cdf2fd0b0608225b3b4349e82c8ec499edad9d082477d81a9998b858",
+   "traces/tf_d7.jsonl": "78fc434f3a9436833f98cb27a0745893ff787bc42d2d6d27c6af2d1607b0afed"
+  },
+  "tests": "joint_gate_test PASS con -fsanitize=address,undefined; riproduzione OOB pulita",
+  "cumulative_diff_sha256": "aed3c0b17fa1d14f5bbeddaa79092dc5ad7d22b971aff325550d44d6bb822bbb"
+ },
+ "cost_versions": {
+  "rule": "SOLO il 2B Q4_K_M; il Q8_0 (models.qwen35-2b-mtp-q8_0) è un dato di controllo e non entra nella policy; lo 0,8B è ignorato. Solo il 2B Q4_K_M (ignorati 0.8B e il nuovo Q8_0). Il replay usa il modello additivo del protocollo cost(T,d,k)=s(T)+rho_mtp·d+rho_lu·k con s(1..8) dal file; cost_T_d (non additivo, include mtp_process) NON è usato.",
+  "V1_p4ext": {
+   "desc": "P4 esteso così com'è",
+   "sha256_indicato_dal_Lead": "099cedadc9a384132425078930519354ba82c0f85523d60e3ac61b5da748b5b3",
+   "sha256_su_disco_ora": "e51712c64b52c0ff7159dcf3e47ac100f29ba9c4f7342360a85e81c42bf8c34c (accettato dal Lead, equivalente per il Q4_K_M)",
+   "s_1_8": [
+    1.0,
+    1.2867,
+    1.5306,
+    1.7853,
+    2.0314,
+    2.2777,
+    2.5375,
+    2.6731
+   ],
+   "rho_mtp": 0.2695,
+   "rho_lu": 2.1e-06
+  },
+  "V2_p4ext_s8lin": {
+   "desc": "stesso P4 con s(8) estrapolato linearmente",
+   "method": "fit lineare ai minimi quadrati (numpy.polyfit grado 1) su s(1..7), valutato a T=8, arrotondato a 4 decimali; pendenza 0.253404, intercetta 0.764843",
+   "s8": 2.7921,
+   "s8_misurato": 2.6731,
+   "path": "replay/cost_derived/cost_p4_cpu_099ceda_s8lin.json",
+   "sha256": "1f691a169e0517273f36847f2b39dd6d917317608b892b16a553d888c1ff0944",
+   "derivato_da": "099ceda… (equivalente a e51712c6… per il Q4_K_M)"
+  },
+  "knee_note": "Il ginocchio a T=8 (s(8)−s(7)=+0.136 contro un passo medio di ~0.25) è reale sul proxy CPU ma è un effetto della CPU: NON trasferibile su AMD.",
+  "rho_bands": "Invariate: decide la fascia rho_mtp {0.059, 0.0791, 0.0992, 0.1193, 0.1394}; 0.26 solo controllo. Il rho_mtp del P4 (0.2695) non entra nei profili (forme s × rho di fascia); cade vicino al controllo 0.26.",
+  "bench_T6_10_repeat": "non blocca il congelamento (decisione del Lead)",
+  "p4_files": {
+   "sha256_fissato_dal_Lead": "099cedadc9a384132425078930519354ba82c0f85523d60e3ac61b5da748b5b3",
+   "sha256_file_usato": "e51712c64b52c0ff7159dcf3e47ac100f29ba9c4f7342360a85e81c42bf8c34c",
+   "path_usato": "/workspace/strata-plus/traces/cost_p4_cpu.json (Bench ha dichiarato che non lo modificherà più)",
+   "equivalence_note": "e51712c6… = 099ceda… + il modello models.qwen35-2b-mtp-q8_0. Tutti i campi Q4_K_M (primo livello e models.qwen35-2b-mtp-q4_k_m) e tutti gli altri campi di primo livello sono identici byte per byte in JSON canonico. Il replay dà risultati identici con i due file.",
+   "verifica_099ceda": "Il file 099ceda… non è più su disco (sovrascritto da Bench alle 02:10:42 CET). L'ho ricostruito in modo esatto dalla copia derivata (stesso oggetto, s(8) riportato al valore misurato 2.6731, rimosso il campo derivation, json.dumps indent=1). Lo sha256 della ricostruzione coincide con 099cedadc9a3…b5b3, quindi è byte-identica all'originale. Copia: replay/cost_derived/cost_p4_cpu_099ceda_RECONSTRUCTED.json.",
+   "canonical_compare": {
+    "method": "JSON canonico: json.dumps(obj, sort_keys=True, separators=(',',':'), ensure_ascii=False) in UTF-8, poi sha256; uguaglianza esatta (nessuna tolleranza)",
+    "fields_top_level": [
+     "s",
+     "rho_mtp",
+     "rho_lu",
+     "step_ms (step T=1, unità)",
+     "cost_T_d",
+     "cost_by_k"
+    ],
+    "sub_object": "models.qwen35-2b-mtp-q4_k_m (intero: T, s, s_ci95, step_ms, verify_ms_median, mtp_process_ms_median, mtp_draft_ms_median, rho_mtp, rho_mtp_depth1, rho_lu, lookup_ms_median, cost_T_d, cost_T_d_ci95_B500, cost_by_k, n_samples_per_T, n_samples_per_depth, ctx_lens)",
+    "top_level_sha256": {
+     "s": {
+      "099ceda": "0b9e80062b1f7e1b3c28ecdedf262873de2d51afd0ded431491033fffabd1230",
+      "e51712c6": "0b9e80062b1f7e1b3c28ecdedf262873de2d51afd0ded431491033fffabd1230",
+      "equal": true
+     },
+     "rho_mtp": {
+      "099ceda": "ffad1be2b56e3fa1814cca910476bc824a5ea516c6c3f09367cd7211bc93cba0",
+      "e51712c6": "ffad1be2b56e3fa1814cca910476bc824a5ea516c6c3f09367cd7211bc93cba0",
+      "equal": true
+     },
+     "rho_lu": {
+      "099ceda": "8d3db351877a22d3fa8cd72f0785997f389fd61806ff243da05bae682dc4dcaf",
+      "e51712c6": "8d3db351877a22d3fa8cd72f0785997f389fd61806ff243da05bae682dc4dcaf",
+      "equal": true
+     },
+     "step_ms": {
+      "099ceda": "2d0603d3e1f804cc74693602d65870f1dc106e5dd51802cec2e78aeb44307012",
+      "e51712c6": "2d0603d3e1f804cc74693602d65870f1dc106e5dd51802cec2e78aeb44307012",
+      "equal": true
+     },
+     "cost_T_d": {
+      "099ceda": "943a520b465b3a371c36cd319f97f386787c42c88ea0ad5fa5995a8b7ac2afe1",
+      "e51712c6": "943a520b465b3a371c36cd319f97f386787c42c88ea0ad5fa5995a8b7ac2afe1",
+      "equal": true
+     },
+     "cost_by_k": {
+      "099ceda": "7739bcee49af76a706cd370e269997bb3dd86acd25c77a71e669b7c0ea1ba6b5",
+      "e51712c6": "7739bcee49af76a706cd370e269997bb3dd86acd25c77a71e669b7c0ea1ba6b5",
+      "equal": true
+     }
+    },
+    "models_q4_sha256": {
+     "099ceda": "258ff02f5f893edc8d0cac28fd2d3208dd0c1d1f40fd96b6cb9ba670a50f7b57",
+     "e51712c6": "258ff02f5f893edc8d0cac28fd2d3208dd0c1d1f40fd96b6cb9ba670a50f7b57",
+     "equal": true
+    },
+    "top_level_vs_models_q4_coerenti": {
+     "s": {
+      "099ceda": true,
+      "e51712c6": true
+     },
+     "rho_mtp": {
+      "099ceda": true,
+      "e51712c6": true
+     },
+     "rho_lu": {
+      "099ceda": true,
+      "e51712c6": true
+     },
+     "step_ms": {
+      "099ceda": true,
+      "e51712c6": true
+     },
+     "cost_T_d": {
+      "099ceda": true,
+      "e51712c6": true
+     },
+     "cost_by_k": {
+      "099ceda": true,
+      "e51712c6": true
+     }
+    },
+    "altri_campi_primo_livello_uguali": {
+     "cost_def": true,
+     "flags": true,
+     "hardware": true,
+     "label": true,
+     "model": true,
+     "n_samples": true,
+     "note": true,
+     "profile": true,
+     "schema_version": true,
+     "source": true,
+     "threads": true
+    },
+    "models_keys": {
+     "099ceda": [
+      "qwen35-2b-mtp-q4_k_m"
+     ],
+     "e51712c6": [
+      "qwen35-2b-mtp-q4_k_m",
+      "qwen35-2b-mtp-q8_0"
+     ]
+    },
+    "esito": "TUTTO IDENTICO (nessuna tolleranza)",
+    "report_file": "replay/cost_derived/p4_q4km_canonical_compare.json (sha256 0cbcbe18c2177eb17b28fb8c9f8abc477bbbc255a799089130515f4bd54fa1e1)"
+   },
+   "percorso_letto_dal_simulatore": "load_p4 (sim2.py, sha256 2d61419b…), variante 'mid', usata in parità, verify_ab e split_h: legge i campi di PRIMO LIVELLO j['s'][:8], j['rho_mtp'], j['rho_lu']. Le varianti 'lo'/'hi' (non usate in questi risultati) leggono models['qwen35-2b-mtp-q4_k_m']['s_ci95']. step_ms, cost_T_d e cost_by_k non sono letti (modello additivo)."
+  }
+ },
+ "arms": {
+  "A": "gate_v2 (JointGate) tmax=5: finestra T<=5, d<=4, skip lookup attivo",
+  "B": {
+   "def": "gate_v2 (JointGate) tmax=8: finestra T<=8, d<=7, nessun round a T>=9",
+   "share_T8_V1": {
+    "total": 16490,
+    "T8": 3076,
+    "share_T8": 0.1865,
+    "T_ge9": 0,
+    "maxT": 8
+   },
+   "share_T8_V2": {
+    "total": 16507,
+    "T8": 2938,
+    "share_T8": 0.178,
+    "T_ge9": 0,
+    "maxT": 8
+   },
+   "correction": "Corregge l'assunzione precedente che B verificasse fino a T=9: con tmax=8 il massimo è T=8 (k<=7) sia in C++ sia nel simulatore."
+  },
+  "H_ibrido": "ESPLORATIVO, non candidabile: rifatto con il P4 esteso (results/v2/split_h, sha256 63698b0e…). Scelto min_match=8, lookup min(k,7), tmax=8. Contro le baseline 0/135 celle peggiori, contro gate_v2 5/90 peggiori (tutte chat): non passa."
+ },
+ "decision_rule": "B vince solo se rispetta la regola in ENTRAMBE le versioni del costo (V1 e V2): nessuna cella nettamente peggiore (IC95 bootstrap a cluster, B=2000, sopra 0) contro default, STRATA_SPEC_COST=1 e k=3, in fascia e nel controllo, E su code o edit batte A con IC95>0. Altrimenti vince A. Valutazione su holdout dopo il manifest v1.1 e il via del Lead.",
+ "tune_results": {
+  "V1_p4ext": {
+   "full": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     21,
+     21,
+     3
+    ],
+    "B_gt_A_code_edit_band": 21,
+    "B_lt_A_band": [
+     "chat|P1|rho0.0992",
+     "chat|P1|rho0.1193",
+     "chat|P1|rho0.1394"
+    ]
+   },
+   "halfB": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     19,
+     24,
+     2
+    ],
+    "B_gt_A_code_edit_band": 19,
+    "B_lt_A_band": [
+     "chat|P2|rho0.0791",
+     "chat|P2|rho0.0992"
+    ]
+   },
+   "halfA": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     22,
+     23,
+     0
+    ],
+    "B_gt_A_code_edit_band": 21,
+    "B_lt_A_band": []
+   },
+   "B_rounds": {
+    "total": 16490,
+    "T8": 3076,
+    "share_T8": 0.1865,
+    "T_ge9": 0,
+    "maxT": 8
+   },
+   "rule_B_passes": true,
+   "A_no_worse": true
+  },
+  "V2_p4ext_s8lin": {
+   "full": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     21,
+     21,
+     3
+    ],
+    "B_gt_A_code_edit_band": 21,
+    "B_lt_A_band": [
+     "chat|P1|rho0.0992",
+     "chat|P1|rho0.1193",
+     "chat|P1|rho0.1394"
+    ]
+   },
+   "halfB": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     18,
+     24,
+     3
+    ],
+    "B_gt_A_code_edit_band": 18,
+    "B_lt_A_band": [
+     "chat|P2|rho0.0791",
+     "chat|P2|rho0.0992",
+     "chat|P4|rho0.1394"
+    ]
+   },
+   "halfA": {
+    "A_worse_band": 0,
+    "A_worse_ctrl": 0,
+    "B_worse_band": 0,
+    "B_worse_ctrl": 0,
+    "B_vs_A_band_better_neutral_worse": [
+     22,
+     23,
+     0
+    ],
+    "B_gt_A_code_edit_band": 21,
+    "B_lt_A_band": []
+   },
+   "B_rounds": {
+    "total": 16507,
+    "T8": 2938,
+    "share_T8": 0.178,
+    "T_ge9": 0,
+    "maxT": 8
+   },
+   "rule_B_passes": true,
+   "A_no_worse": true
+  },
+  "parity_P5_vs_gate_v2": {
+   "V1": "sintetiche 60 configurazioni / 49143 round / 0 divergenze; tf_d7 72 configurazioni / 28610 round / 0 divergenze",
+   "V2": "sintetiche 60 / 49143 / 0; tf_d7 72 / 28636 / 0"
+  },
+  "vs_old_json": "Senza decadimento e con il vecchio P4 (f9edb0d0) il replay è bit-identico a old.json (tutti gli IC uguali): (a)(b)(d) non cambiano nulla. Le celle che cambiano classe sono solo nei profili P4 (effetto del nuovo costo): V1 19/1134, V2 23/1134; nessuna diventa 'worse' contro le baseline. Le B_vs_A peggiori sono solo chat.",
+  "verdict": "Sul tune la regola per B è soddisfatta in V1 e in V2, e A e B non hanno celle peggiori contro le baseline. Questo NON decide A vs B: decide l'holdout v1.1.",
+  "files": {
+   "results/v2/verify_ab/nodecay_p4ext.json": "a885699c966ac0cb14b1dcb7ec4a51ee8442809a95c3ea68f6d8eb85ab1d6086",
+   "results/v2/verify_ab/nodecay_p4ext_s8lin.json": "1a9dd55fde07be6ad4f0fa9a1021e807200ad9a2fa6304b9d9dd768ec0ce8456"
+  },
+  "caveat": "Replay proxy su tf_d7, tok/s STIMATI, non misure su Strata/AMD."
+ },
+ "holdout": {
+  "opened": false,
+  "prompt_files_sha256": {
+   "strata-bench/datasets/holdout_90.jsonl": "739fbb9c606c881122f1426091aa47dc7f59873176405951b2e7aa7b0febdcb3",
+   "strata-bench/datasets/holdout_ids.json": "ea748b5f3fc867f8cb44f2bcbfbfa3cf23f93809e6c7669040697fe41ff45bf5"
+  },
+  "manifest_sha256": null,
+  "manifest_note": "addendum quando Bench annuncia il manifest v1.1; servono anche le tracce v1.1 e il via del Lead"
+ },
+ "decision_status": "La scelta tra A e B NON è decisa. Il tune mostra solo che B rispetta la regola in V1 e in V2 (e che A non ha celle peggiori contro le baseline). La decisione si prende sull'holdout v1.1, applicando la regola con entrambe le versioni del costo, dopo il manifest v1.1 e il via del Lead."
+}

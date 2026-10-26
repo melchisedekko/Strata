@@ -1,0 +1,938 @@
+{
+ "pools": {
+  "domain:code": {
+   "hist_tokens": 152269,
+   "capacity": 156365
+  },
+  "domain:chat": {
+   "hist_tokens": 67912,
+   "capacity": 72008
+  },
+  "domain:edit": {
+   "hist_tokens": 88646,
+   "capacity": 92742
+  },
+  "session:full:.github/ISSUE_TEMPLATE/bug_report.yml": {
+   "hist_tokens": 1399,
+   "capacity": 5495
+  },
+  "session:excerpt:.github/ISSUE_TEMPLATE/bug_report.yml": {
+   "hist_tokens": 442,
+   "capacity": 4538
+  },
+  "session:full:.github/workflows/docker-images.yml": {
+   "hist_tokens": 1498,
+   "capacity": 5594
+  },
+  "session:excerpt:.github/workflows/docker-images.yml": {
+   "hist_tokens": 343,
+   "capacity": 4439
+  },
+  "session:full:AGENTS.md": {
+   "hist_tokens": 3821,
+   "capacity": 7917
+  },
+  "session:excerpt:AGENTS.md": {
+   "hist_tokens": 880,
+   "capacity": 4976
+  },
+  "session:full:CMakeLists.txt": {
+   "hist_tokens": 749726,
+   "capacity": 753822
+  },
+  "session:excerpt:CMakeLists.txt": {
+   "hist_tokens": 13133,
+   "capacity": 17229
+  },
+  "session:full:README.md": {
+   "hist_tokens": 103331,
+   "capacity": 107427
+  },
+  "session:excerpt:README.md": {
+   "hist_tokens": 21053,
+   "capacity": 25149
+  },
+  "session:full:SECURITY.md": {
+   "hist_tokens": 2237,
+   "capacity": 6333
+  },
+  "session:excerpt:SECURITY.md": {
+   "hist_tokens": 302,
+   "capacity": 4398
+  },
+  "session:full:apps/desktop/package.json": {
+   "hist_tokens": 524,
+   "capacity": 4620
+  },
+  "session:excerpt:apps/desktop/package.json": {
+   "hist_tokens": 360,
+   "capacity": 4456
+  },
+  "session:full:apps/desktop/src-tauri/Cargo.lock": {
+   "hist_tokens": 65777,
+   "capacity": 69873
+  },
+  "session:excerpt:apps/desktop/src-tauri/Cargo.lock": {
+   "hist_tokens": 368,
+   "capacity": 4464
+  },
+  "session:full:apps/desktop/src-tauri/Cargo.toml": {
+   "hist_tokens": 551,
+   "capacity": 4647
+  },
+  "session:excerpt:apps/desktop/src-tauri/Cargo.toml": {
+   "hist_tokens": 352,
+   "capacity": 4448
+  },
+  "session:full:apps/host/package-lock.json": {
+   "hist_tokens": 32441,
+   "capacity": 36537
+  },
+  "session:excerpt:apps/host/package-lock.json": {
+   "hist_tokens": 451,
+   "capacity": 4547
+  },
+  "session:full:apps/host/package.json": {
+   "hist_tokens": 906,
+   "capacity": 5002
+  },
+  "session:excerpt:apps/host/package.json": {
+   "hist_tokens": 376,
+   "capacity": 4472
+  },
+  "session:full:apps/host/server/agent/agent-bridge.mjs": {
+   "hist_tokens": 25271,
+   "capacity": 29367
+  },
+  "session:excerpt:apps/host/server/agent/agent-bridge.mjs": {
+   "hist_tokens": 5036,
+   "capacity": 9132
+  },
+  "session:full:apps/host/server/agent/profile.mjs": {
+   "hist_tokens": 9234,
+   "capacity": 13330
+  },
+  "session:excerpt:apps/host/server/agent/profile.mjs": {
+   "hist_tokens": 3587,
+   "capacity": 7683
+  },
+  "session:full:apps/host/server/index.mjs": {
+   "hist_tokens": 40022,
+   "capacity": 44118
+  },
+  "session:excerpt:apps/host/server/index.mjs": {
+   "hist_tokens": 2629,
+   "capacity": 6725
+  },
+  "session:full:apps/host/server/native-control.mjs": {
+   "hist_tokens": 45603,
+   "capacity": 49699
+  },
+  "session:excerpt:apps/host/server/native-control.mjs": {
+   "hist_tokens": 11139,
+   "capacity": 15235
+  },
+  "session:full:apps/host/server/update-messages.mjs": {
+   "hist_tokens": 1548,
+   "capacity": 5644
+  },
+  "session:excerpt:apps/host/server/update-messages.mjs": {
+   "hist_tokens": 598,
+   "capacity": 4694
+  },
+  "session:full:apps/host/src/components/NativeOperations.tsx": {
+   "hist_tokens": 3254,
+   "capacity": 7350
+  },
+  "session:excerpt:apps/host/src/components/NativeOperations.tsx": {
+   "hist_tokens": 1502,
+   "capacity": 5598
+  },
+  "session:full:apps/host/src/components/SettingsUpdates.tsx": {
+   "hist_tokens": 5420,
+   "capacity": 9516
+  },
+  "session:excerpt:apps/host/src/components/SettingsUpdates.tsx": {
+   "hist_tokens": 1472,
+   "capacity": 5568
+  },
+  "session:full:apps/host/src/lib/app-version.ts": {
+   "hist_tokens": 589,
+   "capacity": 4685
+  },
+  "session:excerpt:apps/host/src/lib/app-version.ts": {
+   "hist_tokens": 519,
+   "capacity": 4615
+  },
+  "session:full:apps/host/src/lib/plain-errors.ts": {
+   "hist_tokens": 3079,
+   "capacity": 7175
+  },
+  "session:excerpt:apps/host/src/lib/plain-errors.ts": {
+   "hist_tokens": 963,
+   "capacity": 5059
+  },
+  "session:full:apps/host/src/lib/store.ts": {
+   "hist_tokens": 25858,
+   "capacity": 29954
+  },
+  "session:excerpt:apps/host/src/lib/store.ts": {
+   "hist_tokens": 1240,
+   "capacity": 5336
+  },
+  "session:full:apps/host/src/locales/de.json": {
+   "hist_tokens": 208176,
+   "capacity": 212272
+  },
+  "session:excerpt:apps/host/src/locales/de.json": {
+   "hist_tokens": 2485,
+   "capacity": 6581
+  },
+  "session:full:apps/host/src/locales/en.json": {
+   "hist_tokens": 181354,
+   "capacity": 185450
+  },
+  "session:excerpt:apps/host/src/locales/en.json": {
+   "hist_tokens": 2127,
+   "capacity": 6223
+  },
+  "session:full:apps/host/src/locales/es.json": {
+   "hist_tokens": 204074,
+   "capacity": 208170
+  },
+  "session:excerpt:apps/host/src/locales/es.json": {
+   "hist_tokens": 2340,
+   "capacity": 6436
+  },
+  "session:full:apps/host/src/locales/ja.json": {
+   "hist_tokens": 203107,
+   "capacity": 207203
+  },
+  "session:excerpt:apps/host/src/locales/ja.json": {
+   "hist_tokens": 2320,
+   "capacity": 6416
+  },
+  "session:full:apps/host/src/locales/ko.json": {
+   "hist_tokens": 204891,
+   "capacity": 208987
+  },
+  "session:excerpt:apps/host/src/locales/ko.json": {
+   "hist_tokens": 2282,
+   "capacity": 6378
+  },
+  "session:full:apps/host/src/locales/pt.json": {
+   "hist_tokens": 204068,
+   "capacity": 208164
+  },
+  "session:excerpt:apps/host/src/locales/pt.json": {
+   "hist_tokens": 2355,
+   "capacity": 6451
+  },
+  "session:full:apps/host/src/locales/ru.json": {
+   "hist_tokens": 210589,
+   "capacity": 214685
+  },
+  "session:excerpt:apps/host/src/locales/ru.json": {
+   "hist_tokens": 2449,
+   "capacity": 6545
+  },
+  "session:full:apps/host/src/locales/zh.json": {
+   "hist_tokens": 184978,
+   "capacity": 189074
+  },
+  "session:excerpt:apps/host/src/locales/zh.json": {
+   "hist_tokens": 2049,
+   "capacity": 6145
+  },
+  "session:full:apps/host/tests/plain-errors.test.mjs": {
+   "hist_tokens": 2968,
+   "capacity": 7064
+  },
+  "session:excerpt:apps/host/tests/plain-errors.test.mjs": {
+   "hist_tokens": 590,
+   "capacity": 4686
+  },
+  "session:full:apps/host/tests/qa1-storage.test.mjs": {
+   "hist_tokens": 1586,
+   "capacity": 5682
+  },
+  "session:excerpt:apps/host/tests/qa1-storage.test.mjs": {
+   "hist_tokens": 438,
+   "capacity": 4534
+  },
+  "session:full:docker/Dockerfile": {
+   "hist_tokens": 2946,
+   "capacity": 7042
+  },
+  "session:excerpt:docker/Dockerfile": {
+   "hist_tokens": 762,
+   "capacity": 4858
+  },
+  "session:full:docker/build.sh": {
+   "hist_tokens": 2558,
+   "capacity": 6654
+  },
+  "session:excerpt:docker/build.sh": {
+   "hist_tokens": 759,
+   "capacity": 4855
+  },
+  "session:full:docker/compose/.env.example": {
+   "hist_tokens": 570,
+   "capacity": 4666
+  },
+  "session:excerpt:docker/compose/.env.example": {
+   "hist_tokens": 462,
+   "capacity": 4558
+  },
+  "session:full:docker/compose/MAC.md": {
+   "hist_tokens": 424,
+   "capacity": 4520
+  },
+  "session:excerpt:docker/compose/MAC.md": {
+   "hist_tokens": 425,
+   "capacity": 4521
+  },
+  "session:full:docker/compose/docker-compose.amd.yml": {
+   "hist_tokens": 919,
+   "capacity": 5015
+  },
+  "session:excerpt:docker/compose/docker-compose.amd.yml": {
+   "hist_tokens": 524,
+   "capacity": 4620
+  },
+  "session:full:docker/compose/docker-compose.intel.yml": {
+   "hist_tokens": 838,
+   "capacity": 4934
+  },
+  "session:excerpt:docker/compose/docker-compose.intel.yml": {
+   "hist_tokens": 512,
+   "capacity": 4608
+  },
+  "session:full:docker/compose/docker-compose.nvidia.yml": {
+   "hist_tokens": 1173,
+   "capacity": 5269
+  },
+  "session:excerpt:docker/compose/docker-compose.nvidia.yml": {
+   "hist_tokens": 644,
+   "capacity": 4740
+  },
+  "session:full:docker/fetch-engines.py": {
+   "hist_tokens": 2723,
+   "capacity": 6819
+  },
+  "session:excerpt:docker/fetch-engines.py": {
+   "hist_tokens": 862,
+   "capacity": 4958
+  },
+  "session:full:docker/publish.sh": {
+   "hist_tokens": 2387,
+   "capacity": 6483
+  },
+  "session:excerpt:docker/publish.sh": {
+   "hist_tokens": 1025,
+   "capacity": 5121
+  },
+  "session:full:docs/AI_SETUP.md": {
+   "hist_tokens": 6088,
+   "capacity": 10184
+  },
+  "session:excerpt:docs/AI_SETUP.md": {
+   "hist_tokens": 317,
+   "capacity": 4413
+  },
+  "session:full:docs/AMD_HIP.md": {
+   "hist_tokens": 37087,
+   "capacity": 41183
+  },
+  "session:excerpt:docs/AMD_HIP.md": {
+   "hist_tokens": 1550,
+   "capacity": 5646
+  },
+  "session:full:docs/DEEPSEEK41.md": {
+   "hist_tokens": 62601,
+   "capacity": 66697
+  },
+  "session:excerpt:docs/DEEPSEEK41.md": {
+   "hist_tokens": 16500,
+   "capacity": 20596
+  },
+  "session:full:docs/DOCKER.md": {
+   "hist_tokens": 10669,
+   "capacity": 14765
+  },
+  "session:excerpt:docs/DOCKER.md": {
+   "hist_tokens": 4652,
+   "capacity": 8748
+  },
+  "session:full:docs/GYRO.md": {
+   "hist_tokens": 9521,
+   "capacity": 13617
+  },
+  "session:excerpt:docs/GYRO.md": {
+   "hist_tokens": 733,
+   "capacity": 4829
+  },
+  "session:full:docs/INSTALL.md": {
+   "hist_tokens": 9510,
+   "capacity": 13606
+  },
+  "session:excerpt:docs/INSTALL.md": {
+   "hist_tokens": 267,
+   "capacity": 4363
+  },
+  "session:full:docs/INTEL.md": {
+   "hist_tokens": 30773,
+   "capacity": 34869
+  },
+  "session:excerpt:docs/INTEL.md": {
+   "hist_tokens": 1541,
+   "capacity": 5637
+  },
+  "session:full:docs/INTEL_ARC.md": {
+   "hist_tokens": 5462,
+   "capacity": 9558
+  },
+  "session:excerpt:docs/INTEL_ARC.md": {
+   "hist_tokens": 1111,
+   "capacity": 5207
+  },
+  "session:full:docs/TERMINAL_LAUNCH.md": {
+   "hist_tokens": 8144,
+   "capacity": 12240
+  },
+  "session:excerpt:docs/TERMINAL_LAUNCH.md": {
+   "hist_tokens": 1273,
+   "capacity": 5369
+  },
+  "session:full:docs/release-notes-0.2.3.md": {
+   "hist_tokens": 14839,
+   "capacity": 18935
+  },
+  "session:excerpt:docs/release-notes-0.2.3.md": {
+   "hist_tokens": 11555,
+   "capacity": 15651
+  },
+  "session:full:docs/release-notes-0.2.4.md": {
+   "hist_tokens": 57297,
+   "capacity": 61393
+  },
+  "session:excerpt:docs/release-notes-0.2.4.md": {
+   "hist_tokens": 21433,
+   "capacity": 25529
+  },
+  "session:full:include/strata/kernels/cpu/iq_avx2.hpp": {
+   "hist_tokens": 1821,
+   "capacity": 5917
+  },
+  "session:excerpt:include/strata/kernels/cpu/iq_avx2.hpp": {
+   "hist_tokens": 869,
+   "capacity": 4965
+  },
+  "session:full:include/strata/kernels/cpu/iq_avx512.hpp": {
+   "hist_tokens": 705,
+   "capacity": 4801
+  },
+  "session:excerpt:include/strata/kernels/cpu/iq_avx512.hpp": {
+   "hist_tokens": 458,
+   "capacity": 4554
+  },
+  "session:full:metal/CMakeLists.txt": {
+   "hist_tokens": 2447,
+   "capacity": 6543
+  },
+  "session:excerpt:metal/CMakeLists.txt": {
+   "hist_tokens": 592,
+   "capacity": 4688
+  },
+  "session:full:packaging/ENGINE-COMPONENT.md": {
+   "hist_tokens": 9805,
+   "capacity": 13901
+  },
+  "session:excerpt:packaging/ENGINE-COMPONENT.md": {
+   "hist_tokens": 2697,
+   "capacity": 6793
+  },
+  "session:full:packaging/README.md": {
+   "hist_tokens": 4252,
+   "capacity": 8348
+  },
+  "session:excerpt:packaging/README.md": {
+   "hist_tokens": 1302,
+   "capacity": 5398
+  },
+  "session:full:packaging/UPDATES.md": {
+   "hist_tokens": 6305,
+   "capacity": 10401
+  },
+  "session:excerpt:packaging/UPDATES.md": {
+   "hist_tokens": 2964,
+   "capacity": 7060
+  },
+  "session:full:packaging/build_hip_linux.sh": {
+   "hist_tokens": 12983,
+   "capacity": 17079
+  },
+  "session:excerpt:packaging/build_hip_linux.sh": {
+   "hist_tokens": 7785,
+   "capacity": 11881
+  },
+  "session:full:packaging/feed_tool.py": {
+   "hist_tokens": 7110,
+   "capacity": 11206
+  },
+  "session:excerpt:packaging/feed_tool.py": {
+   "hist_tokens": 2389,
+   "capacity": 6485
+  },
+  "session:full:packaging/install.ps1": {
+   "hist_tokens": 4210,
+   "capacity": 8306
+  },
+  "session:excerpt:packaging/install.ps1": {
+   "hist_tokens": 1469,
+   "capacity": 5565
+  },
+  "session:full:packaging/install.sh": {
+   "hist_tokens": 7242,
+   "capacity": 11338
+  },
+  "session:excerpt:packaging/install.sh": {
+   "hist_tokens": 4601,
+   "capacity": 8697
+  },
+  "session:full:packaging/package_engine.py": {
+   "hist_tokens": 17419,
+   "capacity": 21515
+  },
+  "session:excerpt:packaging/package_engine.py": {
+   "hist_tokens": 6459,
+   "capacity": 10555
+  },
+  "session:full:packaging/package_terminal.py": {
+   "hist_tokens": 8507,
+   "capacity": 12603
+  },
+  "session:excerpt:packaging/package_terminal.py": {
+   "hist_tokens": 1503,
+   "capacity": 5599
+  },
+  "session:full:serve/frontend.py": {
+   "hist_tokens": 22021,
+   "capacity": 26117
+  },
+  "session:excerpt:serve/frontend.py": {
+   "hist_tokens": 1617,
+   "capacity": 5713
+  },
+  "session:full:serve/test_dsv41.py": {
+   "hist_tokens": 97512,
+   "capacity": 101608
+  },
+  "session:excerpt:serve/test_dsv41.py": {
+   "hist_tokens": 11752,
+   "capacity": 15848
+  },
+  "session:full:src/dsv41/ds4_gg_cpu.cpp": {
+   "hist_tokens": 49718,
+   "capacity": 53814
+  },
+  "session:excerpt:src/dsv41/ds4_gg_cpu.cpp": {
+   "hist_tokens": 11693,
+   "capacity": 15789
+  },
+  "session:full:src/dsv41/ds4_iq.cu": {
+   "hist_tokens": 375340,
+   "capacity": 379436
+  },
+  "session:excerpt:src/dsv41/ds4_iq.cu": {
+   "hist_tokens": 45511,
+   "capacity": 49607
+  },
+  "session:full:src/dsv41/ds4_main.cpp": {
+   "hist_tokens": 415790,
+   "capacity": 419886
+  },
+  "session:excerpt:src/dsv41/ds4_main.cpp": {
+   "hist_tokens": 35938,
+   "capacity": 40034
+  },
+  "session:full:src/dsv41/ds4_model.hpp": {
+   "hist_tokens": 30302,
+   "capacity": 34398
+  },
+  "session:excerpt:src/dsv41/ds4_model.hpp": {
+   "hist_tokens": 5050,
+   "capacity": 9146
+  },
+  "session:full:src/dsv41/ds4_os.hpp": {
+   "hist_tokens": 43406,
+   "capacity": 47502
+  },
+  "session:excerpt:src/dsv41/ds4_os.hpp": {
+   "hist_tokens": 4500,
+   "capacity": 8596
+  },
+  "session:full:src/kernels/cpu/iq_avx2.cpp": {
+   "hist_tokens": 26546,
+   "capacity": 30642
+  },
+  "session:excerpt:src/kernels/cpu/iq_avx2.cpp": {
+   "hist_tokens": 1282,
+   "capacity": 5378
+  },
+  "session:full:src/kernels/cpu/iq_avx2_rows.inl": {
+   "hist_tokens": 46621,
+   "capacity": 50717
+  },
+  "session:excerpt:src/kernels/cpu/iq_avx2_rows.inl": {
+   "hist_tokens": 22029,
+   "capacity": 26125
+  },
+  "session:full:src/kernels/cpu/iq_avx512.cpp": {
+   "hist_tokens": 25872,
+   "capacity": 29968
+  },
+  "session:excerpt:src/kernels/cpu/iq_avx512.cpp": {
+   "hist_tokens": 11087,
+   "capacity": 15183
+  },
+  "session:full:strata.py": {
+   "hist_tokens": 786,
+   "capacity": 4882
+  },
+  "session:excerpt:strata.py": {
+   "hist_tokens": 436,
+   "capacity": 4532
+  },
+  "session:full:strata_cli/__init__.py": {
+   "hist_tokens": 2711,
+   "capacity": 6807
+  },
+  "session:excerpt:strata_cli/__init__.py": {
+   "hist_tokens": 1755,
+   "capacity": 5851
+  },
+  "session:full:strata_cli/cli.py": {
+   "hist_tokens": 31476,
+   "capacity": 35572
+  },
+  "session:excerpt:strata_cli/cli.py": {
+   "hist_tokens": 424,
+   "capacity": 4520
+  },
+  "session:full:strata_cli/handover.py": {
+   "hist_tokens": 2808,
+   "capacity": 6904
+  },
+  "session:excerpt:strata_cli/handover.py": {
+   "hist_tokens": 819,
+   "capacity": 4915
+  },
+  "session:full:strata_cli/launch/app.py": {
+   "hist_tokens": 32913,
+   "capacity": 37009
+  },
+  "session:excerpt:strata_cli/launch/app.py": {
+   "hist_tokens": 5762,
+   "capacity": 9858
+  },
+  "session:full:strata_cli/launch/catalog.py": {
+   "hist_tokens": 30284,
+   "capacity": 34380
+  },
+  "session:excerpt:strata_cli/launch/catalog.py": {
+   "hist_tokens": 3329,
+   "capacity": 7425
+  },
+  "session:full:strata_cli/launch/cmd.py": {
+   "hist_tokens": 98974,
+   "capacity": 103070
+  },
+  "session:excerpt:strata_cli/launch/cmd.py": {
+   "hist_tokens": 7102,
+   "capacity": 11198
+  },
+  "session:full:strata_cli/launch/modelstate.py": {
+   "hist_tokens": 3216,
+   "capacity": 7312
+  },
+  "session:excerpt:strata_cli/launch/modelstate.py": {
+   "hist_tokens": 1439,
+   "capacity": 5535
+  },
+  "session:full:strata_cli/launch/params.py": {
+   "hist_tokens": 3834,
+   "capacity": 7930
+  },
+  "session:excerpt:strata_cli/launch/params.py": {
+   "hist_tokens": 1012,
+   "capacity": 5108
+  },
+  "session:full:strata_cli/launch/runner.py": {
+   "hist_tokens": 792682,
+   "capacity": 796778
+  },
+  "session:excerpt:strata_cli/launch/runner.py": {
+   "hist_tokens": 38131,
+   "capacity": 42227
+  },
+  "session:full:strata_cli/launch/screens.py": {
+   "hist_tokens": 179553,
+   "capacity": 183649
+  },
+  "session:excerpt:strata_cli/launch/screens.py": {
+   "hist_tokens": 6121,
+   "capacity": 10217
+  },
+  "session:full:strata_cli/launch/settings.py": {
+   "hist_tokens": 4623,
+   "capacity": 8719
+  },
+  "session:excerpt:strata_cli/launch/settings.py": {
+   "hist_tokens": 502,
+   "capacity": 4598
+  },
+  "session:full:strata_cli/launch/store.py": {
+   "hist_tokens": 1605,
+   "capacity": 5701
+  },
+  "session:excerpt:strata_cli/launch/store.py": {
+   "hist_tokens": 348,
+   "capacity": 4444
+  },
+  "session:full:strata_cli/update_cmd.py": {
+   "hist_tokens": 3846,
+   "capacity": 7942
+  },
+  "session:excerpt:strata_cli/update_cmd.py": {
+   "hist_tokens": 324,
+   "capacity": 4420
+  },
+  "session:full:strata_control/dsv41_fit.py": {
+   "hist_tokens": 88852,
+   "capacity": 92948
+  },
+  "session:excerpt:strata_control/dsv41_fit.py": {
+   "hist_tokens": 21857,
+   "capacity": 25953
+  },
+  "session:full:strata_control/feed.py": {
+   "hist_tokens": 12842,
+   "capacity": 16938
+  },
+  "session:excerpt:strata_control/feed.py": {
+   "hist_tokens": 1431,
+   "capacity": 5527
+  },
+  "session:full:strata_control/models.py": {
+   "hist_tokens": 10913,
+   "capacity": 15009
+  },
+  "session:excerpt:strata_control/models.py": {
+   "hist_tokens": 2069,
+   "capacity": 6165
+  },
+  "session:full:strata_control/updater.py": {
+   "hist_tokens": 69563,
+   "capacity": 73659
+  },
+  "session:excerpt:strata_control/updater.py": {
+   "hist_tokens": 3936,
+   "capacity": 8032
+  },
+  "session:full:strata_control/vision_reader.py": {
+   "hist_tokens": 3000,
+   "capacity": 7096
+  },
+  "session:excerpt:strata_control/vision_reader.py": {
+   "hist_tokens": 593,
+   "capacity": 4689
+  },
+  "session:full:sycl/setup_intel.py": {
+   "hist_tokens": 11523,
+   "capacity": 15619
+  },
+  "session:excerpt:sycl/setup_intel.py": {
+   "hist_tokens": 2037,
+   "capacity": 6133
+  },
+  "session:full:tests/desktop/test_tester_readme.py": {
+   "hist_tokens": 1334,
+   "capacity": 5430
+  },
+  "session:excerpt:tests/desktop/test_tester_readme.py": {
+   "hist_tokens": 447,
+   "capacity": 4543
+  },
+  "session:full:tests/dsv41/iq_expert_test.cpp": {
+   "hist_tokens": 128484,
+   "capacity": 132580
+  },
+  "session:excerpt:tests/dsv41/iq_expert_test.cpp": {
+   "hist_tokens": 21786,
+   "capacity": 25882
+  },
+  "session:full:tests/terminal/test_docker_files.py": {
+   "hist_tokens": 3861,
+   "capacity": 7957
+  },
+  "session:excerpt:tests/terminal/test_docker_files.py": {
+   "hist_tokens": 1133,
+   "capacity": 5229
+  },
+  "session:full:tests/terminal/test_dsv41_tui_items.py": {
+   "hist_tokens": 20597,
+   "capacity": 24693
+  },
+  "session:excerpt:tests/terminal/test_dsv41_tui_items.py": {
+   "hist_tokens": 4990,
+   "capacity": 9086
+  },
+  "session:full:tests/terminal/test_engine_manifest.py": {
+   "hist_tokens": 14180,
+   "capacity": 18276
+  },
+  "session:excerpt:tests/terminal/test_engine_manifest.py": {
+   "hist_tokens": 2171,
+   "capacity": 6267
+  },
+  "session:full:tests/terminal/test_engine_smoke.py": {
+   "hist_tokens": 975,
+   "capacity": 5071
+  },
+  "session:excerpt:tests/terminal/test_engine_smoke.py": {
+   "hist_tokens": 325,
+   "capacity": 4421
+  },
+  "session:full:tests/terminal/test_install_scripts_env.py": {
+   "hist_tokens": 1480,
+   "capacity": 5576
+  },
+  "session:excerpt:tests/terminal/test_install_scripts_env.py": {
+   "hist_tokens": 953,
+   "capacity": 5049
+  },
+  "session:full:tests/terminal/test_launch.py": {
+   "hist_tokens": 133532,
+   "capacity": 137628
+  },
+  "session:excerpt:tests/terminal/test_launch.py": {
+   "hist_tokens": 2895,
+   "capacity": 6991
+  },
+  "session:full:tests/terminal/test_launch_engine_first.py": {
+   "hist_tokens": 3852,
+   "capacity": 7948
+  },
+  "session:excerpt:tests/terminal/test_launch_engine_first.py": {
+   "hist_tokens": 269,
+   "capacity": 4365
+  },
+  "session:full:tests/terminal/test_launch_tui.py": {
+   "hist_tokens": 45609,
+   "capacity": 49705
+  },
+  "session:excerpt:tests/terminal/test_launch_tui.py": {
+   "hist_tokens": 1581,
+   "capacity": 5677
+  },
+  "session:full:tests/terminal/test_round8_fixes.py": {
+   "hist_tokens": 10656,
+   "capacity": 14752
+  },
+  "session:excerpt:tests/terminal/test_round8_fixes.py": {
+   "hist_tokens": 1128,
+   "capacity": 5224
+  },
+  "session:full:tests/terminal/test_runtime.py": {
+   "hist_tokens": 18723,
+   "capacity": 22819
+  },
+  "session:excerpt:tests/terminal/test_runtime.py": {
+   "hist_tokens": 602,
+   "capacity": 4698
+  },
+  "session:full:tests/terminal/test_tuiqa_version.py": {
+   "hist_tokens": 3305,
+   "capacity": 7401
+  },
+  "session:excerpt:tests/terminal/test_tuiqa_version.py": {
+   "hist_tokens": 1663,
+   "capacity": 5759
+  },
+  "session:full:tests/terminal/test_update_feed.py": {
+   "hist_tokens": 6552,
+   "capacity": 10648
+  },
+  "session:excerpt:tests/terminal/test_update_feed.py": {
+   "hist_tokens": 921,
+   "capacity": 5017
+  },
+  "session:full:tests/terminal/test_updater.py": {
+   "hist_tokens": 12342,
+   "capacity": 16438
+  },
+  "session:excerpt:tests/terminal/test_updater.py": {
+   "hist_tokens": 975,
+   "capacity": 5071
+  },
+  "session:full:tools/strata_mcp.py": {
+   "hist_tokens": 254065,
+   "capacity": 258161
+  },
+  "session:excerpt:tools/strata_mcp.py": {
+   "hist_tokens": 10756,
+   "capacity": 14852
+  },
+  "session:full:tools/test_setup_amd.py": {
+   "hist_tokens": 13639,
+   "capacity": 17735
+  },
+  "session:excerpt:tools/test_setup_amd.py": {
+   "hist_tokens": 723,
+   "capacity": 4819
+  },
+  "session:full:tools/test_setup_choices.py": {
+   "hist_tokens": 12348,
+   "capacity": 16444
+  },
+  "session:excerpt:tools/test_setup_choices.py": {
+   "hist_tokens": 1143,
+   "capacity": 5239
+  },
+  "session:full:tools/test_setup_dsv41.py": {
+   "hist_tokens": 179578,
+   "capacity": 183674
+  },
+  "session:excerpt:tools/test_setup_dsv41.py": {
+   "hist_tokens": 23113,
+   "capacity": 27209
+  },
+  "session:full:tools/test_setup_model_pins.py": {
+   "hist_tokens": 3781,
+   "capacity": 7877
+  },
+  "session:excerpt:tools/test_setup_model_pins.py": {
+   "hist_tokens": 544,
+   "capacity": 4640
+  },
+  "domain:session_full": {
+   "hist_tokens": 6471108,
+   "capacity": 6475204
+  },
+  "session:full:tools/test_setup_sycl.py": {
+   "hist_tokens": 5868,
+   "capacity": 9964
+  },
+  "domain:session_excerpt": {
+   "hist_tokens": 515335,
+   "capacity": 519431
+  },
+  "session:excerpt:tools/test_setup_sycl.py": {
+   "hist_tokens": 1156,
+   "capacity": 5252
+  }
+ },
+ "slot_bytes": 32,
+ "note": "SuffixDrafter table = next_pow2(2*capacity) slots x 32 B + 4 B/token history"
+}

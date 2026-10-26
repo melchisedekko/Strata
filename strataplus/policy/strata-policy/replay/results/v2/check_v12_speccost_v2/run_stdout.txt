@@ -1,0 +1,64 @@
+{
+ "diff": {
+  "req_missing": [],
+  "req_added": [
+   "spec_params"
+  ],
+  "rnd_missing": [],
+  "rnd_added": []
+ },
+ "vals": {
+  "schema": [
+   "\"strataplus.v1.1\""
+  ],
+  "data_kind": [
+   "\"teacher_forced\""
+  ],
+  "dmax": [
+   "7"
+  ],
+  "domain": [
+   "\"chat\"",
+   "\"code\"",
+   "\"edit\""
+  ],
+  "split": [
+   "\"check_v12\""
+  ],
+  "sampling": [
+   "\"greedy\""
+  ],
+  "engine": [
+   "\"llamacpp\""
+  ],
+  "pos_semantics": [
+   "\"pos = output tokens committed before the round (D4)\""
+  ],
+  "lookup_max_match": [
+   "64"
+  ],
+  "rep": [
+   "0"
+  ]
+ },
+ "domains": {
+  "code": 20,
+  "chat": 20,
+  "edit": 20
+ },
+ "extra": {},
+ "spec_params_mapped": {
+  "n_requests": 60,
+  "distinct": [
+   "{\"draft_p_min\": 0.0, \"n_max\": 7, \"n_min\": 0}"
+  ],
+  "manifest_ok": true,
+  "cmds_tf_ok": true
+ },
+ "schema_ok": true,
+ "meta_ok": true
+}
+V1 additive done
+V2 additive done
+grid done
+frozen script done on check_v12 (wrapper v2)

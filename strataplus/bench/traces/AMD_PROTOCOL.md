@@ -1,0 +1,233 @@
+# Protocollo AMD (Strata+ / Strata 7dd5cf18) — da eseguire sulla macchina AMD
+
+Stato: protocollo, nessuna misura AMD in questo file. Tutto ciò che segue è verificato leggendo il codice di
+`/workspace/Strata` @ 7dd5cf18 (riga citata) oppure è una regola pre-registrata. I numeri CPU del repo strata-plus sono
+**proxy CPU, non AMD** e non vanno trasferiti.
+
+## 0. Regole generali per ogni run AMD
+- **Una richiesta alla volta.** Verificare nel log dell'engine che non compaiano round batch (`BGEN`/`BGENI`, generate.cpp:12000):
+  il path batch disegna gli slot MTP con finestra fissa 2 (`slot_mtp[b]->draft(2, …)`, generate.cpp:11668) e non usa la regola
+  cost-aware: `spec_cost` è referenziato solo nel path serve seriale (generate.cpp:11179-11183, 14883, 15190) e nel path non-serve
+  (16402, 16432, 16447-16448, 16538, 16713). Un round BGEN invalida il run per gli esperimenti SPEC_COST.
+- **SPEC_COST in --serve impara i costi per riga online.** `STRATA_SPEC_COST_TABLE` (seed della tabella costi, `DraftPolicy::seed_costs`,
+  draft_policy.hpp:51-52) è letto solo nel path non-serve (generate.cpp:16432); il path `--serve` (11172-11187) non lo legge.
+  Quindi in serve i primi round usano costi non ancora misurati: scartare un warm-up dichiarato in anticipo (N richieste) oppure
+  riportare separatamente prima/dopo warm-up. `policy.cost_table_text()` (draft_policy.hpp:57) è stampato solo nel path non-serve (16745).
+- **Passaggio di STRATA_SPEC_COST al --serve (verificato leggendo il codice):** setup.py non imposta `STRATA_SPEC_COST` (nessuna
+  occorrenza in setup.py); avvia `serve/server.py` con `{**os.environ, acquisition.ENV: "1"}` (setup.py:6876, 6878); server.py
+  costruisce l'ambiente dell'engine con `child_env()` = `dict(os.environ)` + `cfg["env"]` (server.py:3499-3511) e lancia
+  `[exe, "--serve", *args]` con `env=env` (server.py:1044-1045). Quindi STRATA_SPEC_COST arriva all'engine solo se è
+  nell'ambiente del launcher o nel campo `env` della config. Registrare l'ambiente effettivo del processo engine
+  (`/proc/<pid>/environ` sulla macchina AMD) in ogni run.
+- **Build per i run di identità: LLAMAFILE OFF** (regola Lead). Motivo misurato sul proxy CPU: con GGML_LLAMAFILE ON il verify T=2
+  non è bit-identico a T=1 (4/10 identici), con OFF 10/10 (traces/abl_llamafile_identity.json, sha256 51d24ed3…). Per l'engine
+  Strata nativo AMD la condizione equivalente va verificata (stesso test T=1 vs T=2 a ywrong) prima dell'esperimento.
+- **Lettura di S e S_mtp dall'engine:** la riga `INFO … spec=%d mtp_max=%d lookup=%d … spec_min_p=%.2f` stampata da --serve
+  (generate.cpp:11078-11090) dà `spec` (= S effettivo dopo i rimappaggi), `mtp_max` (= o.mtp_max_t; S_mtp = min(mtp_max, S), oppure S
+  se 0, generate.cpp:11173), `lookup` (= --suffix-draft) e `spec_min_p`. Registrare questa riga per ogni braccio; non dedurre S dai flag.
+- Finestre CPU/GPU: un solo processo engine, pre-check macchina libera, finestre loggate; nessun processo di altri agenti ucciso.
+
+## 1. E-AMD-0 (PRIMO esperimento AMD): larghezza finestra --spec
+Mappatura verificata (generate.cpp:3208-3211): se `--suffix-draft > 0` (default 3, generate.cpp:777), `spec ≥ 2` e
+`--mtp-max-t` non dato (0): `mtp_max_t = spec; spec = min(spec + 2, 8)  // kVerifyMaxT`. Quindi:
+
+| flag | S (verify/lookup) | S_mtp (MTP) | fonte |
+|---|---|---|---|
+| `--spec 4` (default setup.py:9420, con `--spec-min-p 0.5`) | 6 | 4 | 3208-3211 |
+| `--spec 6` | 8 | 6 | 3208-3211 |
+| `--spec 8` | 8 | 8 | 3208-3211 (min(10,8)) |
+| `--spec 8 --mtp-max-t 4` | 8 | 4 | blocco 3208 saltato (mtp_max_t≠0); 11173 |
+| `--spec 4 --lookup-chain 2` | 8 | 4 | 3208-3211 poi 3215-3219: max(6, min(max(6,4)+2, 8)) = 8 |
+
+Bracci finali (Lead 07:04):
+1. **default `--spec 4`** — leggere il comando effettivo dell'engine (l'auto-tune può aver salvato un altro valore, es. 3) e la riga INFO;
+2. **`--spec 8 --mtp-max-t 4`** (MTP 4, lookup fino a 8, nessuna patch);
+3. **`--spec 6`** controllo;
+4. opzionale: **`--spec 4 --lookup-chain 2`** solo per riprodurre la misura degli autori (stessa S=8/S_mtp=4 del braccio 2 ma con
+   lookup *concatenato dopo* il draft MTP, generate.cpp:780-784, 942-944).
+
+Procedura: lookup on (default), coppie interleaved (A,B,A,B… per prompt), greedy, check di identità dell'output rispetto al
+riferimento T=1 (build LLAMAFILE OFF), una richiesta alla volta, tok/s per dominio (code/chat/edit), S e S_mtp registrati per braccio.
+Nella stessa sessione e sulla stessa macchina: P4 verify-only T=1..8 con binario Strata non modificato, più T=9..17 indicativo e s(12) con patch locale (sez. 2).
+
+**Regola pre-registrata:** GO per un valore se il miglioramento tok/s in code **o** edit ha CI95 > 0 e nessun dominio ha celle W
+(peggioramento con CI95 < 0); altrimenti neutro.
+
+**Prior (Scout, evidenza degli autori, non nostre misure):** strata_control/tune_knobs.py:170-172 rifiuta `--spec ≥ 6` ("wider
+speculative windows were 4% to 16% slower"), `--spec ≤ 2` su flash-next ("4% to 11% slower") e `--lookup-chain` ("3% to 8.5% slower").
+Hardware e prompt di quelle misure non sono noti: trattarli come ipotesi da battere per dominio, non come risultati.
+
+## 2. P4 s(T) su AMD (aggiornato 07:56 CET, steering Lead)
+Protocollo comune: verify-only, interleaved, ≥100 ripetizioni per T, CI95, stessa macchina e sessione di E-AMD-0.
+- **T = 1..8: binario Strata non modificato (7dd5cf18).** È il profilo reale e basta per E-AMD-0.
+- **T = 9..17: solo profilo indicativo llama.cpp**, marcato nei metadati `"kernel": "non kernel Strata"`, **non usato per decisioni**.
+- **Dato decisivo per H-LW (lookup a finestra lunga per code/edit): s(12)** misurato con una patch locale *solo kernel di verify* a
+  T=12 (costruita dalla mappa file di Scout; patch locale, nessun push). Regola: si procede alla patch completa se
+  **s(12)/s(8) < ~1.45**; altrimenti H-LW non procede. (soglia operativa per code/edit: vedi sez. 3, convenzioni Lead 08:06).
+- Riferimento secondario: **due finestre verify-8 consecutive** (costo s(8)+s(8') con il secondo verify sul contesto avanzato),
+  da registrare accanto a s(12).
+- Motivo della patch: il cap T=8 è nel codice: `strata::kernels::kVerifyMaxT = 8` (include/strata/kernels/verify_kernels.hpp:21),
+  `strata::spec::DraftPolicy::kMaxT = 8` (include/strata/spec/draft_policy.hpp:25; array `kMaxT + 1` alle righe 88, 90, 98),
+  `strata::kernels::cpu::MAXT = 8` (include/strata/kernels/cpu/expert.hpp:143; anche src/kernels/cpu/kq_avx2.cpp:28), e i
+  rimappaggi `min(…, 8)` in src/program/generate.cpp:3210 e 3218. Con grep non ho trovato un controllo esplicito `--spec > 8`, ma
+  i buffer sono dimensionati a 8: con 7dd5cf18 T > 8 non è raggiungibile.
+
+## 3. Convenzioni fissate dal Lead (25/10 08:06 CET)
+- **T è sempre in RIGHE di verify** (righe del batch di verifica, prima riga inclusa): T=12 = al massimo 11 token di lookup/draft.
+  Vale per s(T), per la patch a T=12 e per tutte le tabelle P4 di questo documento.
+- **Soglia di GO per H-LW su code/edit = 0.94 × break-even di tune rispetto al braccio (a')**, calcolato da Policy per il caso
+  lookup-11 (T=12 righe). Sostituisce la soglia fissa 1.35. Valori esatti e sha256 dell'addendum di Policy: sez. 6. Il rapporto ~1.45 della sez. 2 resta il criterio grezzo per avviare la patch completa.
+- **Braccio (a): usare s(12)/s(6)** (finestra dell'engine con lookup, S=6 per `--spec 4`, sez. 1), non s(12)/s(4).
+- **Confronto finale sul profilo s(T) AMD misurato a T = 6, 8 e 12** (6 e 8 con binario Strata non modificato, 12 con la patch locale
+  solo kernel di verify); nessuna decisione su valori interpolati né sul profilo indicativo T=9..17.
+- **resident_plan:** verificato a 12 righe (secondo il Lead; io non l'ho verificato nel codice); **13 righe: non noto**. Non pianificare
+  misure a T ≥ 13 con la patch finché non è verificato.
+
+## 4. Percorso di misura s(12)/s(8) (Scout, scout_patch_support.md §10.A righe 1039-1128, sha256 1fea5e1a648886f3b3b121707a483b4005a2e8ce90a0d5d7c03d434513114d6b; Lead 08:06 CET)
+- **Patch d'' = 12 righe di verify: draft MTP 3 + lookup fino a 11.** Oltre ai cap di sez. 2, anche i grafi MTP vanno ridimensionati
+  (verificato nel codice 7dd5cf18): include/strata/core/mtp.hpp:193 `round_exec_c_[9]`, :242 `prefill_exec_[9]`, :243
+  `prefill_dev_exec_[9]`, :249 `round_exec_[9]`; src/core/mtp.cpp:396 `native_q8_1_bytes((int)(NH*HD), 8)` (buffer a 8 righe).
+  Le copie in sycl/ esistono con gli stessi nomi file; per AMD/HIP verificare quale albero viene compilato.
+- **Comando:** `--spec 12 --suffix-draft 0 --spec-oracle <file>` con **`STRATA_SPEC_T_CYCLE=6,8,12`** (Lead 08:10: tutti e tre nella stessa sessione, binario patchato, così sono disponibili sia s(12)/s(8) sia s(12)/s(6)) e `STRATA_VERIFY_PROFILE=1`; leggere la
+  riga `window cost (ms/round)` (stampa in generate.cpp:16746-16749: `T<i>:<ms>(n=<round>)` per ogni T del ciclo). Verificati nel codice:
+  `--spec-oracle` (generate.cpp:2619), `STRATA_SPEC_T_CYCLE` (16386-16390, solo bench, off di default), `STRATA_VERIFY_PROFILE` (7144, 16751).
+- **Controlli obbligatori:**
+  1. s(6), s(8) e s(12) **tutti sul binario patchato**, alternati nella stessa sessione (è il ciclo T=6,8,12).
+  2. Regressione: s(1..8) patchato vs binario installato, a coppie alternate. Se s(8) patchato è significativamente più lento (CI95),
+     il guadagno di d'' si calcola con l's(8) **patchato**.
+  3. Parità greedy patchato vs installato a T ≤ 8 **prima di qualsiasi misura di tempo**; senza parità le misure non valgono.
+
+## 5. Expert mancati e guardia sul percorso CPU (Lead/Policy 08:09 CET)
+- **Expert mancati per round: da registrare.** Verificato nel codice 7dd5cf18: il contatore dell'engine è `drive.d.multi_misses`
+  (incrementato in src/core/expert_source.cpp:5209, `d.multi_misses += njobs`). L'output attuale **non lo dà per round**: è stampato
+  solo come media sull'intera run nella riga `verify window … CPU experts %.2f distinct / %.2f routed per layer`
+  (src/program/generate.cpp:16761-16767, delta `multi_misses - misses0` diviso per round × n_layers). `route_stats_report()`
+  (src/core/verify.cpp:2381, abilitato da STRATA_ROUTE_STATS) dà expert distinti per layer per larghezza T, non i miss, ed è limitato a
+  T ≤ 8 (loop `T <= 8`, buffer `9 * L * 8`): andrebbe ridimensionato anche lui per T=12.
+  **TODO:** nella patch, loggare per ogni round il delta di `drive.d.multi_misses` (prima/dopo il verify del round) insieme a T e al
+  tempo del round. Nessun altro contatore per-round è stato trovato; non usarne di non verificati.
+- **[SUPERATO dalla sez. 7, Lead 08:15: niente abort, split in blocchi ≤ 8]** Guardia di misura (approvata dal Lead): la patch di Policy fa abortire la run se un verify con n_tok > 8 raggiunge il percorso
+  expert CPU nativo (src/kernels/cpu/native_expert.cpp:262 `native_gu_rows`, :374 `native_down_rows`, verificati). **Ogni run abortita
+  è registrata come INVALIDA** (motivo e timestamp nel log), non rilanciata in silenzio.
+- **s(12)/s(8) e s(12)/s(6) riportati separatamente** per i round con 0 expert mancati e per quelli con > 0, oltre al valore complessivo.
+
+## 6. Regola finale H-LW (Lead, fissata prima dei dati AMD, 08:09 CET)
+Fonte: Policy, strata-policy/replay/results/v2/breakeven_dsecond/REPORT.md (sha256 a505947f8446d60ab62e70b0848171363ed70d7651841c22519b943adff95dc7),
+serie gate su tune, d'' = 12 righe (draft MTP 3 + lookup fino a 11). Tutti i rapporti s(·) sul **binario patchato, stessa sessione**.
+Soglie esatte: Policy, strata-policy/replay/results/v2/breakeven_dsecond/ADDENDUM_regola_HLW.md
+(sha256 abc3ad9f6019bd9b5c13ac0c391cae28cb7debb11f805d83f2ab5e19b9312a1b, verificato su disco 08:12 CET). Misura: `STRATA_SPEC_T_CYCLE=6,8,12`,
+binario patchato, stessa sessione (sez. 4).
+- **Se vince `--spec 8 --mtp-max-t 4` ((a′), T=8):** GO se **s(12)/s(8) ≤ 1.3645 in code OPPURE ≤ 1.3306 in edit**
+  (addendum righe 19-20: pareggio code 1.4516 [1.4146, 1.4889] → 1.3645161…; edit 1.4156 [1.3594, 1.4677] → 1.3306494…).
+- **Se vince il default `--spec 4` ((a), T=6):** GO se **s(12)/s(6) ≤ 1.7813 in code OPPURE ≤ 1.7114 in edit**
+  (addendum righe 30-31: pareggio code 1.8950 [1.8235, 1.9590] → 1.7813260…; edit 1.8206 [1.6987, 1.9213] → 1.7113677…).
+- Se vince `--spec 6`: nessuna soglia fissata dal Lead; TODO chiedere.
+- **Il GO autorizza solo la patch completa** (kShape riempita dal profilo s(T) misurato). **Verdetto finale = A/B live tok/s su AMD**
+  con il criterio di E-AMD-0 (CI95 > 0 in code o edit, nessuna cella W).
+- **Se il binario patchato rallenta s(8)** (controllo 2 di sez. 4): ricalcolare il pareggio con l's(8) patchato. Se rallenta anche la
+  configurazione di default, è un costo della patch e entra nel verdetto (A/B live patchato vs installato).
+- Questa sezione prevale sulle soglie indicative di sez. 2 (~1.45) e sez. 3.
+
+## 7. Patch di misura definitiva (Lead 08:15 CET) — prevale sulle sez. 4-5 dove diverge
+Fonte: Scout §10.A.1, /workspace/strata-plus/scout_patch_support.md righe 1130-1190 (sha256 a355968745031888fa1cc470cd768d762aaa6ec1d8cfda92c2fc44406b1808e5, verificato su disco).
+- **Nessun MTP caricato:** s(T) = costo del solo verify; il costo del draft è escluso (coperto dal margine 6% della soglia 0.94× e
+  dall'A/B live finale). Niente policy/kShape nella patch di misura.
+- **Cap:** `cpu::MAXT = 12` (oggi 8, include/strata/kernels/cpu/expert.hpp:143) e **`kFusedGrMaxT = 12` obbligatorio per Flash-Next**
+  (oggi 8, include/strata/kernels/fused_gr.hpp:68; usato in src/core/mtp.cpp:921, 1043), più i cap verify di sez. 2.
+- **Percorso CPU:** le finestre con nt > 8 vengono **divise in blocchi ≤ 8** in `run_split_multi` / `run_split_multi_native`
+  (chiamati da src/core/expert_source.cpp:5133-5134, 5178). Nessun abort: è una **"guardia di misura, conservativa"**, s(12) può
+  risultare **sovrastimato** (indicazione Lead/Scout, non misurata). Sostituisce l'abort di sez. 5.
+- **Contatore miss per T obbligatorio:** delta di `drive.d.multi_misses` (e `multi_entries`) attorno a `ver.run` per ogni round, con T
+  (vedi sez. 5); s(12)/s(8) e s(12)/s(6) riportati anche separati per round con 0 e con > 0 miss.
+- **Controlli:**
+  1. parità greedy binario patchato (12 righe) vs installato a T ≤ 8, **prima di qualsiasi tempo**;
+  2. **fallback OOM:** cercare nel log `not enough VRAM left for a %d-token verify window` (src/program/generate.cpp:16612-16617:
+     alla cattura del grafo in OOM la finestra scende a T-1, es. 12 → 11). Se compare per T=12 la **sessione è invalida per s(12)**;
+  3. il **primo round di ogni T è escluso** dal tempo (generate.cpp:16709, `t_cycle_seen[T]++ > 0`): verificato, nessuna esclusione
+     manuale aggiuntiva;
+  4. regressione s(1..8) e ciclo `STRATA_SPEC_T_CYCLE=6,8,12` come sez. 4.
+- **Controllo extra MTP (binario installato, T=8):** s(8) **con e senza `--mtp`** alternati, registrando VRAM libera e
+  `multi_misses`/`multi_entries`. Se la differenza è significativa (CI95):
+  - l's(12)/s(8) senza MTP del binario patchato è registrato come **bound ottimistico**, e
+  - **la misura va rifatta con `--mtp`**, il che richiede di reintrodurre i punti MTP della mappa §10.A: include/strata/core/mtp.hpp:193,
+    242-243, 249 (array grafo `[9]`); src/core/mtp.cpp:396 (buffer a 8 righe), 1371 e 1392 (`for T <= max_t_`), 1497-1499
+    (cattura prefill a `min(max_t_, n-c)`), 1575 (`mtp_catchup_all`); src/program/generate.cpp:5470 (`mtp_t = … kVerifyMaxT : o.spec`).
+    Righe verificate nel codice 7dd5cf18 (contenuto citato).
+
+## 8. Patch di misura = commit locale di Policy b557725 (Lead 08:24 CET)
+- Branch locale `strataplus-pt12-measure`, commit `b557725` ("STRATA+ P-T12 measure: verify a 12 righe solo per misurare s(12)/s(8)
+  (patch locale, non per produzione)"), presente nei worktree /workspace/strata-src, strata-policy/patchwork, strata-policy/pt12_worktree
+  (verificato con git log). Nessun push.
+- File in /workspace/strata-policy/patches/ (sha256 verificati su disco 08:26 CET):
+  - P_T12_measure.diff `ff167c8afdec889242ba904553d1e5c4a60e0bc617f189c569868529d9c68f1b`
+  - P_T12_MEASURE.md `defaff3ce98aba8e4c937e08815a24b26f2fe461b6a3b637ee212cf3e8020b05`
+  - P_T12_mtp_optional.diff (opzionale, per la rimisura con `--mtp` di sez. 7) `626a44edd7aad21bf9f3d28d6f9938aa2452398135ed41f8205b593e948fcf5c`
+- **Mai impostare `STRATA_HC_Q8`**: con T > 8 la patch fa exit(1) voluto (P_T12_MEASURE.md:110).
+- Stderr: controllare il fallback OOM a 11 righe (sez. 7, controllo 2).
+- **Kernel generici a T > 8:** alcuni kernel ricadono su percorsi generici (MMVQ packed q8/q6, native_mmvq_pair/il; verificati nel codice
+  7dd5cf18 i limiti `n_tok <= 8` in src/kernels/cuda/native_moe.cu:178 e `ncols > 8 → return false` in src/kernels/cuda/q8_sm60.cuh:121).
+  Registrare quale percorso è usato (log o profiler) e trattare s(12) come **conservativo**.
+- Leggere s(12)/s(8) insieme alla nuova riga **`window CPU miss/round`** aggiunta dalla patch (P_T12_measure.diff:353, stessi round della
+  riga `window cost (ms/round)`).
+- **Parità, due livelli:**
+  - **P1:** patchato vs installato alla stessa T in 1..8: output **bit-identici obbligatori**;
+  - **P2:** patchato a T=9 e T=12 vs patchato T=1: tasso di identità confrontato con quello dell'installato T=8 vs T=1 (a T=9 il blocco
+    da un solo token può arrotondare diversamente). T=9 va incluso in un **ciclo di sola parità** (non nei tempi).
+- **NO-GO vicino alla soglia:** prima di chiudere, misurare la quota di s(12) che passa dai kernel generici di fallback. Un NO-GO dovuto
+  al fallback ⇒ **"serve il kernel nativo a 12"**, non chiusura di H-LW.
+- **Patch completa:** le finestre con nt > 8 vanno divise in **blocchi bilanciati** (es. 12 = 6+6), non 8+1 / 8+4.
+
+## 9. Misura finale H-LW (Lead 08:31 CET) — prevale sulle sezioni precedenti dove diverge
+- **Rapporto di decisione = s(12) del binario patchato / s(8) del binario installato 7dd5cf1** (ramo (a′)); per il ramo (a):
+  **s(12) patchato / s(6) di 7dd5cf1**. Soglie: sez. 6.
+- Binario patchato: commit `b557725` (oggi l'ultimo del branch strataplus-pt12-measure, sopra 7dd5cf1, verificato con git log 08:33 CET)
+  **oppure il commit successore con case 7/8 → <8>**: registrare l'hash esatto del commit compilato.
+- **Alternanza:** i due binari in processi separati, blocchi ABAB…, stessa macchina e stessa sessione. Installato:
+  `STRATA_SPEC_T_CYCLE=6,8`; patchato: `STRATA_SPEC_T_CYCLE=6,8,12`. Stesso file oracolo (`--spec-oracle`), stessi seed e prompt.
+- **Regressione T=1..8:** coppie installato vs patchato, tolleranza **±1%**; ogni eccesso è registrato come **costo della patch**
+  nel verdetto (mia lettura, da confermare col Lead: sostituisce il "ricalcolo con s(8) patchato" di sez. 4/6 per la decisione: il rapporto usa s(8) installato).
+- **Build di misura: solo CLI** (`--spec 12 --suffix-draft 0 --spec-oracle <file>`). **Mai `--serve`** (Policy aggiunge una guardia);
+  **mai eseguire expert_multi_test** su questo build.
+- La riga `window CPU miss/round` = **somma per round su tutti i layer**.
+- [Risolto in sez. 10] TODO P_T12_MEASURE_v2.md; alle 08:33 CET in /workspace/strata-policy/patches/
+  c'è solo P_T12_MEASURE.md (defaff3c…, sez. 8).
+
+## 10. Binario di misura definitivo (Lead 08:43 CET) — stato: PRONTO, NON eseguibile sul box
+- **Commit `d6d4358`** ("STRATA+ P-T12 measure v2: T<=8 sulle istanze <8> di 7dd5cf1, --serve bloccato, stampa miss esplicita"),
+  branch `strataplus-pt12-measure`, worktree /workspace/strata-policy/pt12_worktree, sopra b557725 → 7dd5cf1 (verificato git log 08:44 CET).
+  È il "successore con case 7/8 → <8>" di sez. 9.
+- **sha256 verificati su disco:** P_T12_MEASURE_v2.md (/workspace/strata-policy/patches/) `c6806e76dd152f41def590fd59c67c386f305df4e8a48f03193f7ea837378817`;
+  `git diff 7dd5cf1..d6d4358` `d106c0445b00d0e2286605cbdcd0bf0a865ede39ddbd64b08e6a18915346359f`.
+- **Fallback OOM** nel binario patchato: src/program/generate.cpp:16622-16627 (verificato con `git show d6d4358:…`; messaggio stderr
+  `not enough VRAM left for a %d-token verify window`). Se compare per T=12: sessione invalida per s(12) (sez. 7).
+- **`--serve` bloccato:** la guardia esce con codice 2 (dichiarato da Policy/Lead).
+- **Riga miss** (P_T12_MEASURE_v2.md:18-19): `window CPU miss/round (sum over all layers; ...): T6:<miss>(ent=<voci>,rmiss=<n>,rnomiss=<n>) T8:… T12:…`;
+  `ent` = voci (token, expert) servite dalla CPU per round su tutti i layer, `rmiss`/`rnomiss` = round con/senza miss. Somma su tutti i layer.
+- **Stato:** pronto, **non eseguibile sul box** (nessuna GPU AMD); si esegue solo quando è disponibile l'hardware AMD. Nessun dato s(T) AMD
+  esiste a oggi: tutti i valori numerici di questo documento sono soglie o costanti di codice, non misure AMD.
+
+## 11. Condizioni di Scout su d6d4358 (Lead 08:49 CET)
+Fonte: /workspace/strata-plus/scout_patch_support.md §10.C "Revisione P-T12 v2 (d6d4358)" (dalla riga 1339), file con sha256
+`98de5f768de0400757d14da2574250dc49daaa89e753c114b12f4cfd2985d449` (verificato 08:50 CET). Nota: è un file che cresce; le citazioni di
+sez. 4 (sha 1fea5e1a…) e sez. 7 (sha a3559687…) si riferiscono a versioni precedenti dello stesso file.
+1. **Env della misura s(T): senza `STRATA_HC_PERSIST`, `STRATA_GR_V3`, `STRATA_GR_SPLIT`, `STRATA_HC_Q8`.** Motivo (Scout C7): il
+   self-check del persist cicla fino a 12 e `kernel_t` è nullptr per T > 8, quindi spegne il persist per tutti i T; (C8): GR_V3/GR_SPLIT
+   restano attivi su 12. **Registrare l'env completo di ogni run** (`/proc/<pid>/environ`, sez. 0). **Un segnale di persist attivo in
+   stderr ⇒ sessione non valida.** Alternativa: Policy limita il loop C7 a T ≤ 8 (nuovo commit da registrare come in sez. 9).
+2. **Prima di P1:** verificare dalla build che le istanze `<8>` del binario patchato abbiano registri/occupancy uguali a 7dd5cf1
+   (output del compilatore, es. `--save-temps` o resource usage per kernel). Differenze ⇒ registrarle prima dei tempi.
+3. **Nota C3:** il parity harness passa `max_group=0`, quindi le istanze `<8>` non hanno un test di parità proprio: le copre P1
+   (patchato vs installato bit-identici a T = 1..8, sez. 8).
+
+## 12. Gate obbligatorio prima di qualunque tempo s(12) (decisione Lead 08:49 CET)
+- **Binario di misura:** **commit successore di d6d4358, da fissare dopo OK di Scout sul delta** (Policy: fix C7 con self-check
+  limitato a T ≤ 8, parity harness con `max_group=8`, doc P_T12_MEASURE_v3.md). Hash e sha256 non ancora noti: TODO registrarli qui.
+  d6d4358 (sez. 10) non è più il binario di misura finale.
+- **Gate (tutti e tre devono passare):**
+  1. parità greedy **P1 e P2** (sez. 8), inclusi i casi che usano le istanze `<8>`;
+  2. registri/occupancy delle istanze `<8>` **uguali a 7dd5cf1**, verificati dalla build (sez. 11.2);
+  3. regressione **s(T ≤ 8) patchato vs 7dd5cf1 entro ±1%** (sez. 9).
+- **Se uno solo fallisce: nessun rapporto s(12)/s(8) o s(12)/s(6) viene letto** (i tempi T=12 eventualmente raccolti restano non letti
+  e marcati come tali).
+- La condizione di sez. 11.1 (niente `STRATA_HC_PERSIST`, `STRATA_GR_V3`, `STRATA_GR_SPLIT`, `STRATA_HC_Q8`) **resta anche dopo il fix
+  C7**, come seconda protezione.

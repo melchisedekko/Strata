@@ -1,0 +1,6 @@
+cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046  ./target-q4_k_m.gguf
+e1a77721fa97d412f121878223eec81fb4ae6f271e18f922d746711f67b344d1  ./draft-q8_0.gguf
+18c92228fc1498a02506f64593f7cc8cc02f406f732a217c6ba99ad1254d4f0b  ./qwen35-2b-mtp-q4_k_m.gguf
+ac7c9d7a1b3e3695bb3bd50f8ceaa97f9c93e99ccc3d3d1a620301b6dd6d3d86  ./qwen35-0.8b-mtp-q4_k_m.gguf
+c54f8b67069c70085b98440de696b44da8250250ac69a961b41133def876e262  ./qwen35-0.8b-mtp-q8_0.gguf
+bd1a351aa64e4ff139dc9ff365f923ddadd8915c11bc5e6edadc0132ccf3c84e  qwen35-2b-mtp-q8_0.gguf (unsloth/Qwen3.5-2B-MTP-GGUF@e05864f Qwen3.5-2B-Q8_0.gguf)

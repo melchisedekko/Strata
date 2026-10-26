@@ -1,0 +1,71 @@
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 7bafd68..5e4a5f4 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -16403,6 +16403,14 @@ int main(int argc, char** argv) {
+         std::vector<float> dwin((size_t) o.spec, 0.0f);   // the draft probabilities this round's window was chosen from
+         std::FILE* spec_trace = nullptr;
+         if (const char* tf = std::getenv("STRATA_SPEC_TRACE"); tf != nullptr && tf[0] != '\0') spec_trace = std::fopen(tf, "w");
++        // strata-plus (local patch): STRATA_PLUS_TRACE=<file.jsonl> - per round, ALL candidates (MTP at full depth
++        // o.spec-1 with probabilities, the SuffixDrafter lookup even when not chosen) and the target's tokens
++        std::FILE* plus_trace = nullptr;
++        if (const char* pf = std::getenv("STRATA_PLUS_TRACE"); pf != nullptr && pf[0] != '\0') plus_trace = std::fopen(pf, "a");
++        std::vector<int32_t> pl_mtp, pl_win, pl_sfx((size_t) std::max(o.spec, 2));
++        std::vector<float> pl_p;
++        int pl_k = 0, pl_match = 0, pl_chain = 0;
++        int64_t pl_pos = 0, pl_ctx = 0;
+         std::vector<double> t_cycle_ms((size_t) o.spec + 1, 0.0);
+         std::vector<int64_t> t_cycle_n((size_t) o.spec + 1, 0), t_cycle_seen((size_t) o.spec + 1, 0);
+         // plan v0.3 P6: with a native pack the first window is the last prompt token alone (it produces the first
+@@ -16583,6 +16591,15 @@ int main(int argc, char** argv) {
+             const int T_mtp = T;
+             T += chain_n;
+             const bool timed_round = !first_window;
++            // strata-plus (local patch, not upstream): snapshot every candidate of this round for STRATA_PLUS_TRACE
++            if (plus_trace != nullptr) {
++                pl_mtp.assign(drafts.begin(), drafts.begin() + (std::ptrdiff_t) (o.spec - 1));
++                pl_p.assign(dprob.begin(), dprob.begin() + (std::ptrdiff_t) (o.spec - 1));
++                pl_k = (o.suffix_draft > 0 && !first_window) ? sfx.propose(o.spec - 1, pl_sfx.data()) : 0;
++                pl_match = (o.suffix_draft > 0 && !first_window) ? sfx.last_match() : 0;
++                pl_win.assign(window.begin(), window.begin());   // filled below once the window is built
++                pl_chain = chain_n; pl_pos = (int64_t) produced.size() - 1; pl_ctx = p;
++            }
+             ++window_hist[(size_t) T];
+             if (p + T > o.max_context) {
+                 std::fprintf(stderr, "strata generate: ran out of context at position %lld\n", (long long) p);
+@@ -16706,6 +16723,27 @@ int main(int argc, char** argv) {
+                 for (int i = 0; i < o.spec - 1; ++i) std::fprintf(spec_trace, " %.4f", (double) dwin[(size_t) i]);
+                 std::fprintf(spec_trace, "\n");
+             }
++            if (plus_trace != nullptr) {   // strata-plus: one strataplus.v1 round row (raw; tools/annotate.py adds acc/cost_est)
++                std::fprintf(plus_trace, "{\"type\":\"round\",\"schema\":\"strataplus.v1\",\"r\":%lld,\"pos\":%lld,\"ctx_len\":%lld,"
++                             "\"source\":\"%s\",\"T\":%d,\"k_proposed\":%d,\"accepted\":%d,\"committed\":%d,\"ms_measured\":%.3f,\"proposal\":[",
++                             (long long) rounds, (long long) pl_pos, (long long) pl_ctx,
++                             T == 1 ? "none" : from_sfx ? "lookup" : pl_chain > 0 ? "chain" : use_mtp ? "mtp" : "oracle",
++                             T, T - 1, a, a + 1, round_ms);
++                for (int i = 1; i < T; ++i) std::fprintf(plus_trace, "%s%d", i > 1 ? "," : "", (int) window[(size_t) i]);
++                std::fprintf(plus_trace, "],\"cand\":{\"mtp\":{\"tokens\":[");
++                for (size_t i = 0; i < pl_mtp.size(); ++i) std::fprintf(plus_trace, "%s%d", i ? "," : "", (int) pl_mtp[i]);
++                std::fprintf(plus_trace, "],\"probs\":[");
++                for (size_t i = 0; i < pl_p.size(); ++i) std::fprintf(plus_trace, "%s%.4f", i ? "," : "", (double) pl_p[i]);
++                std::fprintf(plus_trace, "]},\"lookup\":");
++                if (pl_k > 0) {
++                    std::fprintf(plus_trace, "{\"tokens\":[");
++                    for (int i = 0; i < pl_k; ++i) std::fprintf(plus_trace, "%s%d", i ? "," : "", (int) pl_sfx[(size_t) i]);
++                    std::fprintf(plus_trace, "],\"match\":%d}", pl_match);
++                } else std::fprintf(plus_trace, "null");
++                std::fprintf(plus_trace, "},\"target_tokens\":[");
++                for (int i = 0; i <= a; ++i) std::fprintf(plus_trace, "%s%d", i ? "," : "", (int) outv[(size_t) i]);
++                std::fprintf(plus_trace, "],\"policy\":\"draft_policy@7dd5cf18%s\"}\n", spec_cost ? "+spec_cost" : "");
++            }
+             if (!t_cycle.empty() && timed_round && T <= o.spec && t_cycle_seen[(size_t) T]++ > 0) {
+                 t_cycle_ms[(size_t) T] += round_ms;
+                 ++t_cycle_n[(size_t) T];
+@@ -16724,6 +16762,7 @@ int main(int argc, char** argv) {
+         }
+         if (hashes != nullptr) std::fclose(hashes);
+         if (spec_trace != nullptr) std::fclose(spec_trace);
++        if (plus_trace != nullptr) std::fclose(plus_trace);
+         std::printf("%-24s %lld rounds of %d, drafts accepted %lld of %lld (%.3f), %.2f tokens per round\n",
+                     "speculation", (long long) rounds, o.spec, (long long) drafts_ok, (long long) drafts_total,
+                     drafts_total > 0 ? (double) drafts_ok / (double) drafts_total : 0.0,

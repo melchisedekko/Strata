@@ -1,0 +1,95 @@
+{
+ "name": "run_lookup_rule",
+ "written_at_CET": "2026-10-25 07:00:30",
+ "status": "scritto PRIMA di qualunque calcolo della regola; include le aggiunte A e B (steering Lead 06:59 CET) perche' il file non era ancora scritto",
+ "lead_rule_verbatim": "Quando c'è un match di lookup, la regola propone min(lunghezza del match, 16) token; altrimenti usa la policy attuale col default installato. Calcola l'AL reale accanto all'oracolo, nelle tre colonne: installata, T≤8 e 16.",
+ "precisazioni_verbatim_utente": [
+  "\"match esiste\" = il SuffixDrafter di produzione (sd_scan, stessi parametri dei report precedenti) restituisce un candidato non vuoto alla posizione;",
+  "\"lunghezza del match\" = la lunghezza del candidato proposto dal drafter, NON l'accettazione rispetto a y (non usare y per decidere);",
+  "per ogni colonna il candidato è tagliato al tetto di lookup della colonna: installata: lookup ≤5 token, MTP 3 draft; T≤8: lookup ≤7, MTP 7; 16: lookup ≤16, MTP 7;",
+  "il ramo \"altrimenti\" usa la policy attuale con il default installato, cioè MTP con --spec-min-p 0.5 come nel modello di default di holdout_v11_speccost_vs_default.py (6809946d); nella colonna installata con il tetto MTP di 3 draft, nelle altre con quello della colonna;",
+  "AL riportato in due varianti: con il gate del motore sbuf[0]==drafts[0] (generate.cpp L14899; se il gate fallisce, si usa il ramo MTP) e senza gate;",
+  "accettazione = lcp(proposta, y[p:...]);",
+  "metriche: AL per dominio e split (tune e holdout v1.1), IC95 bootstrap, quota dell'oracolo catturata, ΔAL della regola fra le colonne."
+ ],
+ "aggiunte_lead_0659_verbatim_sostanza": {
+  "A": "Colonna aggiuntiva lookup12 (MTP 7, lookup ≤12), con la stessa regola tagliata a 12, accanto all'oracolo (d) di ceiling_installed_cfg. Le colonne diventano: installata, T≤8, 12 e 16.",
+  "B": [
+   "rho di pareggio: dato PARAMETRICO, non misurato, etichettato cosi'.",
+   "Costo per round: s(T)=1+rho(T-1), T = 1 + numero di token proposti nel round (righe di verify effettive). Draft MTP e lookup a costo zero (limite da scrivere).",
+   "Metro: sum(token accettati+1) / sum(s(T_round)), per dominio e split.",
+   "Per (b), (d), (c), oracolo e regola (con e senza gate): rho* sopra il quale la colonna smette di battere (a) installata nel metro. Bisezione o griglia fine rho in [0,2]. Se non smette mai: '>2'; se non batte mai (a): 'mai'.",
+   "rho* con IC95 bootstrap sulle richieste se fattibile in pochi secondi, altrimenti solo il punto, dichiarato.",
+   "rho* anche come s(16)/s(1)=1+15rho* e s(8)/s(1)=1+7rho*.",
+   "Contesto (Scout @7dd5cf1): tune_knobs.py L170 scarta --spec >=6, motivo 'wider speculative windows were 4% to 16% slower', hardware e dominio non dichiarati; --spec installato = 4 (setup.py L9420); tune-values.ts L16 solo commento.",
+   "Non calcolare altro (replay allineato a Bench in attesa dei metadati)."
+  ]
+ },
+ "columns": {
+  "a_installata": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 5
+  },
+  "b_T8": {
+   "mtp_max_drafts": 7,
+   "lookup_max_tokens": 7
+  },
+  "d_lookup12": {
+   "mtp_max_drafts": 7,
+   "lookup_max_tokens": 12
+  },
+  "c_lookup16": {
+   "mtp_max_drafts": 7,
+   "lookup_max_tokens": 16
+  }
+ },
+ "implementation_fixed_before_numbers": {
+  "lookup": "NativeSuffixDrafter(min_match 3, max_match 64) + append(prompt_ids) + sd_scan(y, max_k=16, want_tokens) fresh per request = ceiling_installed_cfg. Candidate at column cap L = first min(k16, L) tokens (SuffixDrafter::propose copies hist sequentially up to max_k, suffix_drafter.cpp L84: the max_k=L proposal is the prefix of the max_k=16 one).",
+  "match_exists": "k16[i] > 0 (k = proposal length returned by sd_scan); y is NOT used for the decision",
+  "rule_lookup_branch": "proposed L_i = min(k16[i], L_col); T = min(1 + L_i, n - i); accepted a = min(acc16[i], T - 1) (= lcp(proposal, y[i:]) truncated)",
+  "gate": "with_gate: lookup branch only if lk_tok16[i][0] == mtp_tok[i][0] (trace MTP first draft = drafts[0]); otherwise MTP branch. no_gate: lookup branch whenever k16[i] > 0",
+  "rule_else_branch": "= DefaultMinP of holdout_v11_speccost_vs_default.py without the lookup part: run = leading mtp_p[i] >= 0.5; T = min(S_mtp, 1 + run), S_mtp = mtp_max_drafts + 1; T = min(T, n - i); a = min(mtp_acc[i], T - 1) (= sim2.acc_of)",
+  "no_DraftPolicy": "the rule replaces DraftPolicy::choose (lookup taken whenever a (gated) match exists); first window (L14889) not modelled, as in all previous replays",
+  "oracle": "= ceiling_installed_cfg walk exactly (a = min(max(min(mtp_acc,mtp_cap), min(acc16,L)), n-i-1), tie -> lookup); its AL must reproduce ceiling_installed_cfg.json bit-for-bit (assert). Oracle T for the cost metric = 1 + proposal length of the winning source: lookup winner -> min(k16, L); MTP winner -> mtp_max_drafts (full chain, no min_p); then min(T, n-i)",
+  "AL": "sum tokens / sum rounds per domain/split; round yields a+1 tokens",
+  "bootstrap": "B=2000, seed 0, resampling sessions (= requests in v1.1), ratio of sums, percentile IC95",
+  "capture": "rule AL / oracle AL, same column, same variant; IC95 bootstrap",
+  "delta_rule_between_columns": "b vs a, d vs a, c vs a, c vs b, d vs b; per variant (gate / no gate); IC95",
+  "lookup_share": "share of rounds where the rule takes the lookup branch, mean (a+1) on those rounds; plus share of teacher-forced positions with k16>0 and with k16>0 & gate pass",
+  "rho_star": {
+   "metric": "M(rho) = sum(a+1) / sum(1 + rho*(T-1)) over rounds",
+   "comparison_base": "like-for-like with (a): oracle(x) vs oracle(a); rule-with-gate(x) vs rule-with-gate(a); rule-no-gate(x) vs rule-no-gate(a)",
+   "search": "grid rho in [0,2] step 0.0005 then bisection (40 steps) on the first sign change of M_x/M_a - 1; '>2' if M_x > M_a on the whole grid; 'mai' if M_x <= M_a at rho=0",
+   "ci": "bootstrap B=2000 seed 0 on requests, rho* per replicate on the same grid (+bisection); '>2' replicates counted as +inf, 'mai' as 0; percentile IC95; if runtime is not a few seconds, point only (declared)",
+   "s_ratios": "s(16)/s(1) = 1 + 15 rho*, s(8)/s(1) = 1 + 7 rho*",
+   "label": "PARAMETRICO, non misurato"
+  }
+ },
+ "not_computed": [
+  "rapporto s(16)/s(8) di pareggio (in attesa del si' del Lead)",
+  "replay allineato alla run live di Bench (in attesa dei metadati)",
+  "sorgenti terze"
+ ],
+ "inputs_sha256": {
+  "traces/v1.1/tf_d7_p30.jsonl": "87efe507324b2a79b89c21a6736f1478094bf53385d9471694dc71b291d9abfa",
+  "traces/v1.1/holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "traces/v1.1/holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "traces/v1.1/holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "replay/native/libstrata_spec_capi.so": "8fb27b0d1ca6bfeb58d2e9a1a45d28cc779f1feb7ef1662b2eb6d524608b055b",
+  "replay/strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40",
+  "replay/strata_sim/native.py": "6bc1af8e4987ce0384a3eb42214471fd24859251ff7c5ddb54da94ccd049a758",
+  "replay/holdout_v11_speccost_vs_default.py": "6809946d6cba46296ba819b047b2e8fae08c307ff38392c6e4c1e9f2a27b1f48",
+  "replay/ceiling_installed_cfg.py": "a33d13c48a71494c587abb51359d8951e3005875550ab544722f7a6f21b4d6ce",
+  "results/v2/ceiling_installed_cfg/ceiling_installed_cfg.json": "da1f9a1f1bb420740ea955c0c8fad7113dd64d8f3f00e80f91fd51826b6849c0"
+ },
+ "script": "replay/lookup_rule_al.py (nuovo)",
+ "outdir": "replay/results/v2/lookup_rule_al/",
+ "cautela_lead": "l'AL per verifica non e' il metro; un match lungo oggi viene consumato in due round da 8; il dato che decide e' s(16) contro 2*s(8) su AMD.",
+ "limiti": [
+  "proxy 2B",
+  "uscite al massimo 128 token",
+  "molta copia dal prompt",
+  "kVerifyMaxT=8 nel motore",
+  "rho*: draft MTP e lookup a costo zero, s(T) lineare parametrico"
+ ]
+}

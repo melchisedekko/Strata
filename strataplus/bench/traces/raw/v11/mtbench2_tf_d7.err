@@ -1,0 +1,24 @@
+0.01.067.260 I cmn          init: llama threadpool init, n_threads = 6
+0.01.195.687 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=tf
+[mtbench2_tf_d7] rep 0 mtbench2-86#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17648 ms
+[mtbench2_tf_d7] rep 0 mtbench2-86#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17133 ms
+[mtbench2_tf_d7] rep 0 mtbench2-87#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17199 ms
+[mtbench2_tf_d7] rep 0 mtbench2-87#t1: 31 tok, 31 verify + 0 replay rounds, acc 0/0, decode 4493 ms
+[mtbench2_tf_d7] rep 0 mtbench2-90#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17328 ms
+[mtbench2_tf_d7] rep 0 mtbench2-90#t1: 90 tok, 90 verify + 0 replay rounds, acc 0/0, decode 12163 ms
+[mtbench2_tf_d7] rep 0 mtbench2-91#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17229 ms
+[mtbench2_tf_d7] rep 0 mtbench2-91#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 41736 ms
+[mtbench2_tf_d7] rep 0 mtbench2-98#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 20738 ms
+[mtbench2_tf_d7] rep 0 mtbench2-98#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16989 ms
+[mtbench2_tf_d7] rep 0 mtbench2-124#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16824 ms
+[mtbench2_tf_d7] rep 0 mtbench2-124#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16839 ms
+[mtbench2_tf_d7] rep 0 mtbench2-126#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17165 ms
+[mtbench2_tf_d7] rep 0 mtbench2-126#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16659 ms
+[mtbench2_tf_d7] rep 0 mtbench2-130#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16665 ms
+[mtbench2_tf_d7] rep 0 mtbench2-130#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16699 ms
+[mtbench2_tf_d7] rep 0 mtbench2-137#t0: 86 tok, 86 verify + 0 replay rounds, acc 0/0, decode 11222 ms
+[mtbench2_tf_d7] rep 0 mtbench2-137#t1: 25 tok, 25 verify + 0 replay rounds, acc 0/0, decode 3252 ms
+[mtbench2_tf_d7] rep 0 mtbench2-142#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 17034 ms
+[mtbench2_tf_d7] rep 0 mtbench2-142#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16617 ms
+g9_violations=0

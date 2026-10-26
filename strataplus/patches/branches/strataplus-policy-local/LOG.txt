@@ -1,0 +1,22 @@
+e467f6e2fd6f3cb8bcfd4bfba2d28c3105baa9fd 2026-10-25 04:45:45 +0100 Strata Policy
+    Strata+ P6: docs for the JointGate engine hook (syntax-checked, not linked)
+079ecdd40d6e14f38db7577119c942529cac17b2 2026-10-25 04:44:13 +0100 Strata Policy
+    Strata+ P6: JointGate engine hook (solo sequenza singola, STRATA_SPEC_JOINT=1)
+2962494a908dde1f73a7a976e22a7a0a38acee9d 2026-10-25 04:33:11 +0100 Bolla (coordinator)
+    P5 local FINAL: arm A (gate_v2 tmax=5, skip, no decay) = JointGate defaults for STRATA_SPEC_JOINT=1 (Strata Lead decision 25/10); enabled_from_env(); arm-A defaults test; LIMITS in headers/docs. No env var: upstream 7dd5cf18 behaviour.
+051326aa2931e04a9fbdd226f6592cf66e53516e 2026-10-25 02:07:08 +0100 Bolla (coordinator)
+    P5 local: revert MTP hazard decay (Strata Lead: round-2 arm, not a fix); keep (a) bounds, (b) seed_costs, (d) remaining()
+39eae401c1c1bfce1ef2bc5676d94b1062c660a6 2026-10-25 02:03:53 +0100 Bolla (coordinator)
+    P5 local: Scout fixes (a) tmax/T bounds clamp + test tmax=8/T=8, (b) seed_costs for frozen, (c) MTP hazard decay 0.999, (d) remaining() with max_context; scope: single sequence only (no batch_step/BGEN)
+4e381d7da193a3a36e50928a7990a57ca0646e6a 2026-10-25 02:06:58 +0200 Bolla (coordinator)
+    P5 local: CostRLS fix (monotone clamp only on untried rows, optimistic interpolation, non-negative per-token costs)
+28816cdc800ecc9a3851b87961e1721df127124f 2026-10-25 01:45:35 +0200 local
+    P5 local
+8d4e25b23d28e98268a4e2b0bb795daae20e1e77 2026-10-25 01:42:32 +0200 local
+    P1 local
+9c1f413fdd34a364c7d2b7ad07bd48cc33edab43 2026-10-25 01:41:34 +0200 local
+    P4 local
+7e08ff152769355a3cf82f787335ba555de835eb 2026-10-25 01:39:25 +0200 local
+    P3 local
+7a6309a23a9e24b078e4ea7e7d26705d2cf0a4af 2026-10-25 01:38:35 +0200 local
+    P2 local

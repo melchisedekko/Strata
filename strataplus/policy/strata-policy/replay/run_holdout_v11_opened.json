@@ -1,0 +1,11 @@
+{
+ "opened_at": "2026-10-25 04:26:21 CET (UTC+1)",
+ "files_sha256_at_open": {
+  "holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef"
+ },
+ "frozen_params_v3_sha256": "37bf1996217dd4ee697e753b9ef31082c49a9904f0fe393d0c5d4968cf698e9c",
+ "script": "replay/holdout_v11.py",
+ "script_sha256": "a84fe2f8c6b31a7b9195841eff2cc0bf0cb0410b8cdf3a66c63b76c860b08017"
+}

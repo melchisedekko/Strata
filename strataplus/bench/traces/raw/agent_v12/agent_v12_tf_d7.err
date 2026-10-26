@@ -1,0 +1,27 @@
+0.01.479.025 I cmn          init: llama threadpool init, n_threads = 6
+0.01.690.856 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=tf
+[agent_v12_tf_d7] rep 0 agent_v12-server-option#t0: 63 tok, 63 verify + 0 replay rounds, acc 0/0, decode 9285 ms
+[agent_v12_tf_d7] rep 0 agent_v12-server-option#t1: 45 tok, 45 verify + 0 replay rounds, acc 0/0, decode 8077 ms
+[agent_v12_tf_d7] rep 0 agent_v12-server-option#t2: 53 tok, 53 verify + 0 replay rounds, acc 0/0, decode 11678 ms
+[agent_v12_tf_d7] rep 0 agent_v12-server-option#t3: 40 tok, 40 verify + 0 replay rounds, acc 0/0, decode 7086 ms
+[agent_v12_tf_d7] rep 0 agent_v12-server-option#t4: 77 tok, 77 verify + 0 replay rounds, acc 0/0, decode 20205 ms
+[agent_v12_tf_d7] rep 0 agent_v12-expert-cache#t0: 53 tok, 53 verify + 0 replay rounds, acc 0/0, decode 6958 ms
+[agent_v12_tf_d7] rep 0 agent_v12-expert-cache#t1: 61 tok, 61 verify + 0 replay rounds, acc 0/0, decode 9148 ms
+[agent_v12_tf_d7] rep 0 agent_v12-expert-cache#t2: 56 tok, 56 verify + 0 replay rounds, acc 0/0, decode 9396 ms
+[agent_v12_tf_d7] rep 0 agent_v12-expert-cache#t3: 54 tok, 54 verify + 0 replay rounds, acc 0/0, decode 8947 ms
+[agent_v12_tf_d7] rep 0 agent_v12-expert-cache#t4: 54 tok, 54 verify + 0 replay rounds, acc 0/0, decode 11526 ms
+[agent_v12_tf_d7] rep 0 agent_v12-installer-fr#t0: 62 tok, 62 verify + 0 replay rounds, acc 0/0, decode 14198 ms
+[agent_v12_tf_d7] rep 0 agent_v12-installer-fr#t1: 81 tok, 81 verify + 0 replay rounds, acc 0/0, decode 11985 ms
+[agent_v12_tf_d7] rep 0 agent_v12-installer-fr#t2: 69 tok, 69 verify + 0 replay rounds, acc 0/0, decode 11484 ms
+[agent_v12_tf_d7] rep 0 agent_v12-installer-fr#t3: 73 tok, 73 verify + 0 replay rounds, acc 0/0, decode 12660 ms
+[agent_v12_tf_d7] rep 0 agent_v12-cuda-kernel#t0: 56 tok, 56 verify + 0 replay rounds, acc 0/0, decode 8177 ms
+[agent_v12_tf_d7] rep 0 agent_v12-cuda-kernel#t1: 84 tok, 84 verify + 0 replay rounds, acc 0/0, decode 16792 ms
+[agent_v12_tf_d7] rep 0 agent_v12-cuda-kernel#t2: 52 tok, 52 verify + 0 replay rounds, acc 0/0, decode 10627 ms
+[agent_v12_tf_d7] rep 0 agent_v12-cuda-kernel#t3: 58 tok, 58 verify + 0 replay rounds, acc 0/0, decode 12028 ms
+[agent_v12_tf_d7] rep 0 agent_v12-tokenizer-fr#t0: 83 tok, 83 verify + 0 replay rounds, acc 0/0, decode 12322 ms
+[agent_v12_tf_d7] rep 0 agent_v12-tokenizer-fr#t1: 83 tok, 83 verify + 0 replay rounds, acc 0/0, decode 12865 ms
+[agent_v12_tf_d7] rep 0 agent_v12-tokenizer-fr#t2: 74 tok, 74 verify + 0 replay rounds, acc 0/0, decode 14373 ms
+[agent_v12_tf_d7] rep 0 agent_v12-tokenizer-fr#t3: 59 tok, 59 verify + 0 replay rounds, acc 0/0, decode 11371 ms
+[agent_v12_tf_d7] rep 0 agent_v12-tokenizer-fr#t4: 80 tok, 80 verify + 0 replay rounds, acc 0/0, decode 16131 ms
+g9_violations=0

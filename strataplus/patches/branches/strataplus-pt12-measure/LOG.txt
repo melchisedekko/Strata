@@ -1,0 +1,6 @@
+e441f3a1338075889b3b96132ae86ad8688263ce 2026-10-25 08:51:22 +0100 Bolla (coordinator)
+    STRATA+ P-T12 measure v3: self-check STRATA_HC_PERSIST a T <= 8 (C7), parity s2 grouped con max_group = 8
+d6d4358fc64ef9457e893f60e634c5432d38f7a9 2026-10-25 08:40:07 +0100 Bolla (coordinator)
+    STRATA+ P-T12 measure v2: T<=8 sulle istanze <8> di 7dd5cf1, --serve bloccato, stampa miss esplicita
+b557725ff7bd3e528c5aa70ab5c013a2add89475 2026-10-25 08:20:56 +0100 Bolla (coordinator)
+    STRATA+ P-T12 measure: verify a 12 righe solo per misurare s(12)/s(8) (patch locale, non per produzione)

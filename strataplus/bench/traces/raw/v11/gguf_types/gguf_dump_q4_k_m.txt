@@ -1,0 +1,389 @@
+* File is LITTLE endian, script is running on a LITTLE endian host.
+* Dumping 51 key/value pair(s)
+      1: UINT32     |        1 | GGUF.version = 3
+      2: UINT64     |        1 | GGUF.tensor_count = 335
+      3: UINT64     |        1 | GGUF.kv_count = 48
+      4: STRING     |        1 | general.architecture = 'qwen35'
+      5: STRING     |        1 | general.type = 'model'
+      6: STRING     |        1 | general.name = 'Qwen3.5-2B'
+      7: STRING     |        1 | general.basename = 'Qwen3.5-2B'
+      8: STRING     |        1 | general.quantized_by = 'Unsloth'
+      9: STRING     |        1 | general.size_label = '2B'
+     10: STRING     |        1 | general.license = 'apache-2.0'
+     11: STRING     |        1 | general.license.link = 'https://huggingface.co/Qwen/Qwen3.5-2B/blob/main/LICENSE'
+     12: STRING     |        1 | general.repo_url = 'https://huggingface.co/unsloth'
+     13: UINT32     |        1 | general.base_model.count = 1
+     14: STRING     |        1 | general.base_model.0.name = 'Qwen3.5 2B'
+     15: STRING     |        1 | general.base_model.0.organization = 'Qwen'
+     16: STRING     |        1 | general.base_model.0.repo_url = 'https://huggingface.co/Qwen/Qwen3.5-2B'
+     17: [STRING]   |        2 | general.tags = ['unsloth', 'image-text-to-text']
+     18: UINT32     |        1 | qwen35.block_count = 25
+     19: UINT32     |        1 | qwen35.context_length = 262144
+     20: UINT32     |        1 | qwen35.embedding_length = 2048
+     21: UINT32     |        1 | qwen35.feed_forward_length = 6144
+     22: UINT32     |        1 | qwen35.attention.head_count = 8
+     23: UINT32     |        1 | qwen35.attention.head_count_kv = 2
+     24: [INT32]    |        4 | qwen35.rope.dimension_sections = [11, 11, 10, 0]
+     25: FLOAT32    |        1 | qwen35.rope.freq_base = 10000000.0
+     26: FLOAT32    |        1 | qwen35.attention.layer_norm_rms_epsilon = 9.999999974752427e-07
+     27: UINT32     |        1 | qwen35.attention.key_length = 256
+     28: UINT32     |        1 | qwen35.attention.value_length = 256
+     29: UINT32     |        1 | qwen35.ssm.conv_kernel = 4
+     30: UINT32     |        1 | qwen35.ssm.state_size = 128
+     31: UINT32     |        1 | qwen35.ssm.group_count = 16
+     32: UINT32     |        1 | qwen35.ssm.time_step_rank = 16
+     33: UINT32     |        1 | qwen35.ssm.inner_size = 2048
+     34: UINT32     |        1 | qwen35.full_attention_interval = 4
+     35: UINT32     |        1 | qwen35.rope.dimension_count = 64
+     36: UINT32     |        1 | qwen35.nextn_predict_layers = 1
+     37: STRING     |        1 | tokenizer.ggml.model = 'gpt2'
+     38: STRING     |        1 | tokenizer.ggml.pre = 'qwen35'
+     39: [STRING]   |   248320 | tokenizer.ggml.tokens = ['!', '"', '#', '$', '%', '&', ...]
+     40: [INT32]    |   248320 | tokenizer.ggml.token_type = [1, 1, 1, 1, 1, 1, ...]
+     41: [STRING]   |   247587 | tokenizer.ggml.merges = ['Ġ Ġ', 'ĠĠ ĠĠ', 'i n', 'Ġ t', 'ĠĠĠĠ ĠĠĠĠ', 'e r', ...]
+     42: UINT32     |        1 | tokenizer.ggml.eos_token_id = 248046
+     43: UINT32     |        1 | tokenizer.ggml.padding_token_id = 248055
+     44: BOOL       |        1 | tokenizer.ggml.add_bos_token = False
+     45: STRING     |        1 | tokenizer.chat_template = '{%- set image_count = namespace(value=0) %}\n{%- set video...'
+     46: UINT32     |        1 | general.quantization_version = 2
+     47: UINT32     |        1 | general.file_type = 15
+     48: STRING     |        1 | quantize.imatrix.file = 'Qwen3.5-2B-GGUF/imatrix_unsloth.gguf'
+     49: STRING     |        1 | quantize.imatrix.dataset = 'unsloth_calibration_Qwen3.5-2B.txt'
+     50: UINT32     |        1 | quantize.imatrix.entries_count = 186
+     51: UINT32     |        1 | quantize.imatrix.chunks_count = 77
+* Dumping 335 tensor(s)
+      1:       2048 |  2048,     1,     1,     1 | F32     | output_norm.weight
+      2:  508559360 |  2048, 248320,     1,     1 | Q6_K    | token_embd.weight
+      3:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.0.attn_gate.weight
+      4:       2048 |  2048,     1,     1,     1 | F32     | blk.0.attn_norm.weight
+      5:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.0.attn_qkv.weight
+      6:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.0.ffn_down.weight
+      7:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.0.ffn_gate.weight
+      8:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.0.ffn_up.weight
+      9:       2048 |  2048,     1,     1,     1 | F32     | blk.0.post_attention_norm.weight
+     10:         16 |    16,     1,     1,     1 | F32     | blk.0.ssm_a
+     11:      32768 |  2048,    16,     1,     1 | F32     | blk.0.ssm_alpha.weight
+     12:      32768 |  2048,    16,     1,     1 | F32     | blk.0.ssm_beta.weight
+     13:      24576 |     4,  6144,     1,     1 | F32     | blk.0.ssm_conv1d.weight
+     14:         16 |    16,     1,     1,     1 | F32     | blk.0.ssm_dt.bias
+     15:        128 |   128,     1,     1,     1 | F32     | blk.0.ssm_norm.weight
+     16:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.0.ssm_out.weight
+     17:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.1.attn_gate.weight
+     18:       2048 |  2048,     1,     1,     1 | F32     | blk.1.attn_norm.weight
+     19:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.1.attn_qkv.weight
+     20:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.1.ffn_down.weight
+     21:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.1.ffn_gate.weight
+     22:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.1.ffn_up.weight
+     23:       2048 |  2048,     1,     1,     1 | F32     | blk.1.post_attention_norm.weight
+     24:         16 |    16,     1,     1,     1 | F32     | blk.1.ssm_a
+     25:      32768 |  2048,    16,     1,     1 | F32     | blk.1.ssm_alpha.weight
+     26:      32768 |  2048,    16,     1,     1 | F32     | blk.1.ssm_beta.weight
+     27:      24576 |     4,  6144,     1,     1 | F32     | blk.1.ssm_conv1d.weight
+     28:         16 |    16,     1,     1,     1 | F32     | blk.1.ssm_dt.bias
+     29:        128 |   128,     1,     1,     1 | F32     | blk.1.ssm_norm.weight
+     30:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.1.ssm_out.weight
+     31:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.2.attn_gate.weight
+     32:       2048 |  2048,     1,     1,     1 | F32     | blk.2.attn_norm.weight
+     33:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.2.attn_qkv.weight
+     34:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.2.ffn_down.weight
+     35:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.2.ffn_gate.weight
+     36:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.2.ffn_up.weight
+     37:       2048 |  2048,     1,     1,     1 | F32     | blk.2.post_attention_norm.weight
+     38:         16 |    16,     1,     1,     1 | F32     | blk.2.ssm_a
+     39:      32768 |  2048,    16,     1,     1 | F32     | blk.2.ssm_alpha.weight
+     40:      32768 |  2048,    16,     1,     1 | F32     | blk.2.ssm_beta.weight
+     41:      24576 |     4,  6144,     1,     1 | F32     | blk.2.ssm_conv1d.weight
+     42:         16 |    16,     1,     1,     1 | F32     | blk.2.ssm_dt.bias
+     43:        128 |   128,     1,     1,     1 | F32     | blk.2.ssm_norm.weight
+     44:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.2.ssm_out.weight
+     45:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.3.attn_k.weight
+     46:        256 |   256,     1,     1,     1 | F32     | blk.3.attn_k_norm.weight
+     47:       2048 |  2048,     1,     1,     1 | F32     | blk.3.attn_norm.weight
+     48:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.3.attn_output.weight
+     49:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.3.attn_q.weight
+     50:        256 |   256,     1,     1,     1 | F32     | blk.3.attn_q_norm.weight
+     51:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.3.attn_v.weight
+     52:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.3.ffn_down.weight
+     53:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.3.ffn_gate.weight
+     54:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.3.ffn_up.weight
+     55:       2048 |  2048,     1,     1,     1 | F32     | blk.3.post_attention_norm.weight
+     56:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.4.attn_gate.weight
+     57:       2048 |  2048,     1,     1,     1 | F32     | blk.4.attn_norm.weight
+     58:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.4.attn_qkv.weight
+     59:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.4.ffn_down.weight
+     60:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.4.ffn_gate.weight
+     61:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.4.ffn_up.weight
+     62:       2048 |  2048,     1,     1,     1 | F32     | blk.4.post_attention_norm.weight
+     63:         16 |    16,     1,     1,     1 | F32     | blk.4.ssm_a
+     64:      32768 |  2048,    16,     1,     1 | F32     | blk.4.ssm_alpha.weight
+     65:      32768 |  2048,    16,     1,     1 | F32     | blk.4.ssm_beta.weight
+     66:      24576 |     4,  6144,     1,     1 | F32     | blk.4.ssm_conv1d.weight
+     67:         16 |    16,     1,     1,     1 | F32     | blk.4.ssm_dt.bias
+     68:        128 |   128,     1,     1,     1 | F32     | blk.4.ssm_norm.weight
+     69:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.4.ssm_out.weight
+     70:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.5.attn_gate.weight
+     71:       2048 |  2048,     1,     1,     1 | F32     | blk.5.attn_norm.weight
+     72:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.5.attn_qkv.weight
+     73:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.5.ffn_down.weight
+     74:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.5.ffn_gate.weight
+     75:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.5.ffn_up.weight
+     76:       2048 |  2048,     1,     1,     1 | F32     | blk.5.post_attention_norm.weight
+     77:         16 |    16,     1,     1,     1 | F32     | blk.5.ssm_a
+     78:      32768 |  2048,    16,     1,     1 | F32     | blk.5.ssm_alpha.weight
+     79:      32768 |  2048,    16,     1,     1 | F32     | blk.5.ssm_beta.weight
+     80:      24576 |     4,  6144,     1,     1 | F32     | blk.5.ssm_conv1d.weight
+     81:         16 |    16,     1,     1,     1 | F32     | blk.5.ssm_dt.bias
+     82:        128 |   128,     1,     1,     1 | F32     | blk.5.ssm_norm.weight
+     83:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.5.ssm_out.weight
+     84:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.6.attn_gate.weight
+     85:       2048 |  2048,     1,     1,     1 | F32     | blk.6.attn_norm.weight
+     86:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.6.attn_qkv.weight
+     87:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.6.ffn_down.weight
+     88:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.6.ffn_gate.weight
+     89:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.6.ffn_up.weight
+     90:       2048 |  2048,     1,     1,     1 | F32     | blk.6.post_attention_norm.weight
+     91:         16 |    16,     1,     1,     1 | F32     | blk.6.ssm_a
+     92:      32768 |  2048,    16,     1,     1 | F32     | blk.6.ssm_alpha.weight
+     93:      32768 |  2048,    16,     1,     1 | F32     | blk.6.ssm_beta.weight
+     94:      24576 |     4,  6144,     1,     1 | F32     | blk.6.ssm_conv1d.weight
+     95:         16 |    16,     1,     1,     1 | F32     | blk.6.ssm_dt.bias
+     96:        128 |   128,     1,     1,     1 | F32     | blk.6.ssm_norm.weight
+     97:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.6.ssm_out.weight
+     98:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.7.attn_k.weight
+     99:        256 |   256,     1,     1,     1 | F32     | blk.7.attn_k_norm.weight
+    100:       2048 |  2048,     1,     1,     1 | F32     | blk.7.attn_norm.weight
+    101:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.7.attn_output.weight
+    102:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.7.attn_q.weight
+    103:        256 |   256,     1,     1,     1 | F32     | blk.7.attn_q_norm.weight
+    104:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.7.attn_v.weight
+    105:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.7.ffn_down.weight
+    106:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.7.ffn_gate.weight
+    107:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.7.ffn_up.weight
+    108:       2048 |  2048,     1,     1,     1 | F32     | blk.7.post_attention_norm.weight
+    109:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.8.attn_gate.weight
+    110:       2048 |  2048,     1,     1,     1 | F32     | blk.8.attn_norm.weight
+    111:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.8.attn_qkv.weight
+    112:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.8.ffn_down.weight
+    113:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.8.ffn_gate.weight
+    114:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.8.ffn_up.weight
+    115:       2048 |  2048,     1,     1,     1 | F32     | blk.8.post_attention_norm.weight
+    116:         16 |    16,     1,     1,     1 | F32     | blk.8.ssm_a
+    117:      32768 |  2048,    16,     1,     1 | F32     | blk.8.ssm_alpha.weight
+    118:      32768 |  2048,    16,     1,     1 | F32     | blk.8.ssm_beta.weight
+    119:      24576 |     4,  6144,     1,     1 | F32     | blk.8.ssm_conv1d.weight
+    120:         16 |    16,     1,     1,     1 | F32     | blk.8.ssm_dt.bias
+    121:        128 |   128,     1,     1,     1 | F32     | blk.8.ssm_norm.weight
+    122:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.8.ssm_out.weight
+    123:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.9.attn_gate.weight
+    124:       2048 |  2048,     1,     1,     1 | F32     | blk.9.attn_norm.weight
+    125:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.9.attn_qkv.weight
+    126:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.9.ffn_down.weight
+    127:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.9.ffn_gate.weight
+    128:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.9.ffn_up.weight
+    129:       2048 |  2048,     1,     1,     1 | F32     | blk.9.post_attention_norm.weight
+    130:         16 |    16,     1,     1,     1 | F32     | blk.9.ssm_a
+    131:      32768 |  2048,    16,     1,     1 | F32     | blk.9.ssm_alpha.weight
+    132:      32768 |  2048,    16,     1,     1 | F32     | blk.9.ssm_beta.weight
+    133:      24576 |     4,  6144,     1,     1 | F32     | blk.9.ssm_conv1d.weight
+    134:         16 |    16,     1,     1,     1 | F32     | blk.9.ssm_dt.bias
+    135:        128 |   128,     1,     1,     1 | F32     | blk.9.ssm_norm.weight
+    136:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.9.ssm_out.weight
+    137:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.10.attn_gate.weight
+    138:       2048 |  2048,     1,     1,     1 | F32     | blk.10.attn_norm.weight
+    139:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.10.attn_qkv.weight
+    140:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.10.ffn_down.weight
+    141:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.10.ffn_gate.weight
+    142:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.10.ffn_up.weight
+    143:       2048 |  2048,     1,     1,     1 | F32     | blk.10.post_attention_norm.weight
+    144:         16 |    16,     1,     1,     1 | F32     | blk.10.ssm_a
+    145:      32768 |  2048,    16,     1,     1 | F32     | blk.10.ssm_alpha.weight
+    146:      32768 |  2048,    16,     1,     1 | F32     | blk.10.ssm_beta.weight
+    147:      24576 |     4,  6144,     1,     1 | F32     | blk.10.ssm_conv1d.weight
+    148:         16 |    16,     1,     1,     1 | F32     | blk.10.ssm_dt.bias
+    149:        128 |   128,     1,     1,     1 | F32     | blk.10.ssm_norm.weight
+    150:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.10.ssm_out.weight
+    151:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.11.attn_k.weight
+    152:        256 |   256,     1,     1,     1 | F32     | blk.11.attn_k_norm.weight
+    153:       2048 |  2048,     1,     1,     1 | F32     | blk.11.attn_norm.weight
+    154:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.11.attn_output.weight
+    155:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.11.attn_q.weight
+    156:        256 |   256,     1,     1,     1 | F32     | blk.11.attn_q_norm.weight
+    157:    1048576 |  2048,   512,     1,     1 | Q6_K    | blk.11.attn_v.weight
+    158:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.11.ffn_down.weight
+    159:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.11.ffn_gate.weight
+    160:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.11.ffn_up.weight
+    161:       2048 |  2048,     1,     1,     1 | F32     | blk.11.post_attention_norm.weight
+    162:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.12.attn_gate.weight
+    163:       2048 |  2048,     1,     1,     1 | F32     | blk.12.attn_norm.weight
+    164:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.12.attn_qkv.weight
+    165:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.12.ffn_down.weight
+    166:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.12.ffn_gate.weight
+    167:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.12.ffn_up.weight
+    168:       2048 |  2048,     1,     1,     1 | F32     | blk.12.post_attention_norm.weight
+    169:         16 |    16,     1,     1,     1 | F32     | blk.12.ssm_a
+    170:      32768 |  2048,    16,     1,     1 | F32     | blk.12.ssm_alpha.weight
+    171:      32768 |  2048,    16,     1,     1 | F32     | blk.12.ssm_beta.weight
+    172:      24576 |     4,  6144,     1,     1 | F32     | blk.12.ssm_conv1d.weight
+    173:         16 |    16,     1,     1,     1 | F32     | blk.12.ssm_dt.bias
+    174:        128 |   128,     1,     1,     1 | F32     | blk.12.ssm_norm.weight
+    175:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.12.ssm_out.weight
+    176:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.13.attn_gate.weight
+    177:       2048 |  2048,     1,     1,     1 | F32     | blk.13.attn_norm.weight
+    178:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.13.attn_qkv.weight
+    179:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.13.ffn_down.weight
+    180:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.13.ffn_gate.weight
+    181:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.13.ffn_up.weight
+    182:       2048 |  2048,     1,     1,     1 | F32     | blk.13.post_attention_norm.weight
+    183:         16 |    16,     1,     1,     1 | F32     | blk.13.ssm_a
+    184:      32768 |  2048,    16,     1,     1 | F32     | blk.13.ssm_alpha.weight
+    185:      32768 |  2048,    16,     1,     1 | F32     | blk.13.ssm_beta.weight
+    186:      24576 |     4,  6144,     1,     1 | F32     | blk.13.ssm_conv1d.weight
+    187:         16 |    16,     1,     1,     1 | F32     | blk.13.ssm_dt.bias
+    188:        128 |   128,     1,     1,     1 | F32     | blk.13.ssm_norm.weight
+    189:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.13.ssm_out.weight
+    190:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.14.attn_gate.weight
+    191:       2048 |  2048,     1,     1,     1 | F32     | blk.14.attn_norm.weight
+    192:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.14.attn_qkv.weight
+    193:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.14.ffn_down.weight
+    194:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.14.ffn_gate.weight
+    195:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.14.ffn_up.weight
+    196:       2048 |  2048,     1,     1,     1 | F32     | blk.14.post_attention_norm.weight
+    197:         16 |    16,     1,     1,     1 | F32     | blk.14.ssm_a
+    198:      32768 |  2048,    16,     1,     1 | F32     | blk.14.ssm_alpha.weight
+    199:      32768 |  2048,    16,     1,     1 | F32     | blk.14.ssm_beta.weight
+    200:      24576 |     4,  6144,     1,     1 | F32     | blk.14.ssm_conv1d.weight
+    201:         16 |    16,     1,     1,     1 | F32     | blk.14.ssm_dt.bias
+    202:        128 |   128,     1,     1,     1 | F32     | blk.14.ssm_norm.weight
+    203:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.14.ssm_out.weight
+    204:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.15.attn_k.weight
+    205:        256 |   256,     1,     1,     1 | F32     | blk.15.attn_k_norm.weight
+    206:       2048 |  2048,     1,     1,     1 | F32     | blk.15.attn_norm.weight
+    207:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.15.attn_output.weight
+    208:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.15.attn_q.weight
+    209:        256 |   256,     1,     1,     1 | F32     | blk.15.attn_q_norm.weight
+    210:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.15.attn_v.weight
+    211:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.15.ffn_down.weight
+    212:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.15.ffn_gate.weight
+    213:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.15.ffn_up.weight
+    214:       2048 |  2048,     1,     1,     1 | F32     | blk.15.post_attention_norm.weight
+    215:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.16.attn_gate.weight
+    216:       2048 |  2048,     1,     1,     1 | F32     | blk.16.attn_norm.weight
+    217:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.16.attn_qkv.weight
+    218:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.16.ffn_down.weight
+    219:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.16.ffn_gate.weight
+    220:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.16.ffn_up.weight
+    221:       2048 |  2048,     1,     1,     1 | F32     | blk.16.post_attention_norm.weight
+    222:         16 |    16,     1,     1,     1 | F32     | blk.16.ssm_a
+    223:      32768 |  2048,    16,     1,     1 | F32     | blk.16.ssm_alpha.weight
+    224:      32768 |  2048,    16,     1,     1 | F32     | blk.16.ssm_beta.weight
+    225:      24576 |     4,  6144,     1,     1 | F32     | blk.16.ssm_conv1d.weight
+    226:         16 |    16,     1,     1,     1 | F32     | blk.16.ssm_dt.bias
+    227:        128 |   128,     1,     1,     1 | F32     | blk.16.ssm_norm.weight
+    228:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.16.ssm_out.weight
+    229:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.17.attn_gate.weight
+    230:       2048 |  2048,     1,     1,     1 | F32     | blk.17.attn_norm.weight
+    231:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.17.attn_qkv.weight
+    232:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.17.ffn_down.weight
+    233:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.17.ffn_gate.weight
+    234:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.17.ffn_up.weight
+    235:       2048 |  2048,     1,     1,     1 | F32     | blk.17.post_attention_norm.weight
+    236:         16 |    16,     1,     1,     1 | F32     | blk.17.ssm_a
+    237:      32768 |  2048,    16,     1,     1 | F32     | blk.17.ssm_alpha.weight
+    238:      32768 |  2048,    16,     1,     1 | F32     | blk.17.ssm_beta.weight
+    239:      24576 |     4,  6144,     1,     1 | F32     | blk.17.ssm_conv1d.weight
+    240:         16 |    16,     1,     1,     1 | F32     | blk.17.ssm_dt.bias
+    241:        128 |   128,     1,     1,     1 | F32     | blk.17.ssm_norm.weight
+    242:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.17.ssm_out.weight
+    243:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.18.attn_gate.weight
+    244:       2048 |  2048,     1,     1,     1 | F32     | blk.18.attn_norm.weight
+    245:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.18.attn_qkv.weight
+    246:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.18.ffn_down.weight
+    247:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.18.ffn_gate.weight
+    248:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.18.ffn_up.weight
+    249:       2048 |  2048,     1,     1,     1 | F32     | blk.18.post_attention_norm.weight
+    250:         16 |    16,     1,     1,     1 | F32     | blk.18.ssm_a
+    251:      32768 |  2048,    16,     1,     1 | F32     | blk.18.ssm_alpha.weight
+    252:      32768 |  2048,    16,     1,     1 | F32     | blk.18.ssm_beta.weight
+    253:      24576 |     4,  6144,     1,     1 | F32     | blk.18.ssm_conv1d.weight
+    254:         16 |    16,     1,     1,     1 | F32     | blk.18.ssm_dt.bias
+    255:        128 |   128,     1,     1,     1 | F32     | blk.18.ssm_norm.weight
+    256:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.18.ssm_out.weight
+    257:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.19.attn_k.weight
+    258:        256 |   256,     1,     1,     1 | F32     | blk.19.attn_k_norm.weight
+    259:       2048 |  2048,     1,     1,     1 | F32     | blk.19.attn_norm.weight
+    260:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.19.attn_output.weight
+    261:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.19.attn_q.weight
+    262:        256 |   256,     1,     1,     1 | F32     | blk.19.attn_q_norm.weight
+    263:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.19.attn_v.weight
+    264:   12582912 |  6144,  2048,     1,     1 | Q4_K    | blk.19.ffn_down.weight
+    265:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.19.ffn_gate.weight
+    266:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.19.ffn_up.weight
+    267:       2048 |  2048,     1,     1,     1 | F32     | blk.19.post_attention_norm.weight
+    268:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.20.attn_gate.weight
+    269:       2048 |  2048,     1,     1,     1 | F32     | blk.20.attn_norm.weight
+    270:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.20.attn_qkv.weight
+    271:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.20.ffn_down.weight
+    272:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.20.ffn_gate.weight
+    273:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.20.ffn_up.weight
+    274:       2048 |  2048,     1,     1,     1 | F32     | blk.20.post_attention_norm.weight
+    275:         16 |    16,     1,     1,     1 | F32     | blk.20.ssm_a
+    276:      32768 |  2048,    16,     1,     1 | F32     | blk.20.ssm_alpha.weight
+    277:      32768 |  2048,    16,     1,     1 | F32     | blk.20.ssm_beta.weight
+    278:      24576 |     4,  6144,     1,     1 | F32     | blk.20.ssm_conv1d.weight
+    279:         16 |    16,     1,     1,     1 | F32     | blk.20.ssm_dt.bias
+    280:        128 |   128,     1,     1,     1 | F32     | blk.20.ssm_norm.weight
+    281:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.20.ssm_out.weight
+    282:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.21.attn_gate.weight
+    283:       2048 |  2048,     1,     1,     1 | F32     | blk.21.attn_norm.weight
+    284:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.21.attn_qkv.weight
+    285:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.21.ffn_down.weight
+    286:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.21.ffn_gate.weight
+    287:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.21.ffn_up.weight
+    288:       2048 |  2048,     1,     1,     1 | F32     | blk.21.post_attention_norm.weight
+    289:         16 |    16,     1,     1,     1 | F32     | blk.21.ssm_a
+    290:      32768 |  2048,    16,     1,     1 | F32     | blk.21.ssm_alpha.weight
+    291:      32768 |  2048,    16,     1,     1 | F32     | blk.21.ssm_beta.weight
+    292:      24576 |     4,  6144,     1,     1 | F32     | blk.21.ssm_conv1d.weight
+    293:         16 |    16,     1,     1,     1 | F32     | blk.21.ssm_dt.bias
+    294:        128 |   128,     1,     1,     1 | F32     | blk.21.ssm_norm.weight
+    295:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.21.ssm_out.weight
+    296:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.22.attn_gate.weight
+    297:       2048 |  2048,     1,     1,     1 | F32     | blk.22.attn_norm.weight
+    298:   12582912 |  2048,  6144,     1,     1 | Q6_K    | blk.22.attn_qkv.weight
+    299:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.22.ffn_down.weight
+    300:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.22.ffn_gate.weight
+    301:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.22.ffn_up.weight
+    302:       2048 |  2048,     1,     1,     1 | F32     | blk.22.post_attention_norm.weight
+    303:         16 |    16,     1,     1,     1 | F32     | blk.22.ssm_a
+    304:      32768 |  2048,    16,     1,     1 | F32     | blk.22.ssm_alpha.weight
+    305:      32768 |  2048,    16,     1,     1 | F32     | blk.22.ssm_beta.weight
+    306:      24576 |     4,  6144,     1,     1 | F32     | blk.22.ssm_conv1d.weight
+    307:         16 |    16,     1,     1,     1 | F32     | blk.22.ssm_dt.bias
+    308:        128 |   128,     1,     1,     1 | F32     | blk.22.ssm_norm.weight
+    309:    4194304 |  2048,  2048,     1,     1 | Q5_K    | blk.22.ssm_out.weight
+    310:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.23.attn_k.weight
+    311:        256 |   256,     1,     1,     1 | F32     | blk.23.attn_k_norm.weight
+    312:       2048 |  2048,     1,     1,     1 | F32     | blk.23.attn_norm.weight
+    313:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.23.attn_output.weight
+    314:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.23.attn_q.weight
+    315:        256 |   256,     1,     1,     1 | F32     | blk.23.attn_q_norm.weight
+    316:    1048576 |  2048,   512,     1,     1 | Q6_K    | blk.23.attn_v.weight
+    317:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.23.ffn_down.weight
+    318:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.23.ffn_gate.weight
+    319:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.23.ffn_up.weight
+    320:       2048 |  2048,     1,     1,     1 | F32     | blk.23.post_attention_norm.weight
+    321:    1048576 |  2048,   512,     1,     1 | Q4_K    | blk.24.attn_k.weight
+    322:        256 |   256,     1,     1,     1 | F32     | blk.24.attn_k_norm.weight
+    323:       2048 |  2048,     1,     1,     1 | F32     | blk.24.attn_norm.weight
+    324:    4194304 |  2048,  2048,     1,     1 | Q4_K    | blk.24.attn_output.weight
+    325:    8388608 |  2048,  4096,     1,     1 | Q4_K    | blk.24.attn_q.weight
+    326:        256 |   256,     1,     1,     1 | F32     | blk.24.attn_q_norm.weight
+    327:    1048576 |  2048,   512,     1,     1 | Q6_K    | blk.24.attn_v.weight
+    328:   12582912 |  6144,  2048,     1,     1 | Q6_K    | blk.24.ffn_down.weight
+    329:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.24.ffn_gate.weight
+    330:   12582912 |  2048,  6144,     1,     1 | Q4_K    | blk.24.ffn_up.weight
+    331:    8388608 |  4096,  2048,     1,     1 | Q8_0    | blk.24.nextn.eh_proj.weight
+    332:       2048 |  2048,     1,     1,     1 | F32     | blk.24.nextn.enorm.weight
+    333:       2048 |  2048,     1,     1,     1 | F32     | blk.24.nextn.hnorm.weight
+    334:       2048 |  2048,     1,     1,     1 | F32     | blk.24.nextn.shared_head_norm.weight
+    335:       2048 |  2048,     1,     1,     1 | F32     | blk.24.post_attention_norm.weight

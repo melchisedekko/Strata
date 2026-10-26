@@ -1,0 +1,1164 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 989f5cd..0a71fb9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1532,7 +1532,7 @@ endif()
+ #     features, and the fallback exists for tests, exactly as P2.S3 specifies.
+ # Plan v0.3 P6: speculation components that need no GPU.
+ add_library(strata_spec STATIC src/spec/suffix_drafter.cpp src/spec/controller.cpp src/spec/draft_policy.cpp
+-            src/spec/draft_source.cpp)
++            src/spec/draft_source.cpp src/spec/pool_source.cpp src/spec/joint_gate.cpp)
+ target_include_directories(strata_spec PUBLIC include)
+ if(STRATA_BUILD_TESTS)
+   add_executable(arch_defaults_test src/core/arch_defaults_test.cpp src/core/arch_defaults.cpp)
+@@ -1550,6 +1550,12 @@ if(STRATA_BUILD_TESTS)
+   add_executable(draft_policy_test src/spec/draft_policy_test.cpp)
+   target_link_libraries(draft_policy_test PRIVATE strata_spec)
+   add_test(NAME draft_policy_test COMMAND draft_policy_test)
++  add_executable(pool_source_test src/spec/pool_source_test.cpp)
++  target_link_libraries(pool_source_test PRIVATE strata_spec)
++  add_test(NAME pool_source_test COMMAND pool_source_test)
++  add_executable(joint_gate_test src/spec/joint_gate_test.cpp)
++  target_link_libraries(joint_gate_test PRIVATE strata_spec)
++  add_test(NAME joint_gate_test COMMAND joint_gate_test)
+   add_executable(spec_start_test src/spec/spec_start_test.cpp)
+   target_include_directories(spec_start_test PRIVATE include)
+   add_test(NAME spec_start_test COMMAND spec_start_test)
+diff --git a/docs/strataplus_joint_gate.md b/docs/strataplus_joint_gate.md
+new file mode 100644
+index 0000000..de5b7ec
+--- /dev/null
++++ b/docs/strataplus_joint_gate.md
+@@ -0,0 +1,52 @@
++# Strata+ P5 — joint source+depth gate: engine wiring (DESIGN, not compiled)
++
++
++## Final local configuration (Strata Lead decision, 25/10/2026): arm A
++
++`STRATA_SPEC_JOINT=1` selects JointGate with `JointGate::Options()` as is = **arm A**: tmax=5 (windows T<=5, d<=4),
++skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard decay (frozen_params_v3.json, sha256 37bf1996...).
++`JointGate::enabled_from_env()` reads the variable; without it nothing changes (DraftPolicy, upstream 7dd5cf18).
++C++ defaults == replay GateV2(tmax=5, skip=True) round by round (replay/tests/test_arm_a_default_parity.py: tune
++tf_d7 x P1/P2/P4 x rho band + 0.26 x cost V1/V2, and the synthetic domains; nothing tuned on the holdout).
++
++**LIMITS**
++- Single sequence only (CLI and the --serve GEN loop). batch_step / BGEN does not use DraftPolicy: no effect for parallel > 1.
++- tok/s are ESTIMATED by the replay on a CPU proxy (Qwen3.5-2B Q4_K_M), not AMD measurements.
++- Holdout v1.1: vs the default a gain in all three domains in the rho band 0.06-0.15; vs k=3 no cell clearly worse.
++- Vs STRATA_SPEC_COST=1, chat: no gain and one cell clearly worse (chat, P1, rho 0.0791: -1.4% [-2.8; -0.2]). This agrees
++  with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++- Holdout v1.1 is used: any future comparison needs a new holdout.
++- The engine wiring below (generate.cpp) is still a DESIGN: not written/compiled here (CUDA headers).
++
++**Scope (Strata Lead decision): single sequence only.**  JointGate / gate_v2 replaces DraftPolicy where DraftPolicy
++runs: the CLI generation loop and the GEN loop of `--serve` (one request served alone).  The batch path
++(`batch_step`, `BGEN <slot>`, generate.cpp ~11519 at 7dd5cf18) does not call DraftPolicy: each slot verifies 2 rows
++(the token + ONE MTP draft from its `slot_mtp`, `draft(2, ...)`).  So this patch changes nothing for batched serving and
++any gain measured for gate_v2 holds for requests served alone, NOT for a server with parallel > 1.  Extending the
++batch path (more than 2 rows per slot, a per-slot pool) is follow-up H2b (after gate_v2, needs a GPU); a persistent
++pool for requests served alone is H2a (paused until session traces exist).
++
++`strata::spec::JointGate` (include/strata/spec/joint_gate.hpp) is compiled and unit-tested
++(src/spec/joint_gate_test.cpp) and is decision-for-decision identical to the replay's GateV2
++(replay/tests/test_joint_gate_parity.py: 60 configurations, every round identical).  Its wiring into the serve loop
++(src/program/generate.cpp) is NOT part of this patch: generate.cpp needs CUDA headers to compile and could not be
++built here.  Proposed wiring, behind `STRATA_SPEC_JOINT=1` (DraftPolicy stays the default):
++
++1. Next-round drafting happens at the end of a round (`mtp.draft(...)`, generate.cpp ~15193 at 7dd5cf18).  Before it,
++   the lookup proposal for the next round is already computable (sfx has the committed tokens): call
++   `sfx.propose` / `propose_from_sources` (pool, P4) there, and `gate.start(lu, JointGate::remaining(max_new, produced_n, o.max_context, p), &c)` (bounded by the context window too: the engine stops at `p + T > max_context`).
++   - `start()` true: skip `mtp.draft` (d = 0); the next round verifies the lookup window `c.t` (or T = 1).
++   - false: draft with `mtp.set_chain_rule([&](int idx, float pj) { probs[idx] = pj; return gate.keep(probs, ent, idx + 1); })`
++     (the same hook `keep_draft` uses for STRATA_SPEC_COST; `ent` = the optional per-draft entropy of log_format D11,
++     null if the MTP head does not expose it - then conf_stop falls back to -log p).
++2. Round start: `c = gate.finish(probs, d, lu)` with `lu[s].agree = (sbuf[0] == drafts[0])`.  This replaces both
++   `policy.choose` and the agreement gate (the gate learns P(accept | agree) instead of requiring agreement).
++3. After the commit: `gate.observe(c, a, round_ms, mtp_acc, probs, lu, lu_acc)` with the a+1-censored LCPs of the
++   MTP drafts and of each lookup proposal against `outv[0..a]` (P1's `plus_lcp`, computed before `mtp.draft`
++   overwrites `drafts`).  The cost is the round's measured ms (or, with STRATA_SPEC_COST_FROZEN=1, the seeded table:
++   `set_frozen(true)` after a first observe sets the scale).
++4. Chained windows (--lookup-chain) are out of scope of the gate: keep them on DraftPolicy::chain.
++
++Risks to measure live (the replay cannot): the draft time of the MTP head at depth > S_mtp - 1 (engine cap), the
++cost of a skipped draft when the lookup then fails (the MTP must draft at the start of the next round, serialised),
++and the warm-up of the RLS cost model (optimistic prior: it tries deep windows early).
+diff --git a/include/strata/spec/draft_policy.hpp b/include/strata/spec/draft_policy.hpp
+index 88970c8..9d9e60e 100644
+--- a/include/strata/spec/draft_policy.hpp
++++ b/include/strata/spec/draft_policy.hpp
+@@ -13,6 +13,19 @@
+ // and takes the lookup window only when its best E/cost beats the MTP's by `margin`. Costs are the measured round
+ // times per window size (EMA; sizes not seen yet are scaled from seen ones by a prior shape), so the policy adapts
+ // to the machine and the context length. It only chooses which drafts to verify: the output is unchanged.
++//
++// Strata+ (local): with STRATA_SPEC_JOINT=1 the JointGate (joint_gate.hpp, arm A: tmax=5) takes this policy's place;
++// without it this class runs unchanged (upstream 7dd5cf18).
++// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
++//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
++//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
++//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
++//     llama.cpp); none is an AMD measurement.
++//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
++//     0.06-0.15; vs k=3, no cell clearly worse.
++//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
++//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
+ #pragma once
+ 
+ #include <array>
+@@ -36,6 +49,13 @@ public:
+     Pick choose(int t_mtp, int lookup_k, int match) const;
+     /// After the round: the window it used, the drafts accepted, and the round's time (verify + commit + draft).
+     void observe(bool lookup, int t, int accepted, int match, double round_ms);
++    /// Strata+ P3 (full-information feedback, zero cost): after the round, the source NOT taken is scored against the
++    /// a+1 tokens the target committed.  `accepted` = how many of its first t-1 drafts equal those tokens; when it
++    /// matched all the known ones its failure is not seen (`failure_seen` false, a censored sample).  A lookup sample
++    /// updates the match-bucket acceptance exactly as observe() does (no cost: no window of it ran); an MTP sample is
++    /// used only when uncensored.  Without this call the policy learns only the arm it plays (bandit feedback): once
++    /// lookup's q drops below the MTP's, lookup is not tried again until the probes, and q never recovers.
++    void observe_counterfactual(bool lookup, int t, int accepted, bool failure_seen, int match);
+ 
+     /// --lookup-chain: how many of `k_avail` lookup tokens to append after an MTP window of `t_mtp` tokens whose
+     /// drafts all hold with probability `p_mtp` (estimated from the draft layer's own probabilities): the k with the
+@@ -58,6 +78,10 @@ public:
+     /// STRATA_SPEC_COST: a round time far above what is known for that width (the first use of a width captures its graph; a stalled
+     /// round) counts as a tenth of a sample, so one capture cannot price a width out of use.  Off: the cost EMA as it always was.
+     void set_robust(bool on) { robust_ = on; }
++    /// STRATA_SPEC_COST_FROZEN=1 (Strata+ P2, deterministic cost mode): the round costs stay what seed_costs() put in
++    /// (STRATA_SPEC_COST_TABLE); measured round times are not learned.  Lets an A/B (or the offline replay) compare
++    /// policies on one fixed cost table, free of timing noise.  Acceptance statistics are still learned.
++    void set_frozen_costs(bool on) { frozen_ = on; }
+ 
+     /// COST-AWARE MTP WINDOW (STRATA_SPEC_COST=1): the MTP chain is drafted one step at a time; after draft j (probability p_j)
+     ///   E_j = 1 + q_0 + .. + q_j,  q_i = prod_{k<=i} a(p_k)   a() = the acceptance measured for MTP drafts of that probability
+@@ -92,6 +116,7 @@ private:
+     std::array<double, kBuckets> cok_{}, cbad_{};          // chained lookup drafts, the same (reached rounds only)
+     double rounds_ = 0;                                    // rounds observed so far
+     bool robust_ = false;
++    bool frozen_ = false;                                  // set_frozen_costs()
+     double clamp_sample(int t, double ms) const;
+     static constexpr int kPBuckets = 8;
+     std::array<double, kPBuckets> pa_ok_{}, pa_n_{};       // MTP drafts reached / accepted by probability bucket (decayed)
+diff --git a/include/strata/spec/joint_gate.hpp b/include/strata/spec/joint_gate.hpp
+new file mode 100644
+index 0000000..3cf116c
+--- /dev/null
++++ b/include/strata/spec/joint_gate.hpp
+@@ -0,0 +1,102 @@
++// include/strata/spec/joint_gate.hpp - Strata+ P5 (local draft, H1+H4): one gate that chooses the draft SOURCE
++// (none / MTP / prompt lookup / pool) and the MTP DEPTH together.  C++ port of the replay's GateV2
++// (/workspace/strata-policy/replay/strata_sim/sim2.py), kept decision-for-decision identical so the offline replay
++// can link it (parity test: replay/tests/test_joint_gate_parity.py).
++//
++// Per round:
++//   start()      - before any MTP draft: if a lookup proposal already beats the best value the MTP could reach
++//                  (marginal hazards), take it and skip the MTP draft (lookup-first);
++//   keep()       - after each MTP draft j (its top-1 prob, optionally its entropy): draft another one?  The value
++//                  test compares the best window available now with the best reachable deeper (inherit-last-bucket
++//                  hazards); conf_stop replaces it by the AdaEDL-style stop 1 - sqrt(gamma*H_j) < eta (H4 variant);
++//   finish()     - with the drafts known: best of MTP windows 1..d, none, lookup windows (agreement now known);
++//   observe()    - full-information, censored feedback: the played round's cost, both sources' drafts scored on
++//                  the a+1 committed tokens.
++// Objective: Dinkelbach E[a+1] - lambda*C, lambda = decayed tokens/cost of the rounds played.  Cost model: online
++// RLS on one-hot(T) + rho_mtp*d + rho_lu*k (optimistic prior, monotone in T); frozen() keeps the seeded table.
++// SCOPE: single sequence only (CLI and the --serve GEN loop, where DraftPolicy runs).  The batch path (batch_step /
++// BGEN) uses one MTP draft per slot and never calls DraftPolicy or this gate: no effect on parallel > 1 serving.
++// LIMITS (Strata+ H1, Strata Lead decision 25/10/2026: arm A = gate_v2 tmax=5, frozen_params_v3.json sha256 37bf1996...):
++//   - Valid ONLY for a single sequence: the CLI and the GEN loop of --serve.  batch_step / BGEN does NOT use DraftPolicy
++//     (one MTP draft per slot): no effect, and no claim, for parallel > 1 serving.
++//   - Every tok/s figure behind this choice is ESTIMATED by the offline replay on a CPU proxy (Qwen3.5-2B Q4_K_M,
++//     llama.cpp); none is an AMD measurement.
++//   - Holdout v1.1 (replay): vs the default policy, a gain in all three domains (code, chat, edit) in the rho band
++//     0.06-0.15; vs k=3, no cell clearly worse.
++//   - Vs STRATA_SPEC_COST=1, chat: NO gain, and one cell clearly worse (chat, profile P1, rho 0.0791: -1.4% [-2.8; -0.2]
++//     IC95).  This agrees with the H4(a) NO-GO; P1 is a cost profile estimated from the code, not measured.
++//   - Holdout v1.1 is now USED: any future comparison needs a NEW holdout.
++// DEFAULTS = arm A: tmax=5 (windows T<=5, d<=4), skip=true (lookup-first), prompt lookup only, no conf_stop, no hazard
++// decay.  STRATA_SPEC_JOINT=1 (enabled_from_env()) selects this gate with Options() as is; without the variable nothing
++// changes (DraftPolicy, upstream 7dd5cf18 behaviour).  Engine wiring in generate.cpp: see docs/strataplus_joint_gate.md.
++#pragma once
++#include <array>
++#include <cstdint>
++
++namespace strata::spec {
++
++class JointGate {
++public:
++    static constexpr int kD = 7;             // MTP drafts considered (Dmax)
++    static constexpr int kSrc = 2;           // 0 = prompt lookup (the request's text), 1 = pool
++    struct Options {
++        bool use_src[kSrc] = {true, false};
++        bool mtp = true, skip = true, conf_stop = false;
++        double gamma = 0.5, eta = 0.35;
++        int tmax = 5;   // arm A (Strata Lead decision); arm B (tmax=8) is round 2, needs a new holdout then AMD
++    };
++    struct Lookup { int k = 0, match = 0, agree = -1; };   // agree: first lookup draft == first MTP draft (-1 unknown)
++    enum Src { kNone = 0, kMtp = 1, kLookup = 2, kPool = 3 };
++    struct Choice { int src = kNone, t = 1, d = 0, klu = 0; };
++
++    JointGate();
++    explicit JointGate(const Options& o);
++
++    /// Round start.  `rem` = tokens still to generate after the next one.  Returns true when a lookup window is taken
++    /// without drafting the MTP (`*out` filled), false when the MTP should draft (then keep()/finish()).
++    bool start(const Lookup lu[kSrc], int rem, Choice* out);
++    /// After the MTP drafted `d` tokens with top-1 probs `p[0..d)` (entropies `ent`, may be null): draft another?
++    bool keep(const float* p, const float* ent, int d);
++    Choice finish(const float* p, int d, const Lookup lu[kSrc]);
++    /// After the round: the window played, its committed tokens (accepted a), its cost, and how many drafts of each
++    /// candidate equal the committed tokens (acc_true: the replay knows them; the engine passes the a+1-censored LCP,
++    /// which censored() treats identically).
++    void observe(const Choice& c, int accepted, double cost, int mtp_acc, const float* mtp_p, const Lookup lu[kSrc],
++                 const int lu_acc[kSrc]);
++    double lambda() const { return lam_n_ / lam_c_; }
++    void set_frozen(bool on) { frozen_ = on; }
++    /// Seed the cost model with a measured table (STRATA_SPEC_COST_TABLE): s(T) for T = 1..8 in units of one plain
++    /// step, the per-draft MTP cost and the per-token lookup cost in the same units, and the step cost `unit` (e.g. ms)
++    /// that converts them to observed costs.  With set_frozen(true) the gate then plans on exactly this table (before,
++    /// frozen kept the 1+0.15(T-1) prior scaled by the first sample).  Without frozen the RLS starts from it.
++    void seed_costs(const double s_by_t[8], double rho_mtp, double rho_lu, double unit);
++    /// `rem` for start(): tokens still allowed after the next one, bounded by max_new AND by the context window (the
++    /// engine stops when p + T > max_context; max_context <= 0 = no context bound).  Never negative.
++    static int remaining(int max_new, int produced, int max_context, int pos);
++    /// STRATA_SPEC_JOINT=1: use this gate (with the arm-A defaults of Options()) instead of DraftPolicy.  Unset or any
++    /// other value: false, DraftPolicy as upstream.
++    static bool enabled_from_env();
++    double cost_pred(int t, int d, int k) const;   // t clamped to 1..8
++    int tmax() const { return o_.tmax; }
++
++private:
++    void lu_haz(int s, int match, int ag, double h[kD]) const;
++    void mtp_haz(const float* p, int n, double h[kD]) const;
++    static int expect(const double h[kD], int kmax, double e[kD + 1]);
++    bool best_lookup(const Lookup lu[kSrc], int d, bool ag_known, double lam, int rem, double* v, int* s, int* t) const;
++    void cost_update(int t, int d, int k, double c);
++
++    Options o_;
++    double hm_s_[kD][7], hm_f_[kD][7], hmm_s_[kD], hmm_f_[kD];
++    double hl_s_[kSrc][5][3][3], hl_f_[kSrc][5][3][3];
++    std::array<double, 10> th_{};
++    double P_[10][10] = {};
++    double scale_ = 0.0;   // 0: not set yet
++    std::array<double, 8> n_t_{};   // samples per window size
++    bool frozen_ = false;
++    double lam_n_ = 1.0, lam_c_ = 1.0;
++    // the round in progress
++    int rem_ = 0, klu_ = 0, kmax_ = 0;
++};
++
++}  // namespace strata::spec
+diff --git a/include/strata/spec/pool_source.hpp b/include/strata/spec/pool_source.hpp
+new file mode 100644
+index 0000000..20edfd1
+--- /dev/null
++++ b/include/strata/spec/pool_source.hpp
+@@ -0,0 +1,49 @@
++// include/strata/spec/pool_source.hpp - Strata+ P4 (local draft, H2): a persistent cross-request lookup pool.
++//
++// A DraftSource over the committed text of EVERY request this process served (prompts and outputs), not reset
++// between requests: a repeat of an earlier request's text (the same file edited again, the same boilerplate, a
++// session's previous turns) can be drafted even when the current request has not seen it.  Registered through
++// extra_draft_sources() (register_pool_from_env()); the engine asks it beside the request's own text.
++//
++// Two things the SuffixDrafter alone does not give a persistent pool:
++//  - eviction: the drafter stops indexing once its table is full; the pool keeps a copy of its text and, when it
++//    reaches `capacity` tokens, rebuilds the drafter from the newest half (the oldest text is forgotten);
++//  - a match gate: the pool proposes only on a match of at least `gate` tokens.  The offline replay (E1, replay
++//    v2) finds that on independent requests short pool matches are mostly coincidental and cost windows (a
++//    regression unless gate >= 12), while on sessions a gate of 6-12 pays.
++#pragma once
++#include "strata/spec/draft_source.hpp"
++#include "strata/spec/suffix_drafter.hpp"
++
++#include <cstddef>
++#include <cstdint>
++#include <vector>
++
++namespace strata::spec {
++
++class PoolSource final : public DraftSource {
++public:
++    /// `capacity`: tokens kept (the newest; eviction halves).  `gate`: the shortest match proposed on.
++    explicit PoolSource(size_t capacity = 1u << 20, int gate = 12, int max_match = 64);
++    const char* name() const override { return "pool"; }
++    void reset() override {}   // persistent: a new request does not clear the pool
++    void append(const int32_t* tokens, size_t n) override;
++    int propose(const int32_t* tail, int n_tail, int n_pending, int max_k, int32_t* out, int* match) override;
++    size_t size() const { return text_.size(); }
++    int gate() const { return gate_; }
++    size_t evictions() const { return evictions_; }
++
++private:
++    void evict();
++    size_t capacity_;
++    int gate_, max_match_;
++    SuffixDrafter d_;
++    std::vector<int32_t> text_;   // what d_ indexes, in order (kept for the rebuild)
++    size_t evictions_ = 0;
++};
++
++/// STRATA_LOOKUP_POOL=<capacity tokens>[,<gate>] (e.g. 1048576,12): registers one PoolSource with
++/// extra_draft_sources().  Call once at startup, before the first request; returns whether a pool was registered.
++bool register_pool_from_env();
++
++}  // namespace strata::spec
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 7bafd68..13ad3ad 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -87,6 +87,7 @@
+ #include "strata/program/message_boundary.hpp"
+ #include "strata/spec/draft_policy.hpp"
+ #include "strata/spec/draft_source.hpp"
++#include "strata/spec/pool_source.hpp"   // Strata+ P4
+ #include "strata/spec/suffix_drafter.hpp"
+ #include "strata/spec/spec_start.hpp"
+ #include "strata/program/batch_groups.hpp"
+@@ -1093,6 +1094,34 @@ void extra_sources_reset() {
+ void extra_sources_append(const int32_t* t, size_t n) {
+     for (auto& src : strata::spec::extra_draft_sources()) src->append(t, n);
+ }
++// Strata+ P1: the strataplus.v1 JSONL trace (/workspace/strata-plus/log_format.md), STRATA_PLUS_TRACE=<path>: per request
++// a "request" line, a "round" line per verify window, then a "request_end" line with the committed output (a live
++// engine does not know the output when the request starts: divergence D13 of log_format.md).  Appends; one writer.
++FILE* plus_trace() {
++    static FILE* f = [] { const char* p = std::getenv("STRATA_PLUS_TRACE"); return p != nullptr && *p != '\0' ? std::fopen(p, "a") : nullptr; }();
++    return f;
++}
++void plus_ints(FILE* f, const int32_t* v, int n) {
++    std::fputc('[', f);
++    for (int i = 0; i < n; ++i) std::fprintf(f, i ? ",%d" : "%d", (int) v[i]);
++    std::fputc(']', f);
++}
++void plus_floats(FILE* f, const float* v, int n) {
++    std::fputc('[', f);
++    for (int i = 0; i < n; ++i) std::fprintf(f, i ? ",%.5g" : "%.5g", (double) v[i]);
++    std::fputc(']', f);
++}
++// the drafts of `prop` (k of them) that equal the committed outv[0..a]; *censored when all a+1 known ones matched
++int plus_lcp(const int32_t* prop, int k, const int32_t* outv, int a, bool* censored) {
++    int n = 0;
++    while (n < k && n <= a && prop[n] == outv[n]) ++n;
++    *censored = n == a + 1 && n < k;
++    return n;
++}
++
++// Strata+ P4: the extra sources (a registered persistent pool) see the context whenever one is registered, not only
++// with --lookup-chain - the pool is also offered to the main lookup arm (see the serve loop's lookup proposal)
++bool extra_sources_on(int lookup_chain) { return lookup_chain > 0 || !strata::spec::extra_draft_sources().empty(); }
+ 
+ bool parse_i64_list(const char* s, std::vector<int64_t>& out, std::string& err) {
+     out.clear();
+@@ -11175,11 +11204,16 @@ int main(int argc, char** argv) {
+         // --pipeline-windows 2 loads the drafter with 8 rows: the serial loop's chain keeps its own length
+         else if (use_mtp && mtp.max_t() > S_mtp) mtp.set_max_drafts(S_mtp - 1);
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
++        strata::spec::register_pool_from_env();   // Strata+ P4: STRATA_LOOKUP_POOL=<cap>[,<gate>], once per process
+         strata::spec::DraftPolicy policy(S);   // MTP or lookup window, learned over the whole process
+         const bool spec_cost = [] { const char* v = std::getenv("STRATA_SPEC_COST"); return v != nullptr && v[0] == '1'; }();   // cost-aware MTP window (A/B arm)
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // the window the cost-aware rule kept in the MTP chain just drafted
++        // Strata+ P3: full-information feedback for DraftPolicy (score the arm not played on the committed tokens)
++        const bool cf_feedback = [] { const char* v = std::getenv("STRATA_SPEC_CF"); return v != nullptr && v[0] == '1'; }();
+         policy.set_robust(spec_cost);
++        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
++        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
+         if (spec_cost && use_mtp)
+             mtp.set_chain_rule([&](int idx, float pj) {
+                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
+@@ -14177,13 +14211,24 @@ int main(int argc, char** argv) {
+                 sfx.reset();
+                 for (int64_t t : ids) sfx.append((int32_t) t);
+             }
+-            if (o.lookup_chain > 0) {
++            if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
+                 extra_sources_reset();
+                 for (int64_t t : ids) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+             }
+             bool first_window = true;
+             int64_t produced_n = 0, sfx_windows = 0, sfx_drafts = 0, sfx_ok = 0;
++            static int64_t plus_req = 0;   // Strata+ P1
++            const int64_t plus_id = plus_req++;
++            int64_t plus_r = 0;
++            if (FILE* tf = plus_trace()) {
++                std::fprintf(tf, "{\"type\":\"request\",\"schema\":\"strataplus.v1\",\"engine\":\"strata\",\"data_kind\":\"live\","
++                                 "\"req_id\":\"%lld\",\"prompt_tokens\":%lld,\"dmax\":%d,\"prompt_ids\":[",
++                             (long long) plus_id, (long long) ids.size(), use_mtp ? S_mtp - 1 : 0);
++                for (size_t i = 0; i < ids.size(); ++i) std::fprintf(tf, i ? ",%lld" : "%lld", (long long) ids[i]);
++                std::fputs("]}\n", tf);
++            }
+             int64_t chain_windows = 0, chain_drafts = 0, chain_ok = 0;   // --lookup-chain's own counts
++            int64_t pool_windows = 0;   // Strata+ P4: lookup proposals taken from the pool (not the request's text)
+             int64_t t2_rej[8] = {}, t2_hit[8] = {};   // STRATA_MTP_TOP2: rejections inside the MTP drafts by depth, runner-up hits
+             int64_t dp_tested[8] = {}, dp_ok[8] = {};   // STRATA_SPEC_DEPTH=1: MTP drafts tested / accepted by depth
+             std::vector<int32_t> cbuf((size_t) S, 0), ctail;
+@@ -14888,15 +14933,31 @@ int main(int argc, char** argv) {
+                 }
+                 if (first_window) T = merge_T > 0 ? merge_T : 1;
+                 std::copy(dprob.begin(), dprob.begin() + (std::ptrdiff_t) std::min<size_t>(dprob.size(), 8), dwin_s.begin());
++                const int T_plan_mtp = T;   // Strata+ P3: the MTP window choose() compared against
+                 const bool merged = first_window && merge_T > 0;   // the prompt's last tokens and the first token
+                 // a repeat of earlier context (prompt lookup) where the MTP's own first guess agrees: the policy takes it
+                 // when its expected tokens per ms, from the measured acceptance and window costs, beat the MTP window's
+                 bool from_sfx = false;
+                 int sfx_match = 0;
++                int lk_raw = 0;   // Strata+ P1: the lookup proposal before the agreement gate
++                int cf_k = 0;   // Strata+ P3: the gated lookup proposal not taken (scored after the round)
++                std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
++                for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
+                 if (o.suffix_draft > 0 && !first_window) {
+-                    const int k = sfx.propose(S - 1, sbuf.data());
+-                    sfx_match = sfx.last_match();
++                    int k = 0;
++                    if (strata::spec::extra_draft_sources().empty()) {
++                        k = sfx.propose(S - 1, sbuf.data());
++                        sfx_match = sfx.last_match();
++                    } else {   // Strata+ P4: the request's own text and the pool; the longer match wins (ties: own)
++                        int psrc = -1;
++                        const int nt = chain_tail(sfx, nullptr, 0, ctail);
++                        k = strata::spec::propose_from_sources(lookup_src, ctail.data(), nt, 0, S - 1, 1, sbuf.data(),
++                                                               &sfx_match, &psrc);
++                        if (psrc > 0) ++pool_windows;
++                    }
++                    lk_raw = k;   // Strata+ P1
+                     if (k > 0 && (!use_mtp || sbuf[0] == drafts[0])) {
++                        cf_k = k;
+                         const strata::spec::DraftPolicy::Pick pk = policy.choose(T, k, sfx_match);
+                         if (pk.lookup) { T = pk.t; from_sfx = true; }
+                     }
+@@ -15154,7 +15215,7 @@ int main(int argc, char** argv) {
+                     strata::core::progress_beat();
+                     ++produced_n;
+                     if (sfx_on) sfx.append(outv[(size_t) i]);
+-                    if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
++                    if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
+                     eos = std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
+                 }
+                 std::fflush(stdout);
+@@ -15188,17 +15249,63 @@ int main(int argc, char** argv) {
+                     return 1;
+                 }
+                 if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin_s.data(), T_mtp - 1, a);
++                // Strata+ P3: the arm not played, scored on the a+1 committed tokens outv[0..a] (censored there)
++                if (cf_feedback && timed_round && !eos && chain_n == 0 && cf_k > 0) {
++                    const bool other_is_lookup = !from_sfx;
++                    const int t_other = other_is_lookup ? std::min(cf_k, S - 1) + 1 : std::clamp(T_plan_mtp, 1, S_mtp);
++                    int acc = 0;
++                    while (acc < t_other - 1 && acc <= a &&
++                           (other_is_lookup ? sbuf[(size_t) acc] : cf_mtp[(size_t) acc]) == outv[(size_t) acc]) ++acc;
++                    const bool fail_seen = acc < t_other - 1 && acc <= a;
++                    policy.observe_counterfactual(other_is_lookup, t_other, acc, fail_seen, sfx_match);
++                }
+                 if (timed_round && !eos && chain_n == 0)
+                     policy.observe(from_sfx, T, a, sfx_match,
+                                    std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
+                 else if (timed_round && !eos)   // a chained window: its MTP part, its chain, its cost
+                     policy.observe_chain(T_mtp, chain_n, a, cm,
+                                          std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
++                if (FILE* tf = plus_trace(); tf != nullptr && timed_round) {   // Strata+ P1: one round line
++                    const int nm = use_mtp ? std::clamp(T_plan_mtp - 1, 0, 8) : 0;
++                    bool cens_m = false, cens_l = false;
++                    const int acc_m = plus_lcp(cf_mtp.data(), nm, outv.data(), a, &cens_m);
++                    const int acc_l = plus_lcp(sbuf.data(), lk_raw, outv.data(), a, &cens_l);
++                    const char* src = chain_n > 0 ? "chain" : from_sfx ? "lookup" : (T > 1 ? "mtp" : "none");
++                    std::fprintf(tf, "{\"type\":\"round\",\"req_id\":\"%lld\",\"r\":%lld,\"pos\":%lld,\"ctx_len\":%lld,"
++                                     "\"source\":\"%s\",\"k_proposed\":%d,\"T\":%d,\"proposal\":",
++                                 (long long) plus_id, (long long) plus_r, (long long) p, (long long) p, src, T - 1, T);
++                    if (from_sfx) plus_ints(tf, sbuf.data(), T - 1);
++                    else { std::vector<int32_t> pr(cf_mtp.begin(), cf_mtp.begin() + std::min(T_mtp - 1, 8));
++                           pr.insert(pr.end(), cbuf.begin(), cbuf.begin() + chain_n); plus_ints(tf, pr.data(), (int) pr.size()); }
++                    std::fputs(",\"cand\":{\"mtp\":{\"tokens\":", tf);
++                    plus_ints(tf, cf_mtp.data(), nm);
++                    std::fputs(",\"probs\":", tf);
++                    plus_floats(tf, dwin_s.data(), nm);
++                    std::fputs("},\"lookup\":{\"tokens\":", tf);
++                    plus_ints(tf, sbuf.data(), lk_raw);
++                    std::fprintf(tf, ",\"match\":%d}", lk_raw > 0 ? sfx_match : 0);
++                    if (chain_n > 0) { std::fputs(",\"chain\":{\"after_mtp\":", tf); plus_ints(tf, cbuf.data(), chain_n); std::fprintf(tf, ",\"match\":%d}", cm); }
++                    std::fprintf(tf, "},\"accepted\":%d,\"committed\":%d,\"ms_measured\":%.4f,\"cost_est\":null,"
++                                     "\"policy\":\"draft_policy@7dd5cf18%s%s\",\"acc\":{\"mtp\":%d,\"lookup\":%d},"
++                                     "\"censored\":{\"mtp\":%s,\"lookup\":%s}}\n",
++                                 a, a + 1, std::chrono::duration<double, std::milli>(Clock::now() - round0).count(),
++                                 spec_cost ? "+cost" : "", cf_feedback ? "+P3" : "", acc_m, acc_l,
++                                 cens_m ? "true" : "false", cens_l ? "true" : "false");
++                    ++plus_r;
++                }
+                 if (eos) { finish = "stop"; break; }
+                 if (stop_req.load()) { finish = "cancel"; break; }
+                 x = outv[(size_t) a];
+                 p += a + 1;
+             }
++            if (FILE* tf = plus_trace()) {   // Strata+ P1: the committed output (consumed = prompt read + committed tokens)
++                const size_t n0 = std::min(consumed.size(), ids.size());
++                std::fprintf(tf, "{\"type\":\"request_end\",\"req_id\":\"%lld\",\"output_tokens\":%lld,\"output_ids\":",
++                             (long long) plus_id, (long long) (consumed.size() - n0));
++                plus_ints(tf, consumed.data() + n0, (int) (consumed.size() - n0));
++                std::fputs("}\n", tf);
++                std::fflush(tf);
++            }
+             const double decode_ms = std::chrono::duration<double, std::milli>(Clock::now() - d0).count();
+             // the last commit (set_commit_async): the session is complete before anything reads or copies it
+             if (!ver.wait_commit(err)) {
+@@ -15653,6 +15760,8 @@ int main(int argc, char** argv) {
+             if (o.lookup_chain > 0)
+                 std::fprintf(stderr, "strata serve: lookup chain: %lld of %lld windows, %lld of %lld chained drafts accepted\n",
+                              (long long) chain_windows, (long long) dec_windows, (long long) chain_ok, (long long) chain_drafts);
++            if (!strata::spec::extra_draft_sources().empty())   // Strata+ P4
++                std::fprintf(stderr, "strata serve: lookup pool: %lld lookup proposals from the pool\n", (long long) pool_windows);
+             if (std::getenv("STRATA_SPEC_DEPTH") != nullptr)
+                 std::fprintf(stderr, "strata serve: spec depth: accepted/tested %lld/%lld %lld/%lld %lld/%lld %lld/%lld %lld/%lld\n",
+                              (long long) dp_ok[0], (long long) dp_tested[0], (long long) dp_ok[1], (long long) dp_tested[1],
+@@ -16426,6 +16535,7 @@ int main(int argc, char** argv) {
+         const int S_mtp = o.mtp_max_t > 0 ? std::min(o.mtp_max_t, o.spec) : o.spec;
+         if (use_mtp && S_mtp < o.spec) mtp.set_max_drafts(S_mtp - 1);
+         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
++        strata::spec::register_pool_from_env();   // Strata+ P4 (here the pool sees context; the lookup arm is the serve loop's)
+         strata::spec::DraftPolicy policy(o.spec);   // MTP or lookup window (see draft_policy.hpp)
+         strata::spec::DraftPolicy::ChainState chain_st;
+         int chain_rows = 1;   // STRATA_SPEC_COST: the window the cost-aware rule kept in the MTP chain just drafted
+@@ -16445,6 +16555,8 @@ int main(int argc, char** argv) {
+             }
+         }
+         policy.set_robust(spec_cost);
++        // Strata+ P2: deterministic cost mode - the seeded table (STRATA_SPEC_COST_TABLE) is the cost, not learned
++        if (const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN"); fz != nullptr && fz[0] == '1') policy.set_frozen_costs(true);
+         if (spec_cost && use_mtp)
+             mtp.set_chain_rule([&](int idx, float pj) {
+                 const bool k = policy.keep_draft(chain_st, idx, pj, S_mtp);
+@@ -16461,7 +16573,7 @@ int main(int argc, char** argv) {
+             for (int64_t t : o.tokens) sfx.append((int32_t) t);
+             for (int64_t t : produced) sfx.append((int32_t) t);
+         }
+-        if (o.lookup_chain > 0) {
++        if (extra_sources_on(o.lookup_chain)) {   // Strata+ P4
+             extra_sources_reset();
+             for (int64_t t : o.tokens) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+             for (int64_t t : produced) { const int32_t t32 = (int32_t) t; extra_sources_append(&t32, 1); }
+@@ -16681,7 +16793,7 @@ int main(int argc, char** argv) {
+             for (int i = 0; i <= a && (int64_t) produced.size() < max_new && !eos; ++i) {
+                 produced.push_back(outv[(size_t) i]);
+                 if (sfx_on) sfx.append(outv[(size_t) i]);
+-                if (o.lookup_chain > 0) extra_sources_append(&outv[(size_t) i], 1);
++                if (extra_sources_on(o.lookup_chain)) extra_sources_append(&outv[(size_t) i], 1);   // Strata+ P4
+                 eos = o.stop_eos && std::find(o.eos_ids.begin(), o.eos_ids.end(), (int64_t) outv[(size_t) i]) != o.eos_ids.end();
+                 if (!follow.empty()) { follow_differ += fdiff[(size_t) i]; ++follow_emitted; }
+             }
+diff --git a/src/spec/draft_policy.cpp b/src/spec/draft_policy.cpp
+index ffd9bbb..1a030ab 100644
+--- a/src/spec/draft_policy.cpp
++++ b/src/spec/draft_policy.cpp
+@@ -153,7 +153,7 @@ DraftPolicy::Pick DraftPolicy::choose(int t_mtp, int lookup_k, int match) const
+ 
+ void DraftPolicy::observe(bool lookup, int t, int accepted, int match, double round_ms) {
+     t = std::clamp(t, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         round_ms = clamp_sample(t, round_ms);
+         const double alpha = robust_ ? std::max(kCostAlpha, 1.0 / (cost_n_[bk_][t] + 1.0)) : kCostAlpha;   // a running mean for the first samples
+         cost_[bk_][t] = cost_n_[bk_][t] > 0 ? (1.0 - alpha) * cost_[bk_][t] + alpha * round_ms : round_ms;
+@@ -172,6 +172,21 @@ void DraftPolicy::observe(bool lookup, int t, int accepted, int match, double ro
+     }
+ }
+ 
++void DraftPolicy::observe_counterfactual(bool lookup, int t, int accepted, bool failure_seen, int match) {
++    t = std::clamp(t, 1, kMaxT);
++    accepted = std::clamp(accepted, 0, t - 1);
++    if (lookup) {
++        const int b = bucket(match);
++        ok_[b] = kDecay * ok_[b] + accepted;
++        bad_[b] = kDecay * bad_[b] + (failure_seen ? 1.0 : 0.0);
++        return;
++    }
++    if (!failure_seen && accepted < t - 1) return;   // censored before the end of the window: E[tokens] unknown
++    const double got = accepted + 1.0;
++    mtp_tok_[t] = mtp_n_[t] > 0 ? (1.0 - kTokAlpha) * mtp_tok_[t] + kTokAlpha * got : got;
++    mtp_n_[t] += 1.0;
++}
++
+ namespace {
+ int p_bucket(double p) {
+     const int b = (int) (p * 8.0);
+@@ -257,7 +272,7 @@ int DraftPolicy::chain(int t_mtp, double p_mtp, int k_avail, int match) const {
+ 
+ void DraftPolicy::observe_chain(int t_mtp, int k, int accepted, int match, double round_ms) {
+     const int t = std::clamp(t_mtp + k, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         round_ms = clamp_sample(t, round_ms);
+         const double alpha = robust_ ? std::max(kCostAlpha, 1.0 / (cost_n_[bk_][t] + 1.0)) : kCostAlpha;   // a running mean for the first samples
+         cost_[bk_][t] = cost_n_[bk_][t] > 0 ? (1.0 - alpha) * cost_[bk_][t] + alpha * round_ms : round_ms;
+diff --git a/src/spec/draft_policy_test.cpp b/src/spec/draft_policy_test.cpp
+index 48a4f79..f16c111 100644
+--- a/src/spec/draft_policy_test.cpp
++++ b/src/spec/draft_policy_test.cpp
+@@ -6,6 +6,7 @@
+ //   3. lookup drafts that are always accepted are taken, and the window grows with them;
+ //   4. match-length buckets learn separately (short matches failing does not stop long ones);
+ //   5. the policy never proposes a window beyond its cap.
++#include <cmath>
+ #include "strata/spec/draft_policy.hpp"
+ 
+ #include <cstdio>
+@@ -114,6 +115,32 @@ int main() {
+               "chain: stale full size is re-probed despite a profitable shorter chain");
+         check(probes > 0 && confident, "chain: stale re-probes retain the MTP confidence gate");
+     }
++    {   // Strata+ P2: frozen costs stay at the seeded table
++        strata::spec::DraftPolicy p(6);
++        const double tab[6] = {20.0, 26.0, 32.0, 38.0, 44.0, 50.0};
++        p.seed_costs(tab, 6, 6.0);
++        p.set_frozen_costs(true);
++        for (int i = 0; i < 50; ++i) p.observe(false, 4, 2, 0, 500.0);
++        check(p.cost_ms(4) == 38.0, "frozen: measured round times do not move the seeded cost");
++    }
++    {   // Strata+ P3: counterfactual lookup feedback moves q like played rounds; censored MTP samples are dropped
++        strata::spec::DraftPolicy a(6), b(6);
++        for (int i = 0; i < 40; ++i) {
++            a.observe(true, 6, 1, 8, 30.0);
++            b.observe_counterfactual(true, 6, 1, true, 8);
++        }
++        check(std::abs(a.lookup_rate(8) - b.lookup_rate(8)) < 1e-12, "counterfactual: lookup sample == played sample");
++        strata::spec::DraftPolicy c(6);
++        const double before = c.lookup_rate(30);
++        for (int i = 0; i < 40; ++i) c.observe_counterfactual(true, 6, 2, false, 30);   // censored at a+1 = 3, no failure seen
++        check(c.lookup_rate(30) > before, "counterfactual: censored lookup successes raise q");
++        strata::spec::DraftPolicy d(6);
++        d.observe_counterfactual(false, 4, 1, false, 0);   // MTP censored at 1 < 3: unknown outcome, ignored
++        const strata::spec::DraftPolicy::Pick pk = d.choose(4, 3, 30);
++        strata::spec::DraftPolicy e(6);
++        const strata::spec::DraftPolicy::Pick pe = e.choose(4, 3, 30);
++        check(pk.lookup == pe.lookup && pk.t == pe.t, "counterfactual: a censored MTP sample changes nothing");
++    }
+     std::printf(g_fail ? "FAIL\n" : "PASS\n");
+     return g_fail ? 1 : 0;
+ }
+diff --git a/src/spec/joint_gate.cpp b/src/spec/joint_gate.cpp
+new file mode 100644
+index 0000000..a0bdf8e
+--- /dev/null
++++ b/src/spec/joint_gate.cpp
+@@ -0,0 +1,242 @@
++// src/spec/joint_gate.cpp - see include/strata/spec/joint_gate.hpp (Strata+ P5, local draft).
++#include "strata/spec/joint_gate.hpp"
++
++#include <algorithm>
++#include <cmath>
++#include <cstdlib>
++
++namespace strata::spec {
++
++namespace {
++constexpr double kPB[6] = {0.3, 0.6, 0.8, 0.9, 0.95, 0.99};
++constexpr int kMB[4] = {4, 6, 12, 24};
++constexpr int kTRows = 8;          // th_ rows / n_t_ entries: window sizes T = 1..kTRows
++static_assert(strata::spec::JointGate::kD + 1 == kTRows, "window sizes must fit the cost rows");
++int trow(int t) { return std::clamp(t, 1, kTRows) - 1; }   // T > 8 (e.g. an engine chain window) -> last row
++int pbucket(double p) { int b = 0; while (b < 6 && kPB[b] <= p) ++b; return b; }   // searchsorted(side="right")
++int mbucket(int m) { int b = 0; while (b < 4 && kMB[b] <= m) ++b; return b; }
++void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
++    const int known = a + 1;
++    if (acc_true < std::min(k_alt, known)) { *obs = acc_true; *fail = true; return; }
++    *obs = std::min({acc_true, k_alt, known});
++    *fail = false;
++}
++}  // namespace
++
++JointGate::JointGate() : JointGate(Options()) {}
++
++bool JointGate::enabled_from_env() {
++    const char* v = std::getenv("STRATA_SPEC_JOINT");
++    return v != nullptr && v[0] == '1';
++}
++
++JointGate::JointGate(const Options& o) : o_(o) {
++    o_.tmax = std::clamp(o_.tmax, 1, kD + 1);   // expect()/th_ have room for T <= kD + 1 = 8 only
++    const double pri[7] = {0.15, 0.45, 0.7, 0.85, 0.92, 0.97, 0.99};
++    for (int j = 0; j < kD; ++j) {
++        for (int b = 0; b < 7; ++b) { hm_s_[j][b] = pri[b] * 2; hm_f_[j][b] = (1 - pri[b]) * 2; }
++        hmm_s_[j] = 1.2; hmm_f_[j] = 0.8;
++    }
++    for (auto& a : hl_s_) for (auto& b : a) for (auto& c : b) for (double& x : c) x = 1.2;
++    for (auto& a : hl_f_) for (auto& b : a) for (auto& c : b) for (double& x : c) x = 0.8;
++    for (int t = 0; t < 8; ++t) th_[(size_t) t] = 1.0 + 0.15 * t;
++    th_[8] = 0.05; th_[9] = 0.001;
++    for (int i = 0; i < 10; ++i) P_[i][i] = 1.0;
++    P_[8][8] = 0.01; P_[9][9] = 1e-4;
++}
++
++double JointGate::cost_pred(int t, int d, int k) const {
++    const double v = th_[(size_t) trow(t)] + th_[8] * d + th_[9] * k;
++    return std::max(1e-3, v) * (scale_ > 0 ? scale_ : 1.0);
++}
++
++void JointGate::cost_update(int t, int d, int k, double c) {
++    const int r = trow(t);
++    double x[10] = {};
++    x[r] = 1; x[8] = d; x[9] = k;
++    double xt = 0; for (int i = 0; i < 10; ++i) xt += th_[(size_t) i] * x[i];
++    if (!(scale_ > 0)) scale_ = c / std::max(1e-3, xt);
++    if (frozen_) return;
++    const double y = c / scale_, lam = 0.999;
++    double Px[10] = {}, den = lam;
++    for (int i = 0; i < 10; ++i) { for (int j = 0; j < 10; ++j) Px[i] += P_[i][j] * x[j]; }
++    for (int i = 0; i < 10; ++i) den += x[i] * Px[i];
++    double g[10];
++    for (int i = 0; i < 10; ++i) g[i] = Px[i] / den;
++    for (int i = 0; i < 10; ++i) th_[(size_t) i] += g[i] * (y - xt);
++    for (int i = 0; i < 10; ++i)
++        for (int j = 0; j < 10; ++j) P_[i][j] = (P_[i][j] - g[i] * Px[j]) / lam;
++    n_t_[(size_t) r] += 1;
++    // per-token draft/lookup costs are >= 0: lookup rows (d=0, k>0) otherwise let r_lu absorb a T-row error
++    th_[8] = std::max(th_[8], 0.0); th_[9] = std::max(th_[9], 0.0);
++    // monotone in T only for rows with < 3 samples: clamping a measured row to a still-unlearned neighbour froze it
++    for (int t2 = 1; t2 < 8; ++t2)
++        if (n_t_[t2] < 3) th_[(size_t) t2] = std::max(th_[(size_t) t2], th_[(size_t) t2 - 1]);
++    // a window size tried < 3 times costs at most the line through its tried neighbours (extended past the widest
++    // tried size): a prior scaled by the first sample cannot price a size out for good (it is never measured otherwise)
++    for (int u = 0; u < 8; ++u) {
++        if (n_t_[u] >= 3) continue;
++        int lo1 = -1, lo2 = -1, hi = -1;
++        for (int v = 0; v < u; ++v) if (n_t_[v] >= 3) { lo2 = lo1; lo1 = v; }
++        for (int v = 7; v > u; --v) if (n_t_[v] >= 3) hi = v;
++        int a, b;
++        if (lo1 >= 0 && hi >= 0) { a = lo1; b = hi; }
++        else if (lo2 >= 0) { a = lo2; b = lo1; }
++        else continue;
++        double line = th_[(size_t) a] + (th_[(size_t) b] - th_[(size_t) a]) * (u - a) / (double) (b - a);
++        if (u > 0) line = std::max(line, th_[(size_t) u - 1]);
++        th_[(size_t) u] = std::min(th_[(size_t) u], line);
++    }
++}
++
++void JointGate::seed_costs(const double s_by_t[kTRows], double rho_mtp, double rho_lu, double unit) {
++    for (int t = 0; t < kTRows; ++t) th_[(size_t) t] = s_by_t[t];
++    th_[8] = std::max(0.0, rho_mtp); th_[9] = std::max(0.0, rho_lu);
++    scale_ = unit > 0 ? unit : 1.0;
++    for (int t = 0; t < kTRows; ++t) n_t_[(size_t) t] = 3;   // seeded rows count as measured (no prior clamps)
++}
++
++int JointGate::remaining(int max_new, int produced, int max_context, int pos) {
++    int rem = max_new - produced - 1;
++    if (max_context > 0) rem = std::min(rem, max_context - pos - 1);
++    return std::max(rem, 0);
++}
++
++void JointGate::lu_haz(int s, int match, int ag, double h[kD]) const {
++    const int mb = mbucket(match);
++    for (int j = 0; j < kD; ++j) {
++        const int jb = std::min(j, 2);
++        h[j] = hl_s_[s][mb][ag][jb] / (hl_s_[s][mb][ag][jb] + hl_f_[s][mb][ag][jb]);
++    }
++}
++
++void JointGate::mtp_haz(const float* p, int n, double h[kD]) const {
++    for (int j = 0; j < kD; ++j) {
++        if (j < n || n > 0) {
++            const int b = pbucket((double) p[j < n ? j : n - 1]);
++            h[j] = hm_s_[j][b] / (hm_s_[j][b] + hm_f_[j][b]);
++        } else {
++            h[j] = hmm_s_[j] / (hmm_s_[j] + hmm_f_[j]);
++        }
++    }
++}
++
++int JointGate::expect(const double h[kD], int kmax, double e[kD + 1]) {
++    double acc = 1.0, surv = 1.0;
++    e[0] = 1.0;
++    for (int j = 0; j < kmax; ++j) { surv *= h[j]; acc += surv; e[j + 1] = acc; }
++    return kmax + 1;
++}
++
++bool JointGate::best_lookup(const Lookup lu[kSrc], int d, bool ag_known, double lam, int rem, double* v, int* s,
++                            int* t) const {
++    bool any = false;
++    for (int si = 0; si < kSrc; ++si) {
++        if (!o_.use_src[si] || lu[si].k <= 0) continue;
++        const int ag = !ag_known ? 2 : (lu[si].agree >= 1 ? 1 : 0);
++        double h[kD], e[kD + 1];
++        lu_haz(si, lu[si].match, ag, h);
++        const int ne = expect(h, std::min({lu[si].k, o_.tmax - 1, rem, kD}), e);
++        for (int k = 1; k < ne; ++k) {
++            const double val = e[k] - lam * cost_pred(k + 1, d, klu_);
++            if (!any || val > *v) { *v = val; *s = si; *t = k + 1; any = true; }
++        }
++    }
++    return any;
++}
++
++bool JointGate::start(const Lookup lu[kSrc], int rem, Choice* out) {
++    rem_ = rem;
++    klu_ = 0;
++    for (int si = 0; si < kSrc; ++si) if (o_.use_src[si]) klu_ += lu[si].k;
++    const double lam = lambda();
++    const double v0 = 1.0 - lam * cost_pred(1, 0, klu_);
++    double vl = 0; int sl = 0, tl = 1;
++    const bool bl = best_lookup(lu, 0, false, lam, rem, &vl, &sl, &tl);
++    *out = Choice{kNone, 1, 0, klu_};
++    if (!o_.mtp || rem <= 0) {
++        if (bl && vl > v0) *out = Choice{sl == 0 ? kLookup : kPool, tl, 0, klu_};
++        return true;
++    }
++    double hm[kD], em[kD + 1];
++    mtp_haz(nullptr, 0, hm);
++    const int ne = expect(hm, std::min({o_.tmax - 1, rem, kD}), em);   // tmax clamped to kD + 1 in the constructor
++    double vm = -1e300;
++    for (int k = 1; k < ne; ++k) vm = std::max(vm, em[k] - lam * cost_pred(k + 1, k, klu_));
++    if (o_.skip && bl && vl >= vm && vl > v0) {
++        *out = Choice{sl == 0 ? kLookup : kPool, tl, 0, klu_};
++        return true;
++    }
++    kmax_ = std::min({kD, o_.tmax - 1, rem});
++    return false;
++}
++
++bool JointGate::keep(const float* p, const float* ent, int d) {
++    if (o_.conf_stop) {
++        double H = ent != nullptr ? (double) ent[d - 1] : NAN;
++        if (std::isnan(H)) H = -std::log(std::max(1e-6, (double) p[d - 1]));
++        return !(1 - std::sqrt(o_.gamma * H) < o_.eta) && d < kmax_;
++    }
++    if (d >= kmax_) return false;
++    const double lam = lambda();
++    double h[kD], e[kD + 1];
++    mtp_haz(p, d, h);
++    expect(h, kmax_, e);
++    double now = -1e300, ahead = -1e300;
++    for (int k = 0; k <= d; ++k) now = std::max(now, e[k] - lam * cost_pred(k + 1, d, klu_));
++    for (int k = d + 1; k <= kmax_; ++k) ahead = std::max(ahead, e[k] - lam * cost_pred(k + 1, k, klu_));
++    return ahead > now;
++}
++
++JointGate::Choice JointGate::finish(const float* p, int d, const Lookup lu[kSrc]) {
++    const double lam = lambda();
++    double h[kD], e[kD + 1];
++    mtp_haz(p, d, h);
++    expect(h, d, e);
++    Choice best{kNone, 1, d, klu_};
++    double bv = -1e300;
++    bool first = true;
++    for (int k = 1; k <= d; ++k) {
++        const double v = e[k] - lam * cost_pred(k + 1, d, klu_);
++        if (first || v > bv) { bv = v; best = Choice{kMtp, k + 1, d, klu_}; first = false; }
++    }
++    const double vn = 1.0 - lam * cost_pred(1, d, klu_);
++    if (first || vn > bv) { bv = vn; best = Choice{kNone, 1, d, klu_}; }
++    double vl = 0; int sl = 0, tl = 1;
++    if (best_lookup(lu, d, true, lam, rem_, &vl, &sl, &tl) && vl > bv) best = Choice{sl == 0 ? kLookup : kPool, tl, d, klu_};
++    return best;
++}
++
++void JointGate::observe(const Choice& c, int a, double cost, int mtp_acc, const float* mtp_p, const Lookup lu[kSrc],
++                        const int lu_acc[kSrc]) {
++    cost_update(c.t, c.d, c.klu, cost);
++    lam_n_ = 0.995 * lam_n_ + (a + 1);
++    lam_c_ = 0.995 * lam_c_ + cost;
++    if (c.d > 0) {
++        int obs; bool fail;
++        censored(mtp_acc, c.d, a, &obs, &fail);
++        for (int j = 0; j < std::min({obs + (fail ? 1 : 0), c.d, kD}); ++j) {   // c.d > kD: no row
++            const int b = pbucket((double) mtp_p[j]);
++            const bool ok = j < obs;
++            hm_s_[j][b] += ok; hm_f_[j][b] += !ok;
++            hmm_s_[j] = 0.999 * hmm_s_[j] + ok; hmm_f_[j] = 0.999 * hmm_f_[j] + !ok;
++        }
++    }
++    for (int si = 0; si < kSrc; ++si) {
++        if (!o_.use_src[si] || lu[si].k <= 0) continue;
++        const int mb = mbucket(lu[si].match);
++        int obs; bool fail;
++        censored(lu_acc[si], std::min(lu[si].k, kD), a, &obs, &fail);
++        int ags[2] = {2, lu[si].agree >= 1 ? 1 : 0};
++        const int nag = c.d > 0 ? 2 : 1;
++        for (int g = 0; g < nag; ++g)
++            for (int j = 0; j < std::min(obs + (fail ? 1 : 0), lu[si].k); ++j) {
++                const bool ok = j < obs;
++                const int jb = std::min(j, 2);
++                hl_s_[si][mb][ags[g]][jb] = 0.998 * hl_s_[si][mb][ags[g]][jb] + ok;
++                hl_f_[si][mb][ags[g]][jb] = 0.998 * hl_f_[si][mb][ags[g]][jb] + !ok;
++            }
++    }
++}
++
++}  // namespace strata::spec
+diff --git a/src/spec/joint_gate_test.cpp b/src/spec/joint_gate_test.cpp
+new file mode 100644
+index 0000000..2b52654
+--- /dev/null
++++ b/src/spec/joint_gate_test.cpp
+@@ -0,0 +1,153 @@
++// src/spec/joint_gate_test.cpp - Strata+ P5: the joint source+depth gate's basic behaviour.
++#include "strata/spec/joint_gate.hpp"
++
++#include <algorithm>
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++
++namespace {
++bool g_fail = false;
++void check(bool ok, const char* what) {
++    std::printf("  %-64s %s\n", what, ok ? "ok" : "FAIL");
++    g_fail |= !ok;
++}
++}  // namespace
++
++int main() {
++    using strata::spec::JointGate;
++    const JointGate::Lookup none[2] = {};
++    {   // confident MTP chains on a flat verify cost are drafted deep; unconfident ones stop early
++        // (written for the full window: explicit tmax=8 since the default became arm A, tmax=5)
++        JointGate::Options o8; o8.tmax = 8;
++        JointGate g(o8);
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const float lo[7] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
++        for (int r = 0; r < 300; ++r) {   // learn: hi chains accept fully, lo chains fail at once; flat cost 1.0
++            JointGate::Choice c;
++            if (g.start(none, 100, &c)) continue;
++            const bool h = r % 2 == 0;
++            int d = 0;
++            while (true) { ++d; if (!g.keep(h ? hi : lo, nullptr, d)) break; }
++            c = g.finish(h ? hi : lo, d, none);
++            const int acc = h ? c.t - 1 : 0;
++            const int lu_acc[2] = {0, 0};
++            g.observe(c, acc, 1.0 + 0.05 * c.d, h ? 7 : 0, h ? hi : lo, none, lu_acc);
++        }
++        JointGate::Choice c;
++        int dh = 0, dl = 0;
++        if (!g.start(none, 100, &c)) { while (true) { ++dh; if (!g.keep(hi, nullptr, dh)) break; } }
++        if (!g.start(none, 100, &c)) { while (true) { ++dl; if (!g.keep(lo, nullptr, dl)) break; } }
++        check(dh >= 5, "depth: confident chains are drafted deep under a flat cost");
++        check(dl == 1, "depth: an unconfident first draft stops the chain");
++        const JointGate::Choice ch = g.finish(hi, dh, none);
++        check(ch.src == JointGate::kMtp && ch.t == dh + 1, "source: the confident chain is verified whole");
++    }
++    {   // lookup-first: a lookup that keeps being right is taken without drafting the MTP
++        JointGate g;
++        const float mid[7] = {0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
++        JointGate::Lookup lu[2] = {{7, 30, 1}, {}};
++        int skipped = 0;
++        for (int r = 0; r < 200; ++r) {
++            JointGate::Choice c;
++            const bool sk = g.start(lu, 100, &c);
++            if (!sk) { int d = 0; while (true) { ++d; if (!g.keep(mid, nullptr, d)) break; } c = g.finish(mid, d, lu); }
++            skipped += sk && c.src == JointGate::kLookup;
++            const int a = c.src == JointGate::kLookup ? c.t - 1 : 0;
++            const int lu_acc[2] = {7, 0};
++            g.observe(c, a, 1.0 + 0.3 * (c.t - 1), 0, mid, lu, lu_acc);
++        }
++        check(skipped > 150, "lookup-first: a reliable long lookup skips the MTP draft");
++    }
++    {   // H4 variant: the entropy stop
++        JointGate::Options o; o.conf_stop = true;
++        JointGate g(o);
++        const float p[7] = {0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f};
++        const float ent[7] = {0.05f, 0.05f, 2.0f, 0.05f, 0.05f, 0.05f, 0.05f};
++        JointGate::Choice c;
++        int d = 0;
++        if (!g.start(none, 100, &c)) { while (true) { ++d; if (!g.keep(p, ent, d)) break; } }
++        check(d == 3, "conf_stop: drafting stops at the first high-entropy draft");
++    }
++    {   // bounds (Scout bug a): tmax = 8 plans windows up to T = 8 (rows 0..7) and no further; tmax > 8 is clamped;
++        // an engine window T = 9 or d > 7 passed to observe() is folded into the last row, not written out of bounds
++        JointGate::Options o; o.tmax = 8;
++        JointGate g(o);
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const float hi9[9] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const int lu_acc[2] = {0, 0};
++        int maxt = 0;
++        for (int r = 0; r < 300; ++r) {
++            JointGate::Choice c;
++            if (g.start(none, 100, &c)) continue;
++            int d = 0;
++            while (true) { ++d; if (!g.keep(hi, nullptr, d)) break; }
++            c = g.finish(hi, d, none);
++            maxt = std::max(maxt, c.t);
++            g.observe(c, c.t - 1, 1.0, 7, hi, none, lu_acc);   // flat cost: the widest window wins
++        }
++        check(maxt == 8, "tmax=8: the widest planned window is T=8 (kD drafts + 1)");
++        JointGate::Choice c9; c9.src = JointGate::kMtp; c9.t = 9; c9.d = 8; c9.klu = 0;
++        g.observe(c9, 8, 1.0, 8, hi9, none, lu_acc);   // must not touch memory past the 8 rows / 7 hazards
++        check(std::isfinite(g.cost_pred(9, 0, 0)) && g.cost_pred(9, 0, 0) == g.cost_pred(8, 0, 0),
++              "T=9 is priced (and learned) as the last measured row T=8");
++        JointGate::Options o12; o12.tmax = 12;
++        check(JointGate(o12).tmax() == 8, "tmax=12 is clamped to kD+1=8");
++    }
++    {   // seeded cost table (Scout bug b): frozen plans on the seeded s(T) and ignores later measurements
++        JointGate g;
++        const double s[8] = {1.0, 1.27, 1.51, 1.74, 1.98, 2.23, 2.47, 2.56};
++        g.seed_costs(s, 0.26, 0.0, 43.0);
++        g.set_frozen(true);
++        const JointGate::Lookup none2[2] = {};
++        const float lo[7] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
++        const int lu_acc[2] = {0, 0};
++        for (int r = 0; r < 50; ++r) {
++            JointGate::Choice c;
++            if (!g.start(none2, 100, &c)) c = g.finish(lo, 1, none2);
++            g.observe(c, 0, 500.0, 0, lo, none2, lu_acc);   // wildly different measured cost
++        }
++        check(std::fabs(g.cost_pred(8, 0, 0) - 2.56 * 43.0) < 1e-9 && std::fabs(g.cost_pred(1, 2, 0) - 1.52 * 43.0) < 1e-9,
++              "frozen: the gate plans on the seeded table (x unit), not the prior");
++    }
++    {   // rem bounded by the context window (Scout bug d)
++        check(JointGate::remaining(100, 10, 4096, 200) == 89, "rem: max_new bound");
++        check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
++        check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
++    }
++    {   // arm A = the defaults (Strata Lead decision 25/10/2026): tmax=5, skip, prompt lookup only, no conf_stop
++        const JointGate::Options d;
++        check(d.tmax == 5 && d.skip && d.mtp && !d.conf_stop && d.use_src[0] && !d.use_src[1],
++              "defaults = arm A: tmax=5, skip, mtp, lookup only, no conf_stop");
++        JointGate g;
++        check(g.tmax() == 5, "JointGate() has tmax 5");
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        JointGate::Lookup lu[2] = {{7, 40, 1}, {}};
++        const int lu_acc[2] = {7, 0};
++        int maxt = 0, maxd = 0, maxlt = 0;   // klu = lookup PROPOSAL length (cost term), not the window
++        for (int r = 0; r < 300; ++r) {   // flat cost, everything accepted: the widest allowed window wins
++            JointGate::Choice c;
++            const bool look = r % 3 == 0;
++            if (!g.start(look ? lu : none, 100, &c)) {
++                int dd = 0;
++                while (true) { ++dd; if (!g.keep(hi, nullptr, dd)) break; }
++                maxd = std::max(maxd, dd);
++                c = g.finish(hi, dd, look ? lu : none);
++            }
++            maxt = std::max(maxt, c.t); maxd = std::max(maxd, c.d);
++            if (c.src == JointGate::kLookup) maxlt = std::max(maxlt, c.t);
++            g.observe(c, c.t - 1, 1.0, 7, hi, look ? lu : none, lu_acc);
++        }
++        check(maxt == 5 && maxd <= 4 && maxlt >= 2 && maxlt <= 5, "arm A: windows (MTP and lookup) reach T=5, never more; d<=4");
++        unsetenv("STRATA_SPEC_JOINT");
++        const bool off = !JointGate::enabled_from_env();
++        setenv("STRATA_SPEC_JOINT", "0", 1);
++        const bool zero = !JointGate::enabled_from_env();
++        setenv("STRATA_SPEC_JOINT", "1", 1);
++        const bool on = JointGate::enabled_from_env();
++        unsetenv("STRATA_SPEC_JOINT");
++        check(off && zero && on, "STRATA_SPEC_JOINT: unset/0 -> off (DraftPolicy), 1 -> on");
++    }
++    std::printf(g_fail ? "FAIL\n" : "PASS\n");
++    return g_fail ? 1 : 0;
++}
+diff --git a/src/spec/pool_source.cpp b/src/spec/pool_source.cpp
+new file mode 100644
+index 0000000..57c0313
+--- /dev/null
++++ b/src/spec/pool_source.cpp
+@@ -0,0 +1,57 @@
++// src/spec/pool_source.cpp - see include/strata/spec/pool_source.hpp (Strata+ P4, local draft).
++#include "strata/spec/pool_source.hpp"
++
++#include <algorithm>
++#include <cstdlib>
++#include <memory>
++
++namespace strata::spec {
++
++// The drafter gets 2x the pool's capacity of room, so it never reaches its own "table full" state before evict().
++PoolSource::PoolSource(size_t capacity, int gate, int max_match)
++    : capacity_(std::max<size_t>(capacity, 1024)), gate_(std::max(gate, 3)), max_match_(std::max(max_match, gate_)),
++      d_(3, max_match_, 2 * capacity_ + 4096) {
++    text_.reserve(capacity_ + 1024);
++}
++
++void PoolSource::append(const int32_t* tokens, size_t n) {
++    if (n == 0) return;
++    if (text_.size() + n > capacity_) evict();
++    text_.insert(text_.end(), tokens, tokens + n);
++    d_.append(tokens, n);
++}
++
++void PoolSource::evict() {
++    const size_t keep = capacity_ / 2;
++    if (text_.size() > keep) text_.erase(text_.begin(), text_.end() - (std::ptrdiff_t) keep);
++    d_.reset();
++    d_.append(text_.data(), text_.size());
++    ++evictions_;
++}
++
++int PoolSource::propose(const int32_t* tail, int n_tail, int n_pending, int max_k, int32_t* out, int* match) {
++    *match = 0;
++    // the pool's own history ends with the current request's committed context (append() saw it), so as for
++    // PromptLookupSource only the pending drafts are passed on
++    n_pending = std::clamp(n_pending, 0, n_tail);
++    const int k = d_.propose_after(tail + (n_tail - n_pending), n_pending, max_k, out);
++    if (k <= 0 || d_.last_match() < gate_) return 0;
++    *match = d_.last_match();
++    return k;
++}
++
++bool register_pool_from_env() {
++    const char* v = std::getenv("STRATA_LOOKUP_POOL");
++    if (v == nullptr || *v == '\0') return false;
++    char* end = nullptr;
++    const unsigned long long cap = std::strtoull(v, &end, 10);
++    int gate = 12;
++    if (end != nullptr && *end == ',') gate = std::atoi(end + 1);
++    if (cap == 0) return false;
++    for (const auto& s : extra_draft_sources())
++        if (s && dynamic_cast<const PoolSource*>(s.get()) != nullptr) return true;   // registered once
++    extra_draft_sources().push_back(std::make_unique<PoolSource>((size_t) cap, gate));
++    return true;
++}
++
++}  // namespace strata::spec
+diff --git a/src/spec/pool_source_test.cpp b/src/spec/pool_source_test.cpp
+new file mode 100644
+index 0000000..6e886f0
+--- /dev/null
++++ b/src/spec/pool_source_test.cpp
+@@ -0,0 +1,54 @@
++// src/spec/pool_source_test.cpp - Strata+ P4: the persistent pool survives reset(), gates short matches, evicts.
++#include "strata/spec/pool_source.hpp"
++
++#include <cstdio>
++#include <cstdlib>
++#include <vector>
++
++namespace {
++bool g_fail = false;
++void check(bool ok, const char* what) {
++    std::printf("  %-64s %s\n", what, ok ? "ok" : "FAIL");
++    g_fail |= !ok;
++}
++}  // namespace
++
++int main() {
++    using strata::spec::PoolSource;
++    std::vector<int32_t> a;
++    for (int i = 0; i < 200; ++i) a.push_back(1000 + i);   // request 1: a distinctive run
++    {
++        PoolSource p(1 << 16, 12);
++        p.append(a.data(), a.size());
++        p.reset();                                          // request 2 starts
++        std::vector<int32_t> r2 = {7, 8, 9};
++        r2.insert(r2.end(), a.begin() + 50, a.begin() + 70);   // repeats 20 tokens of request 1
++        p.append(r2.data(), r2.size());
++        int32_t out[8]; int m = 0;
++        const int k = p.propose(r2.data(), (int) r2.size(), 0, 8, out, &m);
++        check(k > 0 && out[0] == a[70] && m >= 12, "pool: an earlier request's text is proposed after reset()");
++        std::vector<int32_t> r3 = {5, 5, 5};
++        r3.insert(r3.end(), a.begin() + 120, a.begin() + 125);   // only a 5-token repeat
++        p.append(r3.data(), r3.size());
++        const int k3 = p.propose(r3.data(), (int) r3.size(), 0, 8, out, &m);
++        check(k3 == 0 && m == 0, "pool: matches shorter than the gate propose nothing");
++    }
++    {
++        PoolSource p(2048, 12);
++        p.append(a.data(), a.size());
++        std::vector<int32_t> filler;
++        for (int i = 0; i < 3000; ++i) filler.push_back(50000 + (i * 7919) % 40000);
++        for (size_t i = 0; i < filler.size(); i += 100) p.append(filler.data() + i, 100);
++        check(p.evictions() > 0 && p.size() <= 2048, "pool: capacity bounded, oldest text evicted");
++        std::vector<int32_t> q(a.begin() + 50, a.begin() + 70);
++        p.append(q.data(), q.size());
++        int32_t out[8]; int m = 0;
++        check(p.propose(q.data(), (int) q.size(), 0, 8, out, &m) == 0, "pool: evicted text is no longer proposed");
++        std::vector<int32_t> f(filler.end() - 400, filler.end() - 380);
++        p.append(f.data(), f.size());
++        const int k = p.propose(f.data(), (int) f.size(), 0, 8, out, &m);
++        check(k > 0 && out[0] == *(filler.end() - 380), "pool: indexing continues after eviction");
++    }
++    std::printf(g_fail ? "FAIL\n" : "PASS\n");
++    return g_fail ? 1 : 0;
++}

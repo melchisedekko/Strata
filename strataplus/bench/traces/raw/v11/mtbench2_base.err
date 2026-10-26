@@ -1,0 +1,23 @@
+0.01.051.779 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=base
+[mtbench2_base] rep 0 mtbench2-86#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5747 ms
+[mtbench2_base] rep 0 mtbench2-86#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6418 ms
+[mtbench2_base] rep 0 mtbench2-87#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5807 ms
+[mtbench2_base] rep 0 mtbench2-87#t1: 31 tok, 31 verify + 0 replay rounds, acc 0/0, decode 1419 ms
+[mtbench2_base] rep 0 mtbench2-90#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5803 ms
+[mtbench2_base] rep 0 mtbench2-90#t1: 90 tok, 90 verify + 0 replay rounds, acc 0/0, decode 4079 ms
+[mtbench2_base] rep 0 mtbench2-91#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5703 ms
+[mtbench2_base] rep 0 mtbench2-91#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5692 ms
+[mtbench2_base] rep 0 mtbench2-98#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5594 ms
+[mtbench2_base] rep 0 mtbench2-98#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5649 ms
+[mtbench2_base] rep 0 mtbench2-124#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6280 ms
+[mtbench2_base] rep 0 mtbench2-124#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5847 ms
+[mtbench2_base] rep 0 mtbench2-126#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5863 ms
+[mtbench2_base] rep 0 mtbench2-126#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5938 ms
+[mtbench2_base] rep 0 mtbench2-130#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5726 ms
+[mtbench2_base] rep 0 mtbench2-130#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5650 ms
+[mtbench2_base] rep 0 mtbench2-137#t0: 86 tok, 86 verify + 0 replay rounds, acc 0/0, decode 3745 ms
+[mtbench2_base] rep 0 mtbench2-137#t1: 25 tok, 25 verify + 0 replay rounds, acc 0/0, decode 1114 ms
+[mtbench2_base] rep 0 mtbench2-142#t0: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5666 ms
+[mtbench2_base] rep 0 mtbench2-142#t1: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5590 ms
+g9_violations=0

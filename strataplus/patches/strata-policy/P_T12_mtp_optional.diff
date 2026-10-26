@@ -1,0 +1,67 @@
+diff --git a/include/strata/core/mtp.hpp b/include/strata/core/mtp.hpp
+index d97d26b..ccdefc3 100644
+--- a/include/strata/core/mtp.hpp
++++ b/include/strata/core/mtp.hpp
+@@ -23,6 +23,7 @@
+ #include "strata/core/pinned_ring.hpp"
+ #include "strata/core/session.hpp"
+ #include "strata/kernels/sampler.hpp"
++#include "strata/kernels/verify_kernels.hpp"   // STRATA+ P-T12 measure (MTP opzionale): kVerifyMaxT
+ 
+ #include <cuda_runtime.h>
+ 
+@@ -186,12 +187,12 @@ private:
+     bool capture_prefill_dev(int T, std::string& err);   ///< E-4: without the mapped staging (inputs copied on device)
+     bool capture_round(int T, bool coupled, std::string& err);
+     bool capture_step(int j, bool coupled, std::string& err);
+-    cudaGraphExec_t step_exec_[9] = {};
++    cudaGraphExec_t step_exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale): [9] -> [kVerifyMaxT + 1] (aggiunta oltre la mappa: j fino a max_t - 2)
+     // coupled draft sampling: its own round/step graphs (the argmax ones stay as they were), the request's
+     // parameters and the penalty ring (mapped staging + device copies), the split scratch, token id -> subset index
+     bool setup_coupled(std::string& err);
+-    cudaGraphExec_t round_exec_c_[9] = {};
+-    cudaGraphExec_t step_exec_c_[9] = {};
++    cudaGraphExec_t round_exec_c_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale)
++    cudaGraphExec_t step_exec_c_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale): aggiunta oltre la mappa
+     bool coupled_ok_ = false, coupled_active_ = false;
+     bool coupled_rec_ = false;   ///< record_forward: the full layer ends in the coupled sampler (draft coupled_j_)
+     int coupled_j_ = 0;
+@@ -239,14 +240,14 @@ private:
+     int64_t n_vocab_ = 0;
+     uint64_t vram_ = 0;
+     cudaStream_t cs_ = nullptr;
+-    cudaGraphExec_t prefill_exec_[9] = {};
+-    cudaGraphExec_t prefill_dev_exec_[9] = {};
++    cudaGraphExec_t prefill_exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale)
++    cudaGraphExec_t prefill_dev_exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale)
+     PinnedRing pf_ring_;          ///< #1996: the records above go up from a pinned slot, not from the pageable vector they are built in
+     int32_t* pf_dev_ = nullptr;   ///< E-4: a prompt's rows' token / step / position records, uploaded at once
+     int64_t pf_cap_ = 0;          ///< its capacity in ints
+     cudaStream_t side_ = nullptr;                    // the shared expert's branch of the draft graphs (CUDA)
+     cudaEvent_t sh_fork_ = nullptr, sh_join_ = nullptr;
+-    cudaGraphExec_t round_exec_[9] = {};
++    cudaGraphExec_t round_exec_[::strata::kernels::kVerifyMaxT + 1] = {};   // STRATA+ P-T12 measure (MTP opzionale)
+ 
+     struct Tensor { std::string name, kind; int64_t rows = 0, cols = 0; uint64_t off = 0, bytes = 0; };
+     std::vector<Tensor> tensors_;
+diff --git a/src/core/mtp.cpp b/src/core/mtp.cpp
+index f4b82b3..a8a3d17 100644
+--- a/src/core/mtp.cpp
++++ b/src/core/mtp.cpp
+@@ -393,7 +393,7 @@ bool MtpDrafter::load(const std::string& rt_dir, const ModelGeometry& g, Session
+         mixed_ = b.take<float>(T * N); inj_ = b.take<float>(T * HC); inj2_ = b.take<float>(T * HC);
+         lo_ = b.take<float>(T * (uint64_t) g.hc_lr); rs_ = b.take<float>(T * HC); bo_ = b.take<float>(T * N);
+         xn_ = b.take<float>(T * HC * N);
+-        xq_ = b.take<uint8_t>(strata::kernels::native_q8_1_bytes((int) (NH * HD), 8));
++        xq_ = b.take<uint8_t>(strata::kernels::native_q8_1_bytes((int) (NH * HD), (int) std::max<uint64_t>(T, 8)));   // STRATA+ P-T12 measure (MTP opzionale): 8 -> max(T, 8)
+         qfull_ = b.take<float>(T * NH * 2 * HD); qcur_ = b.take<float>(T * NH * HD);
+         kcur_ = b.take<float>(T * NKV * HD); vcur_ = b.take<float>(T * NKV * HD);
+         attn_ = b.take<float>(T * NH * HD); attn32_ = b.take<float>(T * NH * HD);
+@@ -1779,6 +1779,7 @@ bool MtpDrafter::chain_launch(int T, const int32_t* tokens, int64_t p, int a, co
+         err = "mtp: chain arguments out of range";
+         return false;
+     }
++    if (n_out > 8) { err = "mtp: chain n_out > 8 (ev_step_ / chain_tok_ / chain_prob_ hanno 8 posti)"; return false; }   // STRATA+ P-T12 measure (MTP opzionale): aggiunta oltre la mappa
+     if (round_exec_[T] == nullptr) { err = "mtp: chain graphs not prepared"; return false; }
+     for (int j = 1; j < n_out; ++j)
+         if (step_exec_[j] == nullptr) { err = "mtp: chain graphs not prepared"; return false; }

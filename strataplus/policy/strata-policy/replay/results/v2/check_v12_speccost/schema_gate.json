@@ -1,0 +1,210 @@
+{
+ "check_v12": {
+  "req_keys": [
+   "config_label",
+   "data_kind",
+   "dataset",
+   "dmax",
+   "domain",
+   "engine",
+   "engine_rev",
+   "first_divergence_pos",
+   "flags",
+   "greedy_equal_ref",
+   "label",
+   "lookup_max_match",
+   "model",
+   "output_sha256",
+   "output_tokens",
+   "pos_semantics",
+   "prompt_ids",
+   "prompt_sha256",
+   "prompt_tokens",
+   "ref_output_sha256",
+   "ref_source",
+   "ref_tokens",
+   "rep",
+   "req_id",
+   "run_id",
+   "sampling",
+   "schema",
+   "session_id",
+   "spec_params",
+   "split",
+   "stats",
+   "turn",
+   "type"
+  ],
+  "rnd_keys": [
+   "T",
+   "acc",
+   "acc_ref",
+   "accepted",
+   "after_divergence",
+   "cand",
+   "cand.lookup",
+   "cand.mtp",
+   "cand.mtp.ent",
+   "cand.mtp.probs",
+   "cand.mtp.probs_sampler",
+   "cand.mtp.tokens",
+   "committed",
+   "config_label",
+   "cost_est",
+   "ctx_bucket",
+   "ctx_len",
+   "domain",
+   "gen_index",
+   "k_cap",
+   "k_proposed",
+   "kv_pos",
+   "label",
+   "ms_measured",
+   "ms_split",
+   "policy",
+   "pos",
+   "proposal",
+   "r",
+   "rep",
+   "req_id",
+   "run_id",
+   "schema",
+   "session_id",
+   "source",
+   "split",
+   "target_tokens",
+   "turn",
+   "type",
+   "vmargin"
+  ],
+  "vals": {
+   "schema": [
+    "\"strataplus.v1.1\""
+   ],
+   "data_kind": [
+    "\"teacher_forced\""
+   ],
+   "dmax": [
+    "7"
+   ],
+   "domain": [
+    "\"chat\"",
+    "\"code\"",
+    "\"edit\""
+   ],
+   "split": [
+    "\"check_v12\""
+   ],
+   "sampling": [
+    "\"greedy\""
+   ],
+   "engine": [
+    "\"llamacpp\""
+   ],
+   "pos_semantics": [
+    "\"pos = output tokens committed before the round (D4)\""
+   ],
+   "lookup_max_match": [
+    "64"
+   ],
+   "rep": [
+    "0"
+   ]
+  },
+  "domains": {
+   "code": 20,
+   "chat": 20,
+   "edit": 20
+  },
+  "extra": {}
+ },
+ "ref_v11": {
+  "req_keys": [
+   "config_label",
+   "data_kind",
+   "dataset",
+   "dmax",
+   "domain",
+   "engine",
+   "engine_rev",
+   "first_divergence_pos",
+   "flags",
+   "greedy_equal_ref",
+   "label",
+   "lookup_max_match",
+   "model",
+   "output_sha256",
+   "output_tokens",
+   "pos_semantics",
+   "prompt_ids",
+   "prompt_sha256",
+   "prompt_tokens",
+   "ref_output_sha256",
+   "ref_source",
+   "ref_tokens",
+   "rep",
+   "req_id",
+   "run_id",
+   "sampling",
+   "schema",
+   "session_id",
+   "split",
+   "stats",
+   "turn",
+   "type"
+  ],
+  "rnd_keys": [
+   "T",
+   "acc",
+   "acc_ref",
+   "accepted",
+   "after_divergence",
+   "cand",
+   "cand.lookup",
+   "cand.mtp",
+   "cand.mtp.ent",
+   "cand.mtp.probs",
+   "cand.mtp.probs_sampler",
+   "cand.mtp.tokens",
+   "committed",
+   "config_label",
+   "cost_est",
+   "ctx_bucket",
+   "ctx_len",
+   "domain",
+   "gen_index",
+   "k_cap",
+   "k_proposed",
+   "kv_pos",
+   "label",
+   "ms_measured",
+   "ms_split",
+   "policy",
+   "pos",
+   "proposal",
+   "r",
+   "rep",
+   "req_id",
+   "run_id",
+   "schema",
+   "session_id",
+   "source",
+   "split",
+   "target_tokens",
+   "turn",
+   "type",
+   "vmargin"
+  ]
+ },
+ "diff": {
+  "req_missing": [],
+  "req_added": [
+   "spec_params"
+  ],
+  "rnd_missing": [],
+  "rnd_added": []
+ },
+ "schema_ok": true,
+ "draft_p_min_nmax_nmin_ok": false,
+ "check_v12_sha256": "0fe4899604b46ba1f42a855a6c7db69c26e7633c4faf070f432fba868b0991e4"
+}

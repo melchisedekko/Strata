@@ -1,0 +1,317 @@
+# Holdout v1.1 — rivalutazione "draft pieno" (POST-HOC)
+
+**Etichetta:** rivalutazione post-hoc dell'holdout v1.1 GIÀ USATO, per correggere il modello di costo (con P6 il motore calcola il draft MTP pieno a ogni round). **NON è una nuova validazione.** Conto solo descrittivo: nessuna regola di decisione applicata, la scelta A/B NON viene riaperta (Strata Lead, 04:48 CET). Nessun tune, nessun check_v12. tok/s **STIMATI** (replay; profili P1/P2 stime da codice, P4 proxy CPU Qwen3.5-2B Q4_K_M, non AMD).
+
+- Script: `replay/holdout_v11_fulldraft.py` (nuovo; NON scrive run_holdout_v11_opened.json). Output: `holdout_v11_fulldraft.json`, `summary_band.json`, `run_stdout.txt`, `run_time.txt`.
+- Parametri congelati: frozen_params_v3.json invariato (sha256 registrato nel JSON). Stesse celle (dominio × P1/P2/P4 × ρ {0,059…0,1394} + 0,26 di controllo × V1/V2), stesso boot_ratio (cluster sulle sessioni, B=2000, seed 0). Il "PRIMA" è letto da `results/v2/holdout_v11/holdout_v11.json`; i baseline ricalcolati coincidono al bit (diff tok/s = 0).
+- CPU: 04:50:07–04:50:29 CET, 22 s user, `nice -n 19`, 1 processo (registrato in cpu_busy_policy.log). Sotto la soglia di 2 CPU-minuti.
+
+## (a) Il simulatore contava il risparmio di draft? SÌ — nel ramo additivo, NON tramite cost_T_d
+
+- `strata_sim/sim2.py` L22–23: `Profile.cost(T, d_mtp, k_lu) = s[T-1] + rho_mtp*d_mtp + rho_lu*k_lu`.
+- `sim2.py` L90–93 (`walk`): `src, T, d, klu = policy.act(...)` → `c = prof.cost(T, d, klu)`: si addebita la **d scelta dalla policy**; `policy.update(..., c)` (L100) fa imparare al gate quel costo.
+- `GateV2.act` (sim2.py L463–466 rem≤0/no MTP → d=0; L470–471 skip → `return ..., 0, klu`; L473–501 d = draft effettivamente svolti fino allo stop del value-test, anche se poi vince lookup/none). Quindi skip e d bassa = risparmio di draft.
+- `cost_T_d` **non è mai letto dal replay** (grep vuoto in strata_sim/ e replay/*.py; anche la `derivation` di cost_p4_cpu_099ceda_s8lin.json lo dichiara: "cost_T_d, cost_by_k NON usati dal replay"). `load_p4` (sim2.py L38–59) prende solo `s` (= cost_T_d[T,0]) e `rho_lu`; in holdout_v11.py L40–42 ρ_mtp viene **sostituito** dal valore della cella (0,059…0,26), il rho_mtp del file (0,2695) non entra.
+- Baseline nel replay: default `T, kd = S_mtp, S_mtp-1` (L181) = d=3 a ogni round, anche nei round lookup (L192; docstring L163–166); STRATA_SPEC_COST=1 `T, kd = mtp_chain_rows(...)` (L179) con kd = passi di catena svolti (native/strata_spec_capi_p3.cpp L24–31, `*steps = n`); k=3 `("mtp", 4, 3, 0)` (L158–159).
+- Motore @7dd5cf18 (`git show 7dd5cf18:src/program/generate.cpp`, sola lettura): serve L11173 `S_mtp = mtp_max_t>0 ? min(mtp_max_t,S) : S`; L11174/11176 `mtp.set_max_drafts(S_mtp-1)`; L15168–15169 `mtp.draft(T, …)` a fine di OGNI round (salta solo a eos/max_new); `mtp.cpp` L1580 `max_steps = min(max_t_-1, max_drafts_)` e L1623–1657 catena intera quando min_p≤0 e nessuna chain rule; L1689 con chain rule si ferma quando `keep_draft` è falso. La chain rule è installata solo con STRATA_SPEC_COST=1 (generate.cpp L11179–11188; CLI L16426, L16449–16452, draft_next L16529/L16693). Il `T` passato a `draft` è solo il catch-up (mtp_process(T)) — mtp.hpp L101–106.
+- Conclusione: default (d=S_mtp−1=3) e k=3 (d=3) e SPEC_COST (d=passi di catena) sono **già fedeli al motore** nel replay; **A e B no**: il replay addebitava ad A in media 1,2 (code) / 2,38 (chat) / 1,16 (edit) draft/round (cella P4 ρ=0,0992), mentre col P6 il motore ne calcola sempre S_mtp−1.
+
+## Regola "draft pieno" applicata
+- d addebitata = draft che il motore calcola: A tmax=5 ⇒ S_mtp=5 ⇒ **d=4 ogni round**; B tmax=8 ⇒ S_mtp=8 ⇒ **d=7**; baseline invariati (già fedeli). Le decisioni di A/B restano quelle della policy congelata; il gate osserva il costo pieno (come l'observe di P6 sul tempo misurato).
+- Nota sulla formula: la Lead scrive "d = S_mtp"; il codice calcola S_mtp−1 draft (mtp.cpp L1580 + generate.cpp L11174), coerente col default del replay (kd = S_mtp−1). Ho usato S_mtp−1; con d = S_mtp il peggioramento sarebbe ulteriore (+1 ρ per round), non calcolato.
+- V1 e V2 per A coincidono: differiscono solo in s(8) e A non usa mai T>5.
+- Griglia P4 cost_T_d: tabella a parte, solo come controllo (ρ effettivo per draft ≈0,27–0,32, gonfiato dal lm_head a vocabolario pieno).
+
+## Sintesi per dominio (solo fascia ρ 0,059–0,1394, 15 celle per dominio = P1/P2/P4 × 5 ρ)
+
+Δ = punto DOPO − punto PRIMA, in punti percentuali di guadagno tok/s STIMATO.
+
+| braccio | costo | rif. | dominio | Δ mediana (pp) | Δ range (pp) | guadagno DOPO mediana (range) | celle nettamente peggiori prima→dopo | celle nettamente migliori dopo |
+|---|---|---|---|---|---|---|---|---|
+| A | V1 | default | code | -10.5 | -18.0 … -5.1 | -4.7% (-7.2 … -1.6) | 0 → 15 / 15 | 0 / 15 |
+| A | V1 | default | chat | -10.3 | -14.5 … -6.2 | +2.9% (-1.2 … +17.4) | 0 → 0 / 15 | 8 / 15 |
+| A | V1 | default | edit | -10.1 | -17.9 … -5.7 | -4.7% (-7.5 … -1.1) | 0 → 14 / 15 | 0 / 15 |
+| A | V1 | spec_cost | code | -10.5 | -17.7 … -5.0 | -5.8% (-8.8 … -2.8) | 0 → 15 / 15 | 0 / 15 |
+| A | V1 | spec_cost | chat | -8.6 | -11.9 … -5.1 | -7.8% (-12.1 … -4.4) | 1 → 15 / 15 | 0 / 15 |
+| A | V1 | spec_cost | edit | -9.9 | -17.3 … -5.6 | -6.7% (-10.4 … +0.7) | 0 → 14 / 15 | 0 / 15 |
+| A | V1 | k3 | code | -11.6 | -20.1 … -5.3 | +2.5% (+0.0 … +5.1) | 0 → 0 / 15 | 13 / 15 |
+| A | V1 | k3 | chat | -10.3 | -14.5 … -6.2 | +3.3% (-0.8 … +17.6) | 0 → 0 / 15 | 10 / 15 |
+| A | V1 | k3 | edit | -11.1 | -19.9 … -6.0 | +3.1% (+1.3 … +4.9) | 0 → 0 / 15 | 13 / 15 |
+| A | V2 | default | code | -10.5 | -18.0 … -5.1 | -4.7% (-7.2 … -1.6) | 0 → 15 / 15 | 0 / 15 |
+| A | V2 | default | chat | -10.3 | -14.5 … -6.2 | +2.9% (-1.2 … +17.4) | 0 → 0 / 15 | 8 / 15 |
+| A | V2 | default | edit | -10.1 | -17.9 … -5.7 | -4.7% (-7.5 … -1.1) | 0 → 14 / 15 | 0 / 15 |
+| A | V2 | spec_cost | code | -10.5 | -17.7 … -5.0 | -5.8% (-8.8 … -2.8) | 0 → 15 / 15 | 0 / 15 |
+| A | V2 | spec_cost | chat | -8.6 | -11.9 … -5.1 | -7.8% (-12.1 … -4.4) | 1 → 15 / 15 | 0 / 15 |
+| A | V2 | spec_cost | edit | -9.9 | -17.3 … -5.6 | -6.7% (-10.4 … +0.7) | 0 → 14 / 15 | 0 / 15 |
+| A | V2 | k3 | code | -11.6 | -20.1 … -5.3 | +2.5% (+0.0 … +5.1) | 0 → 0 / 15 | 13 / 15 |
+| A | V2 | k3 | chat | -10.3 | -14.5 … -6.2 | +3.3% (-0.8 … +17.6) | 0 → 0 / 15 | 10 / 15 |
+| A | V2 | k3 | edit | -11.1 | -19.9 … -6.0 | +3.1% (+1.3 … +4.9) | 0 → 0 / 15 | 13 / 15 |
+| B | V1 | default | code | -15.8 | -28.3 … -7.3 | -2.2% (-5.6 … +4.7) | 0 → 9 / 15 | 2 / 15 |
+| B | V1 | default | chat | -21.0 | -28.6 … -14.5 | -6.2% (-14.0 … +8.4) | 0 → 11 / 15 | 2 / 15 |
+| B | V1 | default | edit | -16.2 | -26.5 … -7.4 | -3.2% (-6.7 … +3.1) | 0 → 8 / 15 | 1 / 15 |
+| B | V1 | spec_cost | code | -15.7 | -27.8 … -7.2 | -2.9% (-6.8 … +4.6) | 0 → 11 / 15 | 2 / 15 |
+| B | V1 | spec_cost | chat | -18.7 | -23.9 … -11.6 | -17.2% (-23.5 … -10.7) | 2 → 15 / 15 | 0 / 15 |
+| B | V1 | spec_cost | edit | -15.5 | -25.7 … -7.2 | -5.0% (-9.8 … +9.0) | 0 → 12 / 15 | 1 / 15 |
+| B | V1 | k3 | code | -17.1 | -31.5 … -7.5 | +6.4% (-1.1 … +15.1) | 0 → 0 / 15 | 11 / 15 |
+| B | V1 | k3 | chat | -21.1 | -28.7 … -14.5 | -5.9% (-13.6 … +8.5) | 0 → 11 / 15 | 2 / 15 |
+| B | V1 | k3 | edit | -17.0 | -29.6 … -7.7 | +4.6% (-1.1 … +13.5) | 0 → 0 / 15 | 9 / 15 |
+| B | V2 | default | code | -15.8 | -27.5 … -7.3 | -2.3% (-5.6 … +1.7) | 0 → 10 / 15 | 1 / 15 |
+| B | V2 | default | chat | -20.8 | -28.6 … -13.6 | -6.2% (-14.3 … +8.4) | 0 → 11 / 15 | 2 / 15 |
+| B | V2 | default | edit | -15.8 | -25.9 … -7.4 | -3.9% (-6.7 … +0.5) | 0 → 10 / 15 | 0 / 15 |
+| B | V2 | spec_cost | code | -15.7 | -27.0 … -7.2 | -3.2% (-6.8 … +1.6) | 0 → 12 / 15 | 1 / 15 |
+| B | V2 | spec_cost | chat | -18.7 | -24.0 … -11.6 | -17.2% (-23.5 … -11.1) | 2 → 15 / 15 | 0 / 15 |
+| B | V2 | spec_cost | edit | -15.5 | -25.1 … -7.2 | -6.3% (-9.8 … +6.2) | 0 → 13 / 15 | 1 / 15 |
+| B | V2 | k3 | code | -17.1 | -30.6 … -7.5 | +5.7% (-1.1 … +11.8) | 0 → 0 / 15 | 11 / 15 |
+| B | V2 | k3 | chat | -20.9 | -28.7 … -13.6 | -5.9% (-14.0 … +8.5) | 0 → 11 / 15 | 2 / 15 |
+| B | V2 | k3 | edit | -17.0 | -28.9 … -7.7 | +3.9% (-1.1 … +10.6) | 0 → 0 / 15 | 8 / 15 |
+
+## Griglia P4 misurata (cost_T_d di cost_p4_cpu.json, d=0..8; identica in V1 e V2), tutte le policy con la stessa griglia
+
+PRIMA = cost_T_d[T, d scelta dalla policy]; DOPO = cost_T_d[T, d che il motore calcola] (A d=4, B d=7; baseline invariati perché già fedeli). Nota: la griglia contiene mtp_process(T) solo se d>0 e un ρ effettivo ~0,27–0,32/draft (lm_head a vocabolario pieno): leggere come controllo, non fascia primaria.
+
+| braccio | dominio | vs default PRIMA | DOPO | vs SPEC_COST PRIMA | DOPO | vs k=3 PRIMA | DOPO |
+|---|---|---|---|---|---|---|---|
+| A | code | +24.3 [+21.7, +26.9] better | -10.6 [-11.8, -9.4] worse | +23.2 [+20.7, +25.8] better | -11.4 [-12.5, -10.2] worse | +40.1 [+34.9, +45.4] better | +0.8 [-0.8, +2.4] neutral |
+| A | chat | +14.9 [+10.9, +19.2] better | -4.9 [-6.4, -3.2] worse | +4.9 [+3.3, +6.6] better | -13.2 [-16.0, -9.8] worse | +15.4 [+11.0, +20.5] better | -4.4 [-6.0, -2.7] worse |
+| A | edit | +20.2 [+17.0, +23.5] better | -12.1 [-13.4, -10.7] worse | +25.4 [+19.0, +32.3] better | -8.3 [-10.7, -5.7] worse | +37.4 [+30.1, +45.0] better | +0.5 [-1.6, +2.6] neutral |
+| B | code | +36.5 [+31.0, +42.7] better | -10.9 [-13.1, -8.5] worse | +35.3 [+30.0, +41.3] better | -11.6 [-13.9, -9.3] worse | +53.8 [+45.2, +63.5] better | +0.5 [-3.7, +4.8] neutral |
+| B | chat | +14.7 [+11.0, +18.8] better | -23.0 [-24.8, -20.9] worse | +4.7 [+3.1, +6.6] better | -29.7 [-33.0, -25.9] worse | +15.3 [+11.0, +20.0] better | -22.7 [-24.6, -20.5] worse |
+| B | edit | +31.5 [+24.7, +39.1] better | -13.3 [-16.2, -10.5] worse | +37.2 [+26.7, +48.9] better | -9.6 [-14.5, -4.3] worse | +50.4 [+38.3, +63.4] better | -0.9 [-6.8, +4.9] neutral |
+
+## Tabelle complete per cella (IC95 = boot_ratio a cluster sulle sessioni, B=2000, seed 0)
+
+### Braccio A — costo V1 (modello additivo; fascia ρ primaria, ρ=0,26 controllo)
+
+| cella | vs default PRIMA | vs default DOPO | vs SPEC_COST PRIMA | vs SPEC_COST DOPO | vs k=3 DOPO |
+|---|---|---|---|---|---|
+| code|P1|rho0.0590 | +3.5 [+2.6, +4.5] better | -1.6 [-2.5, -0.5] worse | +2.2 [+1.6, +2.9] better | -2.8 [-3.4, -2.2] worse | +1.9 [+1.1, +2.8] better |
+| code|P1|rho0.0791 | +4.7 [+3.8, +5.6] better | -2.3 [-3.3, -1.4] worse | +3.6 [+2.6, +4.6] better | -3.3 [-4.1, -2.5] worse | +1.4 [+0.4, +2.4] better |
+| code|P1|rho0.0992 | +5.8 [+4.7, +6.9] better | -2.3 [-3.3, -1.1] worse | +4.1 [+3.1, +5.1] better | -3.9 [-4.8, -2.9] worse | +1.5 [+0.5, +2.5] better |
+| code|P1|rho0.1193 | +6.9 [+5.7, +7.9] better | -3.7 [-4.7, -2.6] worse | +4.9 [+3.9, +5.8] better | -5.4 [-6.3, -4.6] worse | +0.4 [-0.8, +1.5] neutral |
+| code|P1|rho0.1394 | +7.4 [+6.2, +8.5] better | -4.2 [-5.2, -3.1] worse | +5.5 [+4.1, +6.7] better | -5.9 [-6.8, -5.0] worse | +0.0 [-1.1, +1.3] neutral |
+| code|P1|rho0.2600 (controllo) | +13.9 [+12.5, +15.2] better | -7.2 [-8.2, -6.1] worse | +12.1 [+10.3, +13.7] better | -8.6 [-9.6, -7.7] worse | -1.6 [-3.1, -0.2] worse |
+| code|P2|rho0.0590 | +3.6 [+2.5, +4.7] better | -4.3 [-5.4, -3.2] worse | +3.3 [+2.3, +4.2] better | -4.7 [-5.6, -3.7] worse | +3.5 [+1.9, +5.1] better |
+| code|P2|rho0.0791 | +5.3 [+4.1, +6.4] better | -5.3 [-6.3, -4.0] worse | +4.7 [+3.7, +5.8] better | -5.8 [-6.7, -4.7] worse | +2.8 [+1.2, +4.4] better |
+| code|P2|rho0.0992 | +7.0 [+5.8, +8.3] better | -5.9 [-6.9, -4.7] worse | +6.4 [+5.1, +7.7] better | -6.5 [-7.3, -5.5] worse | +2.5 [+0.9, +4.1] better |
+| code|P2|rho0.1193 | +8.8 [+7.6, +10.0] better | -6.4 [-7.5, -5.2] worse | +8.0 [+6.8, +9.3] better | -7.1 [-8.0, -6.0] worse | +2.2 [+0.7, +3.8] better |
+| code|P2|rho0.1394 | +10.5 [+9.3, +11.8] better | -7.1 [-8.3, -6.0] worse | +9.7 [+8.3, +11.1] better | -7.9 [-8.7, -6.9] worse | +1.7 [+0.2, +3.2] better |
+| code|P2|rho0.2600 (controllo) | +19.7 [+17.1, +22.1] better | -10.0 [-11.1, -8.8] worse | +18.7 [+16.1, +21.1] better | -10.7 [-11.8, -9.6] worse | +0.0 [-1.6, +1.7] neutral |
+| code|P4|rho0.0590 | +3.4 [+2.2, +4.7] better | -4.5 [-5.7, -3.3] worse | +3.4 [+2.2, +4.5] better | -4.6 [-5.7, -3.4] worse | +4.9 [+3.4, +6.5] better |
+| code|P4|rho0.0791 | +5.8 [+4.6, +7.1] better | -4.7 [-5.8, -3.4] worse | +5.8 [+4.6, +7.0] better | -4.7 [-5.8, -3.6] worse | +5.1 [+3.7, +6.5] better |
+| code|P4|rho0.0992 | +7.8 [+6.5, +9.1] better | -5.4 [-6.6, -4.3] worse | +7.0 [+5.9, +8.3] better | -6.1 [-7.1, -5.0] worse | +4.5 [+3.1, +6.0] better |
+| code|P4|rho0.1193 | +9.2 [+7.8, +10.6] better | -6.3 [-7.4, -5.1] worse | +8.3 [+7.0, +9.8] better | -7.0 [-8.0, -5.9] worse | +3.9 [+2.5, +5.4] better |
+| code|P4|rho0.1394 | +10.8 [+9.3, +12.4] better | -7.2 [-8.4, -5.9] worse | +8.9 [+7.6, +10.3] better | -8.8 [-10.1, -7.5] worse | +3.1 [+1.5, +4.7] better |
+| code|P4|rho0.2600 (controllo) | +21.5 [+19.3, +23.7] better | -10.6 [-11.8, -9.5] worse | +20.5 [+18.3, +22.6] better | -11.4 [-12.5, -10.4] worse | +0.7 [-0.9, +2.3] neutral |
+| chat|P1|rho0.0590 | +23.8 [+19.0, +28.9] better | +17.4 [+13.0, +22.0] better | -1.3 [-2.8, +0.1] neutral | -6.4 [-7.8, -4.8] worse | +17.6 [+13.1, +22.2] better |
+| chat|P1|rho0.0791 | +23.6 [+18.6, +28.9] better | +15.1 [+11.1, +19.5] better | -1.4 [-2.8, -0.2] worse | -8.2 [-9.7, -6.6] worse | +15.3 [+11.0, +19.7] better |
+| chat|P1|rho0.0992 | +23.8 [+18.8, +29.2] better | +13.2 [+9.3, +17.4] better | -1.1 [-2.4, +0.1] neutral | -9.5 [-11.3, -7.7] worse | +13.5 [+9.7, +17.7] better |
+| chat|P1|rho0.1193 | +24.1 [+19.0, +29.6] better | +11.2 [+7.9, +14.9] better | -0.8 [-2.1, +0.4] neutral | -11.1 [-13.2, -8.9] worse | +11.5 [+8.1, +15.1] better |
+| chat|P1|rho0.1394 | +24.3 [+19.0, +29.9] better | +9.8 [+6.7, +13.1] better | -0.5 [-1.8, +0.7] neutral | -12.1 [-14.3, -9.7] worse | +10.1 [+6.9, +13.4] better |
+| chat|P1|rho0.2600 (controllo) | +25.7 [+20.0, +31.7] better | +2.7 [+0.1, +5.5] better | +1.0 [+0.0, +2.0] better | -17.5 [-20.0, -14.8] worse | +3.0 [+0.2, +5.9] better |
+| chat|P2|rho0.0590 | +11.3 [+8.3, +14.5] better | +4.7 [+2.4, +7.0] better | +1.3 [+0.3, +2.4] better | -4.7 [-6.1, -3.0] worse | +5.1 [+2.7, +7.6] better |
+| chat|P2|rho0.0791 | +11.6 [+8.5, +15.0] better | +3.1 [+0.9, +5.3] better | +1.5 [+0.4, +2.7] better | -6.2 [-7.9, -4.4] worse | +3.5 [+1.3, +5.8] better |
+| chat|P2|rho0.0992 | +12.2 [+9.0, +15.6] better | +1.9 [-0.2, +4.0] neutral | +1.6 [+0.5, +2.8] better | -7.7 [-9.6, -5.6] worse | +2.3 [+0.2, +4.5] better |
+| chat|P2|rho0.1193 | +12.8 [+9.5, +16.1] better | +1.0 [-0.9, +2.8] neutral | +2.3 [+1.1, +3.7] better | -8.4 [-10.3, -6.2] worse | +1.4 [-0.5, +3.4] neutral |
+| chat|P2|rho0.1394 | +13.1 [+9.6, +16.7] better | +0.0 [-1.8, +1.9] neutral | +2.3 [+1.1, +3.6] better | -9.5 [-11.6, -7.1] worse | +0.4 [-1.4, +2.5] neutral |
+| chat|P2|rho0.2600 (controllo) | +16.5 [+12.5, +20.7] better | -4.4 [-6.2, -2.7] worse | +4.3 [+2.9, +5.7] better | -14.5 [-16.9, -11.7] worse | -4.0 [-5.7, -2.1] worse |
+| chat|P4|rho0.0590 | +9.0 [+6.3, +11.9] better | +2.9 [+0.7, +5.0] better | +1.4 [+0.1, +2.6] better | -4.4 [-5.8, -2.7] worse | +3.3 [+1.1, +5.6] better |
+| chat|P4|rho0.0791 | +9.5 [+6.8, +12.5] better | +1.9 [-0.2, +4.0] neutral | +1.7 [+0.5, +2.9] better | -5.4 [-7.1, -3.6] worse | +2.3 [+0.2, +4.5] better |
+| chat|P4|rho0.0992 | +10.0 [+7.2, +13.0] better | +0.7 [-1.4, +2.8] neutral | +1.9 [+0.7, +3.1] better | -6.7 [-8.5, -4.7] worse | +1.1 [-0.9, +3.3] neutral |
+| chat|P4|rho0.1193 | +10.6 [+7.8, +13.6] better | -0.5 [-2.4, +1.5] neutral | +2.5 [+1.3, +3.7] better | -7.8 [-9.9, -5.4] worse | -0.0 [-2.0, +2.1] neutral |
+| chat|P4|rho0.1394 | +11.8 [+8.8, +14.8] better | -1.2 [-3.1, +0.7] neutral | +2.5 [+1.4, +3.6] better | -9.4 [-11.2, -7.4] worse | -0.8 [-2.6, +1.3] neutral |
+| chat|P4|rho0.2600 (controllo) | +14.8 [+10.8, +19.0] better | -5.0 [-6.6, -3.4] worse | +4.7 [+3.0, +6.6] better | -13.4 [-16.3, -10.0] worse | -4.6 [-6.2, -2.8] worse |
+| edit|P1|rho0.0590 | +4.6 [+2.7, +6.8] better | -1.1 [-3.2, +1.1] neutral | +1.7 [+0.8, +2.6] better | -3.9 [-4.8, -3.0] worse | +2.6 [+0.5, +4.6] better |
+| edit|P1|rho0.0791 | +5.7 [+3.6, +7.8] better | -2.2 [-4.0, -0.2] worse | +2.8 [+1.9, +3.8] better | -4.8 [-5.8, -4.0] worse | +1.8 [-0.2, +3.8] neutral |
+| edit|P1|rho0.0992 | +6.5 [+4.4, +8.7] better | -2.3 [-4.2, -0.2] worse | +2.6 [+1.6, +3.6] better | -5.9 [-6.7, -5.0] worse | +2.0 [+0.0, +3.9] better |
+| edit|P1|rho0.1193 | +7.4 [+5.5, +9.4] better | -2.7 [-4.4, -0.9] worse | +3.0 [+2.1, +3.8] better | -6.7 [-7.6, -5.8] worse | +1.8 [+0.0, +3.4] better |
+| edit|P1|rho0.1394 | +8.4 [+6.4, +10.5] better | -3.4 [-5.1, -1.4] worse | +4.0 [+2.9, +5.0] better | -7.3 [-8.3, -6.4] worse | +1.3 [-0.7, +3.2] neutral |
+| edit|P1|rho0.2600 (controllo) | +14.1 [+12.0, +16.0] better | -6.5 [-8.0, -5.0] worse | +9.5 [+8.1, +11.0] better | -10.2 [-11.0, -9.5] worse | -0.5 [-2.3, +1.1] neutral |
+| edit|P2|rho0.0590 | +4.0 [+2.4, +5.7] better | -3.5 [-5.0, -1.7] worse | +0.7 [-0.3, +1.5] neutral | -6.5 [-7.3, -5.8] worse | +4.2 [+2.0, +6.0] better |
+| edit|P2|rho0.0791 | +5.6 [+4.0, +7.5] better | -4.5 [-6.0, -2.7] worse | +3.4 [+1.7, +5.2] better | -6.5 [-7.9, -5.0] worse | +3.6 [+1.3, +5.4] better |
+| edit|P2|rho0.0992 | +7.4 [+5.8, +9.3] better | -5.4 [-6.9, -3.8] worse | +4.9 [+3.0, +6.9] better | -7.6 [-9.0, -6.1] worse | +3.1 [+1.0, +4.9] better |
+| edit|P2|rho0.1193 | +8.7 [+6.9, +10.7] better | -6.0 [-7.4, -4.4] worse | +6.0 [+4.0, +8.2] better | -8.3 [-9.8, -6.8] worse | +2.8 [+0.9, +4.5] better |
+| edit|P2|rho0.1394 | +10.0 [+7.9, +12.3] better | -6.4 [-7.9, -4.8] worse | +6.4 [+4.3, +8.2] better | -9.5 [-10.7, -8.4] worse | +2.6 [+0.7, +4.4] better |
+| edit|P2|rho0.2600 (controllo) | +19.0 [+15.7, +22.5] better | -10.2 [-11.8, -8.4] worse | +14.5 [+11.0, +17.9] better | -13.6 [-14.6, -12.5] worse | +0.0 [-1.9, +1.9] neutral |
+| edit|P4|rho0.0590 | +3.0 [+1.3, +5.1] better | -4.7 [-6.2, -2.9] worse | +8.9 [+5.8, +12.0] better | +0.7 [-1.4, +2.7] neutral | +4.9 [+2.8, +6.9] better |
+| edit|P4|rho0.0791 | +5.1 [+3.3, +7.0] better | -5.0 [-6.5, -3.1] worse | +3.2 [+1.5, +5.0] better | -6.6 [-8.3, -4.9] worse | +4.9 [+3.0, +6.7] better |
+| edit|P4|rho0.0992 | +7.1 [+5.2, +9.2] better | -5.7 [-7.3, -3.9] worse | +5.1 [+3.2, +7.2] better | -7.4 [-9.1, -5.7] worse | +4.4 [+2.4, +6.2] better |
+| edit|P4|rho0.1193 | +8.7 [+6.8, +10.9] better | -6.5 [-8.1, -4.7] worse | +6.6 [+4.4, +9.1] better | -8.2 [-9.9, -6.4] worse | +3.9 [+1.9, +5.7] better |
+| edit|P4|rho0.1394 | +10.4 [+8.4, +12.8] better | -7.5 [-9.1, -5.7] worse | +6.9 [+4.8, +8.7] better | -10.4 [-11.7, -9.2] worse | +3.1 [+1.0, +5.0] better |
+| edit|P4|rho0.2600 (controllo) | +17.7 [+15.1, +20.4] better | -12.0 [-13.4, -10.6] worse | +22.7 [+16.8, +29.0] better | -8.3 [-10.7, -5.7] worse | +0.5 [-1.6, +2.6] neutral |
+
+### Braccio A — costo V2 (modello additivo; fascia ρ primaria, ρ=0,26 controllo)
+
+| cella | vs default PRIMA | vs default DOPO | vs SPEC_COST PRIMA | vs SPEC_COST DOPO | vs k=3 DOPO |
+|---|---|---|---|---|---|
+| code|P1|rho0.0590 | +3.5 [+2.6, +4.5] better | -1.6 [-2.5, -0.5] worse | +2.2 [+1.6, +2.9] better | -2.8 [-3.4, -2.2] worse | +1.9 [+1.1, +2.8] better |
+| code|P1|rho0.0791 | +4.7 [+3.8, +5.6] better | -2.3 [-3.3, -1.4] worse | +3.6 [+2.6, +4.6] better | -3.3 [-4.1, -2.5] worse | +1.4 [+0.4, +2.4] better |
+| code|P1|rho0.0992 | +5.8 [+4.7, +6.9] better | -2.3 [-3.3, -1.1] worse | +4.1 [+3.1, +5.1] better | -3.9 [-4.8, -2.9] worse | +1.5 [+0.5, +2.5] better |
+| code|P1|rho0.1193 | +6.9 [+5.7, +7.9] better | -3.7 [-4.7, -2.6] worse | +4.9 [+3.9, +5.8] better | -5.4 [-6.3, -4.6] worse | +0.4 [-0.8, +1.5] neutral |
+| code|P1|rho0.1394 | +7.4 [+6.2, +8.5] better | -4.2 [-5.2, -3.1] worse | +5.5 [+4.1, +6.7] better | -5.9 [-6.8, -5.0] worse | +0.0 [-1.1, +1.3] neutral |
+| code|P1|rho0.2600 (controllo) | +13.9 [+12.5, +15.2] better | -7.2 [-8.2, -6.1] worse | +12.1 [+10.3, +13.7] better | -8.6 [-9.6, -7.7] worse | -1.6 [-3.1, -0.2] worse |
+| code|P2|rho0.0590 | +3.6 [+2.5, +4.7] better | -4.3 [-5.4, -3.2] worse | +3.3 [+2.3, +4.2] better | -4.7 [-5.6, -3.7] worse | +3.5 [+1.9, +5.1] better |
+| code|P2|rho0.0791 | +5.3 [+4.1, +6.4] better | -5.3 [-6.3, -4.0] worse | +4.7 [+3.7, +5.8] better | -5.8 [-6.7, -4.7] worse | +2.8 [+1.2, +4.4] better |
+| code|P2|rho0.0992 | +7.0 [+5.8, +8.3] better | -5.9 [-6.9, -4.7] worse | +6.4 [+5.1, +7.7] better | -6.5 [-7.3, -5.5] worse | +2.5 [+0.9, +4.1] better |
+| code|P2|rho0.1193 | +8.8 [+7.6, +10.0] better | -6.4 [-7.5, -5.2] worse | +8.0 [+6.8, +9.3] better | -7.1 [-8.0, -6.0] worse | +2.2 [+0.7, +3.8] better |
+| code|P2|rho0.1394 | +10.5 [+9.3, +11.8] better | -7.1 [-8.3, -6.0] worse | +9.7 [+8.3, +11.1] better | -7.9 [-8.7, -6.9] worse | +1.7 [+0.2, +3.2] better |
+| code|P2|rho0.2600 (controllo) | +19.7 [+17.1, +22.1] better | -10.0 [-11.1, -8.8] worse | +18.7 [+16.1, +21.1] better | -10.7 [-11.8, -9.6] worse | +0.0 [-1.6, +1.7] neutral |
+| code|P4|rho0.0590 | +3.4 [+2.2, +4.7] better | -4.5 [-5.7, -3.3] worse | +3.4 [+2.2, +4.5] better | -4.6 [-5.7, -3.4] worse | +4.9 [+3.4, +6.5] better |
+| code|P4|rho0.0791 | +5.8 [+4.6, +7.1] better | -4.7 [-5.8, -3.4] worse | +5.8 [+4.6, +7.0] better | -4.7 [-5.8, -3.6] worse | +5.1 [+3.7, +6.5] better |
+| code|P4|rho0.0992 | +7.8 [+6.5, +9.1] better | -5.4 [-6.6, -4.3] worse | +7.0 [+5.9, +8.3] better | -6.1 [-7.1, -5.0] worse | +4.5 [+3.1, +6.0] better |
+| code|P4|rho0.1193 | +9.2 [+7.8, +10.6] better | -6.3 [-7.4, -5.1] worse | +8.3 [+7.0, +9.8] better | -7.0 [-8.0, -5.9] worse | +3.9 [+2.5, +5.4] better |
+| code|P4|rho0.1394 | +10.8 [+9.3, +12.4] better | -7.2 [-8.4, -5.9] worse | +8.9 [+7.6, +10.3] better | -8.8 [-10.1, -7.5] worse | +3.1 [+1.5, +4.7] better |
+| code|P4|rho0.2600 (controllo) | +21.5 [+19.3, +23.7] better | -10.6 [-11.8, -9.5] worse | +20.5 [+18.3, +22.6] better | -11.4 [-12.5, -10.4] worse | +0.7 [-0.9, +2.3] neutral |
+| chat|P1|rho0.0590 | +23.8 [+19.0, +28.9] better | +17.4 [+13.0, +22.0] better | -1.3 [-2.8, +0.1] neutral | -6.4 [-7.8, -4.8] worse | +17.6 [+13.1, +22.2] better |
+| chat|P1|rho0.0791 | +23.6 [+18.6, +28.9] better | +15.1 [+11.1, +19.5] better | -1.4 [-2.8, -0.2] worse | -8.2 [-9.7, -6.6] worse | +15.3 [+11.0, +19.7] better |
+| chat|P1|rho0.0992 | +23.8 [+18.8, +29.2] better | +13.2 [+9.3, +17.4] better | -1.1 [-2.4, +0.1] neutral | -9.5 [-11.3, -7.7] worse | +13.5 [+9.7, +17.7] better |
+| chat|P1|rho0.1193 | +24.1 [+19.0, +29.6] better | +11.2 [+7.9, +14.9] better | -0.8 [-2.1, +0.4] neutral | -11.1 [-13.2, -8.9] worse | +11.5 [+8.1, +15.1] better |
+| chat|P1|rho0.1394 | +24.3 [+19.0, +29.9] better | +9.8 [+6.7, +13.1] better | -0.5 [-1.8, +0.7] neutral | -12.1 [-14.3, -9.7] worse | +10.1 [+6.9, +13.4] better |
+| chat|P1|rho0.2600 (controllo) | +25.7 [+20.0, +31.7] better | +2.7 [+0.1, +5.5] better | +1.0 [+0.0, +2.0] better | -17.5 [-20.0, -14.8] worse | +3.0 [+0.2, +5.9] better |
+| chat|P2|rho0.0590 | +11.3 [+8.3, +14.5] better | +4.7 [+2.4, +7.0] better | +1.3 [+0.3, +2.4] better | -4.7 [-6.1, -3.0] worse | +5.1 [+2.7, +7.6] better |
+| chat|P2|rho0.0791 | +11.6 [+8.5, +15.0] better | +3.1 [+0.9, +5.3] better | +1.5 [+0.4, +2.7] better | -6.2 [-7.9, -4.4] worse | +3.5 [+1.3, +5.8] better |
+| chat|P2|rho0.0992 | +12.2 [+9.0, +15.6] better | +1.9 [-0.2, +4.0] neutral | +1.6 [+0.5, +2.8] better | -7.7 [-9.6, -5.6] worse | +2.3 [+0.2, +4.5] better |
+| chat|P2|rho0.1193 | +12.8 [+9.5, +16.1] better | +1.0 [-0.9, +2.8] neutral | +2.3 [+1.1, +3.7] better | -8.4 [-10.3, -6.2] worse | +1.4 [-0.5, +3.4] neutral |
+| chat|P2|rho0.1394 | +13.1 [+9.6, +16.7] better | +0.0 [-1.8, +1.9] neutral | +2.3 [+1.1, +3.6] better | -9.5 [-11.6, -7.1] worse | +0.4 [-1.4, +2.5] neutral |
+| chat|P2|rho0.2600 (controllo) | +16.5 [+12.5, +20.7] better | -4.4 [-6.2, -2.7] worse | +4.3 [+2.9, +5.7] better | -14.5 [-16.9, -11.7] worse | -4.0 [-5.7, -2.1] worse |
+| chat|P4|rho0.0590 | +9.0 [+6.3, +11.9] better | +2.9 [+0.7, +5.0] better | +1.4 [+0.1, +2.6] better | -4.4 [-5.8, -2.7] worse | +3.3 [+1.1, +5.6] better |
+| chat|P4|rho0.0791 | +9.5 [+6.8, +12.5] better | +1.9 [-0.2, +4.0] neutral | +1.7 [+0.5, +2.9] better | -5.4 [-7.1, -3.6] worse | +2.3 [+0.2, +4.5] better |
+| chat|P4|rho0.0992 | +10.0 [+7.2, +13.0] better | +0.7 [-1.4, +2.8] neutral | +1.9 [+0.7, +3.1] better | -6.7 [-8.5, -4.7] worse | +1.1 [-0.9, +3.3] neutral |
+| chat|P4|rho0.1193 | +10.6 [+7.8, +13.6] better | -0.5 [-2.4, +1.5] neutral | +2.5 [+1.3, +3.7] better | -7.8 [-9.9, -5.4] worse | -0.0 [-2.0, +2.1] neutral |
+| chat|P4|rho0.1394 | +11.8 [+8.8, +14.8] better | -1.2 [-3.1, +0.7] neutral | +2.5 [+1.4, +3.6] better | -9.4 [-11.2, -7.4] worse | -0.8 [-2.6, +1.3] neutral |
+| chat|P4|rho0.2600 (controllo) | +14.8 [+10.8, +19.0] better | -5.0 [-6.6, -3.4] worse | +4.7 [+3.0, +6.6] better | -13.4 [-16.3, -10.0] worse | -4.6 [-6.2, -2.8] worse |
+| edit|P1|rho0.0590 | +4.6 [+2.7, +6.8] better | -1.1 [-3.2, +1.1] neutral | +1.7 [+0.8, +2.6] better | -3.9 [-4.8, -3.0] worse | +2.6 [+0.5, +4.6] better |
+| edit|P1|rho0.0791 | +5.7 [+3.6, +7.8] better | -2.2 [-4.0, -0.2] worse | +2.8 [+1.9, +3.8] better | -4.8 [-5.8, -4.0] worse | +1.8 [-0.2, +3.8] neutral |
+| edit|P1|rho0.0992 | +6.5 [+4.4, +8.7] better | -2.3 [-4.2, -0.2] worse | +2.6 [+1.6, +3.6] better | -5.9 [-6.7, -5.0] worse | +2.0 [+0.0, +3.9] better |
+| edit|P1|rho0.1193 | +7.4 [+5.5, +9.4] better | -2.7 [-4.4, -0.9] worse | +3.0 [+2.1, +3.8] better | -6.7 [-7.6, -5.8] worse | +1.8 [+0.0, +3.4] better |
+| edit|P1|rho0.1394 | +8.4 [+6.4, +10.5] better | -3.4 [-5.1, -1.4] worse | +4.0 [+2.9, +5.0] better | -7.3 [-8.3, -6.4] worse | +1.3 [-0.7, +3.2] neutral |
+| edit|P1|rho0.2600 (controllo) | +14.1 [+12.0, +16.0] better | -6.5 [-8.0, -5.0] worse | +9.5 [+8.1, +11.0] better | -10.2 [-11.0, -9.5] worse | -0.5 [-2.3, +1.1] neutral |
+| edit|P2|rho0.0590 | +4.0 [+2.4, +5.7] better | -3.5 [-5.0, -1.7] worse | +0.7 [-0.3, +1.5] neutral | -6.5 [-7.3, -5.8] worse | +4.2 [+2.0, +6.0] better |
+| edit|P2|rho0.0791 | +5.6 [+4.0, +7.5] better | -4.5 [-6.0, -2.7] worse | +3.4 [+1.7, +5.2] better | -6.5 [-7.9, -5.0] worse | +3.6 [+1.3, +5.4] better |
+| edit|P2|rho0.0992 | +7.4 [+5.8, +9.3] better | -5.4 [-6.9, -3.8] worse | +4.9 [+3.0, +6.9] better | -7.6 [-9.0, -6.1] worse | +3.1 [+1.0, +4.9] better |
+| edit|P2|rho0.1193 | +8.7 [+6.9, +10.7] better | -6.0 [-7.4, -4.4] worse | +6.0 [+4.0, +8.2] better | -8.3 [-9.8, -6.8] worse | +2.8 [+0.9, +4.5] better |
+| edit|P2|rho0.1394 | +10.0 [+7.9, +12.3] better | -6.4 [-7.9, -4.8] worse | +6.4 [+4.3, +8.2] better | -9.5 [-10.7, -8.4] worse | +2.6 [+0.7, +4.4] better |
+| edit|P2|rho0.2600 (controllo) | +19.0 [+15.7, +22.5] better | -10.2 [-11.8, -8.4] worse | +14.5 [+11.0, +17.9] better | -13.6 [-14.6, -12.5] worse | +0.0 [-1.9, +1.9] neutral |
+| edit|P4|rho0.0590 | +3.0 [+1.3, +5.1] better | -4.7 [-6.2, -2.9] worse | +8.9 [+5.8, +12.0] better | +0.7 [-1.4, +2.7] neutral | +4.9 [+2.8, +6.9] better |
+| edit|P4|rho0.0791 | +5.1 [+3.3, +7.0] better | -5.0 [-6.5, -3.1] worse | +3.2 [+1.5, +5.0] better | -6.6 [-8.3, -4.9] worse | +4.9 [+3.0, +6.7] better |
+| edit|P4|rho0.0992 | +7.1 [+5.2, +9.2] better | -5.7 [-7.3, -3.9] worse | +5.1 [+3.2, +7.2] better | -7.4 [-9.1, -5.7] worse | +4.4 [+2.4, +6.2] better |
+| edit|P4|rho0.1193 | +8.7 [+6.8, +10.9] better | -6.5 [-8.1, -4.7] worse | +6.6 [+4.4, +9.1] better | -8.2 [-9.9, -6.4] worse | +3.9 [+1.9, +5.7] better |
+| edit|P4|rho0.1394 | +10.4 [+8.4, +12.8] better | -7.5 [-9.1, -5.7] worse | +6.9 [+4.8, +8.7] better | -10.4 [-11.7, -9.2] worse | +3.1 [+1.0, +5.0] better |
+| edit|P4|rho0.2600 (controllo) | +17.7 [+15.1, +20.4] better | -12.0 [-13.4, -10.6] worse | +22.7 [+16.8, +29.0] better | -8.3 [-10.7, -5.7] worse | +0.5 [-1.6, +2.6] neutral |
+
+### Braccio B — costo V1 (modello additivo; fascia ρ primaria, ρ=0,26 controllo)
+
+| cella | vs default PRIMA | vs default DOPO | vs SPEC_COST PRIMA | vs SPEC_COST DOPO | vs k=3 DOPO |
+|---|---|---|---|---|---|
+| code|P1|rho0.0590 | +6.3 [+5.4, +7.2] better | -1.0 [-1.9, -0.2] worse | +4.9 [+3.8, +6.0] better | -2.3 [-3.4, -1.3] worse | +2.5 [+1.2, +3.9] better |
+| code|P1|rho0.0791 | +7.4 [+6.3, +8.5] better | -2.2 [-3.3, -1.2] worse | +6.3 [+5.1, +7.4] better | -3.2 [-4.6, -1.9] worse | +1.6 [-0.1, +3.2] neutral |
+| code|P1|rho0.0992 | +8.5 [+7.7, +9.3] better | -3.2 [-4.3, -2.2] worse | +6.8 [+5.5, +8.0] better | -4.8 [-6.3, -3.4] worse | +0.5 [-1.1, +2.2] neutral |
+| code|P1|rho0.1193 | +9.4 [+8.3, +10.3] better | -5.1 [-6.3, -3.9] worse | +7.4 [+6.0, +8.7] better | -6.8 [-8.5, -5.2] worse | -1.1 [-3.1, +0.9] neutral |
+| code|P1|rho0.1394 | +10.3 [+9.3, +11.3] better | -4.7 [-6.3, -3.5] worse | +8.4 [+7.1, +9.7] better | -6.4 [-8.0, -4.8] worse | -0.5 [-2.5, +1.5] neutral |
+| code|P1|rho0.2600 (controllo) | +16.6 [+15.0, +18.1] better | -10.9 [-12.5, -9.4] worse | +14.7 [+12.5, +16.8] better | -12.3 [-14.1, -10.5] worse | -5.6 [-8.0, -3.1] worse |
+| code|P2|rho0.0590 | +12.9 [+10.8, +15.0] better | +1.4 [-0.3, +3.1] neutral | +12.5 [+10.1, +14.7] better | +1.1 [-0.7, +2.6] neutral | +9.7 [+6.8, +12.6] better |
+| code|P2|rho0.0791 | +14.4 [+12.3, +16.6] better | -1.3 [-2.8, +0.2] neutral | +13.9 [+11.5, +16.1] better | -1.8 [-3.3, -0.3] worse | +7.1 [+4.3, +10.0] better |
+| code|P2|rho0.0992 | +16.6 [+14.1, +19.1] better | -2.3 [-3.9, -0.7] worse | +15.9 [+13.1, +18.7] better | -2.9 [-4.6, -1.1] worse | +6.4 [+3.5, +9.3] better |
+| code|P2|rho0.1193 | +17.9 [+15.5, +20.4] better | -4.3 [-6.0, -2.6] worse | +17.0 [+14.3, +19.8] better | -5.0 [-6.8, -3.1] worse | +4.5 [+1.5, +7.5] better |
+| code|P2|rho0.1394 | +19.0 [+16.3, +21.8] better | -5.6 [-7.3, -3.9] worse | +18.1 [+15.0, +21.2] better | -6.3 [-8.1, -4.5] worse | +3.4 [+0.4, +6.5] better |
+| code|P2|rho0.2600 (controllo) | +26.4 [+23.4, +29.7] better | -12.2 [-14.3, -10.2] worse | +25.3 [+22.2, +28.8] better | -12.9 [-15.0, -10.9] worse | -2.4 [-6.0, +1.2] neutral |
+| code|P4|rho0.0590 | +18.1 [+15.7, +20.7] better | +4.7 [+2.9, +6.7] better | +18.1 [+15.5, +20.6] better | +4.6 [+3.0, +6.5] better | +15.1 [+11.7, +18.6] better |
+| code|P4|rho0.0791 | +20.5 [+17.8, +23.3] better | +2.5 [+0.7, +4.4] better | +20.4 [+17.6, +23.2] better | +2.4 [+0.8, +4.2] better | +13.0 [+9.6, +16.6] better |
+| code|P4|rho0.0992 | +21.4 [+18.3, +24.6] better | +0.8 [-1.0, +2.7] neutral | +20.5 [+17.3, +23.8] better | +0.1 [-1.6, +2.0] neutral | +11.5 [+8.1, +15.0] better |
+| code|P4|rho0.1193 | +23.1 [+19.4, +26.8] better | -1.2 [-3.2, +0.7] neutral | +22.1 [+18.5, +25.9] better | -2.0 [-3.9, -0.1] worse | +9.5 [+5.9, +13.2] better |
+| code|P4|rho0.1394 | +25.3 [+22.1, +28.7] better | -3.0 [-5.0, -1.0] worse | +23.1 [+20.2, +26.2] better | -4.7 [-6.6, -2.9] worse | +7.8 [+4.1, +11.6] better |
+| code|P4|rho0.2600 (controllo) | +34.0 [+29.1, +39.3] better | -10.7 [-13.0, -8.5] worse | +32.9 [+28.0, +38.1] better | -11.5 [-13.8, -9.2] worse | +0.6 [-3.5, +4.8] neutral |
+| chat|P1|rho0.0590 | +22.8 [+17.9, +28.3] better | +8.4 [+4.8, +12.1] better | -2.0 [-3.6, -0.6] worse | -13.6 [-15.4, -11.7] worse | +8.5 [+4.9, +12.4] better |
+| chat|P1|rho0.0791 | +24.0 [+18.9, +29.7] better | +4.2 [+1.3, +7.3] better | -1.1 [-2.4, +0.1] neutral | -16.9 [-19.1, -14.7] worse | +4.3 [+1.3, +7.7] better |
+| chat|P1|rho0.0992 | +24.0 [+18.7, +29.8] better | +0.5 [-2.3, +3.4] neutral | -1.0 [-2.3, +0.1] neutral | -19.7 [-21.8, -17.2] worse | +0.8 [-2.2, +4.0] neutral |
+| chat|P1|rho0.1193 | +23.8 [+18.5, +29.8] better | -2.4 [-5.0, +0.4] neutral | -1.0 [-2.3, -0.0] worse | -22.0 [-24.2, -19.5] worse | -2.1 [-5.0, +0.7] neutral |
+| chat|P1|rho0.1394 | +24.2 [+18.7, +30.2] better | -4.4 [-7.1, -1.7] worse | -0.6 [-1.8, +0.5] neutral | -23.5 [-25.7, -21.0] worse | -4.2 [-7.0, -1.2] worse |
+| chat|P1|rho0.2600 (controllo) | +25.3 [+19.6, +31.5] better | -15.0 [-16.9, -13.1] worse | +0.6 [-0.4, +1.7] neutral | -31.7 [-34.6, -28.5] worse | -14.7 [-16.6, -12.8] worse |
+| chat|P2|rho0.0590 | +11.1 [+8.0, +14.5] better | -3.4 [-5.3, -1.5] worse | +1.2 [-0.1, +2.4] neutral | -12.1 [-14.0, -9.8] worse | -3.1 [-5.1, -0.9] worse |
+| chat|P2|rho0.0791 | +11.3 [+8.2, +14.6] better | -6.2 [-7.9, -4.5] worse | +1.2 [-0.0, +2.5] neutral | -14.7 [-16.9, -12.3] worse | -5.9 [-7.6, -4.0] worse |
+| chat|P2|rho0.0992 | +11.9 [+8.6, +15.4] better | -8.6 [-10.3, -6.8] worse | +1.4 [+0.2, +2.5] better | -17.2 [-19.4, -14.6] worse | -8.2 [-10.0, -6.4] worse |
+| chat|P2|rho0.1193 | +12.3 [+8.8, +15.9] better | -11.1 [-12.9, -9.3] worse | +1.9 [+0.6, +3.2] better | -19.4 [-21.7, -16.6] worse | -10.8 [-12.6, -8.9] worse |
+| chat|P2|rho0.1394 | +13.2 [+9.7, +16.9] better | -13.2 [-14.9, -11.5] worse | +2.4 [+1.3, +3.7] better | -21.5 [-24.0, -18.5] worse | -12.9 [-14.5, -11.1] worse |
+| chat|P2|rho0.2600 (controllo) | +16.5 [+12.3, +21.0] better | -22.5 [-24.2, -20.7] worse | +4.2 [+2.8, +5.9] better | -30.7 [-33.6, -27.3] worse | -22.2 [-23.7, -20.3] worse |
+| chat|P4|rho0.0590 | +10.6 [+8.0, +13.3] better | -3.9 [-6.0, -1.8] worse | +2.8 [+1.3, +4.4] better | -10.7 [-12.7, -8.2] worse | -3.5 [-5.6, -1.4] worse |
+| chat|P4|rho0.0791 | +10.9 [+8.2, +13.7] better | -7.1 [-9.0, -5.1] worse | +3.0 [+1.6, +4.4] better | -13.8 [-15.9, -11.3] worse | -6.7 [-8.7, -4.7] worse |
+| chat|P4|rho0.0992 | +10.9 [+8.1, +13.8] better | -10.1 [-11.8, -8.3] worse | +2.7 [+1.3, +4.2] better | -16.7 [-18.9, -14.1] worse | -9.7 [-11.5, -7.7] worse |
+| chat|P4|rho0.1193 | +11.0 [+8.2, +13.9] better | -12.0 [-13.6, -10.3] worse | +2.8 [+1.5, +4.1] better | -18.5 [-21.0, -15.5] worse | -11.6 [-13.2, -9.7] worse |
+| chat|P4|rho0.1394 | +11.9 [+8.9, +15.0] better | -14.0 [-15.6, -12.2] worse | +2.6 [+1.1, +4.2] better | -21.1 [-23.7, -18.1] worse | -13.6 [-15.3, -11.5] worse |
+| chat|P4|rho0.2600 (controllo) | +14.7 [+11.0, +18.8] better | -23.0 [-24.8, -20.9] worse | +4.6 [+3.0, +6.5] better | -29.8 [-33.0, -26.0] worse | -22.7 [-24.6, -20.4] worse |
+| edit|P1|rho0.0590 | +6.8 [+5.0, +8.9] better | -0.6 [-1.8, +0.7] neutral | +3.9 [+2.5, +5.2] better | -3.3 [-5.0, -1.6] worse | +3.1 [+0.9, +5.1] better |
+| edit|P1|rho0.0791 | +8.0 [+6.1, +10.0] better | -2.3 [-3.9, -0.7] worse | +5.0 [+3.6, +6.5] better | -4.9 [-6.9, -3.0] worse | +1.7 [-0.7, +3.9] neutral |
+| edit|P1|rho0.0992 | +9.4 [+7.5, +11.4] better | -3.9 [-5.1, -2.8] worse | +5.4 [+4.0, +6.6] better | -7.4 [-9.3, -5.7] worse | +0.3 [-2.0, +2.4] neutral |
+| edit|P1|rho0.1193 | +9.7 [+7.9, +11.4] better | -4.9 [-6.2, -3.6] worse | +5.2 [+3.7, +6.6] better | -8.8 [-11.0, -6.5] worse | -0.5 [-3.1, +2.0] neutral |
+| edit|P1|rho0.1394 | +10.5 [+8.2, +12.7] better | -5.7 [-7.0, -4.5] worse | +6.0 [+3.8, +8.0] better | -9.5 [-12.0, -7.2] worse | -1.1 [-3.7, +1.4] neutral |
+| edit|P1|rho0.2600 (controllo) | +17.1 [+14.9, +19.1] better | -12.2 [-14.2, -10.3] worse | +12.4 [+9.9, +15.0] better | -15.7 [-18.4, -13.0] worse | -6.6 [-10.1, -3.0] worse |
+| edit|P2|rho0.0590 | +11.5 [+9.2, +14.0] better | +0.2 [-1.9, +2.3] neutral | +8.0 [+5.8, +10.3] better | -3.0 [-5.1, -0.9] worse | +8.1 [+4.1, +12.0] better |
+| edit|P2|rho0.0791 | +13.3 [+10.8, +16.1] better | -2.0 [-4.2, +0.4] neutral | +10.9 [+7.8, +14.3] better | -4.0 [-6.9, -1.1] worse | +6.3 [+2.0, +10.4] better |
+| edit|P2|rho0.0992 | +14.7 [+11.8, +17.9] better | -4.0 [-6.2, -1.7] worse | +12.0 [+8.4, +15.7] better | -6.3 [-9.1, -3.2] worse | +4.6 [+0.3, +8.7] better |
+| edit|P2|rho0.1193 | +15.5 [+12.2, +19.0] better | -5.1 [-7.3, -2.8] worse | +12.6 [+8.7, +16.8] better | -7.4 [-10.3, -4.4] worse | +3.8 [-0.6, +7.9] neutral |
+| edit|P2|rho0.1394 | +17.1 [+13.4, +21.1] better | -6.7 [-9.5, -4.0] worse | +13.2 [+9.3, +17.3] better | -9.8 [-12.8, -6.8] worse | +2.3 [-2.4, +6.9] neutral |
+| edit|P2|rho0.2600 (controllo) | +27.1 [+21.8, +33.0] better | -13.6 [-16.4, -10.6] worse | +22.3 [+16.8, +28.1] better | -16.9 [-20.1, -13.6] worse | -3.8 [-8.7, +1.1] neutral |
+| edit|P4|rho0.0590 | +16.3 [+12.7, +20.3] better | +3.1 [+0.3, +6.1] better | +22.9 [+16.7, +29.6] better | +9.0 [+3.9, +14.2] better | +13.5 [+8.4, +18.6] better |
+| edit|P4|rho0.0791 | +17.1 [+13.4, +21.2] better | +0.8 [-2.5, +4.1] neutral | +15.0 [+11.0, +19.4] better | -1.0 [-4.5, +2.8] neutral | +11.2 [+5.7, +16.8] better |
+| edit|P4|rho0.0992 | +18.5 [+14.5, +23.1] better | -1.4 [-4.6, +1.9] neutral | +16.4 [+11.9, +21.2] better | -3.2 [-6.8, +0.6] neutral | +9.2 [+3.7, +14.7] better |
+| edit|P4|rho0.1193 | +20.2 [+15.8, +25.0] better | -3.2 [-6.4, +0.1] neutral | +17.9 [+13.1, +23.3] better | -5.0 [-8.7, -1.1] worse | +7.5 [+1.8, +13.1] better |
+| edit|P4|rho0.1394 | +21.8 [+17.0, +27.0] better | -4.7 [-7.9, -1.3] worse | +18.0 [+13.2, +23.0] better | -7.7 [-11.1, -4.3] worse | +6.2 [+0.6, +11.8] better |
+| edit|P4|rho0.2600 (controllo) | +31.1 [+25.4, +37.3] better | -13.4 [-16.2, -10.6] worse | +36.7 [+27.4, +47.2] better | -9.6 [-14.6, -4.4] worse | -1.0 [-6.8, +4.8] neutral |
+
+### Braccio B — costo V2 (modello additivo; fascia ρ primaria, ρ=0,26 controllo)
+
+| cella | vs default PRIMA | vs default DOPO | vs SPEC_COST PRIMA | vs SPEC_COST DOPO | vs k=3 DOPO |
+|---|---|---|---|---|---|
+| code|P1|rho0.0590 | +6.3 [+5.4, +7.2] better | -1.0 [-1.9, -0.2] worse | +4.9 [+3.8, +6.0] better | -2.3 [-3.4, -1.3] worse | +2.5 [+1.2, +3.9] better |
+| code|P1|rho0.0791 | +7.4 [+6.3, +8.5] better | -2.2 [-3.3, -1.2] worse | +6.3 [+5.1, +7.4] better | -3.2 [-4.6, -1.9] worse | +1.6 [-0.1, +3.2] neutral |
+| code|P1|rho0.0992 | +8.5 [+7.7, +9.3] better | -3.2 [-4.3, -2.2] worse | +6.8 [+5.5, +8.0] better | -4.8 [-6.3, -3.4] worse | +0.5 [-1.1, +2.2] neutral |
+| code|P1|rho0.1193 | +9.4 [+8.3, +10.3] better | -5.1 [-6.3, -3.9] worse | +7.4 [+6.0, +8.7] better | -6.8 [-8.5, -5.2] worse | -1.1 [-3.1, +0.9] neutral |
+| code|P1|rho0.1394 | +10.3 [+9.3, +11.3] better | -4.7 [-6.3, -3.5] worse | +8.4 [+7.1, +9.7] better | -6.4 [-8.0, -4.8] worse | -0.5 [-2.5, +1.5] neutral |
+| code|P1|rho0.2600 (controllo) | +16.6 [+15.0, +18.1] better | -10.9 [-12.5, -9.4] worse | +14.7 [+12.5, +16.8] better | -12.3 [-14.1, -10.5] worse | -5.6 [-8.0, -3.1] worse |
+| code|P2|rho0.0590 | +12.9 [+10.8, +15.0] better | +1.4 [-0.3, +3.1] neutral | +12.5 [+10.1, +14.7] better | +1.1 [-0.7, +2.6] neutral | +9.7 [+6.8, +12.6] better |
+| code|P2|rho0.0791 | +14.4 [+12.3, +16.6] better | -1.3 [-2.8, +0.2] neutral | +13.9 [+11.5, +16.1] better | -1.8 [-3.3, -0.3] worse | +7.1 [+4.3, +10.0] better |
+| code|P2|rho0.0992 | +16.6 [+14.1, +19.1] better | -2.3 [-3.9, -0.7] worse | +15.9 [+13.1, +18.7] better | -2.9 [-4.6, -1.1] worse | +6.4 [+3.5, +9.3] better |
+| code|P2|rho0.1193 | +17.9 [+15.5, +20.4] better | -4.3 [-6.0, -2.6] worse | +17.0 [+14.3, +19.8] better | -5.0 [-6.8, -3.1] worse | +4.5 [+1.5, +7.5] better |
+| code|P2|rho0.1394 | +19.0 [+16.3, +21.8] better | -5.6 [-7.3, -3.9] worse | +18.1 [+15.0, +21.2] better | -6.3 [-8.1, -4.5] worse | +3.4 [+0.4, +6.5] better |
+| code|P2|rho0.2600 (controllo) | +26.4 [+23.4, +29.7] better | -12.2 [-14.3, -10.2] worse | +25.3 [+22.2, +28.8] better | -12.9 [-15.0, -10.9] worse | -2.4 [-6.0, +1.2] neutral |
+| code|P4|rho0.0590 | +14.5 [+12.5, +16.5] better | +1.7 [+0.0, +3.4] better | +14.4 [+12.2, +16.5] better | +1.6 [+0.0, +3.3] better | +11.8 [+8.6, +15.0] better |
+| code|P4|rho0.0791 | +16.9 [+14.4, +19.4] better | -0.2 [-1.7, +1.5] neutral | +16.8 [+14.1, +19.4] better | -0.2 [-1.6, +1.3] neutral | +10.1 [+7.0, +13.3] better |
+| code|P4|rho0.0992 | +18.0 [+15.0, +21.1] better | -1.6 [-3.2, +0.1] neutral | +17.2 [+14.0, +20.4] better | -2.3 [-4.0, -0.5] worse | +8.8 [+5.6, +12.1] better |
+| code|P4|rho0.1193 | +19.4 [+16.7, +22.3] better | -3.8 [-5.5, -2.1] worse | +18.5 [+15.7, +21.4] better | -4.5 [-6.3, -2.7] worse | +6.7 [+3.4, +10.0] better |
+| code|P4|rho0.1394 | +22.6 [+20.0, +25.4] better | -4.9 [-6.7, -3.2] worse | +20.5 [+18.0, +23.1] better | -6.5 [-8.3, -4.9] worse | +5.7 [+2.2, +9.4] better |
+| code|P4|rho0.2600 (controllo) | +29.5 [+26.1, +33.2] better | -12.7 [-14.8, -10.5] worse | +28.4 [+25.1, +32.0] better | -13.5 [-15.5, -11.3] worse | -1.7 [-5.4, +2.3] neutral |
+| chat|P1|rho0.0590 | +22.8 [+17.9, +28.3] better | +8.4 [+4.8, +12.1] better | -2.0 [-3.6, -0.6] worse | -13.6 [-15.4, -11.7] worse | +8.5 [+4.9, +12.4] better |
+| chat|P1|rho0.0791 | +24.0 [+18.9, +29.7] better | +4.2 [+1.3, +7.3] better | -1.1 [-2.4, +0.1] neutral | -16.9 [-19.1, -14.7] worse | +4.3 [+1.3, +7.7] better |
+| chat|P1|rho0.0992 | +24.0 [+18.7, +29.8] better | +0.5 [-2.3, +3.4] neutral | -1.0 [-2.3, +0.1] neutral | -19.7 [-21.8, -17.2] worse | +0.8 [-2.2, +4.0] neutral |
+| chat|P1|rho0.1193 | +23.8 [+18.5, +29.8] better | -2.4 [-5.0, +0.4] neutral | -1.0 [-2.3, -0.0] worse | -22.0 [-24.2, -19.5] worse | -2.1 [-5.0, +0.7] neutral |
+| chat|P1|rho0.1394 | +24.2 [+18.7, +30.2] better | -4.4 [-7.1, -1.7] worse | -0.6 [-1.8, +0.5] neutral | -23.5 [-25.7, -21.0] worse | -4.2 [-7.0, -1.2] worse |
+| chat|P1|rho0.2600 (controllo) | +25.3 [+19.6, +31.5] better | -15.0 [-16.9, -13.1] worse | +0.6 [-0.4, +1.7] neutral | -31.7 [-34.6, -28.5] worse | -14.7 [-16.6, -12.8] worse |
+| chat|P2|rho0.0590 | +11.1 [+8.0, +14.5] better | -3.4 [-5.3, -1.5] worse | +1.2 [-0.1, +2.4] neutral | -12.1 [-14.0, -9.8] worse | -3.1 [-5.1, -0.9] worse |
+| chat|P2|rho0.0791 | +11.3 [+8.2, +14.6] better | -6.2 [-7.9, -4.5] worse | +1.2 [-0.0, +2.5] neutral | -14.7 [-16.9, -12.3] worse | -5.9 [-7.6, -4.0] worse |
+| chat|P2|rho0.0992 | +11.9 [+8.6, +15.4] better | -8.6 [-10.3, -6.8] worse | +1.4 [+0.2, +2.5] better | -17.2 [-19.4, -14.6] worse | -8.2 [-10.0, -6.4] worse |
+| chat|P2|rho0.1193 | +12.3 [+8.8, +15.9] better | -11.1 [-12.9, -9.3] worse | +1.9 [+0.6, +3.2] better | -19.4 [-21.7, -16.6] worse | -10.8 [-12.6, -8.9] worse |
+| chat|P2|rho0.1394 | +13.2 [+9.7, +16.9] better | -13.2 [-14.9, -11.5] worse | +2.4 [+1.3, +3.7] better | -21.5 [-24.0, -18.5] worse | -12.9 [-14.5, -11.1] worse |
+| chat|P2|rho0.2600 (controllo) | +16.5 [+12.3, +21.0] better | -22.5 [-24.2, -20.7] worse | +4.2 [+2.8, +5.9] better | -30.7 [-33.6, -27.3] worse | -22.2 [-23.7, -20.3] worse |
+| chat|P4|rho0.0590 | +9.3 [+6.3, +12.3] better | -4.3 [-6.3, -2.3] worse | +1.6 [+0.1, +3.0] better | -11.1 [-12.9, -8.7] worse | -3.9 [-5.9, -1.8] worse |
+| chat|P4|rho0.0791 | +10.4 [+7.7, +13.4] better | -7.4 [-9.3, -5.5] worse | +2.5 [+1.3, +3.8] better | -14.0 [-16.0, -11.6] worse | -7.0 [-8.8, -5.0] worse |
+| chat|P4|rho0.0992 | +10.7 [+8.0, +13.6] better | -10.1 [-11.9, -8.4] worse | +2.5 [+1.3, +3.7] better | -16.7 [-18.9, -14.2] worse | -9.7 [-11.5, -7.8] worse |
+| chat|P4|rho0.1193 | +10.7 [+7.7, +13.6] better | -12.2 [-13.8, -10.5] worse | +2.5 [+1.2, +3.8] better | -18.7 [-21.2, -15.8] worse | -11.8 [-13.4, -9.9] worse |
+| chat|P4|rho0.1394 | +11.9 [+8.8, +15.0] better | -14.3 [-15.9, -12.6] worse | +2.6 [+1.1, +4.0] better | -21.4 [-23.9, -18.6] worse | -14.0 [-15.6, -12.1] worse |
+| chat|P4|rho0.2600 (controllo) | +14.4 [+10.7, +18.4] better | -23.3 [-25.1, -21.3] worse | +4.3 [+2.6, +6.4] better | -30.1 [-33.2, -26.4] worse | -23.0 [-24.9, -20.7] worse |
+| edit|P1|rho0.0590 | +6.8 [+5.0, +8.9] better | -0.6 [-1.8, +0.7] neutral | +3.9 [+2.5, +5.2] better | -3.3 [-5.0, -1.6] worse | +3.1 [+0.9, +5.1] better |
+| edit|P1|rho0.0791 | +8.0 [+6.1, +10.0] better | -2.3 [-3.9, -0.7] worse | +5.0 [+3.6, +6.5] better | -4.9 [-6.9, -3.0] worse | +1.7 [-0.7, +3.9] neutral |
+| edit|P1|rho0.0992 | +9.4 [+7.5, +11.4] better | -3.9 [-5.1, -2.8] worse | +5.4 [+4.0, +6.6] better | -7.4 [-9.3, -5.7] worse | +0.3 [-2.0, +2.4] neutral |
+| edit|P1|rho0.1193 | +9.7 [+7.9, +11.4] better | -4.9 [-6.2, -3.6] worse | +5.2 [+3.7, +6.6] better | -8.8 [-11.0, -6.5] worse | -0.5 [-3.1, +2.0] neutral |
+| edit|P1|rho0.1394 | +10.5 [+8.2, +12.7] better | -5.7 [-7.0, -4.5] worse | +6.0 [+3.8, +8.0] better | -9.5 [-12.0, -7.2] worse | -1.1 [-3.7, +1.4] neutral |
+| edit|P1|rho0.2600 (controllo) | +17.1 [+14.9, +19.1] better | -12.2 [-14.2, -10.3] worse | +12.4 [+9.9, +15.0] better | -15.7 [-18.4, -13.0] worse | -6.6 [-10.1, -3.0] worse |
+| edit|P2|rho0.0590 | +11.5 [+9.2, +14.0] better | +0.2 [-1.9, +2.3] neutral | +8.0 [+5.8, +10.3] better | -3.0 [-5.1, -0.9] worse | +8.1 [+4.1, +12.0] better |
+| edit|P2|rho0.0791 | +13.3 [+10.8, +16.1] better | -2.0 [-4.2, +0.4] neutral | +10.9 [+7.8, +14.3] better | -4.0 [-6.9, -1.1] worse | +6.3 [+2.0, +10.4] better |
+| edit|P2|rho0.0992 | +14.7 [+11.8, +17.9] better | -4.0 [-6.2, -1.7] worse | +12.0 [+8.4, +15.7] better | -6.3 [-9.1, -3.2] worse | +4.6 [+0.3, +8.7] better |
+| edit|P2|rho0.1193 | +15.5 [+12.2, +19.0] better | -5.1 [-7.3, -2.8] worse | +12.6 [+8.7, +16.8] better | -7.4 [-10.3, -4.4] worse | +3.8 [-0.6, +7.9] neutral |
+| edit|P2|rho0.1394 | +17.1 [+13.4, +21.1] better | -6.7 [-9.5, -4.0] worse | +13.2 [+9.3, +17.3] better | -9.8 [-12.8, -6.8] worse | +2.3 [-2.4, +6.9] neutral |
+| edit|P2|rho0.2600 (controllo) | +27.1 [+21.8, +33.0] better | -13.6 [-16.4, -10.6] worse | +22.3 [+16.8, +28.1] better | -16.9 [-20.1, -13.6] worse | -3.8 [-8.7, +1.1] neutral |
+| edit|P4|rho0.0590 | +13.1 [+10.0, +16.3] better | +0.5 [-2.1, +3.1] neutral | +19.5 [+14.0, +25.3] better | +6.2 [+1.5, +10.9] better | +10.6 [+5.6, +15.2] better |
+| edit|P4|rho0.0791 | +14.6 [+11.5, +18.0] better | -1.2 [-3.9, +1.5] neutral | +12.6 [+9.1, +16.2] better | -3.0 [-5.9, +0.1] neutral | +9.0 [+4.3, +13.6] better |
+| edit|P4|rho0.0992 | +16.2 [+12.7, +19.8] better | -3.6 [-6.1, -0.9] worse | +14.0 [+10.2, +18.1] better | -5.3 [-8.3, -2.2] worse | +6.8 [+2.0, +11.6] better |
+| edit|P4|rho0.1193 | +17.0 [+13.2, +21.2] better | -5.2 [-7.9, -2.5] worse | +14.9 [+10.6, +19.5] better | -7.0 [-10.1, -3.7] worse | +5.3 [+0.4, +10.1] better |
+| edit|P4|rho0.1394 | +19.2 [+15.0, +23.7] better | -6.7 [-9.7, -3.7] worse | +15.4 [+11.1, +19.8] better | -9.7 [-12.6, -6.7] worse | +3.9 [-1.2, +8.9] neutral |
+| edit|P4|rho0.2600 (controllo) | +27.2 [+21.8, +32.8] better | -14.9 [-17.4, -12.5] worse | +32.7 [+23.7, +42.3] better | -11.2 [-15.9, -6.3] worse | -2.7 [-8.1, +2.7] neutral |

@@ -1,0 +1,39 @@
+{
+ "name": "run_lookup_prefix_replay",
+ "written_at_CET": "2026-10-25 07:56:49",
+ "label": "proxy CPU, AL, descrittivo",
+ "status": "scritto prima di aprire il summary e le tracce live di Bench. Prima di scriverlo sono stati verificati solo gli sha256 (sha256sum e sha256sum -c MANIFEST: 12/12 OK) ed e' stato letto il codice di post-processing di Bench (post_holdout_lookup_v12.py, nel MANIFEST) per fissare prefisso e aggregazione. Nessun numero live letto.",
+ "inputs_sha256": {
+  "/workspace/strata-plus/traces/holdout_lookup_v12/MANIFEST.sha256": "30ebe14698337b007c7663d39958065103fffc31924bd5629a6918a0bb84e65b",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/holdout_lookup_v12_summary.json": "88a920e98f9a19d35446fb057efccc7d2e383bab6739e24ffa9f51c0f53c2ce1",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/holdout_lookup_v12_n7.jsonl": "35f881debbea54b1dfa4f6110385f00ecc6dc72fe17835af22a7a92aed3c6b69",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/holdout_lookup_v12_n12.jsonl": "58c2d5d431c57a92ec8253266f59a67adeb7cc83c62ff6344f5675147052c94a",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/holdout_lookup_v12_n16.jsonl": "93c9ae1f0f81e9c3facfeedc70421a4f27fbe2e9d40a843c34dd866535655fd9",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/ref_holdout_tf.tsv": "0a86e4679f75c4a2aaf1361d7d1b742d374ac7489aae82daf93a3e349c040a9d",
+  "/workspace/strata-plus/traces/holdout_lookup_v12/post_holdout_lookup_v12.py": "f37ec8f69461ff40a14a3881e60a91d798a89408e087457a916664eb864014e1",
+  "riferimento /workspace/strata-plus/traces/raw/v11_holdout/holdout_tf_d7.jsonl": "a16cf384f1dc5c06cbb5ae544051293413fa016fc3a1710401fad62b6ccad854",
+  "replay/run_lookup_only_replay.json": "584ae02f6a60ed89f6a7cf7268106ebbc9834452f36d0fb46fb2f77eb8e7a40b",
+  "replay/lookup_only_replay.py": "2bd35901a21fca0fb15aebf6d6422970c86475ae88cd1aa3d12836847fb6d51e",
+  "replay/results/v2/lookup_only_replay/lookup_only_replay.json": "7be15904d236f70c6ded49da919a072a16ea52cae223353e3c4930998bacfbeb",
+  "tracce holdout usate dal replay /workspace/strata-plus/traces/v1.1/holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "/workspace/strata-plus/traces/v1.1/holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "/workspace/strata-plus/traces/v1.1/holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "replay/native/libstrata_spec_capi.so": "8fb27b0d1ca6bfeb58d2e9a1a45d28cc779f1feb7ef1662b2eb6d524608b055b",
+  "replay/strata_sim/native.py": "6bc1af8e4987ce0384a3eb42214471fd24859251ff7c5ddb54da94ccd049a758",
+  "replay/strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40"
+ },
+ "replay_method": "identico a run_lookup_only_replay.json: NativeSuffixDrafter(3,64,1<<15) (SuffixDrafter min_match 3, max_match 64), append(prompt_ids), scan(y, max_k=dmax); round lookup-only: k=0 -> 1 token; altrimenti a=min(lcp(cand[:dmax], y[p:p+dmax]), n-p-1); p += a+1. y = riferimento TF d7 completo (tracce v1.1 per dominio). Bracci dmax 7/12/16.",
+ "prefix_definition": {
+  "live": "come post_holdout_lookup_v12.py / tools/check_v12_divergence.py di Bench: first_divergence_pos = lcp(output_ids live, y ref), None se output identico al riferimento (greedy_equal_ref); prefisso = round con pos+committed <= first_divergence_pos; per richieste identiche, prefisso = intera richiesta. first_divergence_pos letto dalle tracce live per richiesta e braccio.",
+  "replay": "sugli stessi first_divergence_pos (per richiesta e braccio): round del replay con p + committed <= first_divergence_pos, con committed = a+1 (token emessi nel round); per richieste identiche, intera richiesta.",
+  "check_before_using": "verificare nelle tracce live che committed == accepted+1 in ogni round; se non vale, fermarsi e riportarlo senza adattare"
+ },
+ "aggregation": "come Bench (post_holdout_lookup_v12.py, dichiarato nel codice): per dominio, AL = somma(accepted+1) su tutti i round / numero di round (somma/somma sulle richieste del dominio), per AL_full e AL_pre_div. Il replay usa la stessa somma/somma: sum(a+1)/round.",
+ "reading_rule": "delta% = (AL live sul prefisso - AL replay sullo stesso prefisso)/AL replay sullo stesso prefisso, per dominio e braccio dmax 7/12/16; si riporta anche il delta% sulla richiesta intera (live intera vs replay intero sul riferimento). Solo descrittivo: nessun go/no-go. Holdout gia' usato (nessuna taratura).",
+ "diagnosis_planned": [
+  "scomposizione per dominio fra richieste identiche al riferimento (greedy_equal_ref true) e divergenti: AL live vs replay per i due sottoinsiemi (intera richiesta e prefisso)",
+  "per richiesta: differenza live - replay in round e in token accettati (sum accepted vs sum a), elenco delle richieste con le differenze piu' grandi",
+  "verifica stesso testo: stessi req_id; lunghezza dell'output live vs lunghezza del riferimento; y del replay (v1.1) == ref_holdout_tf.tsv"
+ ],
+ "not_computed": "nient'altro; nessun numero live usato per scegliere parametri"
+}

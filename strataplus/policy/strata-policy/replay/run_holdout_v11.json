@@ -1,0 +1,64 @@
+{
+ "status": "NON ANCORA APERTO, in attesa del via del Lead",
+ "created_at": "2026-10-25 04:26:11 CET (UTC+1)",
+ "frozen_params": {
+  "path": "replay/frozen_params_v3.json",
+  "sha256": "37bf1996217dd4ee697e753b9ef31082c49a9904f0fe393d0c5d4968cf698e9c"
+ },
+ "manifest": {
+  "path": "/workspace/strata-plus/traces/v1.1/MANIFEST.sha256",
+  "sha256": "34bdc195a1ec18824cc5497f4e2c98ef138803672f651cc4db2c045901f68d3f",
+  "files": 24,
+  "sha256sum_c": "OK 24/24 (04:2x CET)"
+ },
+ "marker": {
+  "path": "/workspace/strata-plus/traces/V11_MANIFEST_READY",
+  "sha256": "c8df2ccc01ba59b86911b71796054aa640512d120eb1945449d7dd892638f2c3"
+ },
+ "holdout_files_sha256 (solo hash, contenuto non letto)": {
+  "holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "holdout_counts.json": "041aa30be1844d906c2a57c3e06c0bb4d03d1b857a0c83c81945ef52d3bed4f0"
+ },
+ "holdout_atteso": "teacher-forced Dmax=7, 90 richieste (30 per dominio), 10.957 round (dichiarato da Bench)",
+ "p4": {
+  "V1": {
+   "path": "/workspace/strata-plus/traces/cost_p4_cpu.json",
+   "sha256": "e51712c64b52c0ff7159dcf3e47ac100f29ba9c4f7342360a85e81c42bf8c34c",
+   "note": "equivalente a 099ceda… per il Q4_K_M (frozen_params_v3)"
+  },
+  "V2": {
+   "path": "replay/cost_derived/cost_p4_cpu_099ceda_s8lin.json",
+   "sha256": "1f691a169e0517273f36847f2b39dd6d917317608b892b16a553d888c1ff0944",
+   "s8": 2.7921
+  }
+ },
+ "commit": "051326aa2931e04a9fbdd226f6592cf66e53516e",
+ "code_sha256": {
+  "replay/holdout_v11.py (nuovo, solo runner: importa il sim congelato)": "a84fe2f8c6b31a7b9195841eff2cc0bf0cb0410b8cdf3a66c63b76c860b08017",
+  "replay/strata_sim/sim2.py": "2d61419b62b1faaa5745420a601ca4fb7164130e9e5db776a5486922f38859a8",
+  "replay/strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40",
+  "replay/native/libstrata_spec_capi_p3.so": "4e8384481e7b2e130b2b236dbd94b98097093731de5e55759a84e17f50d407d1"
+ },
+ "command": "cd /workspace/strata-policy/replay && nice -n 19 python3 holdout_v11.py results/v2/holdout_v11",
+ "evaluation": {
+  "arms": {
+   "A": "GateV2(tmax=5, skip=True)",
+   "B": "GateV2(tmax=8, skip=True)",
+   "H (esplorativo, riportato a parte)": "HybridH(min_match=8, factor=None, tmax=8)"
+  },
+  "baselines": {
+   "default": "StrataCurrent()",
+   "STRATA_SPEC_COST=1": "StrataCurrent(spec_cost=True)",
+   "k=3": "MtpFixed(4)"
+  },
+  "cells": "per dominio (code/chat/edit) × forme P1/P2/P4 × rho {0.059,0.0791,0.0992,0.1193,0.1394} (fascia, decide) + 0.26 (controllo) × versioni del costo V1 e V2",
+  "ci": "IC95 sim2.boot_ratio: bootstrap a cluster sulle sessioni (= richieste se session_id unico), B=2000, seed 0",
+  "rule": "dal file congelato (decision_rule): B vince solo se in ENTRAMBE le versioni nessuna cella di B è nettamente peggiore contro default, STRATA_SPEC_COST=1 e k=3 (fascia e controllo) E almeno una cella della fascia su code o edit con B vs A IC95>0; altrimenti A",
+  "no_retuning": true,
+  "single_pass": true
+ },
+ "opening": "il timestamp di apertura viene scritto in replay/run_holdout_v11_opened.json dallo script prima di leggere i dati",
+ "caveat": "tok/s STIMATI dal replay su proxy CPU (Qwen3.5-2B Q4_K_M), non misure AMD; valido solo per la sequenza singola (CLI e loop GEN di --serve, non parallel>1)"
+}

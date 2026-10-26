@@ -1,0 +1,4 @@
+0.02.341.554 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=base
+[agent_v12_pilot_alloc131k] rep 0 agent_v12-expert-cache#t0: 53 tok, 53 verify + 0 replay rounds, acc 0/0, decode 2458 ms
+g9_violations=0

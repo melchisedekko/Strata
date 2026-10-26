@@ -1,0 +1,39 @@
+HIP-host clang++-17 src/core/verify.cpp rc=0 0 err
+CUDA-host g++ src/core/verify.cpp rc=0 0 err
+HIP-host clang++-17 src/kernels/cpu/pool.cpp rc=0 0 err
+CUDA-host g++ src/kernels/cpu/pool.cpp rc=0 0 err
+HIP-host clang++-17 src/prefill/prefill.cpp rc=0 0 err
+CUDA-host g++ src/prefill/prefill.cpp rc=0 0 err
+HIP-host clang++-17 src/program/generate.cpp rc=0 0 err
+CUDA-host g++ src/program/generate.cpp rc=0 0 err
+HIP-host clang++-17 src/core/mtp.cpp rc=1 2 err
+src/core/mtp.cpp:54:10: fatal error: 'ggml.h' file not found
+17 warnings and 1 error generated.
+CUDA-host g++ src/core/mtp.cpp rc=1 1 err
+src/core/mtp.cpp:54:10: fatal error: ggml.h: No such file or directory
+HIP-host clang++-17 src/core/expert_source.cpp rc=0 0 err
+CUDA-host g++ src/core/expert_source.cpp rc=0 0 err
+HIP-host clang++-17 src/kernels/cpu/expert.cpp rc=0 0 err
+CUDA-host g++ src/kernels/cpu/expert.cpp rc=0 0 err
+HIP-host clang++-17 src/kernels/cpu/native_expert.cpp rc=1 2 err
+src/kernels/cpu/native_expert.cpp:16:10: fatal error: 'ggml.h' file not found
+1 error generated.
+CUDA-host g++ src/kernels/cpu/native_expert.cpp rc=1 1 err
+src/kernels/cpu/native_expert.cpp:16:10: fatal error: ggml.h: No such file or directory
+HIP-host clang++-17 src/core/remote_experts.cpp rc=0 0 err
+CUDA-host g++ src/core/remote_experts.cpp rc=0 0 err
+HIP-host clang++-17 src/kernels/s2_expert_grouped_parity.cpp rc=0 0 err
+CUDA-host g++ src/kernels/s2_expert_grouped_parity.cpp rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/native_mmvq.cu rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/native_bf16.cu rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/shared_expert.cu rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/s2_expert_grouped.cu rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/fused_gr.cu rc=0 4 err
+ 1131 |         cudaGetLastError();      // drop any error the attempt left behind
+ 2292 |             cudaGetLastError();   // drop any error the attempts left behind
+ 1131 |         cudaGetLastError();      // drop any error the attempt left behind
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/verify_kernels.cu rc=0 0 err
+HIP-device clang++-17 -x hip gfx1100 src/kernels/cuda/iq_kernels.cu rc=1 3 err
+src/kernels/cuda/iq_kernels.cu:2478:16: error: 'alignas' attribute cannot be applied to types
+src/kernels/cuda/iq_kernels.cu:2665:16: error: 'alignas' attribute cannot be applied to types
+6 warnings and 2 errors generated when compiling for host.

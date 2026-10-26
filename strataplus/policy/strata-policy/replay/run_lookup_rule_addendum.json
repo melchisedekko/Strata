@@ -1,0 +1,60 @@
+{
+ "name": "run_lookup_rule_addendum",
+ "written_at_CET": "2026-10-25 07:02:48",
+ "refers_to": {
+  "replay/run_lookup_rule.json": "43785c4ba35f44a3824064ce972b4eaba48ffaa68adede7a847ea7df070daec2"
+ },
+ "status": "scritto PRIMA del calcolo delle aggiunte C e D (steering Lead 07:02 CET). Il file di run principale era gia' hashato e non e' stato toccato. La run principale (A+B) era gia' stata eseguita alle 07:01:16-07:01:22 CET; C e D sono calcolate da uno script NUOVO (replay/lookup_rule_al_addendum.py) in una cartella NUOVA (replay/results/v2/lookup_rule_al_addendum/).",
+ "aggiunte_lead_0702_sostanza": {
+  "C": "Colonna (a'): MTP<=4 righe (3 draft, come l'installata) e lookup<=7 token (8 righe) = --spec 4 --lookup-chain 2. Oracolo e regola (con e senza gate). Scomporre il guadagno di (b) rispetto ad (a): solo lookup ((a')-(a)) e MTP piu' largo ((b)-(a')).",
+  "D": [
+   "Rapporti di pareggio s(16)/s(8) e s(12)/s(8), per dominio e split, modello PARAMETRICO lineare s(T)=1+rho(T-1), stesso metro (token per unita' di costo, draft a costo zero), oracolo e regola.",
+   "(c) vs (b): rho* e s(16)/s(8)=(1+15rho*)/(1+7rho*); (d) vs (b): rho* e s(12)/s(8)=(1+11rho*)/(1+7rho*).",
+   "Anche gli stessi rho* di (c) e (d) contro (a) e contro (a').",
+   "Tutto etichettato PARAMETRICO, non misurato; spiegare che il pareggio dipende dalla forma lineare e che su AMD va confrontato con l'intero profilo s(T) misurato (T variabili nei round), non solo con i due estremi.",
+   "Non calcolare altro."
+  ]
+ },
+ "column_a_prime": {
+  "mtp_max_drafts": 3,
+  "lookup_max_tokens": 7,
+  "code_check_7dd5cf1": "generate.cpp L3208-3211 (--spec 4, suffix on): mtp_max_t=4, spec=6; L3215-3219 (--lookup-chain 2): chain_base=6, spec=max(6,min(max(6,4)+2,8))=8; L11173-11174 S_mtp=4 -> 3 MTP drafts; L14897 sfx.propose(S-1) -> standalone lookup <=7.",
+  "not_modelled": "the chained lookup after the MTP drafts (--lookup-chain, L14905-14921: propose_from_sources + policy.chain) is NOT modelled; (a') = standalone lookup <=7 + MTP 3 drafts, as defined by the Lead"
+ },
+ "implementation_fixed_before_numbers": {
+  "same_as_main_run_file": "lookup regeneration, match/length definition, else-branch (min_p 0.5, MTP cap of the column), gate, oracle walk and oracle T, metric, bootstrap B=2000 seed 0 on requests, rho* grid [0,2] step 0.0005 + 40-step bisection, '>2' / 'mai' conventions: identical to run_lookup_rule.json",
+  "columns": {
+   "a": [
+    3,
+    5
+   ],
+   "a_prime": [
+    3,
+    7
+   ],
+   "b": [
+    7,
+    7
+   ],
+   "d": [
+    7,
+    12
+   ],
+   "c": [
+    7,
+    16
+   ]
+  },
+  "decomposition": "for oracle, rule-with-gate, rule-no-gate: dAL_lookup = AL(a')/AL(a)-1, dAL_mtp = AL(b)/AL(a')-1, total = AL(b)/AL(a)-1; shares of the AL gain (b)-(a): (AL(a')-AL(a))/(AL(b)-AL(a)) and (AL(b)-AL(a'))/(AL(b)-AL(a)); IC95 bootstrap",
+  "rho_pairs": {
+   "c_vs_b": "s16/s8=(1+15rho*)/(1+7rho*)",
+   "d_vs_b": "s12/s8=(1+11rho*)/(1+7rho*)",
+   "c_vs_a, d_vs_a, c_vs_aprime, d_vs_aprime": "rho* plus the same s16/s8 (for c) and s12/s8 (for d)"
+  },
+  "comparison_base": "like-for-like (oracle vs oracle, gate vs gate, no-gate vs no-gate)",
+  "mai_rule": "'mai' if the column does not strictly beat the base at rho=0 (equal rounds counts included)",
+  "ratio_ci": "ratios are monotone increasing in rho*: IC95 = ratio of the rho* IC95 bounds; '>2' -> ratio > value at rho=2",
+  "label": "PARAMETRICO, non misurato"
+ },
+ "main_run_results_already_computed": "replay/results/v2/lookup_rule_al/ (A+B): not modified by this addendum; c_vs_a and d_vs_a rho* are recomputed here and must coincide (check)"
+}

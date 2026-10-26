@@ -1,0 +1,4 @@
+0.00.934.482 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=base
+[smoke-base] rep 0 HumanEval/18: 64 tok, 64 verify + 0 replay rounds, acc 0/0, decode 3056 ms
+[smoke-base] rep 0 HumanEval/36: 64 tok, 64 verify + 0 replay rounds, acc 0/0, decode 3006 ms

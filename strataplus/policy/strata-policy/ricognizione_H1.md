@@ -1,0 +1,531 @@
+# Strata+ — Ricognizione H1: l'arbitro `DraftPolicy::choose` (MTP vs prompt lookup)
+
+Repo: [Niko1221/Strata @ 7dd5cf18](https://github.com/Niko1221/Strata/tree/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5). Il lavoro è solo locale: niente push, niente PR, nessun messaggio esterno.
+Piano di riferimento: `/workspace/strata-plus/piano.md` (v2). Formato dei log: `/workspace/strata-plus/log_format.md`.
+
+> **Natura dei numeri.** Nessun numero qui è una misura di tok/s sul motore reale.
+> - **SINTETICO:** generatore del replay, seed fissi.
+> - **PROXY CPU:** tracce teacher-forced di Strata Bench (`traces/raw/tf_d7.jsonl`) su un modello denso proxy. I candidati MTP sono reali; lookup e pool vengono ricalcolati.
+> - **E1:** testi reali, solo lookup, nessun MTP.
+>
+> I tok/s sono sempre **stimati** con i profili di costo simbolici: P1/P2 sono stime ricavate dal codice, B-flat/B-lin sono limiti. P4, il costo misurato su CPU, non è ancora disponibile.
+
+## 1. Come decide oggi il motore (riferimenti al codice @ 7dd5cf18)
+
+Base dei link: `https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/`
+
+| Cosa | Dove |
+|---|---|
+| Forma dei costi `kShape` (prior per T=1..8) | [src/spec/draft_policy.cpp#L13](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L13) |
+| Prior di lookup `kPriorQ {0.75,0.88,0.93,0.96}`, `kPriorN=4`, `lookup_rate(match)` | [draft_policy.cpp#L20-L21](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L20-L21), [#L38](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L38) |
+| `mtp_tokens(t)`: prior 1+0.7(t−1) | [draft_policy.cpp#L118](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L118) |
+| `choose(t_mtp, lookup_k, match)`: lookup geometrico con q per bucket di match; confronta e/cost(k+1) con mtp_tokens(T)/cost(T)·(1+margin); esplorazione stale/probe | [draft_policy.cpp#L123-L152](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L123-L152) |
+| `observe`: aggiorna solo il braccio giocato, più il costo wall-clock | [draft_policy.cpp#L154-L173](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L154-L173) |
+| `draft_rate` / `observe_probs` (calibrazione p→accettazione) | [draft_policy.cpp#L184-L197](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L184-L197) |
+| `keep_draft`: regola di catena cost-aware, attiva solo con `STRATA_SPEC_COST=1` | [draft_policy.cpp#L199-L224](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/spec/draft_policy.cpp#L199-L224) |
+| Costo di verifica: miss 1.75×/2.4×/3.05× per T=2/3/4 ("measured on decode traces"), base del profilo P1 | [include/strata/core/verify.hpp#L10-L11](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/include/strata/core/verify.hpp#L10-L11) |
+| Serve loop: `SuffixDrafter(max(1,suffix_draft),64,…)`, `DraftPolicy`, `STRATA_SPEC_COST`, `set_robust`, `set_chain_rule` | [src/program/generate.cpp#L11177-L11184](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L11177-L11184) |
+| Chiamate a `choose` | [generate.cpp#L14471](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14471), [#L14900](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14900), [#L16560](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16560) |
+| **Gate di accordo**: il lookup viene considerato solo se `sbuf[0]==drafts[0]` | [generate.cpp#L14899](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14899) (serve), [#L16559](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16559) (CLI) |
+| Catena del lookup | [generate.cpp#L14906-L14917](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L14906-L14917) |
+| `mtp.draft` | [generate.cpp#L15169](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15169) |
+| `observe_probs` / `observe` / `observe_chain` | [generate.cpp#L15190-L15195](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L15190-L15195), CLI [#L16713-L16715](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16713-L16715) |
+| CLI: stessa costruzione, più il seeding `STRATA_SPEC_COST_TABLE` | [generate.cpp#L16428-L16450](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16428-L16450) (seed [#L16432-L16442](https://github.com/Niko1221/Strata/blob/7dd5cf18e68c639a8773e096c5c79f971ea2a9f5/src/program/generate.cpp#L16432-L16442)) |
+
+## 2. Debolezze individuate
+
+1. **Gate di accordo.** Il lookup entra solo se la sua prima proposta coincide con il primo draft MTP. Proprio dove l'MTP sbaglia e il lookup avrebbe ragione, il lookup non viene mai giocato. Inoltre la scelta arriva *dopo* aver pagato il draft MTP.
+2. **Selection bias.** `observe` aggiorna solo il braccio scelto. Le stime del braccio perdente restano ferme ai prior, oppure vengono aggiornate solo dove il gate le lascia passare.
+3. **T dell'MTP fisso senza `STRATA_SPEC_COST`.** Di default T è quello di `--spec`. La regola di catena cost-aware (`keep_draft`) è un braccio A/B spento.
+4. **Costi wall-clock appresi online.** Sono rumorosi e non stazionari (carico, cache), quindi confondono confronto e riproducibilità. Da qui P2: un costo deterministico seminato da tabella.
+5. **Lookup su una richiesta sola.** Non c'è memoria fra richieste (H2) e il gate sul match è rozzo, con 4 bucket.
+
+## 3. Cosa è stato costruito (tutto locale)
+
+- **Simulatore di replay** `/workspace/strata-policy/replay/` (README, `SCHEMA.md`). Fa il link al codice **reale** `DraftPolicy`/`SuffixDrafter` via ctypes (`native/libstrata_spec_capi.so` a 7dd5cf18 non patchato; `native/libstrata_spec_capi_p3.so` con i sorgenti patchati). Il port Python serve solo da controllo.
+  - Metriche M1–M5 del piano.
+  - Oracoli O_round, O_DP, O_depth.
+  - IC95 con bootstrap a cluster (sessione o richiesta).
+  - Griglia α × ρ_mtp × ρ_lu: α∈[0,1], ρ_mtp∈{0,…,0.3} con 0.059 incluso, ρ_lu∈{0, 0.001≈20 µs/token, 0.01}.
+  - Comandi: `run_v2.py` e `report_v2.py`.
+- **Specifica dei log** `/workspace/strata-plus/log_format.md` (strataplus.v1, con sezione divergenze).
+  - D13: riga `request_end`.
+  - D14: note su Bench: G2 probs dal sampler, G3 max_match 32 vs 64, G7 ms_measured.
+- **Patch** `/workspace/strata-policy/patches/` (README con ordine di applicazione ed env var). `ALL_P1-P5_cumulative.diff` passa `git apply --check` su 7dd5cf18 pulito.
+
+| Patch | Contenuto | Stato |
+|---|---|---|
+| P2 | `set_frozen_costs` (`STRATA_SPEC_COST_FROZEN=1`) | compilato e testato |
+| P3 | `observe_counterfactual` (`STRATA_SPEC_CF=1`) | compilato e testato. Effetto ≈ nullo nel replay (±0.5% sintetico) |
+| P4 | `PoolSource` via `extra_draft_sources()` (`STRATA_LOOKUP_POOL=<cap>[,gate]`) | compilato e testato |
+| P1 | trace JSONL strataplus.v1 (`STRATA_PLUS_TRACE`) | bozza in generate.cpp, **non compilata** (header CUDA) |
+| P5 | `JointGate`: gate unico per sorgente + profondità MTP (candidato principale H1+H4) e variante con entropy stop alla AdaEDL | compilato, `joint_gate_test` PASS. Parità C++↔Python PASS (`tests/test_joint_gate_parity.py`). Wiring nel motore = solo design (`docs/strataplus_joint_gate.md`, `STRATA_SPEC_JOINT=1`) |
+
+**Come funziona il JointGate:**
+- obiettivo di Dinkelbach E[a+1] − λ·C;
+- costo online con RLS e prior ottimistico;
+- hazard per bucket di p e per bucket di match;
+- aggiornamenti controfattuali censurati;
+- salto dell'MTP quando il lookup domina.
+
+**Correzione dichiarata (sviluppo guardando i dati sintetici).**
+- *Sintomo:* nel run sintetico code|P1 il gate sceglieva "none" nel 69% dei round, pur draftando, e perdeva −5.4% contro STRATA_SPEC_COST=1.
+- *Causa:* un bug nel modello di costo. La clamp monotona in T veniva applicata anche alle righe già misurate, così il costo di T=2 restava incollato al prior di T=1 non ancora appreso (2.36 invece di 1.81 step) e T=2 non veniva più provato.
+- *Correzione:* clamp solo sulle righe con meno di 3 campioni, interpolazione ottimistica per le righe poco provate, costi per token ≥ 0. Applicata in Python e in C++ con la parità ripristinata.
+- *Effetto:* code|P1 passa da −5.4% a −0.7%.
+- *Trasparenza:* la diagnosi è stata fatta sul seed riportato. I risultati precedenti sono in `results/v2/*_pre_costfix/`.
+
+## 4. Risultati
+
+### E1 (testi reali, solo lookup) — `/workspace/strata-plus/e1/policy/results/E1_results.md`
+- Pool persistente con gate di match 12 su session_full: P1 **+3.7% [+2.1, +5.5]**, B-lin **−1.7%**.
+- Senza gate il pool di dominio alza l'AL (+20.7% sul codice) ma, con costi ripidi, perde nettamente in tok/s stimati (−29.5% in P1). Il pool va quindi messo dietro un gate.
+- Memoria: 16 MiB ≈ 246k token.
+
+### Replay v2, SINTETICO (48 richieste per dominio) — `replay/results/v2/synthetic/report.md`
+- **H1 no-go non scatta.** Il gap della policy attuale da O_round è 21–41%.
+- **H1 GO** per gate_v2 vs DraftPolicy di default:
+  - P1: code +28.6%, chat +56.7%, edit +15.1%;
+  - P2: +20.3%, +31.7%, +16.5%.
+  - Tutti gli IC95 sono > 0.
+- **H4(b) GO** vs MTP fisso k=3: +22% … +57%.
+- **H4(a) no-go** vs `STRATA_SPEC_COST=1`:
+  - P1: code −0.7% [−1.4, −0.0], chat +0.9%, edit +4.3%;
+  - P2: +2.6%, −1.5%, +8.1%.
+  - Il gap di STRATA_SPEC_COST=1 da O_depth è 4–13%, quindi l'H4 no-go non scatta: c'è ancora margine.
+- **Robustezza:**
+  - vs strata_current e vs k3: soddisfatta.
+  - vs strata_cost: fallisce in code|P1, code|B-lin, chat|P2 (regressioni ≤ 1.5%).
+- **H2 (pool, gate_v2_pool vs gate_v2):**
+  - session P2 +6.4% [+4.6, +8.2], P1 +0.7% (n.s.);
+  - code P2 +2.3%;
+  - piccole regressioni in chat (−0.2/−0.5%) ed edit P1 (−1.0%).
+- **Variante entropy stop (gate_v2_conf):** non migliora il candidato principale. Su chat|P2 perde −8.8% vs strata_cost.
+
+### Replay v2, PROXY CPU teacher-forced (30 richieste: code/chat/edit, nessuna sessione) — `replay/results/v2/tf/report.md`
+- **H1 GO** vs default:
+  - P1: code +4.8% [+1.4, +8.3], chat +31.1%, edit +5.6%;
+  - P2: +9.5%, +12.3%, +8.9%.
+- **H4(b) GO** vs k3.
+- **H4(a)** vs STRATA_SPEC_COST=1:
+  - P1: code +3.2% [+0.7, +5.5], chat −0.2% (n.s.), edit +2.4% (n.s.);
+  - P2: +8.8%, −0.3% (n.s.), +8.2%.
+  - Formalmente no-go (non tutti i domini sono > 0), ma nessuna cella ha IC95 interamente < 0.
+- In B-flat il guadagno è ampio: code +36%, chat +5.6%.
+- **H2 non valutabile:** non ci sono sessioni.
+- Con 30 richieste gli IC sono larghi.
+
+### Varianti richieste (famiglia v1 nel walk v2) — `replay/results/v2/{synthetic,tf}/variants.md`
+Stessi dati, profili e bootstrap del replay v2 (adattatore `strata_sim/v1adapt.py`, runner `run_variants.py`). Δ = tok/s **stimati** vs `strata_cost` / vs `gate_v2`; sintetico e proxy, non misure.
+- **Hedge full-feedback** (pesi esponenziali su {none, MTP@k, lookup@k}, feedback controfattuale censurato):
+  - stocastica: peggiore ovunque in P1/P2 (sintetico −4…−24% vs strata_cost, −11…−23% vs gate_v2);
+  - **deterministica** (follow-the-leader): meglio della stocastica di 0.5–6 punti ma resta sotto gate_v2 (−8…−22%);
+  - **contestuale** (chiavi per bucket di match/accordo e p₀): il miglior Hedge. Sintetico −3.5…−11% vs gate_v2, proxy code/edit P1 ≈ pari a strata_cost (+0.2/+1.0%), chat −8%.
+  - Unica area favorevole: B-flat (verifica piatta), dove però gate_v2 vince ancora di 7–18%.
+- **Stimatore contestuale con bonus di accordo** (`ctx_agree`, hazard per cella match×indice×dentro/fuori dal prefisso d'accordo, profondità congiunta):
+  - è competitivo con gate_v2 in chat (sintetico P2 +3.0%, B-flat +1.4%; proxy chat P1/P2 +0.9%) ed edit P1 proxy;
+  - ma ha un **blocco a freddo**: senza ottimismo sul costo resta su "none" quando il prior iniziale non premia l'MTP (code B-flat sintetico −67% vs gate_v2, proxy code P1 −26%, edit B-flat −80%). Non è robusto.
+  - **Bonus d'accordo** (ctx_agree vs ctx_noagree): da 0 a +3 punti (sintetico edit P1 +2.9, proxy edit B-lin +24 per lo stesso blocco a freddo evitato). Segnale utile, già incluso in gate_v2 (`agree` nei bucket di hazard).
+- **DraftPolicy attuale + full-feedback** (`v1_current_ff`, port Python): ±1–2% dal default, cioè il feedback controfattuale da solo non corregge l'arbitro (coerente con P3 ≈ nullo). Anche lo split per accordo (`v1_current_agree`) e la rimozione del gate `sbuf[0]==drafts[0]` (`v1_current_nogate`) restano entro ±2%.
+- **Stop su confidenza** (`gate_v2_conf`, AdaEDL su p top-1; `mtp_adaedl`): già nel report v2. Non migliora gate_v2 (chat|P2 −8.8% vs strata_cost).
+- **Deterministica nel senso P2** (costi congelati, `STRATA_SPEC_COST_FROZEN=1`): implementata e testata in C++ (patch P2). Nel replay i costi osservati vengono dal profilo simbolico, quindi tutte le policy sono deterministiche dato il trace. Fanno eccezione le Hedge stocastiche, che usano un seed fisso.
+- **Conclusione:** nessuna variante batte gate_v2 in modo robusto. Il candidato principale resta il gate congiunto fonte+profondità (P5).
+
+### Regione di vittoria (griglia α × ρ_mtp × ρ_lu)
+Griglia 7 α × 6 ρ_mtp × 3 ρ_lu = 126 celle per dominio. Celle con IC95 interamente > 0 (W) o < 0 (L) per gate_v2; tok/s **stimati**. Le mappe complete sono in `results/v2/{synthetic,tf}/report.md`, i dati in `grid.json`.
+
+| confronto | SINTETICO code | chat | edit | session | PROXY tf code | chat | edit |
+|---|---|---|---|---|---|---|---|
+| vs strata_current (default) | 126W/0L | 126W/0L | 126W/0L | 126W/0L | 107W/0L | 126W/0L | 112W/0L |
+| vs MTP fisso k3 | 126W/0L | 126W/0L | 126W/0L | 126W/0L | 114W/0L | 126W/0L | 119W/0L |
+| vs STRATA_SPEC_COST=1 | 75W/23L | **48W/60L** | 112W/4L | 100W/3L | 105W/0L | 33W/24L | 79W/1L |
+| vs STRATA_SPEC_COST=1 senza lookup | 75W/33L | 47W/60L | 108W/10L | 97W/9L | 99W/3L | 18W/26L | 88W/6L |
+| gate_v2_pool vs STRATA_SPEC_COST=1 | 80W/27L | 44W/65L | 112W/8L | 104W/14L | 91W/7L | 30W/35L | 64W/10L |
+| gate_v2_conf vs STRATA_SPEC_COST=1 | 43W/60L | 36W/78L | 119W/4L | 96W/18L | 86W/6L | 16W/71L | 39W/0L |
+
+Dove perde contro STRATA_SPEC_COST=1:
+- code: α ≥ 0.65 con ρ_mtp ≤ 0.2 (sintetico). Nel proxy non perde mai.
+- chat: α 0.2–0.8 a qualsiasi ρ_mtp (sintetico); α ≥ 0.5 nel proxy.
+- edit e session: solo celle sparse con α ≥ 0.8.
+
+
+**Lettura.**
+- Il candidato non perde mai contro la policy di default e k=3 in tutta la griglia. Vince in tutte le 126 celle nel sintetico e in 107–126 nel proxy; le restanti celle del proxy sono pari.
+- Contro `STRATA_SPEC_COST=1` vince dove la verifica è memory-bound (α basso, il caso tipico del decode MoE con offload) e dove il costo MTP è alto.
+- Con verifica ripida (α alto) il confronto è pari o negativo, soprattutto in **chat**. Lì il lookup rende poco e strata_cost è già vicino all'ottimo di profondità.
+- P1 viene da verify.hpp ed è ripido, quindi favorisce strata_cost. La decisione su H4(a) dipende dunque dal profilo vero, cioè da P4.
+
+## 5. Go/no-go (provvisorio, piano §8)
+- **H1:** GO in replay, sia sintetico sia proxy, contro il default. Va confermato su P4 e live.
+- **H4:**
+  - (b) GO.
+  - (a) non ancora (in griglia la chat sintetica perde in 60/126 celle): contro STRATA_SPEC_COST=1 il vantaggio è da 0 a +9% in code/edit e circa 0 in chat. La decisione dipende da α reale (P4).
+- **H2:** debole e solo con il pool dietro un gate. È positivo su sessioni lunghe in P2 e ≈0 o leggermente negativo altrove. Il gate a 12 è necessario.
+- **H5:** non riproducibile su proxy densi (Scout). Resta un limite dichiarato.
+- **Colibri (+13%):** è un'ipotesi della letteratura, non un'evidenza su Strata.
+
+## 6. Cosa serve da Strata Bench per il replay definitivo
+1. **`/workspace/strata-plus/traces/cost_p4_cpu.json`** con i costi misurati per (T, d, k). Il replay lo userà come P4 al posto della sensibilità; G7 ms_measured fornisce già la base.
+2. **Tracce strataplus.v1** (log_format.md) dal motore reale MoE, con `request_end` (D13), il campo `ent` opzionale (per l'entropy stop) e il campo `session` (per H2).
+3. Lookup con **max_match 64** come nel motore: il proxy usa 32 (G3). Il replay oggi ricalcola con 64.
+4. **M5, identità greedy:** nel proxy combo_k3 coincide con il baseline solo in 40/60 casi, il lookup in 19/30. Va chiarito, probabilmente nondeterminismo del proxy, prima di qualsiasi misura live.
+5. Le probabilità MTP dal sampler (top_k=10 + temp, G2) sono solo ordinali. Servono le probabilità greedy.
+
+Avvio: `cd /workspace/strata-policy/replay && nice -n 19 python3 run_v2.py --data tf:<trace.jsonl> --grid --procs 1 && python3 report_v2.py results/v2/<run>`.
+
+## 7. Stato di `log_format.md` e divergenze dal piano §6
+- File: `/workspace/strata-plus/log_format.md`, schema `strataplus.v1`, allineato al §6 **senza rimuovere né rinominare campi**.
+- Divergenze/aggiunte (sezione 4 del file), tutte retrocompatibili:
+  - D1 `data_kind` (live/teacher_forced/synthetic) obbligatorio; D2 `ref_tokens` (o `acc` per fonte, o D13) per l'accettazione controfattuale; D3 `dmax`; D4 semantica di `pos` fissata sul codice (`generate.cpp:15108-15109`);
+  - D5 `policy_dbg` facoltativo; D6 `cand.chain` per `--lookup-chain`; D7 `round.moe` (H5, solo Strata); D8 `ms_split`; D9 modalità di campionamento; D10 ordine di alimentazione del pool;
+  - D11 `cand.mtp.probs` = top-1 greedy e `cand.mtp.ent` facoltativo (stop su entropia); D12 formato di `cost_p4_cpu.json`; D13 riga `request_end` (output_ids, patch P1); D14 note sulle tracce proxy di Bench (G2 probs dal sampler, G3 max_match 32 vs 64, G7 ms_measured).
+- Minimo richiesto dal replay: D1, D2 (o `acc`, o D13), D3, D4.
+
+## 8. Verifica dei test (25/10/2026, ricompilati dal worktree patchato con zig c++)
+- C++: `suffix_drafter_test`, `draft_policy_test`, `controller_test`, `pool_source_test`, `joint_gate_test`, `spec_start_test` → tutti OK/PASS.
+- Parità JointGate C++↔Python (`replay/tests/test_joint_gate_parity.py`) → PASS; crosscheck DraftPolicy nativo vs port (`replay/crosscheck/crosscheck_native.py`) → 83 438 risposte, 0 discrepanze.
+- `ALL_P1-P5_cumulative.diff` → `git apply --check` OK su 7dd5cf18 pulito. `generate.cpp` (P1 e wiring P5) non compilabile qui (CUDA).
+
+
+## 9. Risultati con P4 (25/10/2026) — PROVVISORI
+
+**P4** = `/workspace/strata-plus/traces/cost_p4_cpu.json`, etichetta: *misurato su CPU, modello denso, non AMD* (provvisorio: possibile carico concorrente durante la misura; Bench lo rimisurerà). Costo additivo s(T) + d·ρ_mtp (+ ρ_lu·k, ρ_lu = 1.1e-6). P4 grezzo ha ρ_mtp = 0.258. Sensibilità: P4-lo/P4-hi (estremi IC di s(T) e di ρ_mtp) danno risultati praticamente identici a P4 → `replay/results/v2/tf_p4/p4.md`.
+Tutti i tok/s sono **STIMATI** dal replay (nessuna misura su AMD). G9 (round finale MTP con k_proposto > k configurato) escluso dove applicabile; tf_d7 è teacher-forced, quindi G9 non interviene.
+
+### 9.1 Due fasce di ρ_mtp (struttura del verdetto, indicazione del Lead)
+- **Fascia Strata-plausibile ρ_mtp ∈ [0.06, 0.15]** — *fascia plausibile, stima di Scout, da misurare su Strata* (NON è una misura: ρ = 0.258 deriva in gran parte dalla lm_head piena 248k del proxy; il vocabolario di draft ridotto di Strata darebbe ≈ 0.076–0.148). **Decide la patch.** Griglia: ρ ∈ {0.059, 0.079, 0.099, 0.119, 0.139} × forme s(T) P1/P2/P4 = 15 profili.
+- **Fascia proxy ρ_mtp = 0.26** (P4 grezzo, caso pessimistico): **solo controllo di robustezza** (3 profili).
+- Intervallo completo [0.059, 0.26] (11 punti) in `p4.json` / `p4.md` (sezione griglia).
+
+### 9.2 Margini per dominio — PROXY tf_d7 (30 richieste reali) — tabella separata
+**PROXY tf_d7 (30 richieste reali, proxy CPU teacher-forced)** — Δ tok/s stimato [IC95]; profili P1/P2 (ρ_mtp 0.059, stime da codice), P4 (ρ_mtp 0.258, misurato su CPU, modello denso, non AMD, provvisorio)
+
+| dominio | profilo | speedup gate_v2 vs no-spec | gate_v2 vs default | vs STRATA_SPEC_COST=1 | vs k=3 | vs Specu | gap residuo gate_v2 → O_round | G(O_round) default | G(O_depth) SPEC_COST (solo MTP) | k fisso migliore |
+|---|---|---|---|---|---|---|---|---|---|---|
+| code | P1 | 1.27 [1.23, 1.32]× | +4.8% [+1.4, +8.3] | +3.2% [+0.7, +5.5] | +8.1% [+3.5, +12.4] | +6.0% [+1.6, +12.1] | 7.2% [4.6, 9.9] | 11.4% [9.8, 13.1] | 7.5% [6.8, 8.1] | 4 |
+| code | P2 | 2.18 [2.04, 2.32]× | +9.5% [+4.7, +14.4] | +8.8% [+4.5, +13.0] | +19.4% [+11.7, +26.8] | +3.7% [-0.5, +9.6] | 9.0% [5.3, 12.8] | 17.0% [16.0, 18.1] | 15.7% [14.8, 16.4] | 5 |
+| code | P4 | 2.22 [1.98, 2.49]× | +29.6% [+18.7, +41.4] | +28.2% [+17.7, +39.5] | +47.4% [+31.5, +64.3] | -2.4% [-7.7, +4.4] | 12.2% [6.8, 17.2] | 32.2% [29.5, 34.8] | 14.5% [13.6, 15.3] | 4 |
+| chat | P1 | 1.05 [1.01, 1.09]× | +31.1% [+19.4, +42.0] | -0.2% [-1.6, +1.2] | +31.0% [+19.3, +41.9] | +27.8% [+23.4, +31.2] | 12.8% [11.2, 14.3] | 33.4% [26.5, 39.0] | 12.9% [11.7, 13.9] | 1 |
+| chat | P2 | 1.39 [1.30, 1.50]× | +12.3% [+5.5, +18.3] | -0.3% [-2.3, +1.4] | +12.2% [+5.3, +18.2] | +10.6% [+6.6, +15.3] | 19.6% [17.4, 21.8] | 28.4% [24.4, 31.6] | 20.2% [18.6, 21.5] | 2 |
+| chat | P4 | 1.17 [1.10, 1.24]× | +14.0% [+6.4, +21.0] | +1.2% [-1.3, +4.1] | +14.2% [+6.9, +21.0] | +7.8% [+4.6, +10.7] | 22.0% [20.3, 23.6] | 31.6% [26.4, 35.9] | 22.9% [20.7, 24.8] | 1 |
+| edit | P1 | 1.22 [1.15, 1.29]× | +5.6% [+0.9, +9.8] | +2.4% [-1.4, +6.2] | +8.7% [+3.6, +12.6] | +6.3% [-2.4, +14.4] | 10.1% [6.6, 13.6] | 14.9% [9.9, 19.5] | 8.9% [7.2, 10.6] | 2 |
+| edit | P2 | 2.06 [1.85, 2.31]× | +8.9% [+6.1, +11.7] | +8.2% [+4.4, +12.5] | +18.8% [+14.6, +23.9] | +4.3% [-0.6, +8.7] | 11.1% [6.7, 15.0] | 18.3% [14.7, 21.5] | 16.8% [15.3, 18.2] | 4 |
+| edit | P4 | 1.95 [1.64, 2.38]× | +18.3% [+5.9, +32.0] | +16.2% [+3.6, +31.5] | +35.8% [+20.0, +56.3] | -6.8% [-20.3, +4.8] | 19.6% [10.4, 28.7] | 32.0% [30.6, 33.5] | 16.1% [13.4, 18.7] | 3 |
+
+### 9.3 Margini per dominio — SINTETICO — tabella separata (NON è una misura)
+**SINTETICO (synth2, NON è una misura)** — Δ tok/s stimato [IC95]; profili P1/P2 (ρ_mtp 0.059, stime da codice), P4 (ρ_mtp 0.258, misurato su CPU, modello denso, non AMD, provvisorio)
+
+| dominio | profilo | speedup gate_v2 vs no-spec | gate_v2 vs default | vs STRATA_SPEC_COST=1 | vs k=3 | vs Specu | gap residuo gate_v2 → O_round | G(O_round) default | G(O_depth) SPEC_COST (solo MTP) | k fisso migliore |
+|---|---|---|---|---|---|---|---|---|---|---|
+| code | P1 | 1.12 [1.11, 1.13]× | +28.6% [+26.9, +30.3] | -0.7% [-1.4, -0.0] | +30.0% [+28.3, +31.6] | +27.2% [+25.6, +28.7] | 9.4% [8.8, 10.1] | 29.6% [28.7, 30.4] | 7.8% [7.5, 8.0] | 1 |
+| code | P2 | 1.64 [1.62, 1.66]× | +20.3% [+18.9, +21.7] | +2.6% [+1.8, +3.5] | +22.5% [+21.2, +23.9] | +18.7% [+17.3, +20.0] | 12.1% [11.4, 12.9] | 27.0% [26.4, 27.5] | 12.8% [12.5, 13.1] | 2 |
+| code | P4 | 1.35 [1.33, 1.37]× | +18.5% [+17.3, +19.7] | +2.4% [+1.5, +3.4] | +21.6% [+20.3, +23.1] | +12.2% [+11.1, +13.3] | 17.2% [16.6, 17.9] | 30.2% [29.5, 30.8] | 15.8% [15.5, 16.2] | 2 |
+| chat | P1 | 1.09 [1.09, 1.09]× | +56.7% [+54.5, +58.7] | +0.9% [+0.7, +1.2] | +56.8% [+54.7, +58.8] | +42.3% [+41.1, +43.5] | 7.0% [6.7, 7.3] | 40.6% [39.9, 41.3] | 7.9% [7.7, 8.1] | 1 |
+| chat | P2 | 1.42 [1.41, 1.43]× | +31.7% [+30.5, +32.9] | -1.5% [-2.0, -1.0] | +31.8% [+30.7, +33.0] | +24.3% [+23.5, +25.3] | 11.9% [11.5, 12.2] | 33.1% [32.6, 33.5] | 10.5% [10.0, 10.9] | 1 |
+| chat | P4 | 1.16 [1.15, 1.17]× | +30.1% [+28.9, +31.2] | -1.0% [-1.6, -0.5] | +30.2% [+29.0, +31.3] | +19.7% [+19.0, +20.4] | 18.0% [17.7, 18.3] | 37.0% [36.4, 37.5] | 17.0% [16.7, 17.3] | 1 |
+| edit | P1 | 1.23 [1.22, 1.24]× | +15.1% [+14.1, +16.0] | +4.3% [+3.6, +4.8] | +25.4% [+24.4, +26.4] | +9.3% [+8.1, +10.4] | 8.3% [7.8, 8.8] | 20.3% [19.6, 21.0] | 7.6% [7.4, 7.8] | 1 |
+| edit | P2 | 2.04 [2.02, 2.06]× | +16.5% [+15.8, +17.2] | +8.1% [+7.5, +8.7] | +33.7% [+32.7, +34.8] | +6.2% [+5.2, +7.1] | 9.6% [9.2, 10.0] | 22.4% [21.8, 22.9] | 14.4% [14.1, 14.6] | 3 |
+| edit | P4 | 2.09 [2.04, 2.13]× | +37.8% [+36.0, +39.5] | +27.4% [+25.5, +29.3] | +65.3% [+62.4, +68.3] | +4.8% [+3.3, +5.9] | 11.4% [10.4, 12.4] | 35.7% [35.2, 36.1] | 15.7% [15.4, 16.0] | 2 |
+
+### 9.4 Verdetto a due fasce (criteri piano §8: IC95 > 0 in ≥ 2/3 domini e nessun dominio con IC95 interamente < 0, per ogni profilo)
+File completi: `replay/results/v2/tf_p4/band_verdict.md`, `replay/results/v2/synthetic_p4/band_verdict.md`.
+
+**PROXY tf_d7 — fascia Strata-plausibile (decide):**
+
+| confronto | esito | domini (min…max Δ; cella peggiore [IC95]) |
+|---|---|---|
+| H1: gate_v2 vs DraftPolicy default | **GO 15/15** | code +4.7…+22.7% (+4.7% [+1.5, +8.0]); chat +8.9…+31.1% (+8.9% [+3.8, +13.6]); edit +5.8…+20.5% (+5.8% [+1.1, +9.8]) |
+| H4(a): gate_v2 vs STRATA_SPEC_COST=1 | **NO-GO 9/15** (mai peggiore in modo netto) | code +3.1…+22.1% (+3.1% [+0.1, +5.5]); chat −0.8…+0.6% (−0.8% [−2.3, +0.5]); edit +1.8…+19.5% (+1.8% [−0.9, +4.4]) |
+| H4(b): gate_v2 vs k=3 | **GO 15/15** | code +8.5…+37.5% (+8.5% [+4.5, +12.6]); chat +9.1…+31.0% (+9.1% [+4.3, +13.4]); edit +9.0…+35.8% (+9.0% [+4.2, +12.9]) |
+| Lead: gate_v2 vs euristica Specu | **NO-GO 5/15** (mai peggiore in modo netto) | code +1.3…+6.6% (+1.3% [−3.6, +7.5]); chat +7.4…+27.8% (+7.4% [+3.6, +10.9]); edit −1.2…+6.5% (−1.2% [−13.5, +7.7]) |
+| Specu vs STRATA_SPEC_COST=1 | **NO-GO 0/15, chat IC95 < 0 in 15/15** | chat −21.9…−6.3% (−21.9% [−24.5, −18.5]) |
+| (info) Specu con profondità SPEC_COST vs STRATA_SPEC_COST=1 | NO-GO 0/15, chat IC95 < 0 in 15/15 | chat −6.9…−2.6% (−6.9% [−11.5, −3.1]) |
+| Specu vs default / vs k=3 | NO-GO 9/15 / NO-GO 12/15 | nessun dominio nettamente negativo |
+
+**PROXY tf_d7 — fascia proxy 0.26 (robustezza):** H1 GO 3/3; H4(a) GO 3/3; H4(b) GO 3/3; gate_v2 vs Specu 1/3 (code −2.8% [−8.1, +4.2], edit −6.8% [−20.2, +4.8] nella cella peggiore: non significativo); Specu vs SPEC_COST=1: chat nettamente negativa 3/3 (−19.8% [−22.2, −16.7] nella cella peggiore).
+
+**SINTETICO (non è una misura), fascia Strata-plausibile:** H1 GO 15/15; H4(a) NO-GO 4/15, con chat IC95 < 0 in 10/15 profili ma di entità piccola (cella peggiore −1.6% [−2.1, −1.1]); H4(b) GO 15/15; gate_v2 vs Specu **GO 15/15** (cella peggiore edit +4.6% [+3.8, +5.3]); Specu vs SPEC_COST=1 chat nettamente negativa 15/15 (−29.1% [−29.6, −28.5]). Fascia 0.26: H1/H4(b)/vs Specu GO 3/3; H4(a) NO-GO 0/3 (chat −1.5% [−2.0, −1.0]).
+
+**Soglie di no-go del piano (tf_d7):**
+- H1 no-go (G(O_round) del default < 3% ovunque) **non scatta**: 11.4–33.4% in tutte le celle (tabella 9.2; P4: 32.2% [29.5, 34.8] / 31.6% [26.4, 35.9] / 32.0% [30.6, 33.5]).
+- H4 no-go (G(O_depth) di SPEC_COST < 3% ovunque) **non scatta**: 7.5–22.9% (P4: 14.5% [13.6, 15.3] / 22.9% [20.7, 24.8] / 16.1% [13.4, 18.7]).
+
+### 9.5 Esito
+- **H1: GO** in entrambe le fasce, su tf_d7 e sul sintetico; mai alcun dominio nettamente negativo.
+- **H4(a) (vs STRATA_SPEC_COST=1): NO-GO formale** nella fascia che decide (9/15): il guadagno è in code (e in edit nella maggior parte dei profili), ma in chat è ≈ 0 (−0.8…+0.6%, IC a cavallo dello 0). Su tf mai nettamente peggiore; nel sintetico chat leggermente peggiore (≈ −1–1.6%, IC < 0). Nella fascia proxy 0.26: GO 3/3 su tf.
+- **H4(b) (vs k=3): GO** ovunque.
+- **H2: non rivalutato** (priorità bassa): solo pool ricalcolato, nessun nuovo verdetto. **H5: sospeso.**
+- **Euristica Specu (regola del Lead), detto esplicitamente:** sulle 30 tracce reali gate_v2 **NON batte chiaramente** Specu (IC95 > 0 in ≥ 2 domini solo in 5/15 profili; vince sempre e solo chat; in code/edit IC a cavallo dello 0; mai nettamente peggiore). **Per la regola del Lead, quindi, vince la regola semplice per la patch.** (Nel sintetico gate_v2 batte Specu 15/15, ma il sintetico non è una misura.)
+- **Conflitto da decidere (Lead):** Specu, come specificata (lookup lungo ≤ 7 su qualsiasi match, altrimenti MTP k 1..3 con EMA), **regredisce in chat rispetto all'attuale STRATA_SPEC_COST=1** in 15/15 profili della fascia plausibile (fino a −21.9% [−24.5, −18.5]) e anche con la profondità di SPEC_COST (−2.6…−6.9%, IC < 0): viola il criterio di robustezza del piano (≥ baseline in tutte le celle). La causa è la regola “lookup su qualunque match” in chat (match corti, bassa accettazione). gate_v2 è l'unica politica valutata mai nettamente peggiore di alcuna baseline (default, SPEC_COST=1, k=3, Specu) in alcun profilo della fascia plausibile su tf.
+  Opzioni: (a) patch = Specu accettando la regressione chat vs SPEC_COST=1; (b) patch = gate_v2 (unica robusta, ma senza superiorità netta su Specu in code/edit); (c) Specu con soglia minima di match per il lookup — **non valutata**, servirebbe un nuovo run.
+
+### 9.6 Profondità ottimale e ranking con ρ_mtp = 0.258
+- k fisso migliore (tf_d7) a P4: code 4, chat 1, edit 3; con la forma P4 a ρ 0.059: code 7, chat 2, edit 4 → **la profondità ottimale scende al crescere di ρ_mtp**.
+- gate_v2 riduce da sola la d MTP per round al crescere di ρ (forma P4, code 1.66 → 1.25); strata_cost non si adatta (≈ 2.8 per round).
+- Ranking: a ρ 0.26 con forme P2/P4, Specu sale al 1° posto in code/edit (differenza non significativa); da ρ ≳ 0.1 Specu supera strata_cost in code. In chat l'ordine resta gate_v2 ≈ SPEC_COST=1 > Specu. Varianti v1 sotto P4: nessuna batte gate_v2 (es. code, migliore v1_hedge_ctx_det −15.4% [−18.6, −12.2] vs gate_v2).
+- Stop per confidenza (gate_v2_conf, mtp_adaedl): **non valutabile** (G2/D11).
+
+### 9.7 Verifica incrociata AL simulata vs AL live (proxy CPU, r0, G9 escluso) — `replay/results/v2/tf_p4/crosscheck_live.md`
+| config | AL sim | AL live | speedup previsto (P4) | speedup live (CPU) |
+|---|---|---|---|---|
+| mtp_k1 | 1.90 [1.85, 1.94] | 1.90 [1.85, 1.94] | 1.25 [1.22, 1.27] | 1.21 [1.18, 1.24] |
+| mtp_k3 | 3.21 [2.94, 3.49] | 3.19 [2.91, 3.48] | 1.35 [1.25, 1.43] | 1.27 [1.21, 1.32] |
+| lookup | 1.96 [1.57, 2.60] | 1.97 [1.58, 2.62] | 1.82 [1.53, 2.09] | 1.76 [1.61, 1.92] |
+| combo_k3 | 4.03 [3.42, 4.84] | 4.03 [3.42, 4.83] | 1.65 [1.46, 1.84] | 1.53 [1.43, 1.63] |
+
+L'AL simulata coincide con quella live (ΔAL per dominio tra −3.8% e +4.1%). Lo speedup previsto da P4 è sistematicamente ottimistico di ≈ 4–8% (k7 code 1.47 vs 1.23), ma il ranking (lookup > combo > k3) è lo stesso live e previsto. (Il cross-check usa max_match 32 come il proxy; il replay principale usa 64, G3.)
+
+### 9.8 log_format
+`/workspace/strata-plus/log_format.md` → **strataplus.v1.1**: D1–D14 approvati dal Lead; obbligatori D1, D2 o D13, D3, D4 (si accetta anche `strataplus.v1`).
+
+### 9.9 Limiti
+- P4 provvisorio (possibile carico concorrente durante la misura), CPU, modello denso, **non AMD**; Bench lo rimisurerà.
+- La fascia 0.06–0.15 è una stima di Scout, da misurare su Strata.
+- Speedup previsti ≈ 5% ottimistici rispetto al live; G8: identità greedy non garantita su CPU.
+- G2: niente stop per confidenza; G4 come sopra; solo 30 richieste reali (IC larghi, specie edit); tempi post-02:07.
+- Lookup ricalcolato con max_match 64 contro 32 del proxy (G3).
+- Sintetico ≠ misura: le sue tabelle sono separate e non decidono.
+
+
+## 10. Variante (c) e split (25/10/2026, decisione Strata Lead: Specu (a) esclusa)
+
+Dati: tf_d7 (30 richieste reali, proxy CPU teacher-forced; G9 non applicabile), stesso setup del rerun P4 (costo additivo s(T)+d·ρ_mtp+k·ρ_lu; forme P1/P2 stime da codice, P4 *misurato su CPU, modello denso, non AMD*, provvisorio). Tutti i tok/s sono **STIMATI**. Script `replay/split_c.py`, risultati completi (54 celle per split, IC95 su ogni numero) in `replay/results/v2/split_c/split.md` e `split.json`.
+
+### 10.1 Variante (c)
+`SpecuC` in `strata_sim/sim2.py`: lookup solo se il match n-gram del SuffixDrafter è lungo ≥ `min_match`; lunghezza draft lookup = min(k_lookup, 7) oppure, stile SuffixDecoding/Arctic Inference, min(k_lookup, 7, ⌊f·match⌋) (max_spec_factor f); min_token_prob omesso (non disponibile per il lookup). Altrimenti MTP poco profondo adattivo come Specu (k 1..3, EMA β 0.2). Griglia: min_match ∈ {3,4,5,6,8,10,12,16} × {min(k,7), f ∈ {0.5,1,2}} = 32 configurazioni (min_match 3 + min(k,7) ≡ Specu (a)). Stesso trattamento per gate_v2: tmax ∈ {3,4,5,6,8} × skip lookup-first ∈ {sì,no} = 10 configurazioni.
+
+### 10.2 Split onesto
+Stratificato per dominio, **seed 20261025** (numpy default_rng; richieste ordinate per id, permutate, prime 5 per dominio → A). Selezione SOLO sulla metà di selezione, sui 15 profili della fascia plausibile (*fascia plausibile, stima di Scout, da misurare su Strata*) × 3 domini; obiettivo = max del minimo Δ puntuale (gate_v2 vs {default, SPEC_COST=1, k=3}; poi (c) vs {default, SPEC_COST=1, k=3, gate_v2 scelto}). Valutazione SOLO sull'altra metà, 15 profili della fascia + 3 di controllo a ρ 0.26, IC95 bootstrap a cluster (5 richieste per dominio → IC larghi).
+
+| split | gate_v2 scelto (min / media sulla selezione) | (c) scelto (min / media sulla selezione) |
+|---|---|---|
+| selezione A → valutazione B (principale) | tmax=5, skip (−0.1% / +10.9%) | min_match=3, lunghezza ⌊1·match⌋ (−19.8% / +7.6%) |
+| selezione B → valutazione A (controllo) | tmax=5, skip (+0.1% / +8.0%) | min_match=12, min(k,7) (−12.9% / +7.6%) |
+
+Già sulla metà di selezione nessuna configurazione di (c) ha minimo ≥ −12.9%: la soglia non elimina la perdita in chat.
+
+### 10.3 Metà di valutazione B (split principale) — estratto a ρ 0.099 (centro fascia) e 0.26 (controllo); tutte le 18×3 celle in split.md
+| dominio | profilo | (c)* vs default | (c)* vs SPEC_COST=1 | (c)* vs k=3 | (c)* vs gate_v2* | gate_v2* vs default | gate_v2* vs SPEC_COST=1 | gate_v2* vs k=3 | gate_v2 tmax8 vs SPEC_COST=1 | gate_v2 tmax8 vs (c)* |
+|---|---|---|---|---|---|---|---|---|---|---|
+| code | P1 ρ0.099 | +5.3% [+0.1, +11.4] | +1.2% [-3.3, +8.7] | +7.7% [+1.1, +15.0] | -0.9% [-4.0, +4.3] | +6.2% [+2.0, +9.8] | +2.1% [-0.9, +4.8] | +8.7% [+2.4, +13.5] | +2.8% [+0.2, +5.5] | +1.6% [-2.4, +4.5] |
+| chat | P1 ρ0.099 | +0.1% [-10.0, +10.3] | -17.0% [-21.3, -12.3] | -0.4% [-9.8, +10.7] | -17.5% [-21.4, -13.2] | +21.4% [+8.2, +39.5] | +0.7% [-1.7, +4.5] | +20.8% [+7.1, +38.9] | +0.3% [-0.9, +1.8] | +20.8% [+14.1, +26.9] |
+| edit | P1 ρ0.099 | +6.0% [-1.2, +15.7] | +0.2% [-7.2, +9.4] | +8.2% [+2.1, +16.3] | -2.8% [-9.9, +6.3] | +9.1% [+5.4, +12.4] | +3.1% [+2.7, +3.5] | +11.3% [+8.5, +15.1] | +3.9% [+1.2, +5.8] | +3.7% [-3.5, +11.9] |
+| code | P1 ρ0.260 (controllo) | +11.5% [+5.3, +21.4] | +9.3% [+3.3, +19.2] | +18.7% [+10.1, +29.0] | -1.1% [-6.0, +6.7] | +12.8% [+8.9, +15.8] | +10.5% [+7.7, +13.1] | +20.1% [+14.3, +24.9] | +9.2% [+3.8, +13.6] | -0.0% [-6.4, +5.6] |
+| chat | P1 ρ0.260 (controllo) | +2.6% [-7.5, +12.6] | -15.6% [-20.4, -10.2] | +1.6% [-8.1, +12.4] | -16.4% [-20.3, -12.0] | +22.7% [+8.5, +40.8] | +1.0% [-0.5, +4.3] | +21.5% [+7.5, +40.5] | +0.5% [-0.8, +1.7] | +19.0% [+11.7, +25.8] |
+| edit | P1 ρ0.260 (controllo) | +15.7% [+5.7, +29.8] | +7.2% [-4.2, +20.8] | +19.1% [+9.5, +32.1] | -2.9% [-12.7, +8.7] | +19.1% [+15.1, +22.9] | +10.4% [+8.9, +11.8] | +22.6% [+19.8, +25.6] | +10.6% [+9.1, +13.7] | +3.2% [-7.0, +14.3] |
+| code | P2 ρ0.099 | +8.7% [+4.3, +15.5] | +7.7% [+3.7, +14.5] | +21.4% [+12.1, +32.7] | +5.3% [+0.6, +11.5] | +3.2% [+0.7, +7.6] | +2.3% [-0.1, +6.0] | +15.3% [+11.2, +19.4] | +11.0% [+9.3, +13.4] | +3.0% [-2.5, +7.0] |
+| chat | P2 ρ0.099 | -0.6% [-9.2, +7.9] | -8.8% [-11.7, -6.1] | -0.8% [-9.1, +7.6] | -9.5% [-12.9, -6.4] | +9.8% [+3.1, +17.7] | +0.8% [-0.8, +2.4] | +9.6% [+3.5, +17.6] | -1.3% [-4.8, +1.8] | +8.2% [+2.5, +14.5] |
+| edit | P2 ρ0.099 | +9.3% [+3.0, +18.4] | +7.7% [+0.8, +17.6] | +21.7% [+10.3, +37.1] | +4.2% [-2.6, +14.1] | +4.9% [+1.9, +7.5] | +3.4% [+1.8, +4.6] | +16.8% [+13.2, +20.9] | +8.1% [+4.8, +11.1] | +0.4% [-6.8, +6.0] |
+| code | P2 ρ0.260 (controllo) | +21.3% [+14.5, +31.8] | +20.4% [+14.2, +29.0] | +38.8% [+26.4, +55.9] | +5.9% [-0.4, +15.7] | +14.5% [+11.3, +18.6] | +13.7% [+10.7, +17.4] | +31.1% [+25.3, +35.8] | +19.0% [+14.7, +24.4] | -1.2% [-9.3, +4.0] |
+| chat | P2 ρ0.260 (controllo) | +2.3% [-6.8, +11.8] | -9.4% [-11.7, -6.7] | +2.2% [-6.3, +10.6] | -9.8% [-12.7, -6.3] | +13.5% [+4.5, +24.9] | +0.4% [-1.0, +2.0] | +13.3% [+4.7, +24.9] | -0.8% [-1.5, +0.0] | +9.6% [+5.9, +12.9] |
+| edit | P2 ρ0.260 (controllo) | +20.1% [+9.4, +36.7] | +17.3% [+5.1, +33.2] | +38.8% [+18.9, +64.9] | +4.9% [-4.9, +18.5] | +14.5% [+10.2, +18.4] | +11.8% [+9.5, +15.9] | +32.3% [+25.0, +40.5] | +13.6% [+9.0, +19.9] | -3.1% [-12.2, +4.6] |
+| code | P4 ρ0.099 | +14.7% [+9.1, +23.6] | +13.7% [+8.2, +22.2] | +29.8% [+18.5, +44.1] | +11.0% [+4.9, +19.1] | +3.3% [+0.7, +7.7] | +2.4% [+0.2, +6.1] | +16.9% [+12.8, +21.5] | +15.8% [+11.6, +20.4] | +1.8% [-2.4, +5.0] |
+| chat | P4 ρ0.099 | -0.9% [-8.9, +6.7] | -6.3% [-10.1, -3.0] | -1.1% [-8.8, +6.2] | -7.3% [-11.4, -3.8] | +6.9% [+2.6, +12.0] | +1.0% [-1.5, +4.3] | +6.7% [+2.7, +12.0] | +0.9% [-2.8, +5.2] | +7.7% [+3.1, +12.8] |
+| edit | P4 ρ0.099 | +15.1% [+6.2, +27.9] | +13.2% [+5.2, +25.6] | +29.9% [+14.1, +50.9] | +10.3% [+1.1, +24.2] | +4.3% [+1.7, +6.6] | +2.6% [+0.7, +4.5] | +17.7% [+13.2, +22.4] | +14.4% [+8.9, +19.9] | +1.0% [-5.2, +6.3] |
+| code | P4 ρ0.260 (controllo) | +28.6% [+20.1, +42.4] | +27.4% [+19.8, +38.0] | +49.2% [+34.0, +70.9] | +12.3% [+5.0, +23.7] | +14.5% [+11.2, +19.3] | +13.4% [+10.2, +16.6] | +32.8% [+26.2, +38.8] | +20.0% [+14.7, +26.3] | -5.8% [-14.4, -1.2] |
+| chat | P4 ρ0.260 (controllo) | +2.4% [-6.5, +10.9] | -6.7% [-9.3, -3.9] | +2.1% [-6.1, +9.9] | -7.6% [-11.3, -3.5] | +10.9% [+2.3, +20.6] | +1.0% [-0.5, +2.5] | +10.5% [+3.2, +20.4] | -0.7% [-4.1, +1.9] | +6.5% [+0.6, +11.9] |
+| edit | P4 ρ0.260 (controllo) | +27.0% [+12.4, +49.4] | +25.2% [+10.7, +45.4] | +48.7% [+23.0, +83.6] | +11.3% [-0.8, +28.2] | +14.1% [+8.9, +19.4] | +12.4% [+9.3, +17.3] | +33.6% [+24.0, +46.0] | +17.1% [+11.7, +23.3] | -6.4% [-17.8, +2.1] |
+
+### 10.4 Criterio (mai IC95 interamente < 0 vs default, SPEC_COST=1, k=3, gate_v2; 18 profili × 3 domini)
+| candidato | split principale (valutazione B) | split inverso (valutazione A) |
+|---|---|---|
+| (c)* | **NON PASSA**: 36/216 celle nettamente peggiori, tutte in chat (vs SPEC_COST=1 18/18 profili, fino a −17.4% [−21.6, −12.8]; vs gate_v2* 18/18) | **NON PASSA**: 36/216, tutte in chat (fino a −20.1% [−24.7, −14.5] vs SPEC_COST=1) |
+| gate_v2* (tmax 5) | vs default/SPEC_COST=1/k=3: **0 celle** nettamente peggiori; vs (c)*: 16 celle (code P2/P4, edit P4; es. code P4 ρ0.099 −9.9% [−16.1, −4.7]) | vs default/SPEC_COST=1/k=3: **0**; vs (c)*: 14 celle (code/edit P2/P4) |
+| gate_v2 tmax 8 (non tarato, riferimento) | vs default/SPEC_COST=1/k=3: 0; vs (c)*: 1 cella (code P4 ρ0.26 controllo, −5.8% [−14.4, −1.2]) | 0/216 |
+| Specu (a) | NON PASSA (chat vs SPEC_COST=1, 18/18) | NON PASSA (18/18) |
+
+**Diagnosi:** la perdita di (c) in chat non viene dal lookup (in chat < 2% dei round hanno un match utile), ma dalla parte MTP: l'EMA porta k a 3 (d ≈ 2.5 per round) mentre STRATA_SPEC_COST=1 e gate_v2 usano d ≈ 1.6–2.1 e gate_v2 non specula in fino al 43% dei round (P1). (c) senza lookup in chat, a ρ 0.099 su tutte le 30 richieste: P1 −17.4% [−21.1, −12.8], P2 −6.2% [−8.5, −3.4], P4 −4.9% [−6.9, −2.4] vs SPEC_COST=1. Nessuna soglia di match può correggerla. In code/edit (c) è buona: batte gate_v2 tmax 5 nettamente in diverse celle e pareggia gate_v2 tmax 8.
+
+### 10.5 Verdetto
+- **(c) NON passa** il criterio in nessuno dei due split (sempre e solo per chat). **Patch con (b) gate_v2**: è l'unica politica mai nettamente peggiore di default, STRATA_SPEC_COST=1 e k=3 in alcuna cella, in entrambi gli split.
+- Configurazione di gate_v2: la procedura dichiarata sceglie **tmax=5, skip=sì** su entrambe le metà (stabile) ed è quella congelata. **Segnalazione:** la scelta dipende da differenze di 0.2–1.4 punti sul minimo (celle chat ≈ 0); tmax=8 (default del diff P5) ha media più alta e in valutazione è più forte in code/edit (es. code P4 ρ0.099 vs SPEC_COST=1: +15.8% [+11.6, +20.4] contro +2.4% [+0.2, +6.1] di tmax=5). Non ho cambiato la scelta dopo aver visto la valutazione; se il Lead vuole tmax=8 deve deciderlo ora, prima delle v1.1.
+- Spunto (non valutato, servirebbe un nuovo split): lookup con soglia di (c) in code/edit + profondità MTP di gate_v2/SPEC_COST.
+
+### 10.6 Parametri congelati
+`/workspace/strata-policy/replay/frozen_params.json` (25/10/2026 02:53 UTC+2, sola lettura): commit Strata 7dd5cf18…, seed e composizione dello split, griglie, obiettivi, gate_v2 {tmax: 5, skip: true} (→ JointGate::Options), (c) {min_match: 3, factor: 1.0} marcata ESCLUSA, sha256 di script, simulatore, librerie native, tracce, P4, diff P5/cumulativo e split.json. Le tracce v1.1 di Bench non sono state usate né lette.
+
+### 10.7 Limiti
+Metà da 5 richieste per dominio (IC larghi, criterio "mai nettamente peggiore" permissivo); stessi limiti della §9 (P4 provvisorio, CPU denso non AMD, stime ≈ 5% ottimistiche, G2/G3/G4/G8); la fascia 0.06–0.15 è una stima di Scout, da misurare su Strata.
+
+## 11. Ibrido e bracci congelati (25/10/2026, decisione di Strata Lead)
+
+La proposta di Specu (file `frozen_candidates_proposal.json`) è stata **sostituita** dalla decisione del Lead: nessun file di proposta; tutto in `replay/frozen_params_v2.json` (02:57 UTC+2, sola lettura, sha256 `7b5e484c…a0b505`), che sostituisce `frozen_params.json` (v1, conservato intatto; vedi `replay/README.md`).
+
+> **Aggiornamento 02:15 CET (congelato):** il decadimento degli hazard MTP è stato **tolto** (commit locale `051326aa2931e04a9fbdd226f6592cf66e53516e`). Per decisione del Lead è un braccio del giro 2: patch `patches/P5x_hazard_decay_ROUND2.diff`, NON applicata. Le bozze v3 PREPARED (scritta col decadimento) e READY sono superate. **File congelato: `replay/frozen_params_v3.json`** (02:15:32 CET, sha256 `37bf1996…698e9c`). P4: e51712c6… accettato dal Lead, equivalente a 099ceda… per il Q4_K_M (§11.5). **La scelta A vs B non è decisa: il tune mostra solo che B rispetta la regola; si decide sull'holdout v1.1.**
+
+### 11.1 Bracci e regola (congelati prima dell'holdout v1.1)
+- **A** = gate_v2 tmax 5, skip (scelto dal max-min su tf_d7, §10). **B** = gate_v2 tmax 8, skip (default P5).
+- **Regola:** vince B se sull'holdout v1.1 B non ha nessuna cella nettamente peggiore (IC95 interamente < 0) contro default, STRATA_SPEC_COST=1 e k=3, E su code o edit batte A con IC95 interamente > 0 (resa operativa come: almeno una cella code/edit × profilo della fascia); altrimenti vince A. Decide la fascia ρ_mtp 0,06–0,15 × P1/P2/P4 (*fascia plausibile, stima di Scout, da misurare su Strata*); 0,26 solo controllo.
+- **Holdout non letto:** al congelamento `traces/raw/v11_holdout/` era vuota, nessun `holdout_*.jsonl` né manifest esisteva → sha256 del manifest non registrabile; registrati timestamp, stato della directory e sha256 (senza leggerne il contenuto) dei prompt holdout di Bench (`datasets/holdout_90.jsonl`, `holdout_ids.json`). Tracce tune v1.1 non ancora disponibili in forma annotata → taratura dell'ibrido su tf_d7.
+
+### 11.2 Ibrido H (terzo braccio ESPLORATIVO, non candidabile per questa patch)
+`HybridH` in `strata_sim/sim2.py`: lookup se match ≥ min_match (draft min(k,7) o ⌊f·match⌋), deciso prima del draft MTP; altrimenti none/MTP e profondità da gate_v2 senza sorgente lookup. Script `replay/split_h.py`, risultati `replay/results/v2/split_h/split_h.{md,json}`. Stesso protocollo della §10 (seed 20261025, stesso split); griglia min_match {3,4,6,8,12,16} × {min(k,7), f=1} × tmax {5,8}; obiettivo max-min vs {default, SPEC_COST=1, k=3, gate t5, gate t8}. tok/s **STIMATI** (proxy tf_d7).
+
+| split | H scelto | min / media in selezione | vs default, SPEC_COST=1, k=3 | vs gate_v2 t5 / t8 |
+|---|---|---|---|---|
+| sel. A → val. B | min_match 8, min(k,7), tmax 8 (congelato) | −0.6% / +11.9% | **0** celle nettamente peggiori (162) | 5/108, tutte chat, −0.7…−1.4% (es. P1 ρ0.099 vs t5 −1.1% [−2.0, −0.4]) |
+| sel. B → val. A | min_match 12, min(k,7), tmax 8 | −1.1% / +8.9% | **0** (162) | 5/108, chat, −0.3…−1.7% (es. P2 ρ0.099 vs t8 −0.4% [−0.8, −0.0]; P1 ρ0.26 controllo −1.7% [−2.6, −0.8]) |
+
+Estratto valutazione su B (ρ 0.099; Δ tok/s di H con IC95):
+
+| dom | profilo | vs default | vs SPEC_COST=1 | vs k=3 | vs gate t5 | vs gate t8 |
+|---|---|---|---|---|---|---|
+| code | P1 | +10.8% [+7.2, +14.8] | +6.5% [+2.5, +11.5] | +13.4% [+7.6, +18.5] | +4.3% [+1.4, +7.0] | +3.6% [+1.4, +5.7] |
+| chat | P1 | +20.0% [+6.1, +38.8] | −0.4% [−2.2, +2.7] | +19.4% [+5.2, +38.3] | −1.1% [−2.0, −0.4] | −0.7% [−2.6, +1.7] |
+| edit | P1 | +11.6% [+6.9, +15.2] | +5.5% [+3.2, +8.2] | +13.9% [+10.4, +17.3] | +2.3% [+0.1, +4.9] | +1.5% [−1.0, +4.3] |
+| code | P2 | +13.1% [+8.3, +18.6] | +12.1% [+7.0, +17.6] | +26.3% [+18.1, +36.6] | +9.6% [+5.2, +14.5] | +1.0% [−3.9, +5.8] |
+| chat | P2 | +11.0% [+4.0, +18.1] | +1.9% [+0.3, +3.9] | +10.8% [+5.1, +17.6] | +1.1% [−0.3, +3.1] | +3.3% [+0.7, +7.3] |
+| edit | P2 | +11.8% [+8.0, +16.4] | +10.2% [+5.2, +15.6] | +24.5% [+15.3, +34.7] | +6.6% [+1.6, +12.4] | +1.9% [−0.7, +5.4] |
+| code | P4 | +20.3% [+14.8, +27.1] | +19.4% [+14.7, +25.7] | +36.3% [+26.2, +48.5] | +16.5% [+11.1, +22.8] | +3.1% [+1.1, +5.6] |
+| chat | P4 | +7.0% [+0.6, +13.0] | +1.1% [−1.2, +4.0] | +6.8% [+1.5, +12.8] | +0.1% [−1.9, +2.2] | +0.2% [−2.2, +3.2] |
+| edit | P4 | +17.4% [+9.0, +27.0] | +15.5% [+7.8, +24.9] | +32.4% [+16.6, +49.8] | +12.5% [+3.5, +23.7] | +1.0% [−2.3, +5.7] |
+
+Lettura: l'ibrido risolve il problema di (c) in chat (la profondità MTP la decide gate_v2) e non è mai nettamente peggiore delle tre baseline in nessuno split; rispetto a gate_v2 perde poco ma "nettamente" in alcune celle chat (−0.3…−1.7%) e guadagna in code/edit soprattutto vs tmax 5. La scelta di min_match è instabile (8 vs 12), tmax 8 stabile. Sullo stesso tf_d7 gate t8 vs t5: code/edit P2/P4 ρ0.099 da +4.6% a +13.8% con IC > 0, chat P2 −2.1% [−4.3, −0.3] (split B). Valutazione holdout: NON ancora eseguita (in attesa).
+
+### 11.3 Bug P5 segnalati da Scout (commit locali `39eae40` + `051326a`, niente push)
+| bug | confermato | fix | effetto sul replay |
+|---|---|---|---|
+| (a) tmax>8 / T>8 fuori limite (L39, L58, L139) | **Sì** per tmax>8 (ASan: stack-buffer-overflow in `expect`) e per T=9/d=8 passati a `observe` (UBSan: `hm_s_[7]`). **Con tmax=8 nessun off-by-one** (T≤8 → righe 0..7, `expect(h,7)` su h[7]); ASan pulito | clamp di tmax a kD+1 nel costruttore, di T a 1..8 (`trow`) e di d a kD in `observe`; test tmax=8/T=8, T=9 e tmax=12 | nessuno (nel replay T≤tmax≤8); stesso clamp in sim2 (`CostRLS.x`, `GateV2.__init__`), invariante |
+| (b) `set_frozen` non usa la tabella seminata | **Sì** (frozen teneva il prior 1+0,15(T−1) scalato dal primo campione) | `seed_costs(s[8], ρ_mtp, ρ_lu, unit)`; test | nessuno (il sim non usa frozen) |
+| (c) hazard MTP senza decadimento (L197) | **Sì**, identico in sim2 (L512) | **NON applicato: rimandato al giro 2 per decisione del Lead.** Applicato per errore in `39eae40` e revertito in `051326a`; il codice è conservato in `patches/P5x_hazard_decay_ROUND2.diff` (C++ + sim2, HM_DECAY 0,999) | nessuno (i risultati ottenuti col decadimento sono annullati, archiviati in `results/v2/_obsolete_decay/`) |
+| (d) rem ignora max_context | **Sì** (solo wiring di design) | `JointGate::remaining(max_new, produced, max_context, pos)` + doc | nessuno (nel replay il contesto non vincola) |
+
+Parità P5 ↔ gate_v2 rifatta da capo dopo `051326a` (lib `replay/native/libstrata_spec_capi_p3.so` ricompilata da 051326a, script `replay/tests/parity_count.py`), con entrambe le versioni del costo (§11.5):
+- **V1, P4 esteso:** sintetiche 60 configurazioni, 49 143 round, 0 divergenze; tf_d7 (A/B × P1/P2/P4 × ρ {0,059; 0,0992; 0,1394; 0,26} × code/chat/edit) 72 configurazioni, 28 610 round, 0 divergenze.
+- **V2, s(8) lineare:** sintetiche 60 configurazioni, 49 143 round, 0 divergenze; tf_d7 72 configurazioni, 28 636 round, 0 divergenze.
+- `tests/test_joint_gate_parity.py`: PASS. Test C++ (con ASan/UBSan): PASS. Il diff cumulativo si applica pulito su 7dd5cf18 e dà un albero identico a 051326a. Da notare (non chiesto, non corretto): con tmax=1 il C++ fa comunque un draft MTP, il sim no (caso degenere).
+
+### 11.4 Verdetto tune senza decadimento, due versioni del costo (tf_d7, 30 richieste reali proxy CPU; tok/s STIMATI)
+`replay/verify_ab.py OUT [P4]` → `results/v2/verify_ab/nodecay_p4ext.json` (V1) e `nodecay_p4ext_s8lin.json` (V2). Ambiti: full (30), metà B, metà A (split seed 20261025). Celle: 18 profili × 3 domini × (A, B vs default/SPEC_COST=1/k3 + B vs A) = 1134. Riferimento pre-fix: `old.json`.
+- **Controllo:** senza decadimento e con il **vecchio** P4 (f9edb0d0), il replay è bit-identico a `old.json` (tutti gli IC uguali). Quindi (a)(b)(d) non cambiano nulla e ogni differenza qui sotto dipende solo dal nuovo costo P4.
+- **A e B vs default/SPEC_COST=1/k3: 0 celle nettamente peggiori in fascia e in controllo, in tutti e tre gli ambiti, in V1 e in V2 → verdetto INVARIATO.**
+- B vs A, celle della fascia migliori/neutre/peggiori (full / metà B / metà A):
+  - old: 21/21/3, 19/24/2, 22/23/0;
+  - V1: 21/21/3, 19/24/2, 22/23/0;
+  - V2: 21/21/3, 18/24/3, 22/23/0.
+  Celle peggiori solo in chat. Celle code/edit con B>A (IC95>0): old 21/19/21, V1 21/19/21, V2 21/18/21.
+- **Regola del Lead (B deve rispettarla in ENTRAMBE le versioni): soddisfatta in V1 e in V2.**
+- Celle che cambiano classe rispetto a old.json: V1 19/1134, V2 23/1134. Sono tutte nei profili P4 e nessuna diventa «peggiore» contro le baseline. Esempi:
+  - metà A code P4 ρ0,1193, A vs default: migliore +5,1% [+1,2, +9,5] → neutra +3,8% [−0,2, +8,3];
+  - metà A edit P4 ρ0,26, B vs A: migliore +11,7% [+2,9, +23,4] → neutra +5,0% [−1,5, +13,6] (V1);
+  - solo in V2: metà B chat P4 ρ0,1394, B vs A: neutra +0,2% [−1,5, +2,2] → peggiore −1,5% [−2,9, −0,3].
+- **Ibrido H** rifatto col P4 esteso: stessi parametri (selezione A → min_match 8, min(k,7), tmax 8, min −0,6% / media +11,7%; inversa → min_match 12, tmax 8). Contro le baseline 0/135 celle peggiori in fascia; contro gate_v2 5/90, tutte chat. Resta esplorativo, non candidabile. Le tabelle della §11.2 sono pre-P4 esteso: aggiornate in `results/v2/split_h/split_h.md`.
+
+### 11.5 s(T), P4 esteso e definizione di B
+- **B = gate_v2 tmax 8: finestra T≤8, d≤7, nessun round a T≥9** (T = k+1, k ≤ min(7, tmax−1, rem)). Questo **corregge l'assunzione precedente** che B verificasse fino a T=9.
+- Round di B a T=8, senza decadimento (fascia + controllo, 3 forme, 30 richieste):
+  - V1: 3 076/16 490 = **18,65%**;
+  - V2: 2 938/16 507 = **17,80%**;
+  - T≥9: 0%. A: T≤5.
+- **P4 esteso di Bench** (proxy CPU 2B Q4_K_M, -t 6, 20 ripetizioni, mediane; schema p4.v1.1, T=1..12, d=0..8).
+  - Verificato alle ~02:07 CET con sha256 `099ceda…b5b3`. Alle **02:10:42 CET** Bench lo ha **ripubblicato** come `e51712c6…` (nuovo marker `P4_EXTENDED_READY`): aggiunge il modello `qwen35-2b-mtp-q8_0`, mentre i dati Q4_K_M usati qui sono identici (s, ρ, cost_T_d, cost_by_k).
+  - Si usa solo il 2B Q4_K_M; ignorati lo 0,8B e il Q8_0. `load_p4` lo/hi forza ora la chiave Q4_K_M; la variante mid usata qui è invariata.
+- **V1 = P4 esteso così com'è:** s(1..8) = 1; 1,2867; 1,5306; 1,7853; 2,0314; 2,2777; 2,5375; 2,6731. ρ_mtp 0,2695, ρ_lu 2,1e-6.
+- **V2 = stesso P4 con s(8) estrapolato:** fit lineare ai minimi quadrati su s(1..7) (pendenza 0,253404, intercetta 0,764843), valutato a T=8 → **s(8) = 2,7921**. File `replay/cost_derived/cost_p4_cpu_099ceda_s8lin.json`, sha256 `1f691a16…0944`.
+- Il ginocchio a T=8 (+0,136 contro un passo di ~0,25) è reale sul proxy, ma è un **effetto della CPU: NON trasferibile su AMD**.
+- **Il sim resta additivo** (s(T)+ρ·d+ρ_lu·k, come da protocollo). La tabella `cost_T_d` (che include mtp_process(T) se d>0) non è usata.
+- **Bande ρ del protocollo invariate:** decide la fascia 0,06–0,15, 0,26 solo controllo. Il ρ_mtp del P4 (0,2695) non entra nei profili e cade vicino al controllo 0,26.
+- La ripetizione di Bench su T=6..10 non blocca il congelamento (decisione del Lead).
+- **Equivalenza P4 (conferma del Lead 02:14 CET, vale solo il Q4_K_M; il Q8_0 è un dato di controllo):** ho ricostruito 099ceda… in modo esatto (sha256 coincidente) e l'ho confrontato con e51712c6… in JSON canonico (sort_keys, separatori compatti, sha256, nessuna tolleranza). Campi confrontati:
+  - primo livello s, rho_mtp, rho_lu, step_ms, cost_T_d, cost_by_k;
+  - il sotto-oggetto intero `models.qwen35-2b-mtp-q4_k_m` (sha256 `258ff02f…7b57` in entrambi i file);
+  - tutti gli altri campi di primo livello.
+  Esito: tutto identico, e i campi di primo livello sono coerenti col sotto-oggetto. L'unica differenza è il nuovo modello Q8_0.
+- Il simulatore (load_p4, variante mid) legge i campi di primo livello s[:8], rho_mtp e rho_lu.
+
+### 11.6 Ambito della patch (decisione di Strata Lead)
+gate_v2/P5 vale **solo per la sequenza singola**: CLI e loop GEN di `--serve`. Il percorso batch (`batch_step`/`BGEN`, generate.cpp ~11519 @7dd5cf18) usa solo l'MTP con un draft per slot (2 righe, `slot_mtp->draft(2, …)`) e non chiama DraftPolicy (verificato nel sorgente). **Ogni guadagno di gate_v2 riportato qui vale per richieste servite da sole, non per il batch, quindi non per un server con parallel>1.** Limite scritto anche in `docs/strataplus_joint_gate.md` e nell'header di `joint_gate.hpp`.
+- **H2a:** pool persistente per le richieste servite da sole. In pausa finché non ci sono tracce di sessione.
+- **H2b:** estensione di `batch_step` oltre 2 righe per slot, con pool per slot. In coda dopo gate_v2, serve una GPU.
+
+### 11.7 Limiti noti di P4/PoolSource (solo annotati, P4 non toccato)
+- Storia duplicata nelle conversazioni multi-turno: il prompt di ogni turno ripete la storia, che viene reinserita nel pool.
+- Storia non contigua: le n-gram attraversano confini tra richieste o turni.
+- Nessun mutex: il pool condiviso non è thread-safe.
+- Sostituto proposto: `common_ngram_mod` di llama.cpp (si veda scout_patch_support.md §4).
+
+
+## 12. Holdout v1.1 (25/10/2026, un solo passaggio, parametri congelati)
+
+**run_holdout_v11.json sha256 5f943d238870f797e792adedf32ecb447e6747696c8601df18a565435dbbe839** (creato 04:26 CET, sola lettura). Aperto alle **04:26:21 CET** (addendum replay/run_holdout_v11_opened.json, sola lettura). Risultati: replay/results/v2/holdout_v11/holdout_v11.json (sha256 752743795627807a6002308e00d951706efb3d82a2546c4812facdb2ee388d1b).
+
+**Dichiarazioni.** I tok/s sono STIMATI dal replay su proxy CPU (Qwen3.5-2B Q4_K_M), non sono misure AMD. Valgono solo per la sequenza singola. Il tune aveva 10 prompt per dominio, l'holdout 30 (90 richieste, 10.957 round, 0 target_mismatch, 1 richiesta per sessione → bootstrap a cluster = per richiesta).
+
+**Gate (tutti passati prima dell'apertura).** (a) file di run 444 con manifest 34bdc195… e frozen 37bf1996…; (b) `sha256sum -c MANIFEST.sha256` (da traces/v1.1) 24/24 OK, frozen 37bf1996…, P4 e51712c6… invariato; (c) k_cap non è letto da nessun .py: postprocess.load_tf ricalcola il lookup con NativeSuffixDrafter.scan(y, DMAX=7); (d) dry run del parser su tf_d7_p30.jsonl (tune v1.1): 30 richieste, 10/dominio, 3.739 round, 0 scarti, 0 mismatch, gen_index==pos, ref_tokens==request_end.output_ids. Campi nuovi ignorati senza effetto: k_cap, config_label, split, acc_ref, lookup_max_match, cand.mtp.probs_sampler; cand.mtp.ent ora presente ma usato solo con conf_stop (spento in A/B/H).
+
+**Verdetto: vince A.** B fallisce la regola in entrambe le versioni del costo: rispetta "batte A su code/edit" (30/30 celle di fascia code+edit con IC95>0, V1 e V2), ma ha 2 celle nettamente peggiori di STRATA_SPEC_COST=1 (identiche in V1 e V2):
+- chat|P1|ρ0,059: −2,0% [−3,6; −0,6]
+- chat|P1|ρ0,1193: −1,0% [−2,3; −0,0] (limite superiore ≈0, borderline)
+Nessuna cella peggiore contro default o k=3, nessuna nel controllo 0,26.
+
+**Celle nettamente peggiori (V1 = V2).**
+- A: 1 vs spec_cost, chat|P1|ρ0,0791 −1,4% [−2,8; −0,2]; 0 vs default, 0 vs k=3, 0 nel controllo. *Anche A quindi non soddisfa il criterio "nessuna cella peggiore"; la regola assegna comunque A come esito di default.*
+- B: 2 vs spec_cost (sopra); 0 vs default e k=3.
+- B vs A: 1 cella peggiore, chat|P1|ρ0,059 −0,8% [−1,5; −0,1]. Fascia: V1 33 meglio/11 neutre/1 peggio; V2 31/13/1.
+- H (esplorativo): 4 vs spec_cost (chat|P1 ρ0,059–0,1193, da −1,8% a −2,2%); vs A 0 peggiori; vs B 2 (V1)/1 (V2) peggiori, nessuna in chat.
+
+**Guadagni in fascia (punto [IC95], V1; V2 uguale per A, B leggermente più basso).**
+- code: A vs default da +3,4% [+2,2; +4,7] a +10,8% [+9,3; +12,4]; B vs default da +6,3% [+5,4; +7,2] a +25,3% [+22,1; +28,7] (V2 +22,6% [+20,0; +25,4]); B vs A da +2,3% a +14,2% (V2 +10,7%), 15/15 meglio.
+- edit: A vs default da +3,0% [+1,3; +5,1] a +10,4% [+8,4; +12,8]; B vs default da +6,8% [+5,0; +8,9] a +21,8% [+17,0; +27,0] (V2 +19,2% [+15,0; +23,7]); B vs A da +1,9% a +12,8% (V2 +9,7%), 15/15 meglio.
+- chat: A vs default da +9,0% [+6,3; +11,9] a +24,3% [+19,0; +29,9]; B praticamente uguale (+10,6…+24,2%); vs spec_cost entrambi ≈0 (A −1,4…+2,5%, B −2,0…+3,0%).
+- Quota di round di B a T=8: 24,3% (V1), 23,6% (V2); nessun round a T≥9.
+
+**Confronto col tune (tf_d7, 10/dominio).** Nel tune A e B avevano 0 celle peggiori contro le baseline in V1 e V2; nell'holdout compaiono 1 (A) e 2 (B) celle chat lievemente peggiori di spec_cost, tutte P1, effetti di 1–2%. La dominanza di B su A in code/edit si conferma e si rafforza (tune 21 celle code/edit meglio, holdout 30/30); quota T=8 sale da 18,65%/17,80% a 24,3%/23,6%. Il file tune v1.1 (tf_d7_p30) non coincide con tf_d7 usato per il tune: lo stesso script su di esso dà A 3 e B 2 celle chat peggiori di spec_cost (P2/P4, −1,4…−1,9%) — il segnale chat vs spec_cost era già presente sui dati v1.1 ma con celle diverse, quindi è rumore di bordo vicino a 0 più che un effetto stabile.
+
+**Anomalie / bug.** Nessun bug trovato nel run, nulla è stato rifatto. Note per il Lead: (1) A vince per default ma viola anch'esso il criterio "0 celle peggiori" (1 cella chat vs spec_cost); (2) una delle due celle che fanno fallire B ha limite superiore ≈0 (−0,0); (3) le celle peggiori migrano tra P1 (holdout) e P2/P4 (tune v1.1), segno di instabilità su chat vs spec_cost. La decisione spetta al Lead.
+
+## 13. Decisione finale e patch locale (25/10/2026, Strata Lead)
+
+**Decisione: vince A** = gate_v2 (JointGate) tmax=5, skip=true, nessun decadimento, parametri di
+replay/frozen_params_v3.json (sha256 37bf1996…, non modificato). Base: holdout v1.1 (§12), regola congelata (B non la
+rispetta: 2 celle chat|P1 peggiori di STRATA_SPEC_COST=1 in V1 e V2).
+
+**Patch.** Commit locale 2962494a908dde1f73a7a976e22a7a0a38acee9d (branch strataplus-policy-local, figlio di 051326a):
+il braccio A è il default di `JointGate::Options()` usato con `STRATA_SPEC_JOINT=1` (`JointGate::enabled_from_env()`);
+senza variabile il comportamento resta quello di 7dd5cf18. P5_joint_gate.diff f9c9505c…5e03, ALL_P1-P5_cumulative.diff
+de55adb0…6672, entrambi applicati puliti su 7dd5cf18 (cumulativo e sequenza danno lo stesso albero). Test esistenti +
+test dei default del braccio A: PASS, ASan/UBSan PASS (g++ 14.2; zig non instrumenta ASan, le dichiarazioni ASan precedenti
+valevano solo per UBSan). Parità C++ default ↔ GateV2(tmax=5, skip=True): tune tf_d7 (108 configurazioni, 44.552 round)
++ sintetiche (20, 19.544 round), 0 differenze; nessuna ritaratura sull'holdout. Dettagli in patches/README.md.
+
+**Limiti.**
+- Solo sequenza singola (CLI e loop GEN di --serve); batch_step/BGEN non usa DraftPolicy.
+- tok/s stimati dal replay su proxy CPU Qwen3.5-2B Q4_K_M, non misure AMD.
+- Contro il default guadagno in tutti e tre i domini nella fascia ρ 0,06–0,15; contro k=3 nessuna cella peggiore.
+- Contro STRATA_SPEC_COST=1 in chat nessun guadagno e una cella nettamente peggiore (chat, P1, ρ 0,0791, −1,4% [−2,8; −0,2]);
+  coincide con l'H4(a) NO-GO, e P1 è un profilo di costo stimato dal codice, non misurato.
+- L'holdout v1.1 è usato: ogni confronto futuro richiede un holdout nuovo.
+- Aggancio minimo nel motore (P6, sotto): sintassi OK su HIP 5.7.1 e CUDA, link e ramo HIP≥7 non verificati; mai eseguito.
+- (Specu) Su CPU il greedy dipende dalla forma del batch, quindi live e teacher-forced possono divergere: se in check_v12
+  l'AL esce dalla tolleranza del 2%, prima di attribuirlo al gate va controllata la divergenza delle traiettorie.
+
+**Correzione ASan.** Sotto zig c++ ASan era ignorato (solo UBSan collegato; un heap overflow inserito apposta non veniva
+rilevato): l'"ASan PASS" associato a frozen_params_v3 valeva solo per UBSan. Ora ASan è verificato con g++ 14.2
+(6 test PASS a 2962494). Nessun effetto sui risultati del replay. Addendum: replay/run_holdout_v11_addendum_asan.json
+(run_holdout_v11.json e frozen_params_v3.json non toccati).
+
+**P6 — aggancio di JointGate nel motore (25/10/2026, decisione Strata Lead; locale, niente push/PR).**
+Lavoro in /workspace/strata-policy/patchwork (worktree git del branch strataplus-policy-local): /workspace/strata non è
+un repo git ed è esclusa dai vincoli. Commit 079ecdd40d6e14f38db7577119c942529cac17b2 (generate.cpp, +116/−0) ed
+e467f6e2fd6f3cb8bcfd4bfba2d28c3105baa9fd (docs), figli di 2962494. Solo sequenza singola (CLI e loop GEN seriale di
+--serve); batch_step/BGEN e --pipeline-windows non toccati. Dietro STRATA_SPEC_JOINT=1 (`JointGate::enabled_from_env()`);
+rifiutato con --lookup-chain e (CLI) STRATA_SPEC_T_CYCLE. Il gate decide fonte e profondità sui draft MTP già prodotti,
+`remaining()` limita a max_new e max_context, observe dopo ogni verifica con feedback a informazione piena (= P3).
+Limite: il draft MTP è ancora calcolato a ogni round (skip/profondità risparmiano righe di verifica, non tempo di draft).
+Sintassi: check_hip.sh clang++-17, CXX=g++ check_hip.sh, check_cuda.sh (script di Scout, HIP 5.7.1 / header CUDA pip):
+exit 0, nessun warning nuovo rispetto a 2962494; errore inserito apposta in entrambi i rami del gate → exit 1 (clang e
+g++), poi annullato. Stato: **sintassi OK su HIP 5.7.1 e CUDA, link e ramo HIP≥7 non verificati**.
+P6_engine_hook.diff (2962494..e467f6e) 912b24fe…7aaa, ALL_P1-P6_cumulative.diff (7dd5cf18..e467f6e) 14d4e2bb…6fd1:
+puliti su 7dd5cf18 (cumulativo = sequenza P2→P3→P4→P1→P5→P6 = albero del commit).
+
+**Coda del giro 2.**
+1. B (tmax=8) su un holdout NUOVO, poi su AMD (misure reali di s(T) fino a T=8).
+2. Chat contro STRATA_SPEC_COST=1: A senza guadagno e con la cella chat|P1 ρ0,0791 peggiore; serve un profilo di costo misurato
+   (P1 oggi è stimato dal codice).
+3. Decadimento degli hazard MTP (patches/P5x_hazard_decay_ROUND2.diff, non applicato).
+4. Ibrido H (esplorativo; min_match instabile 8/12, tmax 8): sull'holdout v1.1 4 celle chat|P1 peggiori di spec_cost
+   (da −1,8% a −2,2%, §12); serve un holdout nuovo.
+5. H2a: pool persistente per richieste singole (in pausa finché non esistono tracce di sessione).
+6. H2b: estensione del percorso batch (più di 2 righe per slot, pool per slot), richiede GPU.
+7. Wiring di STRATA_SPEC_JOINT=1: aggancio minimo fatto (P6); restano link/esecuzione su GPU, skip/stop reale del draft MTP e misura dal vivo (costo del draft MTP oltre S_mtp−1, skip fallito,
+   warm-up dell'RLS).

@@ -1,0 +1,53 @@
+{
+ "diff": {
+  "req_missing": [],
+  "req_added": [
+   "spec_params"
+  ],
+  "rnd_missing": [],
+  "rnd_added": []
+ },
+ "vals": {
+  "schema": [
+   "\"strataplus.v1.1\""
+  ],
+  "data_kind": [
+   "\"teacher_forced\""
+  ],
+  "dmax": [
+   "7"
+  ],
+  "domain": [
+   "\"chat\"",
+   "\"code\"",
+   "\"edit\""
+  ],
+  "split": [
+   "\"check_v12\""
+  ],
+  "sampling": [
+   "\"greedy\""
+  ],
+  "engine": [
+   "\"llamacpp\""
+  ],
+  "pos_semantics": [
+   "\"pos = output tokens committed before the round (D4)\""
+  ],
+  "lookup_max_match": [
+   "64"
+  ],
+  "rep": [
+   "0"
+  ]
+ },
+ "domains": {
+  "code": 20,
+  "chat": 20,
+  "edit": 20
+ },
+ "extra": {},
+ "schema_ok": true,
+ "meta_ok": false
+}
+STOP: schema/metadata differ from v1.1 or draft_p_min/n_max/n_min missing; nothing adapted

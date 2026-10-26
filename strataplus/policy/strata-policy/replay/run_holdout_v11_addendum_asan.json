@@ -1,0 +1,15 @@
+{
+  "status": "ADDENDUM (non modifica run_holdout_v11.json, sola lettura; frozen_params_v3.json non toccato)",
+  "created_at": "2026-10-25 CET (UTC+1)",
+  "refers_to": {
+    "run_holdout_v11.json": "5f943d238870f797e792adedf32ecb447e6747696c8601df18a565435dbbe839",
+    "frozen_params_v3.json": "37bf1996217dd4ee697e753b9ef31082c49a9904f0fe393d0c5d4968cf698e9c"
+  },
+  "correzione_asan": {
+    "problema": "i test C++ della libreria compilati con zig c++ -fsanitize=address,undefined non erano instrumentati per ASan (zig collega solo UBSan; verificato con un heap overflow inserito apposta e non rilevato). Le dichiarazioni 'ASan PASS' associate a frozen_params_v3 (e alla sua preparazione) valevano quindi solo per UBSan.",
+    "verifica_corretta": "da commit 2962494 i 6 test (suffix_drafter, controller, draft_policy, pool_source, joint_gate, spec_start) sono compilati con g++ 14.2 -std=c++20 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all, ASAN detect_leaks=1: tutti PASS, 0 errori ASan/UBSan.",
+    "effetto_sui_risultati": "nessuno: la valutazione dell'holdout v1.1 usa il replay Python (sim2.py) e i parametri congelati; la correzione riguarda solo la dichiarazione di verifica dei sanitizer del codice C++.",
+    "p6": "il commit P6 (079ecdd + e467f6e docs) non tocca i sorgenti della libreria (solo src/program/generate.cpp e docs): i 6 test non sono stati rilanciati in questo giro per non sovrapporsi alle misure di Strata Bench; il loro esito a 2962494 resta valido per gli stessi sorgenti."
+  },
+  "nota_specu": "su CPU il greedy dipende dalla forma del batch: live e teacher-forced possono divergere; se in check_v12 l'AL esce dalla tolleranza del 2%, controllare la divergenza delle traiettorie prima di attribuirla al gate."
+}

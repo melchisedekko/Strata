@@ -1,0 +1,246 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Bolla (coordinator)" <bolla@users.noreply.github.com>
+Date: Sun, 25 Oct 2026 02:03:53 +0100
+Subject: [PATCH 07/11] P5 local: Scout fixes (a) tmax/T bounds clamp + test
+ tmax=8/T=8, (b) seed_costs for frozen, (c) MTP hazard decay 0.999, (d)
+ remaining() with max_context; scope: single sequence only (no
+ batch_step/BGEN)
+
+---
+ docs/strataplus_joint_gate.md      | 11 +++++-
+ include/strata/spec/joint_gate.hpp | 13 ++++++-
+ src/spec/joint_gate.cpp            | 31 ++++++++++++---
+ src/spec/joint_gate_test.cpp       | 60 ++++++++++++++++++++++++++++++
+ 4 files changed, 107 insertions(+), 8 deletions(-)
+
+diff --git a/docs/strataplus_joint_gate.md b/docs/strataplus_joint_gate.md
+index 66d9e87..f3094f2 100644
+--- a/docs/strataplus_joint_gate.md
++++ b/docs/strataplus_joint_gate.md
+@@ -1,5 +1,14 @@
+ # Strata+ P5 — joint source+depth gate: engine wiring (DESIGN, not compiled)
+ 
++
++**Scope (Strata Lead decision): single sequence only.**  JointGate / gate_v2 replaces DraftPolicy where DraftPolicy
++runs: the CLI generation loop and the GEN loop of `--serve` (one request served alone).  The batch path
++(`batch_step`, `BGEN <slot>`, generate.cpp ~11519 at 7dd5cf18) does not call DraftPolicy: each slot verifies 2 rows
++(the token + ONE MTP draft from its `slot_mtp`, `draft(2, ...)`).  So this patch changes nothing for batched serving and
++any gain measured for gate_v2 holds for requests served alone, NOT for a server with parallel > 1.  Extending the
++batch path (more than 2 rows per slot, a per-slot pool) is follow-up H2b (after gate_v2, needs a GPU); a persistent
++pool for requests served alone is H2a (paused until session traces exist).
++
+ `strata::spec::JointGate` (include/strata/spec/joint_gate.hpp) is compiled and unit-tested
+ (src/spec/joint_gate_test.cpp) and is decision-for-decision identical to the replay's GateV2
+ (replay/tests/test_joint_gate_parity.py: 60 configurations, every round identical).  Its wiring into the serve loop
+@@ -8,7 +17,7 @@ built here.  Proposed wiring, behind `STRATA_SPEC_JOINT=1` (DraftPolicy stays th
+ 
+ 1. Next-round drafting happens at the end of a round (`mtp.draft(...)`, generate.cpp ~15193 at 7dd5cf18).  Before it,
+    the lookup proposal for the next round is already computable (sfx has the committed tokens): call
+-   `sfx.propose` / `propose_from_sources` (pool, P4) there, and `gate.start(lu, max_new - produced_n - 1, &c)`.
++   `sfx.propose` / `propose_from_sources` (pool, P4) there, and `gate.start(lu, JointGate::remaining(max_new, produced_n, o.max_context, p), &c)` (bounded by the context window too: the engine stops at `p + T > max_context`).
+    - `start()` true: skip `mtp.draft` (d = 0); the next round verifies the lookup window `c.t` (or T = 1).
+    - false: draft with `mtp.set_chain_rule([&](int idx, float pj) { probs[idx] = pj; return gate.keep(probs, ent, idx + 1); })`
+      (the same hook `keep_draft` uses for STRATA_SPEC_COST; `ent` = the optional per-draft entropy of log_format D11,
+diff --git a/include/strata/spec/joint_gate.hpp b/include/strata/spec/joint_gate.hpp
+index 271f6d4..d079ed0 100644
+--- a/include/strata/spec/joint_gate.hpp
++++ b/include/strata/spec/joint_gate.hpp
+@@ -14,6 +14,8 @@
+ //                  the a+1 committed tokens.
+ // Objective: Dinkelbach E[a+1] - lambda*C, lambda = decayed tokens/cost of the rounds played.  Cost model: online
+ // RLS on one-hot(T) + rho_mtp*d + rho_lu*k (optimistic prior, monotone in T); frozen() keeps the seeded table.
++// SCOPE: single sequence only (CLI and the --serve GEN loop, where DraftPolicy runs).  The batch path (batch_step /
++// BGEN) uses one MTP draft per slot and never calls DraftPolicy or this gate: no effect on parallel > 1 serving.
+ #pragma once
+ #include <array>
+ #include <cstdint>
+@@ -50,7 +52,16 @@ public:
+                  const int lu_acc[kSrc]);
+     double lambda() const { return lam_n_ / lam_c_; }
+     void set_frozen(bool on) { frozen_ = on; }
+-    double cost_pred(int t, int d, int k) const;
++    /// Seed the cost model with a measured table (STRATA_SPEC_COST_TABLE): s(T) for T = 1..8 in units of one plain
++    /// step, the per-draft MTP cost and the per-token lookup cost in the same units, and the step cost `unit` (e.g. ms)
++    /// that converts them to observed costs.  With set_frozen(true) the gate then plans on exactly this table (before,
++    /// frozen kept the 1+0.15(T-1) prior scaled by the first sample).  Without frozen the RLS starts from it.
++    void seed_costs(const double s_by_t[8], double rho_mtp, double rho_lu, double unit);
++    /// `rem` for start(): tokens still allowed after the next one, bounded by max_new AND by the context window (the
++    /// engine stops when p + T > max_context; max_context <= 0 = no context bound).  Never negative.
++    static int remaining(int max_new, int produced, int max_context, int pos);
++    double cost_pred(int t, int d, int k) const;   // t clamped to 1..8
++    int tmax() const { return o_.tmax; }
+ 
+ private:
+     void lu_haz(int s, int match, int ag, double h[kD]) const;
+diff --git a/src/spec/joint_gate.cpp b/src/spec/joint_gate.cpp
+index 94bb538..89fae04 100644
+--- a/src/spec/joint_gate.cpp
++++ b/src/spec/joint_gate.cpp
+@@ -9,6 +9,10 @@ namespace strata::spec {
+ namespace {
+ constexpr double kPB[6] = {0.3, 0.6, 0.8, 0.9, 0.95, 0.99};
+ constexpr int kMB[4] = {4, 6, 12, 24};
++constexpr int kTRows = 8;          // th_ rows / n_t_ entries: window sizes T = 1..kTRows
++constexpr double kHmDecay = 0.999;  // forgetting of the per-bucket MTP hazards (same as the marginal ones)
++static_assert(strata::spec::JointGate::kD + 1 == kTRows, "window sizes must fit the cost rows");
++int trow(int t) { return std::clamp(t, 1, kTRows) - 1; }   // T > 8 (e.g. an engine chain window) -> last row
+ int pbucket(double p) { int b = 0; while (b < 6 && kPB[b] <= p) ++b; return b; }   // searchsorted(side="right")
+ int mbucket(int m) { int b = 0; while (b < 4 && kMB[b] <= m) ++b; return b; }
+ void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
+@@ -22,6 +26,7 @@ void censored(int acc_true, int k_alt, int a, int* obs, bool* fail) {
+ JointGate::JointGate() : JointGate(Options()) {}
+ 
+ JointGate::JointGate(const Options& o) : o_(o) {
++    o_.tmax = std::clamp(o_.tmax, 1, kD + 1);   // expect()/th_ have room for T <= kD + 1 = 8 only
+     const double pri[7] = {0.15, 0.45, 0.7, 0.85, 0.92, 0.97, 0.99};
+     for (int j = 0; j < kD; ++j) {
+         for (int b = 0; b < 7; ++b) { hm_s_[j][b] = pri[b] * 2; hm_f_[j][b] = (1 - pri[b]) * 2; }
+@@ -36,13 +41,14 @@ JointGate::JointGate(const Options& o) : o_(o) {
+ }
+ 
+ double JointGate::cost_pred(int t, int d, int k) const {
+-    const double v = th_[(size_t) (t - 1)] + th_[8] * d + th_[9] * k;
++    const double v = th_[(size_t) trow(t)] + th_[8] * d + th_[9] * k;
+     return std::max(1e-3, v) * (scale_ > 0 ? scale_ : 1.0);
+ }
+ 
+ void JointGate::cost_update(int t, int d, int k, double c) {
++    const int r = trow(t);
+     double x[10] = {};
+-    x[t - 1] = 1; x[8] = d; x[9] = k;
++    x[r] = 1; x[8] = d; x[9] = k;
+     double xt = 0; for (int i = 0; i < 10; ++i) xt += th_[(size_t) i] * x[i];
+     if (!(scale_ > 0)) scale_ = c / std::max(1e-3, xt);
+     if (frozen_) return;
+@@ -55,7 +61,7 @@ void JointGate::cost_update(int t, int d, int k, double c) {
+     for (int i = 0; i < 10; ++i) th_[(size_t) i] += g[i] * (y - xt);
+     for (int i = 0; i < 10; ++i)
+         for (int j = 0; j < 10; ++j) P_[i][j] = (P_[i][j] - g[i] * Px[j]) / lam;
+-    n_t_[t - 1] += 1;
++    n_t_[(size_t) r] += 1;
+     // per-token draft/lookup costs are >= 0: lookup rows (d=0, k>0) otherwise let r_lu absorb a T-row error
+     th_[8] = std::max(th_[8], 0.0); th_[9] = std::max(th_[9], 0.0);
+     // monotone in T only for rows with < 3 samples: clamping a measured row to a still-unlearned neighbour froze it
+@@ -78,6 +84,19 @@ void JointGate::cost_update(int t, int d, int k, double c) {
+     }
+ }
+ 
++void JointGate::seed_costs(const double s_by_t[kTRows], double rho_mtp, double rho_lu, double unit) {
++    for (int t = 0; t < kTRows; ++t) th_[(size_t) t] = s_by_t[t];
++    th_[8] = std::max(0.0, rho_mtp); th_[9] = std::max(0.0, rho_lu);
++    scale_ = unit > 0 ? unit : 1.0;
++    for (int t = 0; t < kTRows; ++t) n_t_[(size_t) t] = 3;   // seeded rows count as measured (no prior clamps)
++}
++
++int JointGate::remaining(int max_new, int produced, int max_context, int pos) {
++    int rem = max_new - produced - 1;
++    if (max_context > 0) rem = std::min(rem, max_context - pos - 1);
++    return std::max(rem, 0);
++}
++
+ void JointGate::lu_haz(int s, int match, int ag, double h[kD]) const {
+     const int mb = mbucket(match);
+     for (int j = 0; j < kD; ++j) {
+@@ -136,7 +155,7 @@ bool JointGate::start(const Lookup lu[kSrc], int rem, Choice* out) {
+     }
+     double hm[kD], em[kD + 1];
+     mtp_haz(nullptr, 0, hm);
+-    const int ne = expect(hm, std::min(o_.tmax - 1, rem), em);   // tmax - 1 <= kD
++    const int ne = expect(hm, std::min({o_.tmax - 1, rem, kD}), em);   // tmax clamped to kD + 1 in the constructor
+     double vm = -1e300;
+     for (int k = 1; k < ne; ++k) vm = std::max(vm, em[k] - lam * cost_pred(k + 1, k, klu_));
+     if (o_.skip && bl && vl >= vm && vl > v0) {
+@@ -191,10 +210,10 @@ void JointGate::observe(const Choice& c, int a, double cost, int mtp_acc, const
+     if (c.d > 0) {
+         int obs; bool fail;
+         censored(mtp_acc, c.d, a, &obs, &fail);
+-        for (int j = 0; j < std::min(obs + (fail ? 1 : 0), c.d); ++j) {
++        for (int j = 0; j < std::min({obs + (fail ? 1 : 0), c.d, kD}); ++j) {   // c.d > kD: no row
+             const int b = pbucket((double) mtp_p[j]);
+             const bool ok = j < obs;
+-            hm_s_[j][b] += ok; hm_f_[j][b] += !ok;
++            hm_s_[j][b] = kHmDecay * hm_s_[j][b] + ok; hm_f_[j][b] = kHmDecay * hm_f_[j][b] + !ok;
+             hmm_s_[j] = 0.999 * hmm_s_[j] + ok; hmm_f_[j] = 0.999 * hmm_f_[j] + !ok;
+         }
+     }
+diff --git a/src/spec/joint_gate_test.cpp b/src/spec/joint_gate_test.cpp
+index 51af747..0d60bf1 100644
+--- a/src/spec/joint_gate_test.cpp
++++ b/src/spec/joint_gate_test.cpp
+@@ -1,6 +1,7 @@
+ // src/spec/joint_gate_test.cpp - Strata+ P5: the joint source+depth gate's basic behaviour.
+ #include "strata/spec/joint_gate.hpp"
+ 
++#include <algorithm>
+ #include <cmath>
+ #include <cstdio>
+ 
+@@ -65,6 +66,65 @@ int main() {
+         if (!g.start(none, 100, &c)) { while (true) { ++d; if (!g.keep(p, ent, d)) break; } }
+         check(d == 3, "conf_stop: drafting stops at the first high-entropy draft");
+     }
++    {   // bounds (Scout bug a): tmax = 8 plans windows up to T = 8 (rows 0..7) and no further; tmax > 8 is clamped;
++        // an engine window T = 9 or d > 7 passed to observe() is folded into the last row, not written out of bounds
++        JointGate::Options o; o.tmax = 8;
++        JointGate g(o);
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const float hi9[9] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const int lu_acc[2] = {0, 0};
++        int maxt = 0;
++        for (int r = 0; r < 300; ++r) {
++            JointGate::Choice c;
++            if (g.start(none, 100, &c)) continue;
++            int d = 0;
++            while (true) { ++d; if (!g.keep(hi, nullptr, d)) break; }
++            c = g.finish(hi, d, none);
++            maxt = std::max(maxt, c.t);
++            g.observe(c, c.t - 1, 1.0, 7, hi, none, lu_acc);   // flat cost: the widest window wins
++        }
++        check(maxt == 8, "tmax=8: the widest planned window is T=8 (kD drafts + 1)");
++        JointGate::Choice c9; c9.src = JointGate::kMtp; c9.t = 9; c9.d = 8; c9.klu = 0;
++        g.observe(c9, 8, 1.0, 8, hi9, none, lu_acc);   // must not touch memory past the 8 rows / 7 hazards
++        check(std::isfinite(g.cost_pred(9, 0, 0)) && g.cost_pred(9, 0, 0) == g.cost_pred(8, 0, 0),
++              "T=9 is priced (and learned) as the last measured row T=8");
++        JointGate::Options o12; o12.tmax = 12;
++        check(JointGate(o12).tmax() == 8, "tmax=12 is clamped to kD+1=8");
++    }
++    {   // seeded cost table (Scout bug b): frozen plans on the seeded s(T) and ignores later measurements
++        JointGate g;
++        const double s[8] = {1.0, 1.27, 1.51, 1.74, 1.98, 2.23, 2.47, 2.56};
++        g.seed_costs(s, 0.26, 0.0, 43.0);
++        g.set_frozen(true);
++        const JointGate::Lookup none2[2] = {};
++        const float lo[7] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
++        const int lu_acc[2] = {0, 0};
++        for (int r = 0; r < 50; ++r) {
++            JointGate::Choice c;
++            if (!g.start(none2, 100, &c)) c = g.finish(lo, 1, none2);
++            g.observe(c, 0, 500.0, 0, lo, none2, lu_acc);   // wildly different measured cost
++        }
++        check(std::fabs(g.cost_pred(8, 0, 0) - 2.56 * 43.0) < 1e-9 && std::fabs(g.cost_pred(1, 2, 0) - 1.52 * 43.0) < 1e-9,
++              "frozen: the gate plans on the seeded table (x unit), not the prior");
++    }
++    {   // rem bounded by the context window (Scout bug d)
++        check(JointGate::remaining(100, 10, 4096, 200) == 89, "rem: max_new bound");
++        check(JointGate::remaining(100, 10, 205, 200) == 4, "rem: context bound (max_context - p - 1)");
++        check(JointGate::remaining(100, 10, 0, 200) == 89 && JointGate::remaining(5, 5, 0, 0) == 0, "rem: no bound / >= 0");
++    }
++    {   // MTP hazards forget (Scout bug c): after a long reliable phase, a regime change is learned within ~1/(1-0.999)
++        JointGate g;
++        const float hi[7] = {0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f, 0.999f};
++        const int lu_acc[2] = {0, 0};
++        auto depth = [&]() { JointGate::Choice c; if (g.start(none, 100, &c)) return 0;
++                             int d = 0; while (true) { ++d; if (!g.keep(hi, nullptr, d)) break; } return d; };
++        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
++                                         g.observe(c, 7, 1.0, 7, hi, none, lu_acc); }
++        const int before = depth();
++        for (int r = 0; r < 3000; ++r) { JointGate::Choice c; c.src = JointGate::kMtp; c.t = 8; c.d = 7; c.klu = 0;
++                                         g.observe(c, 0, 1.0 + 0.05 * 7, 0, hi, none, lu_acc); }
++        check(before >= 5 && depth() <= 2, "decay: confident drafts that stop being accepted are no longer drafted deep");
++    }
+     std::printf(g_fail ? "FAIL\n" : "PASS\n");
+     return g_fail ? 1 : 0;
+ }
+-- 
+2.47.3
+

@@ -1,0 +1,5 @@
+0.01.325.226 I cmn          init: llama threadpool init, n_threads = 6
+0.01.431.629 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=tf
+[agent_v12_pilot_tf49k] rep 0 agent_v12-expert-cache#t4: 50 tok, 50 verify + 0 replay rounds, acc 0/0, decode 11429 ms
+g9_violations=0

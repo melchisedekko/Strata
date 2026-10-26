@@ -1,0 +1,135 @@
+{
+ "agent_turns_bench_base": {
+  "requests": 30,
+  "greedy_equal_ref": 30,
+  "rounds": 3840,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "agent_turns_bench_live_combo": {
+  "requests": 30,
+  "greedy_equal_ref": 23,
+  "rounds": 714,
+  "k_over_cap": 389,
+  "mtp_over_k": 0
+ },
+ "agent_turns_bench_live_lookup": {
+  "requests": 30,
+  "greedy_equal_ref": 24,
+  "rounds": 1247,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "agent_turns_bench_live_mtp_k3": {
+  "requests": 30,
+  "greedy_equal_ref": 25,
+  "rounds": 1060,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "agent_turns_bench_tf_d7": {
+  "requests": 30,
+  "greedy_equal_ref": 30,
+  "rounds": 3840,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "base_p30": {
+  "requests": 30,
+  "greedy_equal_ref": 30,
+  "rounds": 3739,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_yright_T2": {
+  "requests": 12,
+  "greedy_equal_ref": 5,
+  "rounds": 945,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_yright_T4": {
+  "requests": 12,
+  "greedy_equal_ref": 5,
+  "rounds": 677,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_yright_T8": {
+  "requests": 12,
+  "greedy_equal_ref": 6,
+  "rounds": 577,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_ywrong_T2": {
+  "requests": 12,
+  "greedy_equal_ref": 5,
+  "rounds": 1475,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_ywrong_T4": {
+  "requests": 12,
+  "greedy_equal_ref": 5,
+  "rounds": 1475,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "diag_ywrong_T8": {
+  "requests": 12,
+  "greedy_equal_ref": 6,
+  "rounds": 1476,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "live_combo_p30": {
+  "requests": 30,
+  "greedy_equal_ref": 20,
+  "rounds": 934,
+  "k_over_cap": 276,
+  "mtp_over_k": 0
+ },
+ "live_lookup_p30": {
+  "requests": 30,
+  "greedy_equal_ref": 19,
+  "rounds": 1895,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "live_mtp_k3_p30": {
+  "requests": 30,
+  "greedy_equal_ref": 17,
+  "rounds": 1181,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "mtbench2_base": {
+  "requests": 20,
+  "greedy_equal_ref": 20,
+  "rounds": 2280,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "mtbench2_live_mtp_k3": {
+  "requests": 20,
+  "greedy_equal_ref": 6,
+  "rounds": 912,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "mtbench2_tf_d7": {
+  "requests": 20,
+  "greedy_equal_ref": 20,
+  "rounds": 2280,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "tf_d7_p30": {
+  "requests": 30,
+  "greedy_equal_ref": 30,
+  "rounds": 3739,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ }
+}

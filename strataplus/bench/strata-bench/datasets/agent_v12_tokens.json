@@ -1,0 +1,117 @@
+[
+ {
+  "id": "agent_v12-server-option#t0",
+  "n_tokens": 8063,
+  "lcp_prev_turn": 0
+ },
+ {
+  "id": "agent_v12-server-option#t1",
+  "n_tokens": 18745,
+  "lcp_prev_turn": 8063
+ },
+ {
+  "id": "agent_v12-server-option#t2",
+  "n_tokens": 48377,
+  "lcp_prev_turn": 18745
+ },
+ {
+  "id": "agent_v12-server-option#t3",
+  "n_tokens": 69607,
+  "lcp_prev_turn": 48377
+ },
+ {
+  "id": "agent_v12-server-option#t4",
+  "n_tokens": 126593,
+  "lcp_prev_turn": 69607
+ },
+ {
+  "id": "agent_v12-expert-cache#t0",
+  "n_tokens": 2199,
+  "lcp_prev_turn": 0
+ },
+ {
+  "id": "agent_v12-expert-cache#t1",
+  "n_tokens": 7922,
+  "lcp_prev_turn": 2199
+ },
+ {
+  "id": "agent_v12-expert-cache#t2",
+  "n_tokens": 18714,
+  "lcp_prev_turn": 7922
+ },
+ {
+  "id": "agent_v12-expert-cache#t3",
+  "n_tokens": 20262,
+  "lcp_prev_turn": 18714
+ },
+ {
+  "id": "agent_v12-expert-cache#t4",
+  "n_tokens": 49754,
+  "lcp_prev_turn": 20262
+ },
+ {
+  "id": "agent_v12-installer-fr#t0",
+  "n_tokens": 49414,
+  "lcp_prev_turn": 0
+ },
+ {
+  "id": "agent_v12-installer-fr#t1",
+  "n_tokens": 57600,
+  "lcp_prev_turn": 49414
+ },
+ {
+  "id": "agent_v12-installer-fr#t2",
+  "n_tokens": 66952,
+  "lcp_prev_turn": 57600
+ },
+ {
+  "id": "agent_v12-installer-fr#t3",
+  "n_tokens": 73076,
+  "lcp_prev_turn": 66952
+ },
+ {
+  "id": "agent_v12-cuda-kernel#t0",
+  "n_tokens": 2742,
+  "lcp_prev_turn": 0
+ },
+ {
+  "id": "agent_v12-cuda-kernel#t1",
+  "n_tokens": 37835,
+  "lcp_prev_turn": 2742
+ },
+ {
+  "id": "agent_v12-cuda-kernel#t2",
+  "n_tokens": 40877,
+  "lcp_prev_turn": 37835
+ },
+ {
+  "id": "agent_v12-cuda-kernel#t3",
+  "n_tokens": 78162,
+  "lcp_prev_turn": 40877
+ },
+ {
+  "id": "agent_v12-tokenizer-fr#t0",
+  "n_tokens": 8372,
+  "lcp_prev_turn": 0
+ },
+ {
+  "id": "agent_v12-tokenizer-fr#t1",
+  "n_tokens": 12493,
+  "lcp_prev_turn": 8372
+ },
+ {
+  "id": "agent_v12-tokenizer-fr#t2",
+  "n_tokens": 33728,
+  "lcp_prev_turn": 12493
+ },
+ {
+  "id": "agent_v12-tokenizer-fr#t3",
+  "n_tokens": 36323,
+  "lcp_prev_turn": 33728
+ },
+ {
+  "id": "agent_v12-tokenizer-fr#t4",
+  "n_tokens": 37647,
+  "lcp_prev_turn": 36323
+ }
+]

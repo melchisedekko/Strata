@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""proxy CPU, non AMD. raw/v11/*.jsonl (proxy/llama_spec_trace.v11.bin) -> traces/v11/*.jsonl, schema strataplus.v1.1.
+Per richiesta: riga request (D1 data_kind, D2 ref_tokens, D3 dmax, D4 pos, session_id/turn), righe round, riga request_end (D13).
+y (ref_tokens) = output del run base (T=1 greedy, nessuna speculazione) dello stesso set di prompt."""
+import glob, hashlib, json, os
+TR = '/workspace/strata-plus/traces'; RAW = f'{TR}/raw/v11'; OUT = f'{TR}/v11'
+MODEL = 'Qwen3.5-2B-MTP Q4_K_M (unsloth/Qwen3.5-2B-MTP-GGUF@e05864f8, Qwen3.5-2B-Q4_K_M.gguf)'
+ENGINE_REV = 'd327bf1f0780f87b8c01b367b61853b0c291d7c4+patches/llamacpp-draft-mtp-probs.patch (v1.1)'
+COMBO = 'combo(MTP k≤3 | lookup ≤7)'
+def sha(ids): return hashlib.sha256(','.join(map(str, ids)).encode()).hexdigest()
+def lcp(a, b):
+    n = 0
+    for x, y in zip(a, b):
+        if x != y: break
+        n += 1
+    return n
+def load(p):
+    reqs, rounds, ends = [], {}, {}
+    for l in open(p):
+        try: j = json.loads(l)
+        except json.JSONDecodeError: continue
+        t = j['type']
+        if t == 'request': reqs.append(j)
+        elif t == 'round': rounds.setdefault((j['req_id'], j['rep']), []).append(j)
+        elif t == 'request_end': ends[(j['req_id'], j['rep'])] = j
+    return reqs, rounds, ends
+def label(run, rq):
+    if 'combo' in run: return COMBO
+    if 'lookup' in run: return 'lookup-only (SuffixDrafter 3..64, ≤7)'
+    if 'tf_' in run: return 'teacher-forced: MTP Dmax=7 + lookup ≤7 in ogni posizione, verify T=1'
+    if 'base' in run: return 'baseline T=1 (spec off)'
+    if 'mtp' in run: return 'MTP k=' + rq['flags'].split('--spec-draft-n-max ')[1].split()[0] if '--spec-draft-n-max' in rq['flags'] else 'MTP'
+    return run
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    prof = None
+    pf = f'{TR}/cost_p4_cpu.json'
+    if os.path.exists(pf):
+        j = json.load(open(pf))
+        if j.get('schema_version') == 'p4.v1.1': prof = j; prof['_sha'] = hashlib.sha256(open(pf, 'rb').read()).hexdigest()
+    ref = {}
+    for b in glob.glob(f'{RAW}/*base*.jsonl'):
+        for r in load(b)[0]: ref[r['req_id']] = r['output_ids']
+    hold = {json.loads(l)['id'] for l in open('/workspace/strata-bench/datasets/holdout_90.jsonl')}
+    rep = {}
+    for f in sorted(glob.glob(f'{RAW}/*.jsonl') + glob.glob(f'{RAW}_holdout/*.jsonl')):
+        run = os.path.basename(f)[:-6]
+        if run.startswith('p4') or run.startswith('abl_') or run.startswith('e4_'): continue
+        reqs, rounds, ends = load(f)
+        od = f'{OUT}_holdout' if run.startswith('holdout') else OUT; os.makedirs(od, exist_ok=True)
+        out = open(f'{od}/{run}.jsonl', 'w'); st = {'requests': 0, 'greedy_equal_ref': 0, 'rounds': 0, 'k_over_cap': 0, 'mtp_over_k': 0}
+        for rq in reqs:
+            rid = rq['req_id']; y = ref.get(rid); rsrc = 'base T=1 greedy (spec off), stesso binario e flag'
+            if y is None and rq['data_kind'] == 'teacher_forced':   # tf verifica a T=1: il proprio output e' il greedy T=1
+                y = rq['output_ids']; rsrc = 'output proprio del run teacher-forced (verify T=1, nessun run base separato)'
+            rr = rounds.get((rid, rq['rep']), []); oo = rq['output_ids']
+            div = next((i for i, (u, v) in enumerate(zip(oo, y or [])) if u != v), None)
+            if div is None and y is not None and len(oo) != len(y): div = min(len(oo), len(y))
+            row = {k: rq[k] for k in ('type', 'schema', 'label', 'data_kind', 'dmax', 'pos_semantics', 'sampling', 'lookup_max_match',
+                                      'run_id', 'engine', 'dataset', 'domain', 'req_id', 'session_id', 'turn', 'rep', 'prompt_tokens',
+                                      'prompt_ids', 'output_tokens')}
+            row.update({'engine_rev': ENGINE_REV, 'model': MODEL, 'flags': rq['flags'] + ' (greedy, temp 0)', 'config_label': label(run, rq),
+                        'prompt_sha256': sha(rq['prompt_ids']), 'output_sha256': sha(oo), 'ref_tokens': y,
+                        'ref_source': rsrc, 'split': 'holdout' if rid.split('#')[0] in hold else 'tune', 'ref_output_sha256': sha(y) if y else None,
+                        'greedy_equal_ref': oo == y, 'first_divergence_pos': div,
+                        'stats': {k: rq[k] for k in ('verify_rounds', 'drafted', 'accepted', 'prefill_ms', 'decode_ms', 'draft_ms', 'verify_ms', 'mtp_process_ms')}})
+            out.write(json.dumps(row, ensure_ascii=False) + '\n'); st['requests'] += 1; st['greedy_equal_ref'] += row['greedy_equal_ref']
+            for x in rr:
+                pos = x['pos']; mt = x['cand']['mtp']['tokens']; lt = x['cand']['lookup']['tokens']; T = x['T']; ms = x['ms_measured']
+                if x['source'] not in ('replay', 'none') and x['k_cap'] and x['k_proposed'] > x['k_cap']: st['k_over_cap'] += 1
+                if rq['data_kind'] == 'live' and 'mtp' in run and len(mt) > x['k_cap']: st['mtp_over_k'] += 1
+                cost = None
+                if prof:
+                    d = len(mt) if (x['source'] == 'mtp' or rq['data_kind'] == 'teacher_forced') else 0
+                    c = prof['cost_T_d'].get(f'{T},{d}') if rq['data_kind'] == 'live' else None
+                    cost = {'profile': prof['profile'], 'profile_file': 'cost_p4_cpu.json', 'profile_sha256': prof['_sha'], 'T': T, 'd_mtp': d, 'total': c, 'unit': 'step_ms (T=1 verify)'}
+                o = {'type': 'round', 'schema': 'strataplus.v1.1', 'label': 'proxy CPU, non AMD', 'run_id': run, 'req_id': rid, 'split': row['split'],
+                     'session_id': x['session_id'], 'turn': x['turn'], 'rep': x['rep'], 'r': x['r'], 'pos': pos, 'gen_index': pos,
+                     'kv_pos': x['kv_pos'], 'ctx_len': x['ctx_len'], 'ctx_bucket': x['ctx_bucket'], 'source': x['source'],
+                     'k_cap': x['k_cap'], 'k_proposed': x['k_proposed'], 'T': T, 'proposal': x['proposal'],
+                     'cand': {'mtp': ({'tokens': mt, 'probs': x['cand']['mtp']['probs'], 'ent': x['cand']['mtp']['ent'],
+                                       'probs_sampler': x['cand']['mtp']['probs_sampler']} if mt else None),
+                              'lookup': ({'tokens': lt, 'match': x['cand']['lookup']['match']} if lt else None)},
+                     'accepted': x['accepted'], 'committed': x['committed'], 'target_tokens': x['target_tokens'],
+                     'vmargin': x['vmargin'],
+                     'acc': {'mtp': lcp(mt, oo[pos:]) if mt else None, 'lookup': lcp(lt, oo[pos:]) if lt else 0},
+                     'acc_ref': 'self_output', 'after_divergence': div is not None and pos >= div,
+                     'ms_measured': round(ms['draft'] + ms['lookup'] + ms['verify'] + ms['mtp_process'], 4),
+                     'ms_split': {'verify': ms['verify'], 'mtp_draft': ms['draft'], 'mtp_process': ms['mtp_process'], 'lookup': ms['lookup']},
+                     'cost_est': cost, 'policy': x['policy'] + '@d327bf1f', 'config_label': row['config_label'], 'domain': x['domain']}
+                out.write(json.dumps(o, ensure_ascii=False) + '\n'); st['rounds'] += 1
+            e = ends.get((rid, rq['rep']))
+            if e: out.write(json.dumps(e) + '\n')
+        out.close(); rep[run] = st
+    json.dump({k: v for k, v in rep.items() if not k.startswith('holdout')}, open(f'{OUT}/annotate_report.json', 'w'), indent=1)
+    if any(k.startswith('holdout') for k in rep):
+        json.dump({k: v for k, v in rep.items() if k.startswith('holdout')}, open(f'{OUT}_holdout/annotate_report.json', 'w'), indent=1)
+    # manifest sha256 (tune e holdout separati: Strata Policy congela i parametri senza leggere l'holdout)
+    for d in (OUT, f'{OUT}_holdout'):
+        if not os.path.isdir(d): continue
+        with open(f'{d}/MANIFEST.sha256', 'w') as m:
+            for fn in sorted(os.listdir(d)):
+                if fn == 'MANIFEST.sha256': continue
+                m.write(hashlib.sha256(open(f'{d}/{fn}', 'rb').read()).hexdigest() + '  ' + fn + '\n')
+    print(json.dumps(rep, indent=1))
+if __name__ == '__main__': main()

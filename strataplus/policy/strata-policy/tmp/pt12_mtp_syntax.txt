@@ -1,0 +1,5 @@
+HIP-host src/core/mtp.cpp rc=0
+CUDA-host src/core/mtp.cpp rc=0
+HIP-host src/program/generate.cpp rc=0
+CUDA-host src/program/generate.cpp rc=0
+apply-check MTP su b557725 rc=0

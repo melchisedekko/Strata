@@ -1,0 +1,1857 @@
+{
+ "schema_version": "p4knee.v2",
+ "label": "proxy CPU, modello denso, non AMD",
+ "created": "2026-10-25 06:04:41 CET",
+ "models": {
+  "q4km": "models/qwen35-2b-mtp-q4_k_m.gguf",
+  "q8": "models/qwen35-2b-mtp-q8_0.gguf"
+ },
+ "d": 0,
+ "design": "verify-only, T in {1,6,7,8,9,10}; 6 prompt (datasets/p4_prompts.jsonl); ON/OFF interleaved ABBA a blocchi di 25 rep (on b1,b4,b5,b8 / off b2,b3,b6,b7) = 100 rep per braccio; controlli 100 rep; per ogni rep l'ordine dei T e' ruotato di rep//2 e invertito sulle rep dispari; 3 giri di warm-up",
+ "unit": "campione = (prompt, rep): s(T) = ms_verify(T) / ms_verify(T=1) della stessa rep; statistiche su 600 campioni per punto (6 prompt x 100 rep); CI = bootstrap percentile della mediana, 4000 ricampionamenti, seed 20261025",
+ "binary_sha256": {
+  "v11knee": "cb598d53e7f0884d96c8a5d6f54af14a21524a7da55cdb3460efdf8cf2ee05cd",
+  "v11knee.nollamafile": "411e80327304d3ff72e5b604601c768806697c67d84b339c69a82bbaa7440b35"
+ },
+ "configs": {
+  "q4km_main": {
+   "flags": "-t 6 -ub 512 (LLAMAFILE ON, blocchi b1,b4,b5,b8)",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_main_b1 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b1",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_main_b4 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b4",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_main_b5 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b5",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_main_b8 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b8"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b1.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b4.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b5.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_main_b8.jsonl"
+   ],
+   "raw_sha256": [
+    "660ee9c64e7f92188c29564613d37b4da9725865698a539b2311811d86bc17e6",
+    "a5efcc847ad0bde5bfce9d40ca517bd4aa2b7bd08d30502a2e969458e4931725",
+    "71c6c5910d31d157dc2276baf27ac08c12bd015be0eab7b4638323a9533652f3",
+    "6bef3c0079a631013421ef0b115d99c3a336485c97ca4d3a2f019f532196d446"
+   ],
+   "ms_verify_T1": {
+    "median": 40.4831,
+    "q25": 39.9201,
+    "q75": 41.3849,
+    "iqr": 1.4649,
+    "ci95_median_bootstrap": [
+     40.3436,
+     40.5898
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 91.4481,
+     "q25": 90.2948,
+     "q75": 93.7948,
+     "iqr": 3.5001,
+     "ci95_median_bootstrap": [
+      91.3026,
+      91.6298
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 101.2701,
+     "q25": 99.9407,
+     "q75": 104.2229,
+     "iqr": 4.2821,
+     "ci95_median_bootstrap": [
+      101.095,
+      101.5235
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 104.4669,
+     "q25": 102.7449,
+     "q75": 107.7976,
+     "iqr": 5.0527,
+     "ci95_median_bootstrap": [
+      104.074,
+      104.9134
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 106.2054,
+     "q25": 104.5236,
+     "q75": 109.3494,
+     "iqr": 4.8258,
+     "ci95_median_bootstrap": [
+      105.8318,
+      106.6944
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 107.7508,
+     "q25": 105.7297,
+     "q75": 110.6313,
+     "iqr": 4.9016,
+     "ci95_median_bootstrap": [
+      107.365,
+      108.1794
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.2598,
+     "q25": 2.2244,
+     "q75": 2.3008,
+     "iqr": 0.0764,
+     "ci95_median_bootstrap": [
+      2.2546,
+      2.2642
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.5054,
+     "q25": 2.4602,
+     "q75": 2.5571,
+     "iqr": 0.097,
+     "ci95_median_bootstrap": [
+      2.5004,
+      2.5108
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 2.5789,
+     "q25": 2.5267,
+     "q75": 2.6541,
+     "iqr": 0.1274,
+     "ci95_median_bootstrap": [
+      2.5739,
+      2.5866
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.6221,
+     "q25": 2.5683,
+     "q75": 2.6904,
+     "iqr": 0.1221,
+     "ci95_median_bootstrap": [
+      2.614,
+      2.6291
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.6499,
+     "q25": 2.6079,
+     "q75": 2.7197,
+     "iqr": 0.1118,
+     "ci95_median_bootstrap": [
+      2.6409,
+      2.6596
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.2413,
+    "q25": 0.2036,
+    "q75": 0.2829,
+    "iqr": 0.0793,
+    "ci95_median_bootstrap": [
+     0.2372,
+     0.2443
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": 0.0676,
+    "q25": 0.0359,
+    "q75": 0.1272,
+    "iqr": 0.0913,
+    "ci95_median_bootstrap": [
+     0.0643,
+     0.0715
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.0399,
+    "q25": -0.0099,
+    "q75": 0.092,
+    "iqr": 0.1019,
+    "ci95_median_bootstrap": [
+     0.0367,
+     0.0456
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.1538,
+    "q25": -0.2242,
+    "q75": -0.0693,
+    "iqr": 0.1549,
+    "ci95_median_bootstrap": [
+     -0.1658,
+     -0.1461
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "snapshots_5s": 23,
+     "snapshots_with_foreign_proc_gt20pct": 0,
+     "block": "knee_q4km_main_b1",
+     "method": "ps_lifetime_pcpu_5s",
+     "valid": true
+    },
+    {
+     "block": "knee_q4km_main_b4",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_main_b4_a4.log",
+     "intervals": 59,
+     "foreign_cores_max": 0.194,
+     "foreign_cores_median": 0.065,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q4km_main_b5",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_main_b5_a4.log",
+     "intervals": 58,
+     "foreign_cores_max": 0.145,
+     "foreign_cores_median": 0.062,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q4km_main_b8",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_main_b8_a1.log",
+     "intervals": 58,
+     "foreign_cores_max": 0.12,
+     "foreign_cores_median": 0.065,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q4km_llamafile_off": {
+   "flags": "-t 6 -ub 512, build -DGGML_LLAMAFILE=OFF (blocchi b2,b3,b6,b7)",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_llamafile_off_b2 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b2",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_llamafile_off_b3 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b3",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_llamafile_off_b6 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b6",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q4km_llamafile_off_b7 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b7"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b2.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b3.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b6.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_llamafile_off_b7.jsonl"
+   ],
+   "raw_sha256": [
+    "60b81b57210476539c07d0edcb87440a394556df5799afd3ba300c942f4c8238",
+    "37c11ee4c8991f60bf1a7f9e9c62aa4d3cd66426973db8db448cd4e44994ded6",
+    "da79cdb0e68f9ce2f79fe90050027d0a533de8ea8044d6ec31de04d41b22ad4f",
+    "10fe9dabe0e79a9769986d22ed96e5f9e2eac4c3a66807e214951a80fe1f4701"
+   ],
+   "ms_verify_T1": {
+    "median": 40.4692,
+    "q25": 39.6959,
+    "q75": 41.5889,
+    "iqr": 1.893,
+    "ci95_median_bootstrap": [
+     40.3252,
+     40.6122
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 91.3434,
+     "q25": 90.0298,
+     "q75": 94.4752,
+     "iqr": 4.4454,
+     "ci95_median_bootstrap": [
+      91.0236,
+      91.5764
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 101.7046,
+     "q25": 99.99,
+     "q75": 104.795,
+     "iqr": 4.805,
+     "ci95_median_bootstrap": [
+      101.4141,
+      102.0915
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 104.5845,
+     "q25": 102.6833,
+     "q75": 108.6569,
+     "iqr": 5.9736,
+     "ci95_median_bootstrap": [
+      104.2789,
+      105.049
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 106.2439,
+     "q25": 103.8294,
+     "q75": 109.7755,
+     "iqr": 5.9462,
+     "ci95_median_bootstrap": [
+      105.7377,
+      106.7369
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 107.1449,
+     "q25": 105.1399,
+     "q75": 111.3368,
+     "iqr": 6.197,
+     "ci95_median_bootstrap": [
+      106.7412,
+      107.6194
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.2675,
+     "q25": 2.2318,
+     "q75": 2.3064,
+     "iqr": 0.0746,
+     "ci95_median_bootstrap": [
+      2.2631,
+      2.271
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.5148,
+     "q25": 2.4608,
+     "q75": 2.5731,
+     "iqr": 0.1123,
+     "ci95_median_bootstrap": [
+      2.5091,
+      2.5212
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 2.5904,
+     "q25": 2.5354,
+     "q75": 2.651,
+     "iqr": 0.1156,
+     "ci95_median_bootstrap": [
+      2.5827,
+      2.5995
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.6203,
+     "q25": 2.5669,
+     "q75": 2.6933,
+     "iqr": 0.1263,
+     "ci95_median_bootstrap": [
+      2.6133,
+      2.6284
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.6504,
+     "q25": 2.6041,
+     "q75": 2.7054,
+     "iqr": 0.1013,
+     "ci95_median_bootstrap": [
+      2.6425,
+      2.6568
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.2453,
+    "q25": 0.2112,
+    "q75": 0.2927,
+    "iqr": 0.0815,
+    "ci95_median_bootstrap": [
+     0.2409,
+     0.2493
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": 0.0694,
+    "q25": 0.0252,
+    "q75": 0.1277,
+    "iqr": 0.1025,
+    "ci95_median_bootstrap": [
+     0.0638,
+     0.0755
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.0317,
+    "q25": -0.0243,
+    "q75": 0.0901,
+    "iqr": 0.1144,
+    "ci95_median_bootstrap": [
+     0.0254,
+     0.0365
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.1673,
+    "q25": -0.2529,
+    "q75": -0.0791,
+    "iqr": 0.1738,
+    "ci95_median_bootstrap": [
+     -0.176,
+     -0.1569
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "snapshots_5s": 23,
+     "snapshots_with_foreign_proc_gt20pct": 0,
+     "block": "knee_q4km_llamafile_off_b2",
+     "method": "ps_lifetime_pcpu_5s",
+     "valid": true
+    },
+    {
+     "snapshots_5s": 23,
+     "snapshots_with_foreign_proc_gt20pct": 0,
+     "block": "knee_q4km_llamafile_off_b3",
+     "method": "ps_lifetime_pcpu_5s",
+     "valid": true
+    },
+    {
+     "snapshots_5s": 23,
+     "snapshots_with_foreign_proc_gt20pct": 0,
+     "block": "knee_q4km_llamafile_off_b6",
+     "method": "ps_lifetime_pcpu_5s",
+     "valid": true
+    },
+    {
+     "block": "knee_q4km_llamafile_off_b7",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_llamafile_off_b7_a1.log",
+     "intervals": 74,
+     "foreign_cores_max": 0.2,
+     "foreign_cores_median": 0.07,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q4km_ctrl_ub256": {
+   "flags": "-t 6 -ub 256",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 100 -t 6 -ub 256 --tag knee_q4km_ctrl_ub256 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_ctrl_ub256"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_ctrl_ub256.jsonl"
+   ],
+   "raw_sha256": [
+    "032fd0cb4f41159d3ad4338f0fd1886cd61ff3d595957f956904b9b91084d706"
+   ],
+   "ms_verify_T1": {
+    "median": 40.0435,
+    "q25": 39.51,
+    "q75": 41.0913,
+    "iqr": 1.5813,
+    "ci95_median_bootstrap": [
+     39.9425,
+     40.1584
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 90.859,
+     "q25": 89.7865,
+     "q75": 93.4797,
+     "iqr": 3.6933,
+     "ci95_median_bootstrap": [
+      90.677,
+      91.1279
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 100.8416,
+     "q25": 99.6368,
+     "q75": 104.0142,
+     "iqr": 4.3774,
+     "ci95_median_bootstrap": [
+      100.5702,
+      101.1464
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 103.8225,
+     "q25": 102.0181,
+     "q75": 107.8659,
+     "iqr": 5.8478,
+     "ci95_median_bootstrap": [
+      103.3368,
+      104.1658
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 105.2215,
+     "q25": 103.4682,
+     "q75": 109.143,
+     "iqr": 5.6748,
+     "ci95_median_bootstrap": [
+      104.8669,
+      105.6458
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 106.6429,
+     "q25": 104.8642,
+     "q75": 110.0884,
+     "iqr": 5.2242,
+     "ci95_median_bootstrap": [
+      106.1696,
+      107.0276
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.2709,
+     "q25": 2.2462,
+     "q75": 2.302,
+     "iqr": 0.0558,
+     "ci95_median_bootstrap": [
+      2.2684,
+      2.2743
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.5208,
+     "q25": 2.479,
+     "q75": 2.5672,
+     "iqr": 0.0882,
+     "ci95_median_bootstrap": [
+      2.5157,
+      2.5259
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 2.5911,
+     "q25": 2.5462,
+     "q75": 2.658,
+     "iqr": 0.1118,
+     "ci95_median_bootstrap": [
+      2.5848,
+      2.5991
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.6271,
+     "q25": 2.5862,
+     "q75": 2.6981,
+     "iqr": 0.1118,
+     "ci95_median_bootstrap": [
+      2.6203,
+      2.633
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.6602,
+     "q25": 2.6249,
+     "q75": 2.7173,
+     "iqr": 0.0924,
+     "ci95_median_bootstrap": [
+      2.6537,
+      2.6662
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.2466,
+    "q25": 0.2133,
+    "q75": 0.2874,
+    "iqr": 0.0741,
+    "ci95_median_bootstrap": [
+     0.2427,
+     0.251
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": 0.0672,
+    "q25": 0.0331,
+    "q75": 0.1369,
+    "iqr": 0.1038,
+    "ci95_median_bootstrap": [
+     0.061,
+     0.0721
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.0338,
+    "q25": -0.0083,
+    "q75": 0.0855,
+    "iqr": 0.0938,
+    "ci95_median_bootstrap": [
+     0.0302,
+     0.0387
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.1616,
+    "q25": -0.2265,
+    "q75": -0.0818,
+    "iqr": 0.1447,
+    "ci95_median_bootstrap": [
+     -0.171,
+     -0.1542
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q4km_ctrl_ub256",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_ctrl_ub256_a1.log",
+     "intervals": 192,
+     "foreign_cores_max": 0.16,
+     "foreign_cores_median": 0.06,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q4km_ctrl_t8": {
+   "flags": "-t 8 -ub 512",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q4_k_m.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 100 -t 8 -ub 512 --tag knee_q4km_ctrl_t8 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q4km_ctrl_t8"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q4km_ctrl_t8.jsonl"
+   ],
+   "raw_sha256": [
+    "e4f5f2de31790c492f2c4473c18b363707d0e70c8f53b78fb3696e69b41748c0"
+   ],
+   "ms_verify_T1": {
+    "median": 32.9065,
+    "q25": 31.5837,
+    "q75": 34.9846,
+    "iqr": 3.4009,
+    "ci95_median_bootstrap": [
+     32.5442,
+     33.3724
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 73.5511,
+     "q25": 71.7245,
+     "q75": 77.6106,
+     "iqr": 5.8861,
+     "ci95_median_bootstrap": [
+      73.2818,
+      73.9622
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 81.224,
+     "q25": 79.469,
+     "q75": 85.5244,
+     "iqr": 6.0554,
+     "ci95_median_bootstrap": [
+      80.8396,
+      81.6689
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 85.1337,
+     "q25": 83.0078,
+     "q75": 90.093,
+     "iqr": 7.0853,
+     "ci95_median_bootstrap": [
+      84.6699,
+      85.8098
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 86.1313,
+     "q25": 83.9072,
+     "q75": 90.9287,
+     "iqr": 7.0216,
+     "ci95_median_bootstrap": [
+      85.7038,
+      86.5316
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 87.6076,
+     "q25": 85.2269,
+     "q75": 93.282,
+     "iqr": 8.0552,
+     "ci95_median_bootstrap": [
+      87.1733,
+      88.0964
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.2563,
+     "q25": 2.1165,
+     "q75": 2.3455,
+     "iqr": 0.229,
+     "ci95_median_bootstrap": [
+      2.2405,
+      2.2784
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.4909,
+     "q25": 2.3572,
+     "q75": 2.5926,
+     "iqr": 0.2354,
+     "ci95_median_bootstrap": [
+      2.4749,
+      2.5071
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 2.6001,
+     "q25": 2.4645,
+     "q75": 2.7188,
+     "iqr": 0.2543,
+     "ci95_median_bootstrap": [
+      2.5842,
+      2.6174
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.6428,
+     "q25": 2.5035,
+     "q75": 2.7549,
+     "iqr": 0.2513,
+     "ci95_median_bootstrap": [
+      2.6237,
+      2.6608
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.6848,
+     "q25": 2.533,
+     "q75": 2.8051,
+     "iqr": 0.2721,
+     "ci95_median_bootstrap": [
+      2.6677,
+      2.6989
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.227,
+    "q25": 0.1466,
+    "q75": 0.3235,
+    "iqr": 0.1769,
+    "ci95_median_bootstrap": [
+     0.2175,
+     0.2398
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": 0.1249,
+    "q25": 0.0324,
+    "q75": 0.2124,
+    "iqr": 0.1801,
+    "ci95_median_bootstrap": [
+     0.1103,
+     0.136
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.026,
+    "q25": -0.069,
+    "q75": 0.1344,
+    "iqr": 0.2033,
+    "ci95_median_bootstrap": [
+     0.0122,
+     0.042
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.0724,
+    "q25": -0.2278,
+    "q75": 0.0842,
+    "iqr": 0.312,
+    "ci95_median_bootstrap": [
+     -0.0882,
+     -0.0488
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q4km_ctrl_t8",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q4km_ctrl_t8_a1.log",
+     "intervals": 167,
+     "foreign_cores_max": 0.144,
+     "foreign_cores_median": 0.06,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q8_main": {
+   "flags": "-t 6 -ub 512 (LLAMAFILE ON, blocchi b1,b4,b5,b8)",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_main_b1 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b1",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_main_b4 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b4",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_main_b5 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b5",
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_main_b8 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b8"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b1.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b4.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b5.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_main_b8.jsonl"
+   ],
+   "raw_sha256": [
+    "7ea374c5a55c09dcf01d86522e167a6db3cc40dc284c4c129635032be73c3168",
+    "f3e9a737c521f270cb7884c74808270e22807c16328b692a314b7f275924021c",
+    "7da877f07e14078595f9184d7fd3c8e2fb3f8047705ece8b6b5c3e57f7aa73ec",
+    "2edf25c2292fce926edf317e2d1332ab6db487c5f15f68431bbe9c72ff78bfa5"
+   ],
+   "ms_verify_T1": {
+    "median": 53.8925,
+    "q25": 53.0883,
+    "q75": 54.9625,
+    "iqr": 1.8743,
+    "ci95_median_bootstrap": [
+     53.7833,
+     54.0094
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 110.8011,
+     "q25": 108.2485,
+     "q75": 113.5344,
+     "iqr": 5.286,
+     "ci95_median_bootstrap": [
+      110.4142,
+      111.1954
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 118.1975,
+     "q25": 115.3227,
+     "q75": 120.8093,
+     "iqr": 5.4867,
+     "ci95_median_bootstrap": [
+      117.7536,
+      118.6555
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 102.6366,
+     "q25": 100.8904,
+     "q75": 105.513,
+     "iqr": 4.6226,
+     "ci95_median_bootstrap": [
+      102.2,
+      103.1494
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 132.5898,
+     "q25": 129.5051,
+     "q75": 136.3488,
+     "iqr": 6.8437,
+     "ci95_median_bootstrap": [
+      131.9915,
+      133.1576
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 139.9562,
+     "q25": 137.4476,
+     "q75": 143.5883,
+     "iqr": 6.1407,
+     "ci95_median_bootstrap": [
+      139.5206,
+      140.3948
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.0607,
+     "q25": 2.0089,
+     "q75": 2.0954,
+     "iqr": 0.0865,
+     "ci95_median_bootstrap": [
+      2.0538,
+      2.0646
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.196,
+     "q25": 2.139,
+     "q75": 2.2383,
+     "iqr": 0.0993,
+     "ci95_median_bootstrap": [
+      2.1871,
+      2.1994
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 1.9022,
+     "q25": 1.8688,
+     "q75": 1.9459,
+     "iqr": 0.0771,
+     "ci95_median_bootstrap": [
+      1.8974,
+      1.9081
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.4605,
+     "q25": 2.4017,
+     "q75": 2.5183,
+     "iqr": 0.1166,
+     "ci95_median_bootstrap": [
+      2.4514,
+      2.4664
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.6028,
+     "q25": 2.5456,
+     "q75": 2.6534,
+     "iqr": 0.1078,
+     "ci95_median_bootstrap": [
+      2.5975,
+      2.6064
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.1316,
+    "q25": 0.098,
+    "q75": 0.1682,
+    "iqr": 0.0703,
+    "ci95_median_bootstrap": [
+     0.1281,
+     0.1346
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": -0.2853,
+    "q25": -0.3242,
+    "q75": -0.227,
+    "iqr": 0.0972,
+    "ci95_median_bootstrap": [
+     -0.2923,
+     -0.2784
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.5531,
+    "q25": 0.4928,
+    "q75": 0.6031,
+    "iqr": 0.1103,
+    "ci95_median_bootstrap": [
+     0.547,
+     0.5581
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.4063,
+    "q25": -0.4809,
+    "q75": -0.3325,
+    "iqr": 0.1484,
+    "ci95_median_bootstrap": [
+     -0.4189,
+     -0.393
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q8_main_b1",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_main_b1_a1.log",
+     "intervals": 73,
+     "foreign_cores_max": 0.125,
+     "foreign_cores_median": 0.06,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_main_b4",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_main_b4_a1.log",
+     "intervals": 71,
+     "foreign_cores_max": 0.145,
+     "foreign_cores_median": 0.05,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_main_b5",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_main_b5_a1.log",
+     "intervals": 69,
+     "foreign_cores_max": 0.09,
+     "foreign_cores_median": 0.045,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_main_b8",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_main_b8_a1.log",
+     "intervals": 70,
+     "foreign_cores_max": 0.12,
+     "foreign_cores_median": 0.045,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q8_llamafile_off": {
+   "flags": "-t 6 -ub 512, build -DGGML_LLAMAFILE=OFF (blocchi b2,b3,b6,b7)",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_llamafile_off_b2 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b2",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_llamafile_off_b3 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b3",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_llamafile_off_b6 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b6",
+    "./proxy/llama_spec_trace.v11knee.nollamafile.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 25 -t 6 -ub 512 --tag knee_q8_llamafile_off_b7 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b7"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b2.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b3.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b6.jsonl",
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_llamafile_off_b7.jsonl"
+   ],
+   "raw_sha256": [
+    "4e8c8f4dae921a64abbb4ce6beb5ec496a00673758d1107d482b63afa456145a",
+    "3b8329859545af09eab529216ecd8f18f5f2ce42e91c305bcbf4d28d2f395915",
+    "2756e93a62cc8e03a628c145ac3b80e14f51f1eefa2fc08cbcdf4a6929656e15",
+    "75a4a8d947cfaad53cf1a5fddba91b2fc8f8b20cc47798c22e9895e57cea8486"
+   ],
+   "ms_verify_T1": {
+    "median": 53.1191,
+    "q25": 51.3747,
+    "q75": 54.0646,
+    "iqr": 2.6899,
+    "ci95_median_bootstrap": [
+     52.9629,
+     53.2735
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 111.1855,
+     "q25": 109.4625,
+     "q75": 113.7425,
+     "iqr": 4.28,
+     "ci95_median_bootstrap": [
+      110.9014,
+      111.4682
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 122.7349,
+     "q25": 120.6745,
+     "q75": 126.1228,
+     "iqr": 5.4483,
+     "ci95_median_bootstrap": [
+      122.272,
+      123.1884
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 134.1078,
+     "q25": 132.175,
+     "q75": 138.2174,
+     "iqr": 6.0424,
+     "ci95_median_bootstrap": [
+      133.7643,
+      134.5729
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 145.5342,
+     "q25": 143.5192,
+     "q75": 149.1651,
+     "iqr": 5.6458,
+     "ci95_median_bootstrap": [
+      145.1374,
+      145.8448
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 156.2693,
+     "q25": 154.2837,
+     "q75": 160.7721,
+     "iqr": 6.4885,
+     "ci95_median_bootstrap": [
+      155.8326,
+      156.6687
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.1057,
+     "q25": 2.0717,
+     "q75": 2.1476,
+     "iqr": 0.0759,
+     "ci95_median_bootstrap": [
+      2.0992,
+      2.1157
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.3244,
+     "q25": 2.2811,
+     "q75": 2.3834,
+     "iqr": 0.1023,
+     "ci95_median_bootstrap": [
+      2.3184,
+      2.3327
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 2.5466,
+     "q25": 2.494,
+     "q75": 2.6144,
+     "iqr": 0.1204,
+     "ci95_median_bootstrap": [
+      2.538,
+      2.5577
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.7571,
+     "q25": 2.7071,
+     "q75": 2.8264,
+     "iqr": 0.1193,
+     "ci95_median_bootstrap": [
+      2.7498,
+      2.7667
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.9715,
+     "q25": 2.9114,
+     "q75": 3.0364,
+     "iqr": 0.125,
+     "ci95_median_bootstrap": [
+      2.9542,
+      2.9903
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.2162,
+    "q25": 0.1846,
+    "q75": 0.2616,
+    "iqr": 0.077,
+    "ci95_median_bootstrap": [
+     0.2117,
+     0.2206
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": 0.2184,
+    "q25": 0.1755,
+    "q75": 0.2713,
+    "iqr": 0.0959,
+    "ci95_median_bootstrap": [
+     0.2131,
+     0.2255
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.2087,
+    "q25": 0.1573,
+    "q75": 0.2553,
+    "iqr": 0.098,
+    "ci95_median_bootstrap": [
+     0.2043,
+     0.2141
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": 0.0224,
+    "q25": -0.0662,
+    "q75": 0.1039,
+    "iqr": 0.1702,
+    "ci95_median_bootstrap": [
+     0.0117,
+     0.0314
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q8_llamafile_off_b2",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_llamafile_off_b2_a1.log",
+     "intervals": 79,
+     "foreign_cores_max": 0.105,
+     "foreign_cores_median": 0.055,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_llamafile_off_b3",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_llamafile_off_b3_a1.log",
+     "intervals": 78,
+     "foreign_cores_max": 0.12,
+     "foreign_cores_median": 0.04,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_llamafile_off_b6",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_llamafile_off_b6_a1.log",
+     "intervals": 76,
+     "foreign_cores_max": 0.12,
+     "foreign_cores_median": 0.04,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    },
+    {
+     "block": "knee_q8_llamafile_off_b7",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_llamafile_off_b7_a1.log",
+     "intervals": 79,
+     "foreign_cores_max": 0.105,
+     "foreign_cores_median": 0.045,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q8_ctrl_ub256": {
+   "flags": "-t 6 -ub 256",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 100 -t 6 -ub 256 --tag knee_q8_ctrl_ub256 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_ctrl_ub256"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_ctrl_ub256.jsonl"
+   ],
+   "raw_sha256": [
+    "17a8316672fe3d9639f5c843a4f85c05198770c08373ae4cd3129f59d2150d7b"
+   ],
+   "ms_verify_T1": {
+    "median": 54.8644,
+    "q25": 53.9553,
+    "q75": 57.2982,
+    "iqr": 3.343,
+    "ci95_median_bootstrap": [
+     54.6656,
+     55.067
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 112.2133,
+     "q25": 108.5335,
+     "q75": 118.7483,
+     "iqr": 10.2148,
+     "ci95_median_bootstrap": [
+      111.683,
+      112.6606
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 118.9085,
+     "q25": 115.3161,
+     "q75": 125.4072,
+     "iqr": 10.091,
+     "ci95_median_bootstrap": [
+      118.2283,
+      119.5714
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 106.5014,
+     "q25": 103.6138,
+     "q75": 112.8511,
+     "iqr": 9.2373,
+     "ci95_median_bootstrap": [
+      105.876,
+      106.9586
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 134.2218,
+     "q25": 130.5915,
+     "q75": 142.872,
+     "iqr": 12.2805,
+     "ci95_median_bootstrap": [
+      133.7445,
+      134.93
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 141.8061,
+     "q25": 137.9633,
+     "q75": 149.549,
+     "iqr": 11.5857,
+     "ci95_median_bootstrap": [
+      141.212,
+      142.5421
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 2.0388,
+     "q25": 1.988,
+     "q75": 2.1246,
+     "iqr": 0.1366,
+     "ci95_median_bootstrap": [
+      2.0328,
+      2.0503
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.1603,
+     "q25": 2.107,
+     "q75": 2.2592,
+     "iqr": 0.1522,
+     "ci95_median_bootstrap": [
+      2.1517,
+      2.1691
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 1.933,
+     "q25": 1.884,
+     "q75": 2.0085,
+     "iqr": 0.1245,
+     "ci95_median_bootstrap": [
+      1.9266,
+      1.9435
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.441,
+     "q25": 2.3797,
+     "q75": 2.5321,
+     "iqr": 0.1525,
+     "ci95_median_bootstrap": [
+      2.4307,
+      2.4528
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.5798,
+     "q25": 2.5259,
+     "q75": 2.6715,
+     "iqr": 0.1456,
+     "ci95_median_bootstrap": [
+      2.5713,
+      2.5897
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.1231,
+    "q25": 0.0803,
+    "q75": 0.1615,
+    "iqr": 0.0812,
+    "ci95_median_bootstrap": [
+     0.1191,
+     0.1267
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": -0.2308,
+    "q25": -0.2808,
+    "q75": -0.1853,
+    "iqr": 0.0955,
+    "ci95_median_bootstrap": [
+     -0.236,
+     -0.2249
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.5118,
+    "q25": 0.4545,
+    "q75": 0.572,
+    "iqr": 0.1175,
+    "ci95_median_bootstrap": [
+     0.5015,
+     0.5179
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.3473,
+    "q25": -0.425,
+    "q75": -0.2644,
+    "iqr": 0.1607,
+    "ci95_median_bootstrap": [
+     -0.3558,
+     -0.3319
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q8_ctrl_ub256",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_ctrl_ub256_a1.log",
+     "intervals": 238,
+     "foreign_cores_max": 0.175,
+     "foreign_cores_median": 0.055,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  },
+  "q8_ctrl_t8": {
+   "flags": "-t 8 -ub 512",
+   "command": [
+    "./proxy/llama_spec_trace.v11knee.bin -m models/qwen35-2b-mtp-q8_0.gguf --spec-type draft-mtp --spec-draft-n-max 8 --temp 0 -n 8 -c 4096 -b 4096 --no-repack --prompts datasets/p4_prompts.jsonl --dmax 7 --mode p4 --p4-tlist 1,6,7,8,9,10 --p4-reps 100 -t 8 -ub 512 --tag knee_q8_ctrl_t8 --out /workspace/strata-plus/traces/raw/v11/knee/knee_q8_ctrl_t8"
+   ],
+   "raw": [
+    "/workspace/strata-plus/traces/raw/v11/knee/knee_q8_ctrl_t8.jsonl"
+   ],
+   "raw_sha256": [
+    "106fcf7f274e19c55cd8545e3ecbc3ab8613471bb50d2136a163d4dae45b7ebe"
+   ],
+   "ms_verify_T1": {
+    "median": 43.7189,
+    "q25": 42.3744,
+    "q75": 45.7099,
+    "iqr": 3.3355,
+    "ci95_median_bootstrap": [
+     43.5334,
+     43.9649
+    ],
+    "n": 600
+   },
+   "ms_verify": {
+    "6": {
+     "median": 85.8474,
+     "q25": 83.6135,
+     "q75": 90.6714,
+     "iqr": 7.058,
+     "ci95_median_bootstrap": [
+      85.4153,
+      86.3758
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 90.968,
+     "q25": 88.6417,
+     "q75": 96.0336,
+     "iqr": 7.3919,
+     "ci95_median_bootstrap": [
+      90.4645,
+      91.4869
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 84.18,
+     "q25": 81.8269,
+     "q75": 89.4149,
+     "iqr": 7.5879,
+     "ci95_median_bootstrap": [
+      83.7012,
+      84.8159
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 103.4249,
+     "q25": 100.4199,
+     "q75": 111.1976,
+     "iqr": 10.7776,
+     "ci95_median_bootstrap": [
+      102.8084,
+      104.0145
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 109.1932,
+     "q25": 106.2999,
+     "q75": 116.19,
+     "iqr": 9.8901,
+     "ci95_median_bootstrap": [
+      108.7399,
+      109.8218
+     ],
+     "n": 600
+    }
+   },
+   "s": {
+    "6": {
+     "median": 1.9755,
+     "q25": 1.8945,
+     "q75": 2.0694,
+     "iqr": 0.1749,
+     "ci95_median_bootstrap": [
+      1.9655,
+      1.9888
+     ],
+     "n": 600
+    },
+    "7": {
+     "median": 2.1011,
+     "q25": 2.0142,
+     "q75": 2.1958,
+     "iqr": 0.1816,
+     "ci95_median_bootstrap": [
+      2.0887,
+      2.1138
+     ],
+     "n": 600
+    },
+    "8": {
+     "median": 1.943,
+     "q25": 1.8609,
+     "q75": 2.0344,
+     "iqr": 0.1736,
+     "ci95_median_bootstrap": [
+      1.9337,
+      1.9525
+     ],
+     "n": 600
+    },
+    "9": {
+     "median": 2.3799,
+     "q25": 2.2876,
+     "q75": 2.5171,
+     "iqr": 0.2295,
+     "ci95_median_bootstrap": [
+      2.3649,
+      2.4034
+     ],
+     "n": 600
+    },
+    "10": {
+     "median": 2.515,
+     "q25": 2.4173,
+     "q75": 2.648,
+     "iqr": 0.2307,
+     "ci95_median_bootstrap": [
+      2.5011,
+      2.5303
+     ],
+     "n": 600
+    }
+   },
+   "inc_s7_minus_s6": {
+    "median": 0.1182,
+    "q25": 0.0453,
+    "q75": 0.1958,
+    "iqr": 0.1505,
+    "ci95_median_bootstrap": [
+     0.106,
+     0.1322
+    ],
+    "n": 600
+   },
+   "inc_s8_minus_s7": {
+    "median": -0.1612,
+    "q25": -0.2384,
+    "q75": -0.0796,
+    "iqr": 0.1589,
+    "ci95_median_bootstrap": [
+     -0.1703,
+     -0.1524
+    ],
+    "n": 600
+   },
+   "inc_s9_minus_s8": {
+    "median": 0.4328,
+    "q25": 0.3475,
+    "q75": 0.5247,
+    "iqr": 0.1772,
+    "ci95_median_bootstrap": [
+     0.4187,
+     0.4419
+    ],
+    "n": 600
+   },
+   "inc87_minus_inc76": {
+    "median": -0.2639,
+    "q25": -0.411,
+    "q75": -0.1189,
+    "iqr": 0.2921,
+    "ci95_median_bootstrap": [
+     -0.2793,
+     -0.243
+    ],
+    "n": 600
+   },
+   "cpu_check": [
+    {
+     "block": "knee_q8_ctrl_t8",
+     "method": "proc_delta_2s",
+     "log": "/workspace/strata-plus/traces/raw/v11/knee/cpu_knee_q8_ctrl_t8_a1.log",
+     "intervals": 195,
+     "foreign_cores_max": 0.105,
+     "foreign_cores_median": 0.045,
+     "intervals_ge_0.5": 0,
+     "valid": true,
+     "criterion": "carico estraneo <0.5 core in ogni intervallo di 2 s, esclusa infrastruttura /opt/sand/sand-host/host (registrata a parte)"
+    }
+   ],
+   "all_blocks_valid": true
+  }
+ },
+ "invalid_blocks": [
+  {
+   "block": "q4km_main_b4",
+   "reason": "ps.log 1/23 snapshot con processo estraneo >20% CPU (python3 /tmp/jg/dryrun.py)"
+  },
+  {
+   "block": "q4km_main_b5",
+   "reason": "ps.log 10/23 snapshot (python3 holdout_v11.py, /tmp/jg/tune_v11_dry.py)"
+  },
+  {
+   "block": "q4km_llamafile_off_b7",
+   "reason": "ps.log 8/24 snapshot (python in /workspace/strata-policy/.venv, suffix_drafter_test_plain)"
+  },
+  {
+   "block": "q4km_main_b8",
+   "reason": "ps.log 5/23 snapshot (cc1plus, tests/test_arm_a_default_parity.py)"
+  },
+  {
+   "block": "q4km_ctrl_ub256",
+   "reason": "ps.log 15/75 snapshot (clang++-17, apt-get install ROCm, cc1plus)"
+  },
+  {
+   "block": "q4km_ctrl_t8",
+   "reason": "ps.log 18/33 snapshot (dpkg-deb, cc1plus, git index-pack); interrotto a meta'"
+  },
+  {
+   "block": "q4km_main_b4_a1",
+   "reason": "exit 0; 5 intervalli 2 s con carico estraneo >=0.5 core (max 1.229); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  },
+  {
+   "block": "q4km_main_b4_a2",
+   "reason": "exit 0; 13 intervalli 2 s con carico estraneo >=0.5 core (max 1.225); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  },
+  {
+   "block": "q4km_main_b4_a3",
+   "reason": "exit 0; 5 intervalli 2 s con carico estraneo >=0.5 core (max 1.222); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  },
+  {
+   "block": "q4km_main_b5_a1",
+   "reason": "exit 0; 6 intervalli 2 s con carico estraneo >=0.5 core (max 1.202); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  },
+  {
+   "block": "q4km_main_b5_a2",
+   "reason": "exit 0; 10 intervalli 2 s con carico estraneo >=0.5 core (max 1.327); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  },
+  {
+   "block": "q4km_main_b5_a3",
+   "reason": "exit 0; 6 intervalli 2 s con carico estraneo >=0.5 core (max 1.197); top: /exec-daemon/node --disable-warning=ExperimentalWarning /opt"
+  }
+ ],
+ "invalid_note": "blocchi contaminati da processi di altri agenti (apt ROCm, compilazioni, git fetch, script python): raw spostati in raw/v11/knee/invalid/, esclusi dalle statistiche e rifatti con run_knee_redo.sh (pre-check: carico estraneo <0.5 core per 30 s da delta /proc; blocco INVALID se un intervallo di 2 s ha carico estraneo >=0.5 core). I blocchi rifatti seguono temporalmente gli altri: l'interleaving ABBA originale e' parzialmente perso per q4km (b4,b5,b7,b8 rifatti dopo b1,b2,b3,b6).",
+ "on_vs_off": {
+  "q4km": {
+   "6": {
+    "median_on_minus_median_off": -0.0077,
+    "ci95_bootstrap": [
+     -0.0142,
+     -0.0018
+    ]
+   },
+   "7": {
+    "median_on_minus_median_off": -0.0094,
+    "ci95_bootstrap": [
+     -0.0172,
+     -0.0007
+    ]
+   },
+   "8": {
+    "median_on_minus_median_off": -0.0115,
+    "ci95_bootstrap": [
+     -0.0226,
+     0.0001
+    ]
+   },
+   "9": {
+    "median_on_minus_median_off": 0.0018,
+    "ci95_bootstrap": [
+     -0.0089,
+     0.0115
+    ]
+   },
+   "10": {
+    "median_on_minus_median_off": -0.0006,
+    "ci95_bootstrap": [
+     -0.0119,
+     0.0108
+    ]
+   }
+  },
+  "q8": {
+   "6": {
+    "median_on_minus_median_off": -0.045,
+    "ci95_bootstrap": [
+     -0.0571,
+     -0.0373
+    ]
+   },
+   "7": {
+    "median_on_minus_median_off": -0.1284,
+    "ci95_bootstrap": [
+     -0.1406,
+     -0.121
+    ]
+   },
+   "8": {
+    "median_on_minus_median_off": -0.6445,
+    "ci95_bootstrap": [
+     -0.6562,
+     -0.6334
+    ]
+   },
+   "9": {
+    "median_on_minus_median_off": -0.2967,
+    "ci95_bootstrap": [
+     -0.3094,
+     -0.2875
+    ]
+   },
+   "10": {
+    "median_on_minus_median_off": -0.3687,
+    "ci95_bootstrap": [
+     -0.3881,
+     -0.3519
+    ]
+   }
+  }
+ }
+}

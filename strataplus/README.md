@@ -1,0 +1,86 @@
+# Strata+ — backup del lavoro di ricerca (speculative decoding)
+
+Questa cartella è un **backup** del lavoro del team Strata+ (Lead, Scout, Bench, Policy) sullo
+speculative decoding di Strata per Qwen3.8-Flash-Next: piani, analisi, codice nuovo, patch, test,
+benchmark, trace e log. **Non è codice da mergiare**: il branch `strataplus-research` parte da
+upstream `Niko1221/Strata@7dd5cf18e68c639a8773e096c5c79f971ea2a9f5` e aggiunge solo `strataplus/`.
+Il resto del repo è identico a 7dd5cf1.
+
+## Struttura
+
+| Cartella | Contenuto |
+|---|---|
+| `plan/` | `piano.md`, `log_format.md`, `PLAN_PAGE.md` (export della Page del piano) |
+| `policy/strata-policy/` | lavoro Policy: simulatori, replay, parametri congelati, test, note |
+| `scout/` | analisi Scout (`strata-plus/`), workspace scout (senza i clone upstream), riferimenti (`refs/`) |
+| `bench/` | harness di benchmark (`strata-bench/`), trace (`traces/`), esperimento E1 (`e1/`) |
+| `logs/` | log dei benchmark, log `cpu_busy_*`, file di lavoro recuperati da `/tmp` (`tmp_scratch/`) |
+| `patches/` | tutte le patch `.diff`/`.md`, serie `format-patch` e `git bundle` per branch |
+| `MANIFEST.sha256` | sha256 di ogni file del backup |
+| `SKIPPED.md` | file esclusi: >50 MB (con path, dimensione, sha256), binari ELF, file segnalati dallo scan segreti |
+| `SECRET_SCAN_ALLOWLIST.txt` | falsi positivi dello scan segreti verificati a mano (sono hash sha256 di file, non chiavi) |
+| `sync.sh` | script di sincronizzazione idempotente |
+
+## Ripristinare i branch delle patch
+
+I branch locali `strataplus-policy-local` (P1–P6, head `e467f6e`) e `strataplus-pt12-measure`
+(P-T12 measure v1–v3, head `e441f3a`) **non sono pubblicati come branch**: sono salvati in
+`patches/branches/<branch>/` come `git bundle` (thin, prerequisito 7dd5cf1) e come serie `format-patch`
+(`7dd5cf1..head`). `LOG.txt` e `HEAD` riportano commit e head attesi.
+
+Da un clone di questo repo (che contiene già 7dd5cf1):
+
+```bash
+# metodo 1: bundle
+git fetch strataplus/patches/branches/strataplus-policy-local/strataplus-policy-local.bundle \
+    strataplus-policy-local:strataplus-policy-local
+git fetch strataplus/patches/branches/strataplus-pt12-measure/strataplus-pt12-measure.bundle \
+    strataplus-pt12-measure:strataplus-pt12-measure
+
+# metodo 2: git am (copiare prima le patch fuori dal working tree, perché il checkout le rimuove)
+cp -r strataplus/patches/branches /tmp/sp-branches
+git checkout -b strataplus-policy-local 7dd5cf18e68c639a8773e096c5c79f971ea2a9f5
+git am /tmp/sp-branches/strataplus-policy-local/format-patch/*.patch
+```
+
+⚠️ **Non mergiare insieme** `strataplus-policy-local` (P6, engine hook) e `strataplus-pt12-measure`
+(P-T12): entrambi modificano `generate.cpp` e vanno in conflitto. P-T12 è una patch di sola misura,
+non per produzione. Vedi anche `patches/strata-policy/STATUS_P6_NON_ACCENDERE.md`.
+
+`patches/llama.cpp/worktree_uncommitted.diff` contiene le modifiche non committate al clone llama.cpp
+(`common/speculative.cpp/.h`, base `d327bf1`).
+
+## Dataset e licenze
+
+| Dataset | Origine | Licenza | Stato |
+|---|---|---|---|
+| HumanEval | openai/openai_humaneval @7dce605 | MIT | incluso |
+| MT-Bench questions | lm-sys/FastChat @587d5cf `question.jsonl` | Apache-2.0 | incluso (anche nei mix proxy_30, check_v12, holdout, sessions_all, mtbench2) |
+| edit_np | edit_np @<revisione non pubblicata> | MIT | incluso |
+| Sessioni agent (agent_v12*) | repo Strata | MIT | incluso |
+| Spec-Bench `specbench.jsonl` | hemingkx/Spec-Bench | repo Apache-2.0, contenuto da fonti con licenze miste | **escluso** |
+| E1 `policy/data` (dolly, mbpp, tokenizer Qwen) | Hugging Face | CC-BY-SA-3.0 / CC-BY-4.0 / altro | **escluso** (riscaricabile; restano solo id e numeri in `e1_per_request.csv`) |
+
+## Cosa non è incluso
+
+- Pesi dei modelli (`*.gguf`, `*.safetensors`, `strata-bench/models`, circa 6,2 GB) e il frammento di header `q4km_head.bin`
+- Output di build e binari (`build*/`, `*.o`, `*.so`, eseguibili ELF; vedi `SKIPPED.md`), virtualenv, wheel, header ROCm (`rocm-hdr`)
+- Clone completi upstream (Strata, llama.cpp, colibri, HIP-CPU, arctic, sglang, vllm) e copie di documenti upstream
+- File >50 MB (elencati in `SKIPPED.md`) e file segnalati dallo scan segreti e non verificati
+
+## Sincronizzazione
+
+```bash
+GITHUB_TOKEN=... bash /workspace/strataplus-backup/sync.sh     # NOPUSH=1 per solo commit locale
+```
+
+Lo script è idempotente:
+- usa rsync con gli stessi exclude e il limite di 50 MB
+- rigenera bundle e format-patch solo se cambia la head
+- esegue lo scan segreti (regex + gitleaks)
+- rigenera `MANIFEST.sha256`
+- committa solo se ci sono cambiamenti, con timestamp CET
+- fa push **solo** del branch `strataplus-research` del fork `melchisedekko/Strata`
+
+Il token viene letto da `GITHUB_TOKEN` solo a runtime e passato tramite header HTTP: non viene mai scritto in file, config o URL.
+**Non eseguire lo script con `bash -x`**, perché la traccia stamperebbe il token.

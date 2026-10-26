@@ -1,0 +1,83 @@
+{
+ "name": "run_breakeven_dsecond",
+ "written_at_CET": "2026-10-25 08:06:54",
+ "status": "scritto PRIMA di aprire tracce e calcolare (d''). Letti prima solo: codice generate.cpp @7dd5cf18 (L3208-3219, L14890-14928), setup.py L9415-9422, sha256 dei file di input. Nessun numero di (d'') esiste.",
+ "lead_conventions_0806": {
+  "T": "T = righe della verify: window[0]=x piu' T-1 draft (generate.cpp L14922-14928); il lookup propone al massimo S-1 token (sfx.propose(S-1), generate.cpp L14897). La patch T=12 righe da' lookup al massimo 11 token.",
+  "citation_fix": "spec 4 -> 6 con lookup (suffix on): generate.cpp L3208-3211 (mtp_max_t=spec, spec=min(spec+2,8)); setup.py L9420 contiene solo il default '--spec 4 --spec-min-p 0.5'. Nel report precedente (breakeven_dprime) l'attribuzione e' gia' a generate.cpp; la citazione setup.py L9420 di run_lookup_rule.json riguarda il solo default.",
+  "no_s12_s4": "non si usa s(12)/s(4)"
+ },
+ "inputs_sha256": {
+  "traces_v1.1/tf_d7_p30.jsonl (tune)": "87efe507324b2a79b89c21a6736f1478094bf53385d9471694dc71b291d9abfa",
+  "traces_v1.1/holdout_code_tf_d7.jsonl": "a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603",
+  "traces_v1.1/holdout_chat_tf_d7.jsonl": "b5380c42b9155571054958f00cb501ca7a309feaf8e9cc058f54bd00692b4588",
+  "traces_v1.1/holdout_edit_tf_d7.jsonl": "d9a48386945b1131766cb8b38a1572bc2d3992d8b5bd8291ecbe85c79f3e94ef",
+  "replay/breakeven_dprime.py": "71e8823da0741f382886f20f72fb42aad6fc2e44c2f6ce9077564aa8b02ee230",
+  "replay/run_breakeven_dprime.json": "beacb25e7aebf01e83c790cb8aecb268eba82ab5ff2fe181dee62fdc60fd7e24",
+  "results/v2/breakeven_dprime/breakeven_dprime.json": "1da55ce52c8d17e195b03e3aa693d3d3bad228c9a6dd34ca0ac0fb78c9d37c55",
+  "replay/lookup_rule_al_addendum.py (funzioni verbatim)": "b402c026c5a1a5627590fa209e54b5f324ed8552e94b38aeca1ea0b3408f58d9",
+  "strata_sim/native.py": "6bc1af8e4987ce0384a3eb42214471fd24859251ff7c5ddb54da94ccd049a758",
+  "strata_sim/postprocess.py": "02811133c6bf06e30c011dea5c5ec2b8972d3d781e2ae726d8948a865bd7be40",
+  "native/libstrata_spec_capi.so": "8fb27b0d1ca6bfeb58d2e9a1a45d28cc779f1feb7ef1662b2eb6d524608b055b"
+ },
+ "arms": {
+  "a": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 5,
+   "T_rows": 6,
+   "rows_mtp": 4,
+   "rows_lookup_max": 6,
+   "engine": "--spec 4 (setup.py L9420) -> spec 6 con suffix on (generate.cpp L3208-3211)"
+  },
+  "a_prime": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 7,
+   "T_rows": 8,
+   "rows_mtp": 4,
+   "rows_lookup_max": 8,
+   "engine": "--spec 8 --mtp-max-t 4"
+  },
+  "d_second": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 11,
+   "T_rows": 12,
+   "rows_mtp": 4,
+   "rows_lookup_max": 12,
+   "engine": "patch T=12 righe (kVerifyMaxT oggi 8)"
+  },
+  "d_prime_check_only": {
+   "mtp_max_drafts": 3,
+   "lookup_max_tokens": 12,
+   "note": "solo controllo: deve riprodurre (d') di breakeven_dprime.json; riga descrittiva d''-d'"
+  }
+ },
+ "implementation_fixed_before_numbers": {
+  "functions": "prompts, walk_oracle, walk_rule, rho_star, fmt_rho verbatim da lookup_rule_al_addendum.py (b402c026), con assert di identita' testuale; ciclo e bootstrap identici a breakeven_dprime.py (stesse repliche: B=2000 seed 0, stesso ordine code,chat,edit x tune,holdout)",
+  "lookup": "NativeSuffixDrafter(3,64,1<<15)+append(prompt)+scan(y,16,want_tokens); candidato min(k16, L_col)",
+  "series": {
+   "oracolo": "walk_oracle",
+   "regola con gate": "walk_rule gate sbuf[0]==drafts[0], ramo altrimenti MTP min_p 0.5 con S_mtp=4"
+  },
+  "cost_model": "PARAMETRICO s(T)=1+rho(T-1), T righe effettive del round; draft a costo zero",
+  "metric": "M(rho)=sum(a+1)/sum(s(T_round)) per dominio e split",
+  "rho_star": "griglia [0,2] passo 0.0005 + bisezione 40; '>2' / 'mai' come prima; forma chiusa di controllo",
+  "ratios": {
+   "d_second_vs_a_prime": "s(12)/s(8)=(1+11rho*)/(1+7rho*)",
+   "d_second_vs_a": "s(12)/s(6)=(1+11rho*)/(1+5rho*)"
+  },
+  "ci95": "bootstrap percentile; rapporto IC95 = rapporto agli estremi di rho* (come nel report precedente)",
+  "ratio_max_by_construction": {
+   "s12/s8": "11/7=1.5714 (rho->inf); 23/15=1.5333 a rho=2",
+   "s12/s6": "11/5=2.2; 23/11=2.0909 a rho=2"
+  },
+  "go_threshold_rule_lead": "soglia_go = 0.94 x rapporto di pareggio s(12)/s(8) sul TUNE contro (a') con regola con gate, per code e per edit (decisionale); lettura secondaria: 0.94 x rapporto di pareggio oracolo (tune, vs a'). Se il pareggio non esiste ('mai') la soglia non e' definita e si riporta cosi'. Holdout: solo descrittivo, nessuna soglia.",
+  "checks": [
+   "AL (a),(a') oracolo e gate == breakeven_dprime.json (esatti, anche IC95)",
+   "con dmax 12 lo script riproduce (d') di breakeven_dprime.json: AL, IC95, rho*, rapporti s12/s8 e s12/s6 (esatti)"
+  ],
+  "descriptive_row": "differenza (d'')-(d'): AL, R, X e rho* per dominio, split e serie",
+  "label": "proxy CPU, AL, parametrico",
+  "out": "results/v2/breakeven_dsecond/{breakeven_dsecond.json, REPORT.md}",
+  "exec": "nice -n 19, OMP/OPENBLAS/MKL_NUM_THREADS=1, finestra CPU in /workspace/strata-plus/cpu_busy_policy.log"
+ }
+}

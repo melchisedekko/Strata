@@ -1,0 +1,117 @@
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index f96b983..13ad3ad 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -1094,6 +1094,31 @@ void extra_sources_reset() {
+ void extra_sources_append(const int32_t* t, size_t n) {
+     for (auto& src : strata::spec::extra_draft_sources()) src->append(t, n);
+ }
++// Strata+ P1: the strataplus.v1 JSONL trace (/workspace/strata-plus/log_format.md), STRATA_PLUS_TRACE=<path>: per request
++// a "request" line, a "round" line per verify window, then a "request_end" line with the committed output (a live
++// engine does not know the output when the request starts: divergence D13 of log_format.md).  Appends; one writer.
++FILE* plus_trace() {
++    static FILE* f = [] { const char* p = std::getenv("STRATA_PLUS_TRACE"); return p != nullptr && *p != '\0' ? std::fopen(p, "a") : nullptr; }();
++    return f;
++}
++void plus_ints(FILE* f, const int32_t* v, int n) {
++    std::fputc('[', f);
++    for (int i = 0; i < n; ++i) std::fprintf(f, i ? ",%d" : "%d", (int) v[i]);
++    std::fputc(']', f);
++}
++void plus_floats(FILE* f, const float* v, int n) {
++    std::fputc('[', f);
++    for (int i = 0; i < n; ++i) std::fprintf(f, i ? ",%.5g" : "%.5g", (double) v[i]);
++    std::fputc(']', f);
++}
++// the drafts of `prop` (k of them) that equal the committed outv[0..a]; *censored when all a+1 known ones matched
++int plus_lcp(const int32_t* prop, int k, const int32_t* outv, int a, bool* censored) {
++    int n = 0;
++    while (n < k && n <= a && prop[n] == outv[n]) ++n;
++    *censored = n == a + 1 && n < k;
++    return n;
++}
++
+ // Strata+ P4: the extra sources (a registered persistent pool) see the context whenever one is registered, not only
+ // with --lookup-chain - the pool is also offered to the main lookup arm (see the serve loop's lookup proposal)
+ bool extra_sources_on(int lookup_chain) { return lookup_chain > 0 || !strata::spec::extra_draft_sources().empty(); }
+@@ -14192,6 +14217,16 @@ int main(int argc, char** argv) {
+             }
+             bool first_window = true;
+             int64_t produced_n = 0, sfx_windows = 0, sfx_drafts = 0, sfx_ok = 0;
++            static int64_t plus_req = 0;   // Strata+ P1
++            const int64_t plus_id = plus_req++;
++            int64_t plus_r = 0;
++            if (FILE* tf = plus_trace()) {
++                std::fprintf(tf, "{\"type\":\"request\",\"schema\":\"strataplus.v1\",\"engine\":\"strata\",\"data_kind\":\"live\","
++                                 "\"req_id\":\"%lld\",\"prompt_tokens\":%lld,\"dmax\":%d,\"prompt_ids\":[",
++                             (long long) plus_id, (long long) ids.size(), use_mtp ? S_mtp - 1 : 0);
++                for (size_t i = 0; i < ids.size(); ++i) std::fprintf(tf, i ? ",%lld" : "%lld", (long long) ids[i]);
++                std::fputs("]}\n", tf);
++            }
+             int64_t chain_windows = 0, chain_drafts = 0, chain_ok = 0;   // --lookup-chain's own counts
+             int64_t pool_windows = 0;   // Strata+ P4: lookup proposals taken from the pool (not the request's text)
+             int64_t t2_rej[8] = {}, t2_hit[8] = {};   // STRATA_MTP_TOP2: rejections inside the MTP drafts by depth, runner-up hits
+@@ -14904,6 +14939,7 @@ int main(int argc, char** argv) {
+                 // when its expected tokens per ms, from the measured acceptance and window costs, beat the MTP window's
+                 bool from_sfx = false;
+                 int sfx_match = 0;
++                int lk_raw = 0;   // Strata+ P1: the lookup proposal before the agreement gate
+                 int cf_k = 0;   // Strata+ P3: the gated lookup proposal not taken (scored after the round)
+                 std::array<int32_t, 8> cf_mtp{};   // Strata+ P3: the MTP drafts of this round (drafts[] is redrafted before observe)
+                 for (int i = 0; i < std::min(S_mtp - 1, 8); ++i) cf_mtp[(size_t) i] = drafts[(size_t) i];
+@@ -14919,6 +14955,7 @@ int main(int argc, char** argv) {
+                                                                &sfx_match, &psrc);
+                         if (psrc > 0) ++pool_windows;
+                     }
++                    lk_raw = k;   // Strata+ P1
+                     if (k > 0 && (!use_mtp || sbuf[0] == drafts[0])) {
+                         cf_k = k;
+                         const strata::spec::DraftPolicy::Pick pk = policy.choose(T, k, sfx_match);
+@@ -15228,11 +15265,47 @@ int main(int argc, char** argv) {
+                 else if (timed_round && !eos)   // a chained window: its MTP part, its chain, its cost
+                     policy.observe_chain(T_mtp, chain_n, a, cm,
+                                          std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
++                if (FILE* tf = plus_trace(); tf != nullptr && timed_round) {   // Strata+ P1: one round line
++                    const int nm = use_mtp ? std::clamp(T_plan_mtp - 1, 0, 8) : 0;
++                    bool cens_m = false, cens_l = false;
++                    const int acc_m = plus_lcp(cf_mtp.data(), nm, outv.data(), a, &cens_m);
++                    const int acc_l = plus_lcp(sbuf.data(), lk_raw, outv.data(), a, &cens_l);
++                    const char* src = chain_n > 0 ? "chain" : from_sfx ? "lookup" : (T > 1 ? "mtp" : "none");
++                    std::fprintf(tf, "{\"type\":\"round\",\"req_id\":\"%lld\",\"r\":%lld,\"pos\":%lld,\"ctx_len\":%lld,"
++                                     "\"source\":\"%s\",\"k_proposed\":%d,\"T\":%d,\"proposal\":",
++                                 (long long) plus_id, (long long) plus_r, (long long) p, (long long) p, src, T - 1, T);
++                    if (from_sfx) plus_ints(tf, sbuf.data(), T - 1);
++                    else { std::vector<int32_t> pr(cf_mtp.begin(), cf_mtp.begin() + std::min(T_mtp - 1, 8));
++                           pr.insert(pr.end(), cbuf.begin(), cbuf.begin() + chain_n); plus_ints(tf, pr.data(), (int) pr.size()); }
++                    std::fputs(",\"cand\":{\"mtp\":{\"tokens\":", tf);
++                    plus_ints(tf, cf_mtp.data(), nm);
++                    std::fputs(",\"probs\":", tf);
++                    plus_floats(tf, dwin_s.data(), nm);
++                    std::fputs("},\"lookup\":{\"tokens\":", tf);
++                    plus_ints(tf, sbuf.data(), lk_raw);
++                    std::fprintf(tf, ",\"match\":%d}", lk_raw > 0 ? sfx_match : 0);
++                    if (chain_n > 0) { std::fputs(",\"chain\":{\"after_mtp\":", tf); plus_ints(tf, cbuf.data(), chain_n); std::fprintf(tf, ",\"match\":%d}", cm); }
++                    std::fprintf(tf, "},\"accepted\":%d,\"committed\":%d,\"ms_measured\":%.4f,\"cost_est\":null,"
++                                     "\"policy\":\"draft_policy@7dd5cf18%s%s\",\"acc\":{\"mtp\":%d,\"lookup\":%d},"
++                                     "\"censored\":{\"mtp\":%s,\"lookup\":%s}}\n",
++                                 a, a + 1, std::chrono::duration<double, std::milli>(Clock::now() - round0).count(),
++                                 spec_cost ? "+cost" : "", cf_feedback ? "+P3" : "", acc_m, acc_l,
++                                 cens_m ? "true" : "false", cens_l ? "true" : "false");
++                    ++plus_r;
++                }
+                 if (eos) { finish = "stop"; break; }
+                 if (stop_req.load()) { finish = "cancel"; break; }
+                 x = outv[(size_t) a];
+                 p += a + 1;
+             }
++            if (FILE* tf = plus_trace()) {   // Strata+ P1: the committed output (consumed = prompt read + committed tokens)
++                const size_t n0 = std::min(consumed.size(), ids.size());
++                std::fprintf(tf, "{\"type\":\"request_end\",\"req_id\":\"%lld\",\"output_tokens\":%lld,\"output_ids\":",
++                             (long long) plus_id, (long long) (consumed.size() - n0));
++                plus_ints(tf, consumed.data() + n0, (int) (consumed.size() - n0));
++                std::fputs("}\n", tf);
++                std::fflush(tf);
++            }
+             const double decode_ms = std::chrono::duration<double, std::milli>(Clock::now() - d0).count();
+             // the last commit (set_commit_async): the session is complete before anything reads or copies it
+             if (!ver.wait_commit(err)) {

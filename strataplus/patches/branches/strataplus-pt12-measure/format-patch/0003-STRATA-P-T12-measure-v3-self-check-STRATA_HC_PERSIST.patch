@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Bolla (coordinator)" <bolla@users.noreply.github.com>
+Date: Sun, 25 Oct 2026 08:51:22 +0100
+Subject: [PATCH 3/3] STRATA+ P-T12 measure v3: self-check STRATA_HC_PERSIST a
+ T <= 8 (C7), parity s2 grouped con max_group = 8
+
+Patch di sola misura, sopra d6d4358.
+- fused_gr: il self-check del persist cicla fino a kGrBaseMaxT = 8 (kernel_t copre 1..8), come 7dd5cf1
+- s2_expert_grouped_parity: caso 4b, stessi gruppi (<= 8 voci) con max_group = 8: vecchio vs nuovo bitwise, riferimento host, e bitwise contro max_group = 0 (non eseguito)
+---
+ src/kernels/cuda/fused_gr.cu             |  2 +-
+ src/kernels/s2_expert_grouped_parity.cpp | 21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/src/kernels/cuda/fused_gr.cu b/src/kernels/cuda/fused_gr.cu
+index d1561c4..25cb1bd 100644
+--- a/src/kernels/cuda/fused_gr.cu
++++ b/src/kernels/cuda/fused_gr.cu
+@@ -3019,7 +3019,7 @@ void fused_gr_persist_init() {
+         return finite && rel < 1e-4 ? 0 : 2;
+     };
+     int max_t = 0;
+-    for (int T = 1; T <= kFusedGrMaxT && ok; ++T) {
++    for (int T = 1; T <= kGrBaseMaxT && ok; ++T) {   // STRATA+ P-T12 measure v3 (C7): kernel_t covers 1..8 (nullptr above), as 7dd5cf1's 1..kFusedGrMaxT = 8
+         const int r = check(T);
+         if (r == 1) ++timeouts; else if (r == 2) { bad_t = T; ok = false; }
+         if (r != 0) break;
+diff --git a/src/kernels/s2_expert_grouped_parity.cpp b/src/kernels/s2_expert_grouped_parity.cpp
+index 901681f..049fc01 100644
+--- a/src/kernels/s2_expert_grouped_parity.cpp
++++ b/src/kernels/s2_expert_grouped_parity.cpp
+@@ -12,6 +12,7 @@
+ //   3. `moe_hit_grouped_s2_multi`    verify window: each hit reads its own token's activation row
+ //   4. `moe_grouped_s2`              host-built groups of 1..8 entries, one of them a mapped HOST blob (the PCIe
+ //                                    share), and more group capacity than groups
++//      4b. STRATA+ P-T12 measure v3: the same with max_group = 8 (the GM = 8 instances), also vs max_group = 0
+ //   5. `moe_group_resident` + `moe_grouped_s2`   the MTP layer's shape, with and without fp32 scales
+ //   6. an activation row that is only 2-byte aligned: the new path must fall back to the previous kernels
+ //   7. a slot stride that is not a multiple of 8 (BLOB + 4), and 8. an arena 4 bytes past an aligned address: the
+@@ -411,6 +412,7 @@ void check_all() {
+         up(d_etok, etok);
+         const Scratch s = make_scratch(n);
+         float* d_out = dalloc<float>((size_t) n * H);
++        Run r_g0[2];   // STRATA+ P-T12 measure v3: the max_group = 0 (GMAX) runs, for the <8> case below
+         for (int scaled = 1; scaled >= 0; --scaled) {
+             Run r;
+             const std::string name = std::string("moe_grouped_s2 (") + std::to_string(n_groups) + " groups" +
+@@ -420,6 +422,25 @@ void check_all() {
+                                   s.p, d_out, nullptr);
+             }, &r);
+             reference(name.c_str(), r, s, ent, x, scaled ? &xs : nullptr);
++            r_g0[scaled] = r;   // STRATA+ P-T12 measure v3
++        }
++        // ---- 4b. STRATA+ P-T12 measure v3: the same groups (every group <= 8 entries, T = 8) with max_group = 8, so
++        // the GM = 8 instances run (those of 7dd5cf1's GMAX = 8): previous vs new kernels bitwise (twice), the same
++        // host reference, and bitwise against the max_group = 0 (GMAX = 12) run of the same inputs
++        for (int scaled = 1; scaled >= 0; --scaled) {
++            Run r;
++            const std::string name = std::string("moe_grouped_s2 max_group 8 (") + std::to_string(n_groups) +
++                                     " groups" + (scaled ? ", fp32 scales)" : ", fp16 d)");
++            twice(name.c_str(), d_out, (size_t) n * H, s, [&] {
++                k::moe_grouped_s2(d_gptr, d_gstart, d_ng, d_edst, d_etok, cap_groups, n, d_x, scaled ? d_xs : nullptr,
++                                  s.p, d_out, nullptr, /*max_group=*/8);
++            }, &r);
++            reference(name.c_str(), r, s, ent, x, scaled ? &xs : nullptr);
++            const bool same = r.out.size() == r_g0[scaled].out.size() && r.scratch.size() == r_g0[scaled].scratch.size() &&
++                              std::memcmp(r.out.data(), r_g0[scaled].out.data(), r.out.size() * 4) == 0 &&
++                              std::memcmp(r.scratch.data(), r_g0[scaled].scratch.data(), r.scratch.size()) == 0;
++            std::printf("  %-44s %s\n", (name + " vs max_group 0").c_str(), same ? "bitwise identical" : "DIFFERS");
++            if (!same) ++g_fail;
+         }
+         ck(cudaFreeHost(h_host), "free host blob");
+     }
+-- 
+2.47.3
+

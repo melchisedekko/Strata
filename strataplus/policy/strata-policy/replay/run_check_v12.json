@@ -1,0 +1,75 @@
+{
+ "run": "check_v12 confermativo: STRATA_SPEC_COST=1 vs default installato (min_p 0,5)",
+ "created_cet": "2026-10-25 06:44:28 CET",
+ "written_before_opening_traces": true,
+ "inputs": {
+  "check_v12_manifest": {
+   "path": "/workspace/strata-plus/traces/check_v12/MANIFEST.sha256",
+   "sha256": "22073b2a427c0c4207d1faa3a1125b431a6e949cef99d102d4408cd9034fbf09",
+   "files": 10,
+   "all_10_entries_verified": true
+  },
+  "check_v12_marker": {
+   "path": "/workspace/strata-plus/traces/check_v12/CHECK_V12_READY",
+   "sha256": "80f257131555847dfc7cd65e17dceda6320ea1c1d2fcc77d8c8e23b7fcbec65a"
+  },
+  "trace_used": {
+   "path": "/workspace/strata-plus/traces/check_v12/check_v12_tf_d7.jsonl",
+   "sha256_from_manifest": "0fe4899604b46ba1f42a855a6c7db69c26e7633c4faf070f432fba868b0991e4"
+  },
+  "frozen_script": {
+   "path": "replay/holdout_v11_speccost_vs_default.py",
+   "sha256": "6809946d6cba46296ba819b047b2e8fae08c307ff38392c6e4c1e9f2a27b1f48",
+   "modified": false
+  },
+  "wrapper": {
+   "path": "replay/run_check_v12_wrapper.py",
+   "sha256": "c1d47afa9b1c661c50bdaefa8add59069d29aa2bd4cdbcb276492ffe824cadc8",
+   "what": "sostituisce strata_sim.postprocess.load_tf con il caricamento di check_v12_tf_d7.jsonl filtrato per dominio, poi esegue lo script congelato con runpy; prima un gate di schema solo sui metadati (stop se diverso da v1.1 o se mancano draft_p_min=0.0, n_max, n_min)"
+  },
+  "frozen_params_v3": {
+   "path": "replay/frozen_params_v3.json",
+   "sha256": "37bf1996217dd4ee697e753b9ef31082c49a9904f0fe393d0c5d4968cf698e9c"
+  },
+  "cost_V1": {
+   "path": "/workspace/strata-plus/traces/cost_p4_cpu.json",
+   "sha256": "e51712c64b52c0ff7159dcf3e47ac100f29ba9c4f7342360a85e81c42bf8c34c"
+  },
+  "cost_V2": {
+   "path": "replay/cost_derived/cost_p4_cpu_099ceda_s8lin.json",
+   "sha256": "1f691a169e0517273f36847f2b39dd6d917317608b892b16a553d888c1ff0944"
+  }
+ },
+ "method": {
+  "default_installed": "min_p=0.5 (setup.py L9420): draft = min(3, 1+run), T = min(4, 1+run), run = numero di mtp_p iniziali >= 0.5 (mtp.cpp L1689, generate.cpp L14885-14887); lookup come StrataCurrent",
+  "spec_cost": "STRATA_SPEC_COST=1: chain_rule (keep_draft) al posto del test min_p (mtp.cpp L1689), T = clamp(chain_rows,1,S_mtp) (generate.cpp L14883-14884); costo fedele al motore = draft lanciati (kd = passi della catena)",
+  "cost_model": "sim2 Profile additivo s[T-1] + rho_mtp*d + rho_lu*klu; controlli: griglia P4 cost_T_d[T,d] (V1) e rho=0.26",
+  "band": [
+   0.059,
+   0.0791,
+   0.0992,
+   0.1193,
+   0.1394
+  ],
+  "profiles": [
+   "P1",
+   "P2",
+   "P4"
+  ],
+  "cells_per_domain": 15,
+  "domains": [
+   "code",
+   "chat",
+   "edit"
+  ],
+  "bootstrap": "sim2.boot_ratio B=2000 seed=0, cluster = session_id (o req_id), Δ = tps(SPEC_COST)/tps(default installato) - 1",
+  "cell_class": "W = IC95 hi < 0; B = IC95 lo > 0",
+  "median_cell": "per dominio, l'ottava delle 15 celle di banda ordinate per stima puntuale di Δ",
+  "rule_applied_on": "cost V1, banda (V2 riportato come sensibilità)"
+ },
+ "rule_lead_verbatim": "STRATA_SPEC_COST=1 è raccomandabile contro il default installato solo se ci sono 0 celle W in tutti e tre i domini e almeno un dominio ha l'IC95 della cella mediana sopra 0; se manca una delle due condizioni il verdetto è neutro. In entrambi i casi l'A/B su AMD si fa comunque; il verdetto decide solo quale configurazione proponiamo come default per quella prova.",
+ "notes": [
+  "Lo script congelato registra nel suo JSON holdout_files_sha256 dei file v1.1 (percorsi scritti nel codice): non sono i dati usati; i dati usati sono check_v12_tf_d7.jsonl (sha256 sopra).",
+  "tok/s STIMATI; mtp_p dal proxy llama.cpp qwen35-2b (label 'proxy CPU, non AMD')."
+ ]
+}
