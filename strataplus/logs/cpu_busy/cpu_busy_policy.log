@@ -93,3 +93,4 @@
 2026-10-26 22:40:49 | 2026-10-26 22:40:53 | policy-local serve-trace v1 syntax HIP: b24+trace rc=0 (131 warn), v2+trace rc=0 (131 warn), 7dd5cf1+trace, 7dd5cf1+HFCv2+trace (vedi logs/st_syn_*.log)
 2026-10-26 22:40:59 | 2026-10-26 22:41:32 | policy-local serve-trace v1 host build strata_spec+tests (b24+trace, v2+trace; 2 processi -j1, nice 19)
 2026-10-26 22:41:42 | serve-trace v1 host build rc: b24+trace=0, v2+trace=0; ctest 4/4 entrambi (serve_trace, suffix_drafter, controller, draft_policy)
+2026-10-26 22:42:27 | 2026-10-26 22:42:31 | policy-local serve-trace v1 syntax HIP: H1v2+trace, b24+HFCv2+trace (2 processi, nice 19); prima 7dd5cf1+trace rc=0, 7dd5cf1+HFCv2+trace rc=0 (131 warn)

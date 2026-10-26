@@ -218,8 +218,8 @@ f49d4b1d4f79e7f79028b01660c4ab25fab0c5a34dd530910bd1b03c6f36fbc0  ./bench/traces
 6daba30c1ce9c8a491066dba39cf3980482d6e39f2e9217d55b1595d6c95caf0  ./bench/traces/p4_knee_T8.json
 5c1ab1d77a623f89c36f37c5035ca759f6c9b845becc4be45fc77a91883b7c7a  ./bench/traces/p4_knee_T8.json.sha256
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12/agent_v12_build_nollamafile.err
-a0b20bb36d64e7034bcc58b498a2ab76d247c005f9e1e1182064b06db8c1ede0  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.err
-1e18a02d32f8b04ba0346c175a4db6129a9a89b19b46ceb4f773f17e6ace1a91  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.jsonl
+46862231d6507b3b0e34b2c62fd5bb8ce3f3564f011dbd52b408bf1f7a61908a  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.err
+e9da7dcd060f63cd6d5230842f01ca1806deb20c78f00f005235f23c7c6d8388  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.jsonl
 e65fe60b404ff23a65f279ffbc1ed0925afddd508e9f210e6bf542e3d7e41ace  ./bench/traces/raw/agent_v12/agent_v12_live_mtp_k3.err
 cfb62633bfb3839d0394c3dce523e01844e0586cac6b09a9df80bc48be4763cc  ./bench/traces/raw/agent_v12/agent_v12_live_mtp_k3.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12/agent_v12_live_mtp_k3.ok
@@ -229,7 +229,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 7e553f14ca07378f79674c822e974761a30cdc180f27c92c8691091782acbe92  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-be7c5807a7236bb8a88ac2ed67ce1d79590ac3a8cf597985f815dcf576a565ee  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_lookup.log
+6135c81c1a82ba4a7c46c67abe7abf0f59851ef1273f571f71d22caa78e0c013  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_lookup.log
 03018f145c85154ec920fa743039aef9d268bfa6dadd09b6361f671554ba3aa6  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
 6e7605821daa296d92b43536fd5233f8271a1ecb219fd3d55efa00ee21eba612  ./bench/traces/raw/agent_v12/ref_tf.tsv
@@ -323,7 +323,7 @@ a9e247b2fd9a0da14517459f028d2b9e85195955895855459c3c924f0e37f603  ./bench/traces
 ffaab6b83e0b6b3a8da2118137b66988a7293419161c782629cbdff4b5347103  ./bench/traces/v11_tune_metrics.json
 fdc60e3d0ba0492d452c54b38424c8ea9dd86fd9f1bc45c92ae5e7b89b88b991  ./logs/cpu_busy/cpu_busy_bench.log
 91232eba716a30c0762f1bf3b946a4c600a415515c0b01ccd9026eb4bbe5723c  ./logs/cpu_busy/cpu_busy_commitpackft_select.log
-1ceabb3a530a5150e8022b1378f12cc05df791f0800e1591a9c8ecd610908cee  ./logs/cpu_busy/cpu_busy_policy.log
+fe4fc58300e35478331255df4cef1b8a07bb9bc7a1adb05bc90cb9022ae80290  ./logs/cpu_busy/cpu_busy_policy.log
 40589d583e3d9ac35166e435a2a58b9a8cc235fa77120025cda9afde7681c97d  ./logs/cpu_busy/cpu_busy_specu.log
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/strata-bench/abl_v11c.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/strata-bench/abl_v11e.out
@@ -636,6 +636,15 @@ bf24d4ad8ea723bb87df5c6bb63d45afdc82de2c55a9e47767e854e50597df79  ./patches/stra
 713eb14c8cfc36a9a8c0a8f5d8638ccaefb809e3550624ad26d3786f0de0c785  ./patches/strata-policy/strataplus-LANG-knob-v2.md
 18122e6bd7696905d645c283c45cfb7c6e616b74ea43c1ec0f9f3f3d9287e2a8  ./patches/strata-policy/strataplus-LANG-knob-v2.patch
 b56dce51389b9c0c4bc12279ef2d31d3eeb7fe683dfd0e31829fc0bdac8c2291  ./patches/strata-policy/strataplus-LANG-knob-v2.patch.sha256
+3b8205a0bbd91602f942f33d063c44167825812aa329028224f27fe1f917382c  ./patches/strata-policy/strataplus-serve-trace-v1-on-H1v2-LANGv2.patch
+c99ed74216bde630b032495b541bcaeb269a9a466d47d54299f4d5377e476372  ./patches/strata-policy/strataplus-serve-trace-v1-on-H1v2-LANGv2.patch.sha256
+612c816f61b4821dd47edb9472ef43a7676fb2d4e15b810b430b2bbd0f2f6dda  ./patches/strata-policy/strataplus-serve-trace-v1-on-H1v2.patch
+cb2c40c25dd13385eb5096371fafe43f6f538d8d3fab4a89ad05949064eb5556  ./patches/strata-policy/strataplus-serve-trace-v1-on-H1v2.patch.sha256
+1a227fad6a9817f29c5dc1f537d212afc7ae159e296dcd141bd7a42fea93011f  ./patches/strata-policy/strataplus-serve-trace-v1-on-HFCv2.patch
+8f331271dfa83a1e6eb060c516a5099c84a07b5095073f8907009e00b61d3f76  ./patches/strata-policy/strataplus-serve-trace-v1-on-HFCv2.patch.sha256
+28fa8387ec2587f7613bf350bc1bcae13302f57a8d62f4c4c7fa5687dd47c453  ./patches/strata-policy/strataplus-serve-trace-v1.md
+2875566df6d7bffc7537465e726d861422ae2eb3e49d02b5bb7c24259ae02489  ./patches/strata-policy/strataplus-serve-trace-v1.patch
+b5e238ce2c0a6966e5595fce4d95587246bd6818617573c78b5a3fd9cb635d9e  ./patches/strata-policy/strataplus-serve-trace-v1.patch.sha256
 0186495cd30dd90d9ca53801571a93df11f06ec8c300a38a719829412438ae21  ./plan/PLAN_PAGE.md
 590763c96e55c623b1540bf4dd2c35c211e4c688ecaade64c2e4148114c4700c  ./plan/log_format.md
 cb0cacb7aef99d859422efd5abfeaa739b5271137a27ce7c2a67c8cbd4edef5d  ./plan/piano.md

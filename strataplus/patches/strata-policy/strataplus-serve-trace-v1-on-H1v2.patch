@@ -1,0 +1,448 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 445865fc..0483e087 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1560,6 +1560,7 @@ add_library(strata_spec STATIC src/spec/suffix_drafter.cpp src/spec/controller.c
+             src/spec/draft_source.cpp src/spec/pool_source.cpp src/spec/joint_gate.cpp
+             src/spec/joint_det.cpp)    # Strata+ H1 v1: deterministic arbiter cost table
+ target_include_directories(strata_spec PUBLIC include)
++target_sources(strata_spec PRIVATE src/spec/serve_trace.cpp)   # Strata+ serve-trace v1 (STRATA_SERVE_TRACE, off)
+ if(STRATA_BUILD_TESTS)
+   add_executable(arch_defaults_test src/core/arch_defaults_test.cpp src/core/arch_defaults.cpp)
+   target_include_directories(arch_defaults_test PRIVATE include)
+@@ -1576,6 +1577,9 @@ if(STRATA_BUILD_TESTS)
+   add_executable(controller_test src/spec/controller_test.cpp)
+   target_link_libraries(controller_test PRIVATE strata_spec)
+   add_test(NAME controller_test COMMAND controller_test)
++  add_executable(serve_trace_test src/spec/serve_trace_test.cpp)   # Strata+ serve-trace v1
++  target_link_libraries(serve_trace_test PRIVATE strata_spec)
++  add_test(NAME serve_trace_test COMMAND serve_trace_test)
+   add_executable(draft_policy_test src/spec/draft_policy_test.cpp)
+   target_link_libraries(draft_policy_test PRIVATE strata_spec)
+   add_test(NAME draft_policy_test COMMAND draft_policy_test)
+diff --git a/include/strata/spec/serve_trace.hpp b/include/strata/spec/serve_trace.hpp
+new file mode 100644
+index 00000000..21346171
+--- /dev/null
++++ b/include/strata/spec/serve_trace.hpp
+@@ -0,0 +1,36 @@
++// include/strata/spec/serve_trace.hpp - Strata+ serve-trace v1 (measurement patch, OFF by default).
++//
++// STRATA_SERVE_TRACE=<file>: `strata serve` appends one line per speculative round, the CLI STRATA_SPEC_TRACE fields
++// first and in the same order ("T a sfx ms p1 .. p{S-1}": window rows, drafts accepted, lookup window, round ms, the
++// MTP draft probabilities), then key=value fields:
++//   path=serial|pipeline_t  req=<n>  lang=<strata_lang or ->  src=mtp|lookup  arb=off|joint|det  frozen=0|1
++// One "# req=<n> begin lang=.." line per request, one "# req=<n> end finish=.. produced=.. rounds=.." line, and a
++// "# strata serve trace v1 ..." header with the arbiter / frozen environment (joint=, det=, frozen=, frozen_sha256=).
++// Rounds go to a per-request memory buffer, written and flushed once at the request's end (off the round's path).
++// The arbiter / frozen fields come from the environment only (STRATA_SPEC_JOINT, STRATA_SPEC_JOINT_DET,
++// STRATA_SPEC_COST_FROZEN), so this file needs neither the H1 nor the H-FC code.  It never changes a token or a window.
++#pragma once
++#include <string>
++
++namespace strata::spec::serve_trace {
++
++/// Reads STRATA_SERVE_TRACE: unset/empty -> off, true.  Set -> opens it for appending and writes the header; a path
++/// that cannot be opened -> false with `err` (the caller exits 1, before any model load).
++bool init_from_env(std::string& err);
++bool init(const char* path, std::string& err);   // the same, with an explicit path (tests)
++bool on();
++/// A request starts: its GEN/BGEN line (only its strata_lang=<name> key is read; anything else is ignored).
++void begin(const char* gen_line);
++/// One verified round.  path: "serial" or "pipeline_t".  p: the window's draft probabilities (np of them; p may be null).
++void round(const char* path, int T, int accepted, bool from_lookup, double ms, const float* p, int np);
++/// The request ends: its lines are written and flushed.
++void end(const char* finish, long long produced);
++void close();   // flush and close (tests; the process exit closes it too)
++
++// pure helpers (tests)
++std::string lang_of(const char* gen_line);   // "" when the line has no valid strata_lang=<name>
++std::string sha256_file(const char* path);   // "" when not a readable regular file
++std::string sha256_hex(const std::string& data);
++bool env_set(const char* v);                 // non-null, non-empty, not "0"
++
++}  // namespace strata::spec::serve_trace
+diff --git a/src/program/generate.cpp b/src/program/generate.cpp
+index 549d2692..ce88e702 100644
+--- a/src/program/generate.cpp
++++ b/src/program/generate.cpp
+@@ -87,6 +87,7 @@
+ #include "strata/program/draft_kv_plan.hpp"
+ #include "strata/program/message_boundary.hpp"
+ #include "strata/spec/draft_policy.hpp"
++#include "strata/spec/serve_trace.hpp"   // Strata+ serve-trace v1
+ #include "strata/spec/joint_gate.hpp"   // Strata+ P6
+ #include "strata/spec/joint_det.hpp"    // Strata+ H1 v1: STRATA_SPEC_JOINT_DET
+ #include "strata/spec/draft_source.hpp"
+@@ -2951,6 +2952,16 @@ int main(int argc, char** argv) {
+         }
+         }
+     }
++    // Strata+ serve-trace v1: STRATA_SERVE_TRACE=<file> (strata serve only, off by default), opened here, before any model load:
++    // a path that cannot be written -> exit 1 now.  Outside `strata serve` it is ignored with a warning.
++    if (const char* stv = std::getenv("STRATA_SERVE_TRACE"); stv != nullptr && stv[0] != '\0') {
++        if (!o.serve) {
++            std::fprintf(stderr, "warning: STRATA_SERVE_TRACE is read by `strata serve` only: ignored\n");
++        } else if (std::string ste; !strata::spec::serve_trace::init_from_env(ste)) {
++            std::fprintf(stderr, "strata serve: %s\n", ste.c_str());
++            return 1;
++        }
++    }
+     if (!plus_h1_validate()) return 1;   // Strata+ H1 v1: before any model load
+ #if defined(STRATA_USE_HIP)
+     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
+@@ -14406,6 +14417,7 @@ int main(int argc, char** argv) {
+             consumed.reserve((size_t) (n + max_new + S));
+             for (int64_t i = 0; i < p; ++i) consumed.push_back((int32_t) ids[(size_t) i]);
+             const char* finish = "length";
++            strata::spec::serve_trace::begin(line.c_str());   // Strata+ serve-trace v1 (off: no-op)
+             const Clock::time_point d0 = Clock::now();
+             // STRATA_DECODE_TIMING=1: where a request's decode time goes (one line per request)
+             static const bool dec_timing = std::getenv("STRATA_DECODE_TIMING") != nullptr;
+@@ -14963,6 +14975,9 @@ int main(int argc, char** argv) {
+                         cal_on[bin] += would ? 1 : 0;
+                     }
+                     tre("V", A.seq, a, on ? 1 : (B.launched ? -1 : 0));
++                    if (strata::spec::serve_trace::on())   // Strata+ serve-trace v1: a pipeline_t window's verdict (buffered)
++                        strata::spec::serve_trace::round("pipeline_t", A.T, a, A.sfx, ms_now() - last_verdict, A.prob,
++                                                         std::min(S - 1, 8));
+                     {
+                         const double now = ms_now();
+                         const int c = A.spec ? 1 : 0;
+@@ -15460,6 +15475,10 @@ int main(int argc, char** argv) {
+                     std::printf("ERR %s\n", err.c_str());
+                     return 1;
+                 }
++                if (strata::spec::serve_trace::on() && timed_round)   // Strata+ serve-trace v1: a serial round (buffered)
++                    strata::spec::serve_trace::round("serial", T, a, from_sfx,
++                                                     std::chrono::duration<double, std::milli>(Clock::now() - round0).count(),
++                                                     dwin_s.data(), std::min(S - 1, 8));
+                 if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin_s.data(), T_mtp - 1, a);
+                 // Strata+ P3: the arm not played, scored on the a+1 committed tokens outv[0..a] (censored there)
+                 if (cf_feedback && timed_round && !eos && chain_n == 0 && cf_k > 0) {
+@@ -15697,6 +15716,7 @@ int main(int argc, char** argv) {
+             if (o.lookup_chain > 0)
+                 std::snprintf(chain_txt, sizeof(chain_txt), " %lld %lld %lld %lld %lld", (long long) chain_ok,
+                               (long long) chain_drafts, (long long) sfx_ok, (long long) sfx_drafts, (long long) dec_windows);
++            strata::spec::serve_trace::end(finish, (long long) produced_n);   // Strata+ serve-trace v1: written + flushed here
+             if (yielded_at >= 0) std::printf("YIELDED %d %lld\n", yielded_slot, (long long) yielded_at);
+             std::printf("DONE %lld %lld %.1f %.1f %s %lld %lld %lld %lld %lld %lld %lld %.1f %lld %lld%s chunk=%lld "
+                         "experts_streamed=%lld\n",
+diff --git a/src/spec/serve_trace.cpp b/src/spec/serve_trace.cpp
+new file mode 100644
+index 00000000..56755d4c
+--- /dev/null
++++ b/src/spec/serve_trace.cpp
+@@ -0,0 +1,194 @@
++// src/spec/serve_trace.cpp - Strata+ serve-trace v1 (see include/strata/spec/serve_trace.hpp).
++#include "strata/spec/serve_trace.hpp"
++
++#include <cstdint>
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++#include <mutex>
++#include <sys/stat.h>
++
++namespace strata::spec::serve_trace {
++namespace {
++std::mutex mu;
++std::FILE* fp = nullptr;
++std::string buf, lang, arb = "off";
++long long req = 0, rounds = 0;
++int frozen = 0;
++bool open_req = false;
++
++void flush_locked() {
++    if (fp == nullptr || buf.empty()) return;
++    std::fwrite(buf.data(), 1, buf.size(), fp);
++    std::fflush(fp);
++    buf.clear();
++}
++
++// SHA-256 (FIPS 180-4), small and dependency-free
++struct Sha {
++    uint32_t h[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
++    unsigned char blk[64];
++    size_t n = 0;
++    uint64_t len = 0;
++    static uint32_t r(uint32_t x, int s) { return (x >> s) | (x << (32 - s)); }
++    void compress() {
++        static const uint32_t k[64] = {
++            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,
++            0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
++            0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8,
++            0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
++            0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819,
++            0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
++            0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
++            0xc67178f2};
++        uint32_t w[64];
++        for (int i = 0; i < 16; ++i)
++            w[i] = (uint32_t) blk[4 * i] << 24 | (uint32_t) blk[4 * i + 1] << 16 | (uint32_t) blk[4 * i + 2] << 8 | blk[4 * i + 3];
++        for (int i = 16; i < 64; ++i) {
++            const uint32_t s0 = r(w[i - 15], 7) ^ r(w[i - 15], 18) ^ (w[i - 15] >> 3);
++            const uint32_t s1 = r(w[i - 2], 17) ^ r(w[i - 2], 19) ^ (w[i - 2] >> 10);
++            w[i] = w[i - 16] + s0 + w[i - 7] + s1;
++        }
++        uint32_t a = h[0], b = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], hh = h[7];
++        for (int i = 0; i < 64; ++i) {
++            const uint32_t t1 = hh + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + k[i] + w[i];
++            const uint32_t t2 = (r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & b) ^ (a & c) ^ (b & c));
++            hh = g; g = f; f = e; e = d + t1; d = c; c = b; b = a; a = t1 + t2;
++        }
++        h[0] += a; h[1] += b; h[2] += c; h[3] += d; h[4] += e; h[5] += f; h[6] += g; h[7] += hh;
++    }
++    void add(const unsigned char* p, size_t m) {
++        for (size_t i = 0; i < m; ++i) { blk[n++] = p[i]; ++len; if (n == 64) { compress(); n = 0; } }
++    }
++    std::string hex() {
++        const uint64_t bits = len * 8;
++        const unsigned char one = 0x80, zero = 0;
++        add(&one, 1);
++        while (n != 56) add(&zero, 1);
++        unsigned char l[8];
++        for (int i = 0; i < 8; ++i) l[i] = (unsigned char) (bits >> (56 - 8 * i));
++        add(l, 8);
++        char out[65];
++        for (int i = 0; i < 8; ++i) std::snprintf(out + 8 * i, 9, "%08x", h[i]);
++        return std::string(out, 64);
++    }
++};
++
++bool valid_lang_char(char c) {
++    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '+' ||
++           c == '#' || c == '.' || c == '-';
++}
++}  // namespace
++
++bool env_set(const char* v) { return v != nullptr && v[0] != '\0' && std::strcmp(v, "0") != 0; }
++
++std::string sha256_hex(const std::string& data) {
++    Sha s;
++    s.add((const unsigned char*) data.data(), data.size());
++    return s.hex();
++}
++
++std::string sha256_file(const char* path) {
++    struct stat st{};
++    if (path == nullptr || ::stat(path, &st) != 0 || !S_ISREG(st.st_mode)) return "";
++    std::FILE* f = std::fopen(path, "rb");
++    if (f == nullptr) return "";
++    Sha s;
++    unsigned char b[65536];
++    size_t m;
++    while ((m = std::fread(b, 1, sizeof b, f)) > 0) s.add(b, m);
++    const bool bad = std::ferror(f) != 0;
++    std::fclose(f);
++    return bad ? "" : s.hex();
++}
++
++std::string lang_of(const char* line) {
++    if (line == nullptr) return "";
++    const char* p = line;
++    while ((p = std::strstr(p, "strata_lang=")) != nullptr) {
++        if (p == line || p[-1] == ' ' || p[-1] == '\t') {
++            const char* v = p + 12;
++            size_t n = 0;
++            while (v[n] != '\0' && v[n] != ' ' && v[n] != '\t' && v[n] != '\n' && v[n] != '\r') ++n;
++            bool ok = n >= 1 && n <= 32;
++            for (size_t i = 0; ok && i < n; ++i) ok = valid_lang_char(v[i]);
++            return ok ? std::string(v, n) : "";
++        }
++        p += 12;
++    }
++    return "";
++}
++
++bool init(const char* path, std::string& err) {
++    std::lock_guard<std::mutex> g(mu);
++    if (fp != nullptr) { std::fclose(fp); fp = nullptr; }
++    buf.clear(); open_req = false; req = 0;
++    if (path == nullptr || path[0] == '\0') return true;
++    fp = std::fopen(path, "a");
++    if (fp == nullptr) {
++        err = std::string("STRATA_SERVE_TRACE: cannot open ") + path + " for writing";
++        return false;
++    }
++    const char* j = std::getenv("STRATA_SPEC_JOINT");
++    const char* d = std::getenv("STRATA_SPEC_JOINT_DET");
++    const char* fz = std::getenv("STRATA_SPEC_COST_FROZEN");
++    arb = env_set(j) ? (env_set(d) ? "det" : "joint") : "off";
++    frozen = env_set(fz) ? 1 : 0;
++    const std::string fsha = frozen ? sha256_file(fz) : "";
++    std::fprintf(fp, "# strata serve trace v1 fields: T a sfx ms p1..p{S-1} path= req= lang= src= arb= frozen= | joint=%s det=%s "
++                     "frozen=%d frozen_value=%s frozen_sha256=%s\n",
++                 j ? j : "-", d ? d : "-", frozen, fz && fz[0] ? fz : "-", fsha.empty() ? "-" : fsha.c_str());
++    std::fflush(fp);
++    return true;
++}
++
++bool init_from_env(std::string& err) { return init(std::getenv("STRATA_SERVE_TRACE"), err); }
++
++bool on() { return fp != nullptr; }
++
++void begin(const char* gen_line) {
++    if (fp == nullptr) return;
++    std::lock_guard<std::mutex> g(mu);
++    if (open_req) flush_locked();
++    ++req; rounds = 0; open_req = true;
++    lang = lang_of(gen_line);
++    char b[96];
++    std::snprintf(b, sizeof b, "# req=%lld begin lang=%s\n", req, lang.empty() ? "-" : lang.c_str());
++    buf += b;
++}
++
++void round(const char* path, int T, int accepted, bool from_lookup, double ms, const float* p, int np) {
++    if (fp == nullptr) return;
++    std::lock_guard<std::mutex> g(mu);
++    char b[160];
++    std::snprintf(b, sizeof b, "%d %d %d %.3f", T, accepted, from_lookup ? 1 : 0, ms);
++    buf += b;
++    for (int i = 0; i < np; ++i) {
++        std::snprintf(b, sizeof b, " %.4f", p ? (double) p[i] : 0.0);
++        buf += b;
++    }
++    std::snprintf(b, sizeof b, " path=%s req=%lld lang=%s src=%s arb=%s frozen=%d\n", path ? path : "-", req,
++                  lang.empty() ? "-" : lang.c_str(), from_lookup ? "lookup" : "mtp", arb.c_str(), frozen);
++    buf += b;
++    ++rounds;
++}
++
++void end(const char* finish, long long produced) {
++    if (fp == nullptr) return;
++    std::lock_guard<std::mutex> g(mu);
++    char b[128];
++    std::snprintf(b, sizeof b, "# req=%lld end finish=%s produced=%lld rounds=%lld\n", req, finish ? finish : "-", produced,
++                  rounds);
++    buf += b;
++    open_req = false;
++    flush_locked();
++}
++
++void close() {
++    std::lock_guard<std::mutex> g(mu);
++    flush_locked();
++    if (fp != nullptr) std::fclose(fp);
++    fp = nullptr;
++}
++
++}  // namespace strata::spec::serve_trace
+diff --git a/src/spec/serve_trace_test.cpp b/src/spec/serve_trace_test.cpp
+new file mode 100644
+index 00000000..46c5be80
+--- /dev/null
++++ b/src/spec/serve_trace_test.cpp
+@@ -0,0 +1,99 @@
++// src/spec/serve_trace_test.cpp - Strata+ serve-trace v1: host test (no model, no GPU).
++#include "strata/spec/serve_trace.hpp"
++
++#include <cstdio>
++#include <cstdlib>
++#include <fstream>
++#include <sstream>
++#include <string>
++#include <unistd.h>
++
++namespace st = strata::spec::serve_trace;
++static int fails = 0;
++static void check(bool ok, const char* what) {
++    std::printf("  %-70s %s\n", what, ok ? "ok" : "FAIL");
++    if (!ok) ++fails;
++}
++static std::string slurp(const std::string& p) {
++    std::ifstream f(p);
++    std::stringstream s;
++    s << f.rdbuf();
++    return s.str();
++}
++static bool exists(const std::string& p) { return ::access(p.c_str(), F_OK) == 0; }
++
++int main() {
++    check(st::sha256_hex("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "sha256(\"\")");
++    check(st::sha256_hex("abc") == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", "sha256(\"abc\")");
++    check(st::sha256_hex(std::string(1000, 'a')) ==
++              "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3", "sha256(1000 x 'a', multi-block)");
++    check(st::lang_of("GEN 16 temp=0 strata_lang=python 1 2 3") == "python", "lang_of: key present");
++    check(st::lang_of("GEN 16 temp=0 1 2 3").empty(), "lang_of: absent");
++    check(st::lang_of("GEN 16 xstrata_lang=python 1").empty(), "lang_of: not a key boundary");
++    check(st::lang_of("GEN 16 strata_lang=a=b 1").empty() && st::lang_of("GEN 16 strata_lang= 1").empty(),
++          "lang_of: invalid value");
++    check(!st::env_set(nullptr) && !st::env_set("") && !st::env_set("0") && st::env_set("1") && st::env_set("/x"),
++          "env_set");
++
++    char dir[] = "/tmp/serve_trace_testXXXXXX";
++    if (::mkdtemp(dir) == nullptr) { std::printf("mkdtemp failed\n"); return 1; }
++    const std::string path = std::string(dir) + "/trace.txt";
++
++    // knob off: no env -> off, nothing written, no file
++    ::unsetenv("STRATA_SERVE_TRACE");
++    std::string err;
++    check(st::init_from_env(err) && !st::on(), "off: unset env -> ok, off");
++    ::setenv("STRATA_SERVE_TRACE", "", 1);
++    check(st::init_from_env(err) && !st::on(), "off: empty env -> ok, off");
++    st::begin("GEN 4 strata_lang=python 1");
++    st::round("serial", 3, 2, false, 1.5, nullptr, 0);
++    st::end("stop", 3);
++    check(!exists(path), "off: no file is created");
++
++    // unwritable path -> false (the caller exits 1 before the model load)
++    ::setenv("STRATA_SERVE_TRACE", "/nonexistent_dir_strata/trace.txt", 1);
++    err.clear();
++    check(!st::init_from_env(err) && !err.empty() && !st::on(), "unwritable path -> false + message");
++
++    // on
++    ::setenv("STRATA_SERVE_TRACE", path.c_str(), 1);
++    ::setenv("STRATA_SPEC_JOINT", "1", 1);
++    ::setenv("STRATA_SPEC_JOINT_DET", "1", 1);
++    const std::string fz = std::string(dir) + "/frozen.txt";
++    { std::ofstream f(fz); f << "abc"; }
++    ::setenv("STRATA_SPEC_COST_FROZEN", fz.c_str(), 1);
++    err.clear();
++    check(st::init_from_env(err) && st::on(), "on: opens");
++    const float p[3] = {0.9f, 0.5f, 0.25f};
++    st::begin("GEN 8 temp=0 strata_lang=rust 5 6");
++    st::round("serial", 4, 3, false, 2.25, p, 3);
++    check(slurp(path).find("req=1 begin") == std::string::npos, "rounds are buffered until the request ends");
++    st::round("pipeline_t", 2, 1, true, 0.5, p, 3);
++    st::end("length", 8);
++    st::begin("GEN 8 5 6");
++    st::end("stop", 1);
++    st::close();
++    const std::string t = slurp(path);
++    check(t.find("frozen=1 frozen_value=" + fz + " frozen_sha256=ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad") !=
++              std::string::npos && t.find("joint=1 det=1") != std::string::npos, "header: arbiter + frozen env, file sha256");
++    check(t.find("# req=1 begin lang=rust\n") != std::string::npos, "begin line with strata_lang");
++    check(t.find("4 3 0 2.250 0.9000 0.5000 0.2500 path=serial req=1 lang=rust src=mtp arb=det frozen=1\n") != std::string::npos,
++          "serial round: CLI fields first, then path/req/lang/src/arb/frozen");
++    check(t.find("2 1 1 0.500 0.9000 0.5000 0.2500 path=pipeline_t req=1 lang=rust src=lookup arb=det frozen=1\n") !=
++              std::string::npos, "pipeline round");
++    check(t.find("# req=1 end finish=length produced=8 rounds=2\n") != std::string::npos, "end line");
++    check(t.find("# req=2 begin lang=-\n") != std::string::npos && t.find("# req=2 end finish=stop produced=1 rounds=0\n") !=
++              std::string::npos, "request without strata_lang");
++    ::unsetenv("STRATA_SPEC_COST_FROZEN");
++    ::unsetenv("STRATA_SPEC_JOINT_DET");
++    ::setenv("STRATA_SPEC_COST_FROZEN", "1", 1);   // H1-style "1": frozen=1, no file -> sha "-"
++    check(st::init_from_env(err) && st::on(), "re-open (append)");
++    st::close();
++    const std::string t2 = slurp(path);
++    check(t2.find("joint=1 det=- frozen=1 frozen_value=1 frozen_sha256=-") != std::string::npos, "frozen without a file");
++    std::remove(fz.c_str());
++    std::remove(path.c_str());
++    ::rmdir(dir);
++    std::printf(fails == 0 ? "all ok\n" : "%d FAILED\n", fails);
++    return fails == 0 ? 0 : 1;
++}
+diff --git a/sycl/src/program/generate.cpp b/sycl/src/program/generate.cpp
+index e4b95e16..e12eb403 100644
+--- a/sycl/src/program/generate.cpp
++++ b/sycl/src/program/generate.cpp
+@@ -1732,6 +1732,8 @@ int main(int argc, char **argv) try {
+             return 0;
+         }
+     }
++    if (const char* stv = std::getenv("STRATA_SERVE_TRACE"); stv != nullptr && stv[0] != '\0')   // Strata+ serve-trace v1
++        std::fprintf(stderr, "warning: STRATA_SERVE_TRACE ignorata su SYCL\n");
+ #if (defined(STRATA_USE_HIP) || defined(STRATA_HIP_GFX906)) && !defined(_WIN32)
+     // AMD, a file-backed arena (STRATA_ARENA_MMAP): ROCclr copies a pageable source of 1 MiB or more by locking its
+     // pages in place (a GPU userptr), and keeps them - so every expert the VRAM fill copied from the mapped
