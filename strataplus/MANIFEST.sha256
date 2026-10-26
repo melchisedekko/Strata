@@ -239,7 +239,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 acb678aec29887d7f825415a7f4168c9fb2b956fe12fc723eb2c3d1fbd906c29  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-6c1ecb82380afb6e7ad2e5f9f94367aa58f3b18475bc566f6c5cc0e00f46b9ed  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
+df7fbdaf85e7fa8e59e1bbb65146a87bff6fdeb14630508deade5a4141496e33  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
 6e7605821daa296d92b43536fd5233f8271a1ecb219fd3d55efa00ee21eba612  ./bench/traces/raw/agent_v12/ref_tf.tsv
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12_pilot/agent_v12_build.err
@@ -526,7 +526,7 @@ fc1f7eabdf689e32755e061ad26e043be4e4963313c9fd1380ec0c0f84b69032  ./bench/traces
 ffaab6b83e0b6b3a8da2118137b66988a7293419161c782629cbdff4b5347103  ./bench/traces/v11_tune_metrics.json
 5d1bf97741f6d730a0df885a00dde2f91c8692a7b6655bd0acfe41c9fdd02565  ./logs/cpu_busy/cpu_busy_bench.log
 2753acae6f14aadde401789566cdf22197ea0481236749ae047934bb05327e0e  ./logs/cpu_busy/cpu_busy_policy.log
-177efd591da668cc8ab49a33faa7725e7c4e5340381e031c31600763be38ad86  ./logs/cpu_busy/cpu_busy_specu.log
+40589d583e3d9ac35166e435a2a58b9a8cc235fa77120025cda9afde7681c97d  ./logs/cpu_busy/cpu_busy_specu.log
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/strata-bench/abl_v11c.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/strata-bench/abl_v11e.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/strata-bench/agent_v12.log
