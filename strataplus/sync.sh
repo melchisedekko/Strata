@@ -388,7 +388,9 @@ m() {
 }
 
 # ---- plan ----
-m 0 plan /workspace/strata-plus/piano.md /workspace/strata-plus/log_format.md /workspace/strata-plus/RULE_HLANG2_ceiling.md
+m 0 plan /workspace/strata-plus/piano.md /workspace/strata-plus/log_format.md /workspace/strata-plus/RULE_HLANG2_ceiling.md /workspace/strata-plus/RULE_AMD_GO_PH1_PLANG.md
+# riepilogo della coda di patch -> strataplus/RIEPILOGO.md
+[ -f /workspace/strata-plus/RIEPILOGO.md ] && install -m 644 /workspace/strata-plus/RIEPILOGO.md "$D/RIEPILOGO.md"
 # (plan/PLAN_PAGE.md = export manuale della Page, non toccato dallo script)
 
 # ---- policy ----
@@ -459,19 +461,64 @@ PUB_REDACT=(
   policy/strata-policy/replay/hca_split.py policy/strata-policy/replay/results/v2/hca/REPORT.md
   policy/strata-policy/replay/run_hca_addendum1.json policy/strata-policy/replay/run_hca_addendum2.json
 )
+# log del monitor CPU copiati come symlink (2026-10-27): /workspace/strata-bench/cpu_busy_bench.log e' un link assoluto
+# all'originale live in /workspace/strata-plus/; rsync -a copiava il LINK, che la redazione (salta i link) e la quarantena
+# (find -type f, grep -r) non vedevano, mentre la guardia finale (xargs grep) lo seguiva fino all'originale NON redatto
+# (exit 4 del sync delle 10:09). Nella copia pubblicata il link diventa un file regolare (copia del contenuto), poi redatto
+# sotto come gli altri log CPU. L'originale (e il link nella sorgente) non si toccano.
+while IFS= read -r -d '' f; do
+  t=$(readlink -f -- "$D/$f" || true); rm -f -- "$D/$f"
+  [ -n "$t" ] && [ -f "$t" ] && install -m 644 -- "$t" "$D/$f"
+done < <(cd "$D" && find . -type l \( -name 'cpu_*.log' -o -name 'cpu_busy*.log' \) -printf '%P\0')
 # log del monitor CPU (elenchi di processi in tempo reale): possono catturare righe di comando con il nome
 while IFS= read -r -d '' f; do PUB_REDACT+=("$f"); done < <(cd "$D" && find . -type f \( -name 'cpu_*.log' -o -name 'cpu_busy*.log' \) -printf '%P\0')
+# log CPU pubblicati redatti con segnaposto (decisione del proprietario, 2026-10-27): ogni occorrenza dei pattern rx: del
+# file privato (nomi di run che contengono il nome del dataset) diventa PUB_PLACEHOLDER, prima delle regole sub:
+PUB_PLACEHOLDER_FILES=(bench/strata-bench/cpu_busy_bench.log logs/cpu_busy/cpu_busy_bench.log
+  bench/traces/raw/v11/e4v14_cmds.txt bench/traces/raw/v11/tracer_v14_build_info.txt)
+PUB_PLACEHOLDER='[redatto: riferimento a dataset con licenza non pubblicabile]'
+# generalizzazione (2026-10-27 13:xx): file di testo *.txt in bench/traces/raw/v11/ (righe di comando, build info) non
+# esclusi per licenza: segnaposto SOLO se ogni occorrenza e' dentro un identificativo (nome di run/tag/file/percorso,
+# cioe' attaccata a [A-Za-z0-9_./-]); altrimenti il file resta com'e' e la quarantena lo toglie. La guardia finale non cambia.
+PUB_PH_AUTO=()
+while IFS= read -r -d '' f; do PUB_PH_AUTO+=("$f"); PUB_REDACT+=("$f"); done < <(cd "$D" && find bench/traces/raw/v11 -maxdepth 1 -type f -name '*.txt' -print0 2>/dev/null)
+for f in "${PUB_PLACEHOLDER_FILES[@]}"; do PUB_REDACT+=("$f"); done
+PUB_PH_FILES=$(printf '%s\n' "${PUB_PLACEHOLDER_FILES[@]}") PUB_PH_AUTO=$(printf '%s\n' "${PUB_PH_AUTO[@]}") PUB_PH="$PUB_PLACEHOLDER" \
 python3 - "$D" "$PRIV" "${PUB_REDACT[@]}" <<'PY'
 import os, re, stat, sys
 root, priv = sys.argv[1], sys.argv[2]
-subs = []
+subs, rxs = [], []
 for l in open(priv, encoding="utf-8"):
     if l.startswith("sub:"):
         a, b = l[4:].rstrip("\n").split("\t", 1); subs.append((re.compile(a, re.I), b))
+    elif l.startswith("rx:") and l[3:].strip():
+        rxs.append(re.compile(l[3:].rstrip("\n"), re.I))
+ph_files = set(x for x in os.environ.get("PUB_PH_FILES", "").split("\n") if x); ph = os.environ.get("PUB_PH", "")
+ph_auto = set(x for x in os.environ.get("PUB_PH_AUTO", "").split("\n") if x)
+idch = re.compile(r"[A-Za-z0-9_./-]")
+def only_in_ids(s):
+    for rx in rxs:
+        for m in rx.finditer(s):
+            a, b = m.start(), m.end()
+            if not ((a > 0 and idch.match(s[a - 1])) or (b < len(s) and idch.match(s[b]))): return False
+    return True
+sha_line = re.compile(r"\b[0-9a-f]{64}\b")
+done = set()
 for rel in sys.argv[3:]:
+    if rel in done: continue
+    done.add(rel)
     p = os.path.join(root, rel)
     if not os.path.isfile(p) or os.path.islink(p): continue
     s = open(p, encoding="utf-8", errors="surrogateescape", newline="").read(); t = s
+    if ph and (rel in ph_files or (rel in ph_auto and only_in_ids(s))):
+        out = []
+        for line in t.splitlines(keepends=True):
+            hit = any(rx.search(line) for rx in rxs)
+            for rx in rxs: line = rx.sub(lambda m: ph, line)
+            # sha256 di un file dati derivato dal dataset, sulla stessa riga del riferimento: non pubblicato
+            if hit: line = sha_line.sub("<sha256 non pubblicato>", line)
+            out.append(line)
+        t = "".join(out)
     for rx, b in subs: t = rx.sub(lambda m: b, t)
     if t != s:
         mode = stat.S_IMODE(os.stat(p).st_mode); os.chmod(p, mode | stat.S_IWUSR)
@@ -504,6 +551,8 @@ if [ -f "$D/.gitignore" ]; then
   # guardia sul nome (2026-10-27): qualsiasi file il cui contenuto (anche binario) o percorso contiene il nome del
   # dataset (pattern rx: del file privato, case-insensitive) va in quarantena: non pubblicato, elencato in SKIPPED.md (redatto)
   grep -rliE -f "$TMPD/priv_rx.txt" "$D" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
+  # symlink (grep -r non li segue): si controlla il contenuto a cui puntano; se privato, il link va in quarantena
+  find "$D" -type l -print0 | xargs -0r grep -liE -f "$TMPD/priv_rx.txt" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
   ( cd "$D" && find . -type f -printf 'strataplus/%P\n' ) | grep -iE -f "$TMPD/priv_rx.txt" >> "$TMPD/lic.txt" || true
   # quarantena (2026-10-26): file di dati NUOVI (non in HEAD) sotto datasets/, *.jsonl di tmp_scratch, parquet/arrow ovunque:
   # restano fuori finche' qualcuno non li rivede e ne mette lo sha256 in REVIEWED (sotto). I file gia' tracciati passano.
