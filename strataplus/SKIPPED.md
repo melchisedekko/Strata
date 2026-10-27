@@ -8,6 +8,7 @@
     bench/strata-bench/proxy/llama_spec_trace.v12.nollamafile
     bench/strata-bench/proxy/llama_spec_trace.v14.nollamafile
     bench/strata-bench/proxy/strata_proxy_spec
+    logs/tmp_scratch/dflash2-gfx1100-2a1d89.out
     logs/tmp_scratch/jg/fin/bug
     logs/tmp_scratch/jg/fin/bug_g
     logs/tmp_scratch/jg/fin/controller_test_gsan
@@ -90,4 +91,5 @@ Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl
     strataplus/bench/strata-bench/datasets/hlang_editfix_prompts_meta.json.sha256
     strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl
     strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl.sha256
+    strataplus/bench/traces/raw/aprime_holdout_v14_ab/MANIFEST.sha256
     strataplus/bench/traces/raw/v11/e4v14_MANIFEST.sha256
