@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Sessioni multi-turno (proxy CPU, non AMD).
 agent_turns_bench: sessioni di edit reali a 3 turni sullo stesso file (dataset di edit con licenza non pubblicabile edit_np, stessi 10 problemi del suo file jsonl):
-  t0 = edit con <campo istruzione breve>, t1 = feedback 'test suite' con i test reali del problema, t2 = docstring+type hint
+  t0 = edit con l'istruzione breve, t1 = feedback 'test suite' con i test reali del problema, t2 = docstring+type hint
   sulle stesse funzioni. mtbench2: MT-Bench a 2 turni nativi (stessi 10 question_id di mtbench.jsonl)."""
 import io, json, hashlib, urllib.request, os
-from prepare_datasets import REV, EDIT_TAG  # valori locali, vedi _private() in prepare_datasets.py
+from prepare_datasets import REV, EDIT_TAG, FIELD_INSTR_SHORT  # valori locali, vedi _private() in prepare_datasets.py
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "datasets")
 EDIT_URL = "https://huggingface.co/datasets/{}/resolve/{}/{}".format(*REV[EDIT_TAG])
 MTB = ("https://raw.githubusercontent.com/lm-sys/FastChat/587d5cfa1609a43d192cedb8441cac3c17db105d/"
@@ -20,7 +20,7 @@ for wid in want:
     r = byid[wid]; sid = "agent-" + wid
     t = [
       ("Edit the following Python code according to the instruction. Reply with the complete edited file in one code block.\n\n"
-       f"Instruction: {r['<campo istruzione breve>']}\n\n```python\n{r['before']}\n```"),
+       f"Instruction: {r[FIELD_INSTR_SHORT]}\n\n```python\n{r['before']}\n```"),
       ("I ran the test suite against your edited file. These are the tests:\n\n```python\n" + r["tests"] + "\n```\n\n"
        "Make sure the code passes all of them and fix anything that would fail. Reply with the complete file in one code block."),
       ("Now add a docstring and type hints to every function and method you changed, without changing behaviour. "
@@ -38,7 +38,7 @@ for name, items in (("agent_turns_bench", out), ("mtbench2", mout)):
     with open(f"{D}/{name}.jsonl", "w") as f:
         for it in items: f.write(json.dumps(it, ensure_ascii=False) + "\n")
 with open(f"{D}/sessions_meta.json", "w") as f:
-    json.dump({EDIT_TAG: {"url": EDIT_URL, "sha256": sha_edit, "fields": ["<campo istruzione breve>", "before", "tests"]},
+    json.dump({EDIT_TAG: {"url": EDIT_URL, "sha256": sha_edit, "fields": [FIELD_INSTR_SHORT, "before", "tests"]},
                "mt-bench": {"url": MTB, "sha256": hashlib.sha256(raw2).hexdigest()},
                "agent_turns_bench": len(out), "mtbench2": len(mout)}, f, indent=1)
 print(len(out), len(mout))

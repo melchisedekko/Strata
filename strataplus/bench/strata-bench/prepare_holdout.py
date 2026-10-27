@@ -4,7 +4,7 @@
 Stesse fonti pinnate e stessi template di prepare_datasets.py; seed 20261026. Scrive datasets/holdout_90.jsonl
 (campo split='holdout') e datasets/holdout_ids.json (seed, ID, sha256 sorgenti)."""
 import json, os, random, hashlib
-from prepare_datasets import REV, EDIT_TAG, MTBENCH_URL, get, hf_parquet
+from prepare_datasets import REV, EDIT_TAG, FIELD_INSTR, FIELD_INSTR_SHORT, MTBENCH_URL, get, hf_parquet
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'datasets')
 SEED, N = 20261026, 30
 tune = {json.loads(l)['id'] for l in open(f'{D}/proxy_30.jsonl')}
@@ -29,7 +29,7 @@ rows, sha = hf_parquet(*REV[EDIT_TAG])
 def cid(i): r = rows[i]; return f"{EDIT_TAG}-{r.get('id', i)}-{r.get('name', '')}"
 cand = [i for i in range(len(rows)) if cid(i) not in tune]
 for i in sorted(rng.sample(cand, N)):
-    r = rows[i]; instr = r.get('<campo istruzione>') or r.get('<campo istruzione breve>')
+    r = rows[i]; instr = r.get(FIELD_INSTR) or r.get(FIELD_INSTR_SHORT)
     out.append({'id': cid(i), 'category': 'edit', 'source': EDIT_TAG, 'split': 'holdout',
                 'prompt': f"Edit the following Python code according to the instruction. Reply with the complete edited file in one code block.\n\nInstruction: {instr}\n\n```python\n{r['before']}\n```"})
 meta['sources'][EDIT_TAG] = {'repo': REV[EDIT_TAG][0], 'rev': REV[EDIT_TAG][1], 'file_sha256': sha}

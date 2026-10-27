@@ -586,12 +586,12 @@ if grep -qxF "$SELF" "$TMPD/tok.txt"; then echo "ERRORE: il token compare in syn
 Riferimento: `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11,
 CSV sha256 80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc), sezione 4, più il controllo del 2026-10-26.
 Elenco esatto dei percorsi: `strataplus/.gitignore` (stessa lista negli exclude rsync di `sync.sh`); i percorsi e i pattern che contengono il nome del dataset di edit con licenza non pubblicabile (`edit_np`) stanno in un file solo locale letto da `sync.sh` (vedi `REDACTION_2026-10-27.md`).
-Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 ma **restano nei commit precedenti**
-(la riscrittura della storia non è ancora autorizzata). Vedi `ERRATA_LICENZE.md`.
+Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 e anche dalla storia del branch
+(riscrittura con force push del 2026-10-26). Vedi `ERRATA_LICENZE.md`.
 
 | Categoria | File | Motivo |
 |---|---|---|
-| Dati derivati dal dataset di edit con licenza non pubblicabile (`edit_np`: testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF alla revisione fissata "MIT" contro LICENSE del repository GitHub una licenza con una clausola che vieta l'uso come dati di training |
+| Dati derivati dal dataset di edit con licenza non pubblicabile (`edit_np`: testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF alla revisione fissata "MIT" contro LICENSE del repository GitHub (aggiunto in seguito) con una clausola che vieta l'uso come dati di training |
 | `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più `edit_np` |
 | `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più `edit_np` |
 | `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene 2 ID `edit_np` e la diagnosi per richiesta del dominio edit |

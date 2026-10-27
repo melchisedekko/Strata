@@ -77,7 +77,7 @@ def load_requests(n_chat=400, seed=0):
     ce = pd.read_parquet(f"{DATA}/ds_{_private('STRATAPLUS_EDIT_NAME')}/data/test-00000-of-00001.parquet")
     for r in ce.itertuples():
         R.append(dict(domain="edit", scope="edit", src=_private("STRATAPLUS_EDIT_TAG"), id=f"{_private('STRATAPLUS_EDIT_TAG')}/{r.id}",
-                      prompt=TEMPLATE.format(u=r.<campo istruzione> + "\n\n```python\n" + r.before + "\n```"),
+                      prompt=TEMPLATE.format(u=getattr(r, _private("STRATAPLUS_EDIT_FIELD_INSTR")) + "\n\n```python\n" + r.before + "\n```"),
                       y="```python\n" + r.after + "\n```"))
     R += git_sessions()
     return R

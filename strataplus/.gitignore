@@ -1,7 +1,7 @@
 # --- Licenze dei dati (Strata+), aggiunto il 2026-10-26 ---
 # Fonte: /workspace/strata-bench/LICENSE_INVENTORY.md sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11
 #        (CSV: LICENSE_INVENTORY.csv sha256 80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc), sezione 4: 291 percorsi DA ESCLUDERE.
-# Rimossi dalla testa di strataplus-research il 2026-10-26 (git rm --cached); restano nei commit precedenti.
+# Rimossi dalla testa di strataplus-research il 2026-10-26 (git rm --cached) e anche dalla storia del branch (riscrittura del 2026-10-26).
 # Vedi ERRATA_LICENZE.md e SKIPPED.md. ATTENZIONE: sync.sh usa 'git add -f', quindi questo file da solo
 # non basta: sync.sh ha exclude rsync e un controllo equivalenti (stessa lista).
 
@@ -11,7 +11,7 @@
 # 26 ID Spec-Bench (mista) + edit_np
 /bench/strata-bench/datasets/subset_ids.json
 
-# 4b. Solo edit_np (MIT sulla card HF alla revisione fissata vs licenza con restrizione d'uso per ML nel LICENSE GitHub)
+# 4b. Solo edit_np (MIT sulla card HF alla revisione fissata vs licenza con restrizione d'uso per ML nel LICENSE GitHub aggiunto in seguito)
 # Cartelle che contengono solo file edit_np:
 /bench/traces/raw/v11_holdout/
 /logs/tmp_scratch/annt/

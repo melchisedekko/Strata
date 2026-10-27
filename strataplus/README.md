@@ -59,7 +59,7 @@ non per produzione. Vedi anche `patches/strata-policy/STATUS_P6_NON_ACCENDERE.md
 |---|---|---|---|
 | HumanEval | openai/openai_humaneval @7dce605 | MIT | incluso |
 | MT-Bench questions | lm-sys/FastChat @587d5cf `question.jsonl` | Apache-2.0 | incluso (anche nei mix proxy_30, check_v12, holdout, sessions_all, mtbench2) |
-| `edit_np` (dataset di edit con licenza non pubblicabile) | revisione @<revisione non pubblicata> | **licenza in conflitto** (non "MIT"): la card HF alla revisione usata dice MIT, il `LICENSE` del repo GitHub del dataset dice una licenza con una clausola che vieta l'uso come dati di training | **escluso** dal 2026-10-26 (testi, prompt tokenizzati, ID, metriche per richiesta, artefatti H-CA); usato solo in locale. Vedi `ERRATA_LICENZE.md` |
+| `edit_np` (dataset di edit con licenza non pubblicabile) | revisione `<revisione non pubblicata>` | **licenza in conflitto** (non "MIT"): la card HF alla revisione usata dice MIT, il `LICENSE` aggiunto in seguito al repo GitHub del dataset ha una clausola che ne vieta l'uso come dati di training | **escluso** dal 2026-10-26 (testi, prompt tokenizzati, ID, metriche per richiesta, artefatti H-CA); usato solo in locale. Vedi `ERRATA_LICENZE.md` |
 | Sessioni agent (agent_v12*) | repo Strata | MIT | incluso |
 | Spec-Bench | hemingkx/Spec-Bench @fd2c1cd | repo Apache-2.0, contenuto da fonti con licenze miste | **escluso**: `specbench.jsonl` non è mai stato pubblicato; fino al 2026-10-26 però `bench/strata-bench/datasets/subset_ids.json` conteneva 26 ID `specbench-N` (solo ID). Il file è stato tolto dalla testa il 2026-10-26 |
 | E1 `policy/data` (dolly, mbpp, tokenizer Qwen) | Hugging Face | CC-BY-SA-3.0 / CC-BY-4.0 / altro | **escluso** (riscaricabile). Anche `e1_per_request.csv` (ID e metriche per richiesta di Dolly e MBPP) è stato tolto dalla testa il 2026-10-26; restano solo gli aggregati (`e1_summary.json`, `E1_results.md`) |
@@ -67,8 +67,8 @@ non per produzione. Vedi anche `patches/strata-policy/STATUS_P6_NON_ACCENDERE.md
 > **Nota del 2026-10-26 (licenze).** Dalla testa di questo branch sono stati tolti 292 file: i 291 della sezione 4 di
 > `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11; 289 derivati da `edit_np`,
 > `e1_per_request.csv`, `subset_ids.json`) più `logs/tmp_scratch/gen/gen.py` (ID di `edit_np`). Sono elencati in `.gitignore`
-> e negli exclude di `sync.sh`. **Questi file esistono ancora nei commit precedenti** del branch (fino a `54002c1`):
-> la storia non è stata riscritta. Dettagli in `ERRATA_LICENZE.md` e `SKIPPED.md`.
+> e negli exclude di `sync.sh`. Il 2026-10-26 sono stati tolti anche dalla storia del branch (riscrittura con force push);
+> il 2026-10-27 la storia è stata riscritta di nuovo per togliere nome e identificativi del dataset. Dettagli in `ERRATA_LICENZE.md` e `SKIPPED.md`.
 
 ## Cosa non è incluso
 

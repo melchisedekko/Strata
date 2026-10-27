@@ -12,7 +12,17 @@ così; la revisione HF fissata è sostituita da `<revisione non pubblicata>`, lo
 La classificazione e il ragionamento sulle licenze sono invariati. Il codice legge la revisione dalla variabile
 `STRATAPLUS_EDIT_DATASET_REV` (o dal file locale), come già l'identificativo.
 
-**Attenzione:** i commit precedenti di questo branch contengono ancora il nome (la storia non è stata riscritta).
+Aggiornamento 2026-10-27 (terza passata): sono stati resi generici anche gli ultimi dettagli identificativi: la data e
+il titolo del commit del `LICENSE` GitHub, il nome esatto di quella licenza e la citazione della sua clausola (ora:
+"licenza con restrizione d'uso per ML, aggiunta in seguito"), la descrizione dei dati del dataset correlato, i nomi dei
+campi del dataset (il codice li legge da `STRATAPLUS_EDIT_FIELD_INSTR` / `STRATAPLUS_EDIT_FIELD_INSTR_SHORT` o dal file
+locale), il numero di righe usate e lo sha256 del file dati locale. Il ragionamento resta: la card HF dichiara una
+licenza permissiva, il repo GitHub ha aggiunto in seguito una licenza con restrizione d'uso per ML; conflitto non
+risolto, quindi escluso.
+
+**Storia:** il 2026-10-27 la storia di questo branch (solo i commit propri del fork, dopo il punto di diramazione da
+upstream) è stata riscritta con le stesse sostituzioni; i commit hanno nuovi SHA. GitHub può continuare a servire i
+vecchi commit tramite URL diretto finché non esegue la garbage collection.
 
 ## Cosa è cambiato
 

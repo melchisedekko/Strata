@@ -27,6 +27,9 @@ def _private(key):
 
 # Etichetta locale (prefisso ID, campo source, nome file) del dataset di edit con licenza non pubblicabile.
 EDIT_TAG = _private("STRATAPLUS_EDIT_TAG")
+# nomi dei campi istruzione (completa / breve) del dataset: valori solo locali
+FIELD_INSTR = _private("STRATAPLUS_EDIT_FIELD_INSTR")
+FIELD_INSTR_SHORT = _private("STRATAPLUS_EDIT_FIELD_INSTR_SHORT")
 
 REV = {
     "humaneval": ("openai/openai_humaneval", "7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544",
@@ -80,12 +83,12 @@ def main():
     ed = []
     for i in pick:
         r = rows[i]
-        instr = r.get("<campo istruzione>") or r.get("<campo istruzione breve>")
+        instr = r.get(FIELD_INSTR) or r.get(FIELD_INSTR_SHORT)
         ed.append({"id": f"{EDIT_TAG}-{r.get('id', i)}-{r.get('name', '')}", "category": "edit", "source": EDIT_TAG,
                    "prompt": f"Edit the following Python code according to the instruction. Reply with the complete "
                              f"edited file in one code block.\n\nInstruction: {instr}\n\n```python\n{r['before']}\n```"})
     meta["sources"][EDIT_TAG] = {"repo": REV[EDIT_TAG][0], "rev": REV[EDIT_TAG][1], "file_sha256": sha,
-                                    "license": "MIT", "rows": len(rows), "instruction": "<campo istruzione>"}
+                                    "license": "MIT", "rows": len(rows), "instruction": FIELD_INSTR}
 
     sb = [json.loads(l) for l in get(SPECBENCH_URL).decode().splitlines() if l.strip()]
     bycat = {}

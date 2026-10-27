@@ -15,7 +15,8 @@ presentarlo così: le due fonti upstream sono in conflitto.
 
 - La card Hugging Face alla revisione usata (e su main, tag `license:mit`) dice MIT:
   `<URL non pubblicato>` (card alla revisione `<revisione non pubblicata>`)
-- Il `LICENSE` del repo GitHub del dataset, aggiunto in seguito (commit `<commit non pubblicato>`), è una licenza con restrizione d'uso per ML. La clausola 4 vieta di usare i contenuti come dati di
+- Il `LICENSE` del repo GitHub del dataset, aggiunto in seguito (commit `<commit non pubblicato>`), è una
+  licenza con restrizione d'uso per il machine learning: una clausola vieta di usare i contenuti come dati di
   training di modelli di machine learning (`<URL non pubblicato>`).
 
 Non è stabilito quale delle due valga per la revisione fissata. Per questo, per decisione del proprietario, **nessun
@@ -49,6 +50,7 @@ Restano gli aggregati (`e1_summary.json`, `pool_sizes.json`, `E1_results.md`).
 
 ## 5. Limite: la storia git
 
-**I file tolti esistono ancora nei commit precedenti** del branch `strataplus-research` (gli 8 commit di sync del
-2026-10-26, 19:16–19:21 CET, fino a `54002c1`) e sono quindi ancora scaricabili dal fork pubblico. La riscrittura della
-storia (con force push) non è ancora autorizzata.
+I file tolti sono stati eliminati anche dalla storia del branch `strataplus-research` (riscrittura con force push del
+2026-10-26, solo i commit propri del fork). Il 2026-10-27 la storia è stata riscritta di nuovo per togliere il nome e gli
+identificativi del dataset `edit_np` (vedi `REDACTION_2026-10-27.md`). GitHub può continuare a servire i vecchi commit
+tramite URL diretto finché non esegue la garbage collection.
