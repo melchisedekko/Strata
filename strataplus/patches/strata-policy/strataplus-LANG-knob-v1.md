@@ -5,7 +5,7 @@
   (CMakeLists.txt). Local commit `4c4a7002`.
 - Apply: `git apply strataplus-H1-arbiter-v1.patch && git apply strataplus-LANG-knob-v1.patch`. Both checks rc=0, and
   the resulting tree equals 4c4a7002.
-- 8 files, +544/-3. No data, no secrets, no edit_np. The example table only has placeholder numbers (format only).
+- 8 files, +544/-3. No data, no secrets, no data from the non-publishable-license edit dataset. The example table only has placeholder numbers (format only).
 
 ## What it adds (OFF by default = upstream)
 - Startup: `--spec-lang-table FILE` or `STRATA_SPEC_LANG_TABLE=FILE` (the flag wins). Loaded and validated before the

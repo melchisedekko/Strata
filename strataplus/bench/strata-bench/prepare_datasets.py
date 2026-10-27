@@ -5,12 +5,33 @@ Output: datasets/<nome>.jsonl con campi: id, category (code|chat|edit|specbench:
 system (opzionale). Più datasets/subset_ids.json con seed, revisioni pinnate e ID scelti.
 Le revisioni sono pinnate: cambiare una revisione = nuovo protocollo.
 """
-import argparse, io, json, os, random, urllib.request, hashlib
+import argparse, io, json, os, random, sys, urllib.request, hashlib
+
+
+def _private(key):
+    """Valore SOLO LOCALE (mai pubblicato) del dataset di edit con licenza non pubblicabile (etichetta pubblica: edit_np).
+    Ordine: variabile d'ambiente `key`; altrimenti il file locale STRATAPLUS_PRIVATE_ENV
+    (default /workspace/lic_rm/edit_dataset.env, righe KEY=VALORE). Se manca: errore esplicito."""
+    v = os.environ.get(key, "").strip()
+    path = os.environ.get("STRATAPLUS_PRIVATE_ENV", "/workspace/lic_rm/edit_dataset.env")
+    if not v and os.path.isfile(path):
+        for line in open(path):
+            k, _, x = line.strip().partition("=")
+            if k == key:
+                v = x.strip()
+    if not v:
+        sys.exit(f"ERRORE: {key} non impostata (ne' in ambiente ne' in {path}). "
+                 "Impostala o crea il file locale: vedi /workspace/lic_rm/README_edit_dataset.md")
+    return v
+
+
+# Etichetta locale (prefisso ID, campo source, nome file) del dataset di edit con licenza non pubblicabile.
+EDIT_TAG = _private("STRATAPLUS_EDIT_TAG")
 
 REV = {
     "humaneval": ("openai/openai_humaneval", "7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544",
                   "openai_humaneval/test-00000-of-00001.parquet"),
-    "edit_np": ("edit_np", "<revisione non pubblicata>", "data/test-00000-of-00001.parquet"),
+    EDIT_TAG: (_private("STRATAPLUS_EDIT_DATASET"), _private("STRATAPLUS_EDIT_DATASET_REV"), "data/test-00000-of-00001.parquet"),
 }
 MTBENCH_URL = ("https://raw.githubusercontent.com/lm-sys/FastChat/587d5cfa1609a43d192cedb8441cac3c17db105d/"
                "fastchat/llm_judge/data/mt_bench/question.jsonl")
@@ -54,16 +75,16 @@ def main():
             "subcategory": mt[i]["category"], "prompt": mt[i]["turns"][0]} for i in pick]   # solo primo turno
     meta["sources"]["mt-bench"] = {"url": MTBENCH_URL, "license": "Apache-2.0 (FastChat)", "rows": len(mt)}
 
-    rows, sha = hf_parquet(*REV["edit_np"])
+    rows, sha = hf_parquet(*REV[EDIT_TAG])
     pick = sorted(rng.sample(range(len(rows)), a.n))
     ed = []
     for i in pick:
         r = rows[i]
         instr = r.get("<campo istruzione>") or r.get("<campo istruzione breve>")
-        ed.append({"id": f"edit_np-{r.get('id', i)}-{r.get('name', '')}", "category": "edit", "source": "edit_np",
+        ed.append({"id": f"{EDIT_TAG}-{r.get('id', i)}-{r.get('name', '')}", "category": "edit", "source": EDIT_TAG,
                    "prompt": f"Edit the following Python code according to the instruction. Reply with the complete "
                              f"edited file in one code block.\n\nInstruction: {instr}\n\n```python\n{r['before']}\n```"})
-    meta["sources"]["edit_np"] = {"repo": REV["edit_np"][0], "rev": REV["edit_np"][1], "file_sha256": sha,
+    meta["sources"][EDIT_TAG] = {"repo": REV[EDIT_TAG][0], "rev": REV[EDIT_TAG][1], "file_sha256": sha,
                                     "license": "MIT", "rows": len(rows), "instruction": "<campo istruzione>"}
 
     sb = [json.loads(l) for l in get(SPECBENCH_URL).decode().splitlines() if l.strip()]
@@ -77,7 +98,7 @@ def main():
                         "prompt": q["turns"][0]})
     meta["sources"]["spec-bench"] = {"url": SPECBENCH_URL, "license": "Apache-2.0", "rows": len(sb)}
 
-    for name, items in (("humaneval", he), ("mtbench", mtb), ("edit_np", ed), ("specbench", spb)):
+    for name, items in (("humaneval", he), ("mtbench", mtb), (EDIT_TAG, ed), ("specbench", spb)):
         with open(os.path.join(a.out, f"{name}.jsonl"), "w") as f:
             for it in items:
                 f.write(json.dumps(it, ensure_ascii=False) + "\n")

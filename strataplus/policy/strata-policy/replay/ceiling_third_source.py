@@ -27,6 +27,23 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from strata_sim.sim2 import Profile, load_p4, S_P1, p2_s
 from strata_sim.postprocess import load_tf
 
+
+def _private(key):
+    """Valore SOLO LOCALE (mai pubblicato) del dataset di edit con licenza non pubblicabile (etichetta pubblica: edit_np).
+    Ordine: variabile d'ambiente `key`; altrimenti il file locale STRATAPLUS_PRIVATE_ENV
+    (default /workspace/lic_rm/edit_dataset.env, righe KEY=VALORE). Se manca: errore esplicito."""
+    v = os.environ.get(key, "").strip()
+    path = os.environ.get("STRATAPLUS_PRIVATE_ENV", "/workspace/lic_rm/edit_dataset.env")
+    if not v and os.path.isfile(path):
+        for line in open(path):
+            k, _, x = line.strip().partition("=")
+            if k == key:
+                v = x.strip()
+    if not v:
+        sys.exit(f"ERRORE: {key} non impostata (ne' in ambiente ne' in {path}). "
+                 "Impostala o crea il file locale: vedi /workspace/lic_rm/README_edit_dataset.md")
+    return v
+
 OUTD = sys.argv[1]; os.makedirs(OUTD, exist_ok=True)
 TR = "/workspace/strata-plus/traces/v1.1"
 FILES = {"tune": os.path.join(TR, "tf_d7_p30.jsonl"), "agent": os.path.join(TR, "agent_turns_bench_tf_d7.jsonl")}
@@ -210,7 +227,7 @@ PROFS = [Profile("%s|rho%.4f" % (sn, r), s, r, P4.rho_lu, "band") for sn, s in S
          for r in (0.059, 0.0791, 0.0992, 0.1193, 0.1394)]
 THIRDS = ["suffix", "ngA", "ngB"]
 OUT = {"label": "STUDIO DEL TETTO, descrittivo, offline, oracolo per round (limite superiore); tok/s STIMATI (costo V1 M-real); "
-                "mtp dal proxy llama.cpp 2B; nessuna sessione agentica reale (agent_edit = edit_np costruito, licenza in verifica da Bench, solo calcolo offline)",
+                "mtp dal proxy llama.cpp 2B; nessuna sessione agentica reale (agent_edit = " + _private("STRATAPLUS_EDIT_NAME") + " costruito, licenza in verifica da Bench, solo calcolo offline)",
        "files_sha256": {k: sha(p) for k, p in FILES.items()}, "cost_sha256": sha(COSTP), "script_sha256": sha(os.path.abspath(__file__)),
        "llama_cpp_rev": "d327bf1f0780f87b8c01b367b61853b0c291d7c4", "results": {}}
 

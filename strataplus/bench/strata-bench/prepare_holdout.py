@@ -4,7 +4,7 @@
 Stesse fonti pinnate e stessi template di prepare_datasets.py; seed 20261026. Scrive datasets/holdout_90.jsonl
 (campo split='holdout') e datasets/holdout_ids.json (seed, ID, sha256 sorgenti)."""
 import json, os, random, hashlib
-from prepare_datasets import REV, MTBENCH_URL, get, hf_parquet
+from prepare_datasets import REV, EDIT_TAG, MTBENCH_URL, get, hf_parquet
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'datasets')
 SEED, N = 20261026, 30
 tune = {json.loads(l)['id'] for l in open(f'{D}/proxy_30.jsonl')}
@@ -25,14 +25,14 @@ for i in sorted(rng.sample(cand, N)):
     out.append({'id': f"mtbench-{mt[i]['question_id']}", 'category': 'chat', 'source': 'mt-bench', 'subcategory': mt[i]['category'],
                 'split': 'holdout', 'prompt': mt[i]['turns'][0]})
 meta['sources']['mt-bench'] = {'url': MTBENCH_URL, 'file_sha256': hashlib.sha256(raw).hexdigest()}
-rows, sha = hf_parquet(*REV['edit_np'])
-def cid(i): r = rows[i]; return f"edit_np-{r.get('id', i)}-{r.get('name', '')}"
+rows, sha = hf_parquet(*REV[EDIT_TAG])
+def cid(i): r = rows[i]; return f"{EDIT_TAG}-{r.get('id', i)}-{r.get('name', '')}"
 cand = [i for i in range(len(rows)) if cid(i) not in tune]
 for i in sorted(rng.sample(cand, N)):
     r = rows[i]; instr = r.get('<campo istruzione>') or r.get('<campo istruzione breve>')
-    out.append({'id': cid(i), 'category': 'edit', 'source': 'edit_np', 'split': 'holdout',
+    out.append({'id': cid(i), 'category': 'edit', 'source': EDIT_TAG, 'split': 'holdout',
                 'prompt': f"Edit the following Python code according to the instruction. Reply with the complete edited file in one code block.\n\nInstruction: {instr}\n\n```python\n{r['before']}\n```"})
-meta['sources']['edit_np'] = {'repo': REV['edit_np'][0], 'rev': REV['edit_np'][1], 'file_sha256': sha}
+meta['sources'][EDIT_TAG] = {'repo': REV[EDIT_TAG][0], 'rev': REV[EDIT_TAG][1], 'file_sha256': sha}
 assert not ({o['id'] for o in out} & tune) and len({o['id'] for o in out}) == 3 * N
 for c in ('code', 'chat', 'edit'): meta['ids'][c] = [o['id'] for o in out if o['category'] == c]
 with open(f'{D}/holdout_90.jsonl', 'w') as f:

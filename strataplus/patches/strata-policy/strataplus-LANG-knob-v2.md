@@ -3,7 +3,7 @@
 - sha256: `18122e6bd7696905d645c283c45cfb7c6e616b74ea43c1ec0f9f3f3d9287e2a8` (v1 files unchanged).
 - Base: b24c6a1d + `strataplus-H1-arbiter-v2.patch` (= `719b4d66`). Commits `6b7dea81` (LANG v1) and `560464ef` (LANG v2). Local only, not pushed.
 - Apply: `git apply strataplus-LANG-knob-v2.patch` after H1 v2 (`git apply --check` rc=0; the resulting tree equals 560464ef).
-- 11 files, +710/-4. No data, no secrets, no files named edit_np.
+- 11 files, +710/-4. No data, no secrets, no files named after the non-publishable-license edit dataset.
 
 ## New in v2
 1. **Pipeline T** (serve `--spec-pipeline`).

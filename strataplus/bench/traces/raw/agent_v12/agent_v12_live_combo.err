@@ -5,3 +5,8 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_combo] rep 0 agent_v12-server-option#t1: 36 tok, 10 verify + 0 replay rounds, acc 26/46, decode 9199 ms
 [agent_v12_live_combo] rep 0 agent_v12-server-option#t2: 50 tok, 14 verify + 0 replay rounds, acc 36/50, decode 8757 ms
 [agent_v12_live_combo] rep 0 agent_v12-server-option#t3: 39 tok, 10 verify + 0 replay rounds, acc 29/42, decode 2546 ms
+[agent_v12_live_combo] rep 0 agent_v12-server-option#t4: 79 tok, 20 verify + 0 replay rounds, acc 59/84, decode 8678 ms
+[agent_v12_live_combo] rep 0 agent_v12-expert-cache#t0: 53 tok, 12 verify + 0 replay rounds, acc 41/56, decode 2563 ms
+[agent_v12_live_combo] rep 0 agent_v12-expert-cache#t1: 68 tok, 26 verify + 0 replay rounds, acc 42/110, decode 4812 ms
+[agent_v12_live_combo] rep 0 agent_v12-expert-cache#t2: 56 tok, 22 verify + 0 replay rounds, acc 34/82, decode 4777 ms
+[agent_v12_live_combo] rep 0 agent_v12-expert-cache#t3: 54 tok, 15 verify + 0 replay rounds, acc 39/73, decode 4147 ms

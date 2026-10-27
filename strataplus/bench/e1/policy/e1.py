@@ -21,6 +21,24 @@ from strata_sim.native import NativeSuffixDrafter  # noqa: E402
 from tokenizers import Tokenizer  # noqa: E402
 
 DATA = os.path.join(HERE, "data")
+
+
+def _private(key):
+    """Valore SOLO LOCALE (mai pubblicato) del dataset di edit con licenza non pubblicabile (etichetta pubblica: edit_np).
+    Ordine: variabile d'ambiente `key`; altrimenti il file locale STRATAPLUS_PRIVATE_ENV
+    (default /workspace/lic_rm/edit_dataset.env, righe KEY=VALORE). Se manca: errore esplicito."""
+    v = os.environ.get(key, "").strip()
+    path = os.environ.get("STRATAPLUS_PRIVATE_ENV", "/workspace/lic_rm/edit_dataset.env")
+    if not v and os.path.isfile(path):
+        for line in open(path):
+            k, _, x = line.strip().partition("=")
+            if k == key:
+                v = x.strip()
+    if not v:
+        sys.exit(f"ERRORE: {key} non impostata (ne' in ambiente ne' in {path}). "
+                 "Impostala o crea il file locale: vedi /workspace/lic_rm/README_edit_dataset.md")
+    return v
+
 SRC = "/workspace/strata-src"
 DMAX = 7
 KS = (5, 7)               # 5 = lookup k of the default --spec 6 (S-1); 7 = Dmax
@@ -56,9 +74,9 @@ def load_requests(n_chat=400, seed=0):
         u = r.instruction + (("\n\n" + r.context) if r.context else "")
         R.append(dict(domain="chat", scope="chat", src=f"dolly/{r.category}", id=f"dolly/{r.Index}",
                       prompt=TEMPLATE.format(u=u), y=r.response))
-    ce = pd.read_parquet(f"{DATA}/ds_edit_np/data/test-00000-of-00001.parquet")
+    ce = pd.read_parquet(f"{DATA}/ds_{_private('STRATAPLUS_EDIT_NAME')}/data/test-00000-of-00001.parquet")
     for r in ce.itertuples():
-        R.append(dict(domain="edit", scope="edit", src="edit_np", id=f"edit_np/{r.id}",
+        R.append(dict(domain="edit", scope="edit", src=_private("STRATAPLUS_EDIT_TAG"), id=f"{_private('STRATAPLUS_EDIT_TAG')}/{r.id}",
                       prompt=TEMPLATE.format(u=r.<campo istruzione> + "\n\n```python\n" + r.before + "\n```"),
                       y="```python\n" + r.after + "\n```"))
     R += git_sessions()

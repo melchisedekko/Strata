@@ -5,7 +5,7 @@
 # Vedi ERRATA_LICENZE.md e SKIPPED.md. ATTENZIONE: sync.sh usa 'git add -f', quindi questo file da solo
 # non basta: sync.sh ha exclude rsync e un controllo equivalenti (stessa lista).
 
-# 4a. Dataset non permissivi diversi da edit_np
+# 4a. Dataset non permissivi diversi dal dataset di edit con licenza non pubblicabile (edit_np)
 # Dolly (CC-BY-SA-3.0) + MBPP (CC-BY-4.0) + edit_np: ID e metriche per richiesta
 /bench/e1/policy/results/e1_per_request.csv
 # 26 ID Spec-Bench (mista) + edit_np
@@ -20,7 +20,6 @@
 /policy/strata-policy/replay/results/v2/split_c/
 # File singoli:
 /bench/strata-bench/datasets/agent_turns_bench.jsonl
-/bench/strata-bench/datasets/edit_np.jsonl
 /bench/strata-bench/datasets/check_v12.jsonl
 /bench/strata-bench/datasets/check_v12_ids.json
 /bench/strata-bench/datasets/diag_prompts.jsonl
@@ -328,17 +327,16 @@
 /bench/strata-bench/runs/live_combo_aprime_holdout.md
 /logs/tmp_scratch/mcp_test.json
 /logs/tmp_scratch/order.txt
-# Pattern generici (case-insensitive tramite classi di caratteri), anche per file futuri:
-*[cC][aA][nN][iI][tT][eE][dD][iI][tT]*
-*[cC][aA][nN]_[iI][tT]_[eE][dD][iI][tT]*
+# Pattern generici sul nome del dataset (anche per file futuri): dal 2026-10-27 in un file SOLO LOCALE letto da
+# sync.sh (righe gitignore:/rsync:/rx:), insieme a 2 percorsi esatti tolti da qui. sync.sh mette anche in quarantena
+# ogni file il cui percorso o contenuto contiene il nome.
 # Artefatti H-CA (classificatore di contenuto). Precisazione del 2026-10-26: in results/v2/hca/ si pubblicano
-# solo hca_results.json (aggregati) e REPORT.md; tutto il resto (in particolare edit_np_fitted/) resta locale.
+# solo hca_results.json (aggregati) e REPORT.md; tutto il resto (in particolare la cartella <etichetta>_fitted/) resta locale.
 # Pubblicabili anche replay/run_hca_addendum1.json, run_hca_addendum2.json e il codice (hca_v2.py, hca_split.py, ...).
 policy/strata-policy/replay/results/v2/hca/*
 !policy/strata-policy/replay/results/v2/hca/hca_results.json
 !policy/strata-policy/replay/results/v2/hca/REPORT.md
 /policy/strata-policy/replay/run_hca.json
-**/lang_inventory_edit_np/
 # smoke/probe H-CA copiati da /tmp (il codice *.py resta)
 logs/tmp_scratch/**/*[hH][cC][aA]*
 !logs/tmp_scratch/**/*[hH][cC][aA]*.py

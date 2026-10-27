@@ -53,7 +53,7 @@ committed=accepted+1, ms_measured` (somma dei timer), `ms_split{verify, mtp, mtp
 
 ## Aggiornamento 25/10 07:40 CET — campi aggiunti (check_v12, holdout_lookup_v12, agent_v12)
 - **license** (riga header e request): licenza della sorgente del prompt. holdout: humaneval MIT, mt-bench Apache-2.0 (FastChat),
-  edit_np MIT; agent_v12: "MIT (Strata LICENSE, …)" per i contenuti dei file del repo Strata; SYSTEM/task/TOOLS da
+  edit_np MIT sulla card (licenza in conflitto, non pubblicabile); agent_v12: "MIT (Strata LICENSE, …)" per i contenuti dei file del repo Strata; SYSTEM/task/TOOLS da
   tools/agent_turns_bench.py dello stesso repo.
 - **spec_params** (scritto da tools/annotate_v11.py `spec_meta`, oppure da post_holdout_lookup_v12.py):
   `draft_p_min` (+`draft_p_min_source`, `draft_p_min_compared_to`), `draft_n_min` (+`_source`), `draft_n_max_cli`,

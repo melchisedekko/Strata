@@ -4,7 +4,7 @@
 - Base: `b24c6a1d` (melchisedekko/Strata main). Cumulative diff = P1-P6 rebased onto b24c6a1d (no conflicts) + H1 v1.
   Local commit `e959072a` on `strataplus-h1-hlang-local` (worktree /workspace/policy-local/h1_worktree). Not pushed.
 - Apply: `git apply strataplus-H1-arbiter-v1.patch` at the repo root -> `git apply --check` rc=0 on b24c6a1d.
-- 21 files, +1643/-10. No data, no secrets, no files with "edit_np" in the name.
+- 21 files, +1643/-10. No data, no secrets, no files named after the non-publishable-license edit dataset.
 
 ## What it adds (OFF by default = upstream)
 - `STRATA_SPEC_JOINT=1`: JointGate arbiter (P5/P6, already announced).

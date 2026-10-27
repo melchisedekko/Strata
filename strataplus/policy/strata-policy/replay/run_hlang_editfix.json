@@ -288,6 +288,6 @@
   "tempi dal proxy CPU, s(T) parametrico",
   "un solo dominio: il confronto per linguaggio vs per dominio e' qui confronto con una config unica"
  ],
- "publication": "edit-fix e' MIT: tracce, aggregati e per-richiesta pubblicabili. Nessun dato edit_np usato. CommitPackFT non incluso.",
+ "publication": "edit-fix e' MIT: tracce, aggregati e per-richiesta pubblicabili. Nessun dato del dataset di edit con licenza non pubblicabile (edit_np) usato. CommitPackFT non incluso.",
  "compute": "replay a nice 19, un thread, finestra annunciata nel room e in cpu_busy_policy.log"
 }

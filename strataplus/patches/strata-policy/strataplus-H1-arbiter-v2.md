@@ -4,7 +4,7 @@
 - Base: `b24c6a1d`. Cumulative diff = P1-P6 rebased + H1 v1 (`e959072a`) + H1 v2 (`719b4d66`), branch
   `strataplus-h1-hlang-v2-local` in /workspace/policy-local/h1_worktree. Local only, not pushed.
 - Apply: `git apply strataplus-H1-arbiter-v2.patch` on b24c6a1d (`git apply --check` rc=0). 21 files, +1689/-10.
-- No data, no secrets, no files named edit_np.
+- No data, no secrets, no files named after the non-publishable-license edit dataset.
 
 ## New in v2
 - `STRATA_SPEC_COST_FROZEN` and `STRATA_SPEC_JOINT_DET` are mutually exclusive. "Set" means non-null, non-empty and not "0".

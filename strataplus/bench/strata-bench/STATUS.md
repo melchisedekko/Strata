@@ -26,7 +26,7 @@ Etichetta: proxy CPU, non AMD. Nessun push, nessuna PR.
 | tools/mtp_cap_prefix_check.py | 42dd8621503ef07dbea6e34d1ca22791e001fed95062d7970898a81b6fc8b993 |
 | tools/aprime_post.py | 808ebcc95997fef256bb4f3642f5740ff2aa6c4755a3c34750c20eecaab82e3e |
 | runs/run_live_combo_aprime_holdout.sh | 5066b06a… (SUPERATO dalla v2, mai lanciato) |
-| runs/live_combo_aprime_holdout.md | 8df75e27… (SUPERATO dalla v2; contiene gli ID edit_np) |
+| runs/live_combo_aprime_holdout.md | 8df75e27… (SUPERATO dalla v2; contiene gli ID di edit_np) |
 | runs/run_live_combo_aprime_holdout_v2.sh | e1140052619d4dd9c672c96f0926f0399c113f21382595d6e7f2813067c51ace (**non lanciato**) |
 | runs/live_combo_aprime_holdout_v2.md | 3d734b32f979b4cd952547d0ae8cf9f1b4cdf29e91b9b7b154bc0ed3cbba0e04 |
 | datasets/holdout_90_codechat.jsonl / holdout_90_edit_np.jsonl | 18288525… / 6b2404c8… |
@@ -39,8 +39,8 @@ Etichetta: proxy CPU, non AMD. Nessun push, nessuna PR.
 | strata-plus/traces/LOG_SCHEMA_v2.md | 7ddba21278636e028f1a9cd49701453cc9f6446f770845d11a9332f1cb1816a4 |
 | strata-plus/traces/SUMMARY_v2.md | c310626f4ab235cf7fa1157d2828e88d4eba3d0d2866902e68855f97feb040c5 |
 
-## Regola edit_np (Alessandro, 19:45 CET)
-- Gli artefatti nuovi del dominio edit hanno `edit_np` nel nome. Vale per la run (a′) v2 e per E4: run_e4_v14.sh è stato modificato prima di partire, nuovo sha 8da5f5f7…, copia in logs/run_e4_v14.pre_edit_np.sh.bak. I tag edit sono e4v14_tf_d7_p30_<n>_edit_np.
+## Regola sul dataset di edit con licenza non pubblicabile, `edit_np` (Alessandro, 19:45 CET)
+- Gli artefatti nuovi del dominio edit hanno nel nome un'etichetta locale del dataset (in questo documento scritta `edit_np`). Vale per la run (a′) v2 e per E4: run_e4_v14.sh è stato modificato prima di partire, nuovo sha 8da5f5f7…, copia in logs/run_e4_v14.pre_edit_np.sh.bak. I tag edit sono e4v14_tf_d7_p30_<n>_edit_np.
 - I report contengono solo aggregati per dominio.
 - Inventario dei file esistenti con ID edit per richiesta: logs/edit_per_request_inventory_20261026.txt (271 file).
 

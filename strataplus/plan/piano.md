@@ -167,14 +167,14 @@ Regole:
 | chat | [HuggingFaceH4/mt_bench_prompts](https://huggingface.co/datasets/HuggingFaceH4/mt_bench_prompts) | Apache-2.0 | Chat multi-turn |
 | chat (mix) | [hemingkx/Spec-Bench](https://github.com/hemingkx/Spec-Bench) | Repo Apache-2.0. Le sottosorgenti hanno licenze proprie, **da verificare** prima di ridistribuire | Benchmark standard di speculative decoding |
 | chat / estrattivo | [abisee/cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail) | Apache-2.0 | Riassunto: stress test favorevole al lookup |
-| edit | [edit_np](<URL non pubblicato>) | MIT | 105 task di edit Python con prima/dopo |
+| edit | dataset di edit con licenza non pubblicabile (`edit_np`) | MIT sulla card HF, in conflitto con il repository (vedi `ERRATA_LICENZE.md`) | 105 task di edit Python con prima/dopo |
 | edit | [bigcode/commitpackft](https://huggingface.co/datasets/bigcode/commitpackft) | Tag MIT, ma il codice resta sotto la licenza dei repo originari: solo uso interno | Edit da commit reali |
 | edit / agentico | `tools/agent_turns_bench.py` (repo Strata, MIT) | MIT | Sessioni multi-turn sui file del repo. Ha temperatura 1, quindi **serve una variante greedy**. È il caso chiave per H2 |
 | — | SWE-bench Lite | Licenza **non mostrata** nei tag HF: da verificare | Opzionale |
 
 Per H2 contano due cose:
 - l'ordine delle richieste e `session_id`;
-- un controllo di contaminazione: problemi indipendenti (HumanEval) contro sessioni (agent_turns, edit_np prima→dopo).
+- un controllo di contaminazione: problemi indipendenti (HumanEval) contro sessioni (agent_turns, `edit_np` prima→dopo).
 
 ## 8. Criteri go/no-go (indipendenti dall'hardware)
 

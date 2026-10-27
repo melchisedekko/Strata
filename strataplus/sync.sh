@@ -22,6 +22,12 @@ RUNLOG=$REPO/.sync_runs.log          # escluso dal repo (.git/info/exclude)
 GITLEAKS=$(command -v gitleaks || echo /home/box/.local/bin/gitleaks)
 ALLOW=$D/SECRET_SCAN_ALLOWLIST.txt   # "sha256  path" di falsi positivi verificati a mano
 SELF=sync.sh                         # questo script (contiene le regex di scansione): non scansionato
+# pattern privati (nome del dataset di edit con licenza non pubblicabile, "edit_np"): file SOLO LOCALE, mai pubblicato.
+# Righe rx:/rsync:/gitignore:/lic:/sub: (formato descritto nel file stesso). Senza questo file il sync non parte.
+PRIV=${STRATAPLUS_SYNC_PRIVATE:-/workspace/lic_rm/sync_private_patterns.txt}
+[ -r "$PRIV" ] || { echo "ERRORE: file locale dei pattern privati mancante: $PRIV" >&2; exit 5; }
+priv() { sed -n "s/^$1://p" "$PRIV"; }
+[ -n "$(priv rx)" ] && [ -n "$(priv sub)" ] || { echo "ERRORE: $PRIV senza righe rx: o sub:" >&2; exit 5; }
 T0=$(date '+%Y-%m-%d %H:%M:%S')
 
 cd "$REPO"
@@ -45,7 +51,6 @@ logs/tmp_scratch/cv12t/
 logs/tmp_scratch/v11p/
 policy/strata-policy/replay/results/v2/split_c/
 bench/strata-bench/datasets/agent_turns_bench.jsonl
-bench/strata-bench/datasets/edit_np.jsonl
 bench/strata-bench/datasets/check_v12.jsonl
 bench/strata-bench/datasets/check_v12_ids.json
 bench/strata-bench/datasets/diag_prompts.jsonl
@@ -329,7 +334,10 @@ logs/tmp_scratch/c1.json
 logs/tmp_scratch/hfcards/
 LICEOF
 )
-# pattern generici (anche per file futuri): edit_np e artefatti H-CA/classificatore; il codice *.py resta
+# percorsi esatti che contengono il nome del dataset: dal file privato (righe lic:)
+LIC_LIST+=$'\n'"$(priv lic)"
+# pattern generici (anche per file futuri): nome del dataset edit_np (dal file privato, righe rsync:) e artefatti
+# H-CA/classificatore; il codice *.py resta
 # dati GREZZI di terzi (regola del 2026-10-26 20:05 CET, LICENSE_INVENTORY.md sez. 7): mai sul fork
 RAW_EXC=(--exclude='*.[pP][aA][rR][qQ][uU][eE][tT]' --exclude='*.[aA][rR][rR][oO][wW]' --exclude='[tT][oO][kK][eE][nN][iI][zZ][eE][rR]*.json'
   --exclude='*[hH][fF][-_][cC][aA][rR][dD]*' --exclude='[nN][fF][eE]_*.jsonl'
@@ -337,16 +345,19 @@ RAW_EXC=(--exclude='*.[pP][aA][rR][qQ][uU][eE][tT]' --exclude='*.[aA][rR][rR][oO
 # cartelle di download dei dataset in bench/strata-bench/datasets/*/: solo note/hash/log del team (dopo LIC_EXC)
 DS_ALLOW=(--include='/datasets/*/LICENSE_NOTE*.md' --include='/datasets/*/SHA256SUMS' --include='/datasets/*/*.sha256' --include='/datasets/*/*.log'
   --exclude='/datasets/*/**')
-LIC_EXC=(--exclude='*[cC][aA][nN][iI][tT][eE][dD][iI][tT]*' --exclude='*[cC][aA][nN]_[iI][tT]_[eE][dD][iI][tT]*'
-         --include='/replay/results/v2/hca/hca_results.json' --include='/replay/results/v2/hca/REPORT.md' --exclude='/replay/results/v2/hca/*'
+LIC_EXC=(--include='/replay/results/v2/hca/hca_results.json' --include='/replay/results/v2/hca/REPORT.md' --exclude='/replay/results/v2/hca/*'
          --exclude='*[hH][cC][aA]*.npz' --exclude='*[hH][cC][aA]*.npy' --exclude='*[hH][cC][aA]*.pkl' --exclude='*[hH][cC][aA]*.joblib'
          --exclude='*[hH][cC][aA]*.pt' --exclude='*[hH][cC][aA]*.safetensors' --exclude='*[hH][cC][aA]*fitted*'
          --exclude='*[hH][-_][cC][aA]*.npz' --exclude='*[hH][-_][cC][aA]*.npy' --exclude='*[hH][-_][cC][aA]*.pkl' --exclude='*[hH][-_][cC][aA]*.joblib' --exclude='*[hH][-_][cC][aA]*.pt' --exclude='*[hH][-_][cC][aA]*.safetensors' --exclude='*[hH][-_][cC][aA]*fitted*'
          --include='*[cC][lL][aA][sS][sS][iI][fF][iI][eE][rR]*.py' --exclude='*[cC][lL][aA][sS][sS][iI][fF][iI][eE][rR]*.*')
 # solo per logs/tmp_scratch (da /tmp): smoke/probe H-CA esclusi, il codice resta
+while IFS= read -r g; do [ -n "$g" ] && LIC_EXC=(--exclude="$g" "${LIC_EXC[@]}"); done < <(priv rsync)
 LIC_EXC_TMP=(--include='*[hH][cC][aA]*.py' --include='*[hH][-_][cC][aA]*.py' --exclude='*[hH][cC][aA]*' --exclude='*[hH][-_][cC][aA]*')
 
 TMPD=$(mktemp -d); trap 'rm -rf "$TMPD"' EXIT
+priv rx > "$TMPD/priv_rx.txt"
+# redazione degli elenchi di percorsi stampati in SKIPPED.md
+while IFS= read -r r; do [ -n "$r" ] && printf 's/%s/edit_np/Ig\n' "$r"; done < "$TMPD/priv_rx.txt" > "$TMPD/priv_red.sed"
 : > "$TMPD/large.txt"
 
 # m <delete:0|1> <dest-subdir> <src...> [-- rsync-extra-args...]
@@ -377,14 +388,14 @@ m() {
 }
 
 # ---- plan ----
-m 0 plan /workspace/strata-plus/piano.md /workspace/strata-plus/log_format.md
+m 0 plan /workspace/strata-plus/piano.md /workspace/strata-plus/log_format.md /workspace/strata-plus/RULE_HLANG2_ceiling.md
 # (plan/PLAN_PAGE.md = export manuale della Page, non toccato dallo script)
 
 # ---- policy ----
 m 1 policy/strata-policy /workspace/strata-policy/ -- --exclude='/patchwork/' --exclude='/pt12_worktree/' --exclude='/patches/'
 
 # ---- scout ----
-m 0 scout/strata-plus /workspace/strata-plus/scout.md /workspace/strata-plus/scout_greedy_rho.md /workspace/strata-plus/scout_patch_support.md
+m 0 scout/strata-plus /workspace/strata-plus/scout.md /workspace/strata-plus/scout_greedy_rho.md /workspace/strata-plus/scout_patch_support.md /workspace/strata-plus/scout_spec_HFC_v2.md /workspace/strata-plus/scout_HLANG_sota.md
 m 1 scout/scout /workspace/scout/ -- --exclude='/Strata/' --exclude='/llama.cpp/' --exclude='/colibri/' --exclude='/HIP-CPU/' \
      --exclude='/arctic/' --exclude='/sglang/' --exclude='/vllm/'
 m 0 scout/refs /workspace/issues1.txt /workspace/prs.txt /workspace/q2b_index.json /workspace/ggufhdr.py
@@ -433,6 +444,39 @@ if [ -d /workspace/llama.cpp/.git ]; then
   cmp -s "$TMPD/llama.diff" "$D/patches/llama.cpp/worktree_uncommitted.diff" || cp "$TMPD/llama.diff" "$D/patches/llama.cpp/worktree_uncommitted.diff"
 fi
 
+# ---- redazione alla pubblicazione (2026-10-27) ----
+# File congelati (sola lettura) o con sha256 registrato altrove (manifest, run file pre-registrati, script in coda nella
+# pipeline): l'originale locale NON si tocca; la copia pubblicata sostituisce il nome del dataset con "edit_np"
+# (regole sub: del file privato). Mappa sha256 originale -> pubblicato: REDACTION_2026-10-27.md.
+PUB_REDACT=(
+  bench/strata-bench/LANG_COUNT_editfix.json bench/strata-bench/LANG_COUNT_editfix.md
+  bench/strata-bench/datasets/humanevalfix_9a41762f/LICENSE_NOTE.md
+  bench/strata-bench/runs/live_combo_aprime_holdout_v2.md bench/strata-bench/runs/run_live_combo_aprime_holdout_v2.sh
+  bench/strata-bench/tools/lang_count_editfix.py bench/strata-bench/tools/post_holdout_lookup_v12.py
+  bench/strata-bench/run_e4_v14.sh bench/strata-bench/LICENSE_INVENTORY.md bench/strata-bench/LICENSE_INVENTORY.csv
+  bench/strata-bench/DATASETS.md bench/traces/DATASETS.md bench/traces/AMD_PROTOCOL_v3.md
+  bench/traces/docs_prev/LOG_SCHEMA.md.pre_0810 bench/traces/holdout_lookup_v12/post_holdout_lookup_v12.py
+  policy/strata-policy/replay/hca_split.py policy/strata-policy/replay/results/v2/hca/REPORT.md
+  policy/strata-policy/replay/run_hca_addendum1.json policy/strata-policy/replay/run_hca_addendum2.json
+)
+python3 - "$D" "$PRIV" "${PUB_REDACT[@]}" <<'PY'
+import os, re, stat, sys
+root, priv = sys.argv[1], sys.argv[2]
+subs = []
+for l in open(priv, encoding="utf-8"):
+    if l.startswith("sub:"):
+        a, b = l[4:].rstrip("\n").split("\t", 1); subs.append((re.compile(a, re.I), b))
+for rel in sys.argv[3:]:
+    p = os.path.join(root, rel)
+    if not os.path.isfile(p) or os.path.islink(p): continue
+    s = open(p, encoding="utf-8").read(); t = s
+    for rx, b in subs: t = rx.sub(lambda m: b, t)
+    if t != s:
+        mode = stat.S_IMODE(os.stat(p).st_mode); os.chmod(p, mode | stat.S_IWUSR)
+        with open(p, "w", encoding="utf-8") as h: h.write(t)
+        os.chmod(p, mode)
+PY
+
 # ---- rimozione binari ELF (output di build) ----
 python3 - "$D" "$TMPD/elf.txt" <<'PY'
 import os,sys
@@ -452,10 +496,13 @@ PY
 : > "$TMPD/lic.txt"
 if [ -f "$D/.gitignore" ]; then
   LICG=$(mktemp -d -p "$TMPD"); git init -q "$LICG"; mkdir -p "$LICG/strataplus"; cp "$D/.gitignore" "$LICG/strataplus/.gitignore"
+  priv gitignore >> "$LICG/strataplus/.gitignore"   # righe private (nome del dataset), solo nella copia temporanea
   ( cd "$D" && find . -type f ! -name .gitignore -printf 'strataplus/%P\n' ) \
     | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic.txt" || true
-  # controllo sul contenuto: qualsiasi file (anche nuovo, con nome qualsiasi) che contiene ID edit_np resta fuori
-  grep -rlIiE 'edit_np[-_][0-9]+' "$D" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
+  # guardia sul nome (2026-10-27): qualsiasi file il cui contenuto (anche binario) o percorso contiene il nome del
+  # dataset (pattern rx: del file privato, case-insensitive) va in quarantena: non pubblicato, elencato in SKIPPED.md (redatto)
+  grep -rliE -f "$TMPD/priv_rx.txt" "$D" 2>/dev/null | sed "s|^$D/|strataplus/|" >> "$TMPD/lic.txt" || true
+  ( cd "$D" && find . -type f -printf 'strataplus/%P\n' ) | grep -iE -f "$TMPD/priv_rx.txt" >> "$TMPD/lic.txt" || true
   # quarantena (2026-10-26): file di dati NUOVI (non in HEAD) sotto datasets/, *.jsonl di tmp_scratch, parquet/arrow ovunque:
   # restano fuori finche' qualcuno non li rivede e ne mette lo sha256 in REVIEWED (sotto). I file gia' tracciati passano.
   REVIEWED=$(cat <<'REVEOF'
@@ -523,33 +570,33 @@ if grep -qxF "$SELF" "$TMPD/tok.txt"; then echo "ERRORE: il token compare in syn
   echo "# File esclusi dal backup (generato da sync.sh)"
   echo
   echo "## File > $MAXSIZE (non committati): path, byte, sha256"
-  sort -u "$TMPD/large.txt" | sed 's/^/    /'
+  sort -u "$TMPD/large.txt" | sed -E -f "$TMPD/priv_red.sed" | sed 's/^/    /'
   echo
   echo "## Binari ELF rimossi (output di build, ricostruibili)"
-  sed 's/^/    /' "$TMPD/elf.txt"
+  sed -E -f "$TMPD/priv_red.sed" "$TMPD/elf.txt" | sed 's/^/    /'
   echo
   echo "## Esclusi dalla scansione segreti (contenuto sospetto, NON pubblicato)"
-  sed 's/^/    /' "$TMPD/secret.txt"
+  sed -E -f "$TMPD/priv_red.sed" "$TMPD/secret.txt" | sed 's/^/    /'
   echo
   cat <<'SKEOF'
 ## Esclusi per licenza (decisione del proprietario, 2026-10-26)
 
 Riferimento: `LICENSE_INVENTORY.md` (sha256 2e160c96f86ca192a52a4935fa6c609e854137ccd9b08452d7eac91acfd1dc11,
 CSV sha256 80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc), sezione 4, più il controllo del 2026-10-26.
-Elenco esatto dei percorsi: `strataplus/.gitignore` (stessa lista negli exclude rsync di `sync.sh`).
+Elenco esatto dei percorsi: `strataplus/.gitignore` (stessa lista negli exclude rsync di `sync.sh`); i percorsi e i pattern che contengono il nome del dataset di edit con licenza non pubblicabile (`edit_np`) stanno in un file solo locale letto da `sync.sh` (vedi `REDACTION_2026-10-27.md`).
 Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 ma **restano nei commit precedenti**
 (la riscrittura della storia non è ancora autorizzata). Vedi `ERRATA_LICENZE.md`.
 
 | Categoria | File | Motivo |
 |---|---|---|
-| Dati derivati da edit_np (testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE GitHub edit_np una licenza con una clausola che vieta l'uso come dati di training |
-| `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più edit_np |
-| `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più edit_np |
-| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene 2 ID edit_np e la diagnosi per richiesta del dominio edit |
-| Artefatti H-CA stimati su edit_np: `policy/strata-policy/replay/results/v2/hca/` tranne `hca_results.json` e `REPORT.md` (aggregati, pubblicati), quindi anche `edit_np_fitted/`; `replay/run_hca.json`; smoke/probe H-CA da /tmp; pesi/feature di classificatori; qualsiasi nome con "edit_np" (es. `lang_inventory_edit_np/`) | pattern, anche per file futuri | uso solo locale; si pubblicano gli aggregati, i run file addendum e il codice (`hca*.py`) |
-| File con ID edit_np nel contenuto (`edit_np-N`), qualunque nome; per ora `bench/traces/mtp_cap_prefix_check.json`, `bench/strata-bench/runs/live_combo_aprime_holdout.md`, `logs/tmp_scratch/mcp_test.json`, `logs/tmp_scratch/order.txt` (mai pubblicati) | controllo sul contenuto in `sync.sh` | ID e metriche per richiesta |
+| Dati derivati dal dataset di edit con licenza non pubblicabile (`edit_np`: testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE del repository GitHub una licenza con una clausola che vieta l'uso come dati di training |
+| `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più `edit_np` |
+| `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più `edit_np` |
+| `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene 2 ID `edit_np` e la diagnosi per richiesta del dominio edit |
+| Artefatti H-CA stimati su `edit_np`: `policy/strata-policy/replay/results/v2/hca/` tranne `hca_results.json` e `REPORT.md` (aggregati, pubblicati), comprese le sottocartelle dei modelli stimati; `replay/run_hca.json`; smoke/probe H-CA da /tmp; pesi/feature di classificatori; qualsiasi percorso che contiene il nome del dataset | pattern, anche per file futuri | uso solo locale; si pubblicano gli aggregati, i run file addendum e il codice (`hca*.py`) |
+| File il cui contenuto o percorso contiene il nome del dataset (ID compresi), qualunque nome; per ora `bench/traces/mtp_cap_prefix_check.json`, `bench/strata-bench/runs/live_combo_aprime_holdout.md`, `logs/tmp_scratch/mcp_test.json`, `logs/tmp_scratch/order.txt` (mai pubblicati) | guardia sul nome in `sync.sh` (pattern dal file solo locale) | ID e metriche per richiesta |
 | `bench/strata-bench/datasets/specbench.jsonl` | regola già esistente | Spec-Bench, licenze miste |
-| `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, edit_np, HumanEval in parquet e tokenizer Qwen |
+| `bench/e1/policy/data/` | regola già esistente | Dolly, MBPP, `edit_np`, HumanEval in parquet e tokenizer Qwen |
 
 Totale tolto dalla testa il 2026-10-26: 292 file (291 del par. 4 + `gen.py`).
 
@@ -571,21 +618,23 @@ Mai pubblicati (non sono mai arrivati sul fork).
 | quarantena: file NUOVI sotto `datasets/`, `*.jsonl` nuovi in `tmp_scratch/`, parquet/arrow | fuori finche' non revisionati (sha256 in `REVIEWED` in `sync.sh`) |
 
 Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
-edit_np), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
+`edit_np`), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
 SKEOF
   if [ -s "$TMPD/lic.txt" ]; then
     echo
     echo "### Rimossi in questo sync dal controllo licenze/quarantena"
-    sed 's/^/    /' "$TMPD/lic.txt"
+    sed -E -f "$TMPD/priv_red.sed" "$TMPD/lic.txt" | sort -u | sed 's/^/    /'
   fi
 } > "$D/SKIPPED.md"
 ( cd "$D" && find . -type f ! -name MANIFEST.sha256 -print0 | sort -z | xargs -0 sha256sum > MANIFEST.sha256 )
 
 # ---- commit (solo se cambia qualcosa) ----
 git add -A -f -- strataplus   # -f: il .gitignore upstream ignora *.log e logs/
-git ls-files -z -- strataplus | xargs -0 grep -lIiE 'edit_np[-_][0-9]+' > "$TMPD/lic_id.txt" 2>/dev/null || true
+# guardia finale sul nome del dataset: contenuto o percorso di qualsiasi file nell'indice -> commit annullato (exit 4)
+git ls-files -z -- strataplus | xargs -0 grep -liE -f "$TMPD/priv_rx.txt" > "$TMPD/lic_id.txt" 2>/dev/null || true
+git ls-files -- strataplus | grep -iE -f "$TMPD/priv_rx.txt" >> "$TMPD/lic_id.txt" || true
 if { [ -n "${LICG:-}" ] && git ls-files -- strataplus | git -C "$LICG" check-ignore --no-index --stdin > "$TMPD/lic_idx.txt"; } || { cat "$TMPD/lic_id.txt" >> "$TMPD/lic_idx.txt"; [ -s "$TMPD/lic_id.txt" ]; }; then
-  echo "ERRORE: file esclusi per licenza nell'indice:" >&2; cat "$TMPD/lic_idx.txt" >&2
+  echo "ERRORE: file esclusi per licenza nell'indice:" >&2; sed -E -f "$TMPD/priv_red.sed" "$TMPD/lic_idx.txt" >&2
   git reset -q -- strataplus; exit 4
 fi
 if git diff --cached --quiet; then

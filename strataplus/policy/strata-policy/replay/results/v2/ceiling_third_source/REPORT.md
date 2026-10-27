@@ -60,7 +60,7 @@ Serve ≥3% sul tune, confermato sul holdout. **Nessun dominio la supera**, né 
 - **Il tetto è schiacciato dal limite di finestra 7.** L'oracolo MTP+lookup è già a 6,7–6,8 token per round su code, su un massimo di 8. Sul holdout code il 67% delle posizioni ha mtp_acc = 7.
 - Le varianti A e B di ngram_mod coincidono. I match a 24 token arrivano in sequenze lunghe, quindi n_min non conta.
 - agent_edit:
-  - solo 10 sessioni × 3 turni, costruite da edit_np;
+  - solo 10 sessioni × 3 turni, costruite dal dataset di edit con licenza non pubblicabile (`edit_np`);
   - solo tune, descrittivo, senza conferma su holdout;
   - non sono le sessioni reali di tools/agent_turns_bench.py;
   - la licenza è ancora in verifica da parte di Bench, quindi i dati sono usati solo per questo calcolo offline.
