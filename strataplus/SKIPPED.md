@@ -8,7 +8,6 @@
     bench/strata-bench/proxy/llama_spec_trace.v12.nollamafile
     bench/strata-bench/proxy/llama_spec_trace.v14.nollamafile
     bench/strata-bench/proxy/strata_proxy_spec
-    logs/tmp_scratch/dflash2-gfx1100-220970.out
     logs/tmp_scratch/jg/fin/bug
     logs/tmp_scratch/jg/fin/bug_g
     logs/tmp_scratch/jg/fin/controller_test_gsan

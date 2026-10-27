@@ -132,3 +132,4 @@
 2026-10-27 14:28:38 | 2026-10-27 14:31:39 | default_a_r1_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.165
 2026-10-27 13:45:14 | 2026-10-27 14:31:39 | aprime_holdout_v3  (strata-bench, 1 processo llama) | FAILED greedy (ii) dopo A1/B1, exit 1; END scritto alle 14:36 |
 2026-10-27 14:49:19 | (in corso) | START diag_greedy_aprime  (strata-bench, non temporizzata, build Policy in corso) |
+2026-10-27 15:12:38 | (in corso) | START diag_tiled_mm0 GGML_CPU_TILED_MM=0 (strata-bench, non temporizzata, CPU condivisa, build Policy in corso) |

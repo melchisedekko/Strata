@@ -1,0 +1,5 @@
+0.01.205.340 I cmn          init: llama threadpool init, n_threads = 6
+0.01.375.844 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
+[aprime_tm0] rep 0 HumanEval/2: 97 tok, 24 verify + 0 replay rounds, acc 74/91, decode 4050 ms
+[aprime_tm0] rep 0 HumanEval/13: 128 tok, 37 verify + 0 replay rounds, acc 91/120, decode 6067 ms

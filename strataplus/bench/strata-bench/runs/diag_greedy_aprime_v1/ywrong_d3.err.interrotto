@@ -1,0 +1,2 @@
+0.01.106.170 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
