@@ -459,6 +459,8 @@ PUB_REDACT=(
   policy/strata-policy/replay/hca_split.py policy/strata-policy/replay/results/v2/hca/REPORT.md
   policy/strata-policy/replay/run_hca_addendum1.json policy/strata-policy/replay/run_hca_addendum2.json
 )
+# log del monitor CPU (elenchi di processi in tempo reale): possono catturare righe di comando con il nome
+while IFS= read -r -d '' f; do PUB_REDACT+=("$f"); done < <(cd "$D" && find . -type f \( -name 'cpu_*.log' -o -name 'cpu_busy*.log' \) -printf '%P\0')
 python3 - "$D" "$PRIV" "${PUB_REDACT[@]}" <<'PY'
 import os, re, stat, sys
 root, priv = sys.argv[1], sys.argv[2]
@@ -469,11 +471,11 @@ for l in open(priv, encoding="utf-8"):
 for rel in sys.argv[3:]:
     p = os.path.join(root, rel)
     if not os.path.isfile(p) or os.path.islink(p): continue
-    s = open(p, encoding="utf-8").read(); t = s
+    s = open(p, encoding="utf-8", errors="surrogateescape").read(); t = s
     for rx, b in subs: t = rx.sub(lambda m: b, t)
     if t != s:
         mode = stat.S_IMODE(os.stat(p).st_mode); os.chmod(p, mode | stat.S_IWUSR)
-        with open(p, "w", encoding="utf-8") as h: h.write(t)
+        with open(p, "w", encoding="utf-8", errors="surrogateescape") as h: h.write(t)
         os.chmod(p, mode)
 PY
 

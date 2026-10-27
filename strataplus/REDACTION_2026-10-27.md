@@ -50,3 +50,7 @@ registrato nei manifest; la colonna "originale" è quella registrata (e verifica
 | `policy/strata-policy/replay/results/v2/hca/REPORT.md` | `7cf45552739c015afea01d402eec89696aad92c482989d73ff78d9d41a5daa56` | `5d96c2da6dd372a96c749fd818e9a3c459f36125fb056694cb891e4b02ebb981` |
 | `policy/strata-policy/replay/run_hca_addendum1.json` | `c3490e220313ec377e0fbc0f63f0994a228d351d0286b9248ec125a81726c386` | `fd1339b0d6b232d95a1fd667ff735d8ed18bf4669c6c2c143ba49aa5e4bb6f9f` |
 | `policy/strata-policy/replay/run_hca_addendum2.json` | `4ac1f236b7bf500760fa444d0c7f34e3810700b5f21236fc419389173fc60e49` | `6131e81c6ce66ad4d7ff402eefb33d5cbc41090880979e72af2c2aaf0939eb44` |
+
+Inoltre, nella sola copia pubblicata, `sync.sh` redige i log del monitor CPU (`cpu_*.log`, `cpu_busy*.log`), che
+registrano in tempo reale le righe di comando dei processi e possono quindi catturare il nome (questi log non hanno
+sha256 registrati). Qualsiasi altro file che contenga il nome resta fuori dalla pubblicazione (quarantena in `sync.sh`).

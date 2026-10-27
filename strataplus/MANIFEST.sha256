@@ -1,9 +1,9 @@
 7a071843813dc8a1581c62309edfbc52ec862c9f1a6bc4c202b1ffc24c568676  ./.gitignore
 b4421dcb308492eba3744aea73db6922b06e1de16d19e5b62796779f62437a98  ./ERRATA_LICENZE.md
 e544bc1e811ff5b5d2e4a14e3198993cc37c01bb07566768b30bdca936771e72  ./README.md
-9244a90603da43bb2061b5eadf148e26522aa51405b675d82153b13c4a9eb5b6  ./REDACTION_2026-10-27.md
+e516257e5fa89109ee935a53972a127067c23097d2989dff12ce385068e2a831  ./REDACTION_2026-10-27.md
 59c82184111dc133e57c93ca79a95238a498ae1434e566b111597710c1c19915  ./SECRET_SCAN_ALLOWLIST.txt
-7bfe73aa3de8c94f0a4e3fc406dd316bee9c49ae58dbb6b0898e35d2d94c45c9  ./SKIPPED.md
+d4a4ed261edeaa04dc2bb4b9e231195b1652e3f3caad999ff7f1e75a58abf2d0  ./SKIPPED.md
 0e3e3b86afcea14ad70ea47b003121a65a0ec03c5d2122efdac5d03ce79b94bf  ./bench/e1/policy/README.md
 693f9ca8ec8f63bdb3b531ddcf434b4be1648fd1cdcfd6bbc904af38809693dc  ./bench/e1/policy/e1.py
 7c79b7a14e9bc71eaff46bff8c3d48c7d94577c1625895256ca89aa6658a3c2f  ./bench/e1/policy/e1_report.py
@@ -233,6 +233,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 9adce4c36394aa11f84bbd50128eca238f6def225f2ab32363ee5fb817899d71  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
+3a7b8de6b4c74c528ee27211d1a26c7534502a1c45f1dac83c2fd77b9e32b047  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_combo.log
 569a3736b5641fdf973baeb45c98caf1b41438dffd4c511486dda422e8d1bdc5  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_lookup.log
 03018f145c85154ec920fa743039aef9d268bfa6dadd09b6361f671554ba3aa6  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
@@ -893,4 +894,4 @@ c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/strata
 542900a0d13e88f5bc01859fd02fd8a2467e7ebaddfccd35232a496f15f87526  ./scout/strata-plus/scout_greedy_rho.md
 e2a511665472d454af472d2a6607b4b9767fb7d48dec26fdf0f4aaefc6915d8a  ./scout/strata-plus/scout_patch_support.md
 72a4b1342c23ec12cabebd45ef396966eb23192df1e78c8e6abcac1c6f213d27  ./scout/strata-plus/scout_spec_HFC_v2.md
-2d2f0364cda9d1c9d9dcd76c93b66bcc6862694755852506f7bc3825a752dad3  ./sync.sh
+d3aaab62ac80f2b065c20781929edffbb6110bcfe36f65a996d5236accd382d0  ./sync.sh
