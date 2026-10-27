@@ -1053,6 +1053,7 @@ void gdn_conv_ab_multi(const float* history, const float* qkv, const float* conv
         case 4: gdn_conv_ab_kernel<4, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
         case 5: gdn_conv_ab_kernel<5, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
         case 6: gdn_conv_ab_kernel<6, true><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+        case 7: case 8: gdn_conv_ab_kernel<8, false><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;   // STRATA+ P-T12 measure v2: era il default <8> di 7dd5cf1
         default: gdn_conv_ab_kernel<kVerifyMaxT, false><<<grid, S, 0, st>>>(conv_blocks, hist, qkv, conv_w, h, channels, qk_heads, eps, t_begin, commit, x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
     }
     check("gdn_conv_ab_multi");
@@ -1102,6 +1103,7 @@ void gdn_ab_multi(const float* x, const uint16_t* w_alpha, const uint16_t* w_bet
         case 4: gdn_ab_multi_kernel<4, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
         case 5: gdn_ab_multi_kernel<5, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
         case 6: gdn_ab_multi_kernel<6, true><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
+        case 7: case 8: gdn_ab_multi_kernel<8, false><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;   // STRATA+ P-T12 measure v2: era il default <8> di 7dd5cf1
         default: gdn_ab_multi_kernel<kVerifyMaxT, false><<<blocks, 64, 0, st>>>(x, w_alpha, w_beta, dt, ssm_a, gate, beta, n_embd, h_v, n_tok); break;
     }
     check("gdn_ab_multi");
@@ -1146,6 +1148,10 @@ void gdn_step_norm_multi(float* state, const float* h, int conv_channels, const 
     if (split && (t_out_begin >= n_tok || n_tok - t_out_begin >= 2)) {
         const dim3 grid((unsigned) h_v, S / GS_COLS), block(GS_COLS, RG);
         if (t_out_begin >= n_tok) {   // no outputs (the commit): the state only
+            if (n_tok <= 8)   // STRATA+ P-T12 measure v2: a T <= 8 l'istanza <8> di 7dd5cf1
+                gdn_state_replay_kernel<8><<<grid, block, 0, (cudaStream_t) stream>>>(
+                    state, h, conv_channels, gate, beta, h_k, h_v, n_tok, n_keep);
+            else
             gdn_state_replay_kernel<kVerifyMaxT><<<grid, block, 0, (cudaStream_t) stream>>>(
                 state, h, conv_channels, gate, beta, h_k, h_v, n_tok, n_keep);
         } else {

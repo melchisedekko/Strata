@@ -1317,8 +1317,39 @@ int ExpertPool::phase_tasks(int64_t rows) const {
     return tasks_ == 0 ? 3 * (n_ + (host_works_ ? 1 : 0)) : (int) (std::min)(rows, (int64_t) tasks_);
 }
 
+// STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
+// Un job con nt > 8 token diventa job da <= 8 token consecutivi (stesso blob e fmt, act/nact/out agli stessi offset):
+// i kernel CPU multi-token restano quelli esistenti (<= 8), il blob dell'expert viene letto una volta per blocco.
+static bool pt12_split_over8(const ExpertJobMulti* jobs, int n, std::vector<ExpertJobMulti>& sub) {
+    bool any = false;
+    for (int e = 0; e < n; ++e) any = any || jobs[e].nt > 8;
+    if (!any) return false;
+    sub.clear();
+    for (int e = 0; e < n; ++e) {
+        const ExpertJobMulti& j = jobs[e];
+        if (j.nt <= 8) { sub.push_back(j); continue; }
+        for (int t0 = 0; t0 < j.nt; t0 += 8) {
+            ExpertJobMulti s;
+            s.blob = j.blob;
+            s.fmt = j.fmt;
+            s.nt = (std::min)(8, j.nt - t0);
+            for (int t = 0; t < s.nt; ++t) {
+                s.act[t] = j.act[t0 + t];
+                s.out[t] = j.out[t0 + t];
+                s.nact[t] = j.nact[t0 + t];
+            }
+            sub.push_back(s);
+        }
+    }
+    return true;
+}
+
 void ExpertPool::run_split_multi(ExpertJobMulti* jobs, int n) {
     if (n <= 0) return;
+    {   // STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
+        std::vector<ExpertJobMulti> sub;
+        if (pt12_split_over8(jobs, n, sub)) { run_split_multi(sub.data(), (int) sub.size()); return; }
+    }
     if (n > kMaxSplitMulti || expert_oracle_q8_0_enabled()) {
         // one token at a time through the single-token path (the oracle contract has no multi kernel)
         std::vector<ExpertJob> single;
@@ -1358,6 +1389,10 @@ void ExpertPool::run_split_multi(ExpertJobMulti* jobs, int n) {
 
 void ExpertPool::run_split_multi_native(const NativeFmt& f, ExpertJobMulti* jobs, int n) {
     if (n <= 0) return;
+    {   // STRATA+ P-T12 measure: guardia di misura, conservativa (costo dei miss a T>8 al più sovrastimato)
+        std::vector<ExpertJobMulti> sub;
+        if (pt12_split_over8(jobs, n, sub)) { run_split_multi_native(f, sub.data(), (int) sub.size()); return; }
+    }
     const auto t0 = std::chrono::steady_clock::now();
     // more distinct experts than buffers: run them in batches
     for (int b0 = 0; b0 < n; b0 += kMaxSplitMulti) {

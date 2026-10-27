@@ -2798,6 +2798,12 @@ int main(int argc, char** argv) {
         }
         }
     }
+    // STRATA+ P-T12 measure v2: --serve (con o senza --mtp) ha ancora array per slot/finestra a 8 (verify.hpp batch,
+    // generate.cpp dwin_s / t2_rej / slots): fuori perimetro, si esce prima di qualunque allocazione o query al device
+    if (o.serve) {
+        std::fprintf(stderr, "build di misura P-T12: --serve non supportato (array batch a 8), usare solo la CLI\n");
+        return 2;
+    }
 #if defined(STRATA_USE_HIP)
     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
@@ -16468,6 +16474,9 @@ int main(int argc, char** argv) {
         if (const char* tf = std::getenv("STRATA_SPEC_TRACE"); tf != nullptr && tf[0] != '\0') spec_trace = std::fopen(tf, "w");
         std::vector<double> t_cycle_ms((size_t) o.spec + 1, 0.0);
         std::vector<int64_t> t_cycle_n((size_t) o.spec + 1, 0), t_cycle_seen((size_t) o.spec + 1, 0);
+        // STRATA+ P-T12 measure: miss CPU per larghezza (ExpertDispatch::multi_misses / multi_entries, delta del round) e round con miss
+        std::vector<int64_t> t_cycle_miss((size_t) o.spec + 1, 0), t_cycle_ent((size_t) o.spec + 1, 0),
+            t_cycle_rmiss((size_t) o.spec + 1, 0);
         // plan v0.3 P6: with a native pack the first window is the last prompt token alone (it produces the first
         // generated token and the MTP's first cell); otherwise the token loop already did that.
         bool first_window = native_pack;
@@ -16669,6 +16678,7 @@ int main(int argc, char** argv) {
             if (adapt_nowait()) apply_pending(false);
                 else if (pending.empty() || ++pending_age >= adapt_lag()) apply_pending(true);
             if (use_mtp && mtp.prob() && !from_sfx && T_mtp > 1 && o.spec_corrupt <= 0) ver.set_spec_q(mtp.spec_q(), T_mtp - 1);
+            const int64_t pt12_miss0 = drive.d.multi_misses, pt12_ent0 = drive.d.multi_entries;   // STRATA+ P-T12 measure
             if (!ver.run(T, window.data(), p, &drive_pool_multi, &drive, outv.data(), err)) {
                 // The graph of a window size is captured the first time it is used, and the draft source took VRAM: when the capture runs
                 // out of memory the window gets one row narrower (the widths below it are already captured) instead of the run failing.
@@ -16772,6 +16782,10 @@ int main(int argc, char** argv) {
             if (!t_cycle.empty() && timed_round && T <= o.spec && t_cycle_seen[(size_t) T]++ > 0) {
                 t_cycle_ms[(size_t) T] += round_ms;
                 ++t_cycle_n[(size_t) T];
+                const int64_t pt12_dm = drive.d.multi_misses - pt12_miss0;   // STRATA+ P-T12 measure
+                t_cycle_miss[(size_t) T] += pt12_dm;
+                t_cycle_ent[(size_t) T] += drive.d.multi_entries - pt12_ent0;
+                if (pt12_dm > 0) ++t_cycle_rmiss[(size_t) T];
             }
             if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin.data(), T_mtp - 1, a);
             if (timed_round && chain_n == 0) policy.observe(from_sfx, T, a, sfx_match, round_ms);
@@ -16810,6 +16824,14 @@ int main(int argc, char** argv) {
             std::printf("%-24s", "window cost (ms/round)");
             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
                 if (t_cycle_n[i] > 0) std::printf(" T%zu:%.2f(n=%lld)", i, t_cycle_ms[i] / (double) t_cycle_n[i], (long long) t_cycle_n[i]);
+            std::printf("\n");
+            // STRATA+ P-T12 measure: stessi round della riga sopra; v2: somma per round su tutti i layer, formato senza spazi
+            std::printf("%-24s", "window CPU miss/round (sum over all layers; ent = entries/round, all layers; rmiss/rnomiss = rounds with/without a miss):");
+            for (size_t i = 1; i < t_cycle_ms.size(); ++i)
+                if (t_cycle_n[i] > 0)
+                    std::printf(" T%zu:%.2f(ent=%.2f,rmiss=%lld,rnomiss=%lld)", i,   // STRATA+ P-T12 measure v2
+                                (double) t_cycle_miss[i] / (double) t_cycle_n[i], (double) t_cycle_ent[i] / (double) t_cycle_n[i],
+                                (long long) t_cycle_rmiss[i], (long long) (t_cycle_n[i] - t_cycle_rmiss[i]));
             std::printf("\n");
             {   // STRATA_VERIFY_PROFILE / STRATA_ROUTE_STATS: the same split per window width (bench only)
                 const std::string pt = ver.profile_by_t_report();

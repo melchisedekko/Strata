@@ -2100,7 +2100,7 @@ bool Verifier::record_window(int T, cudaStream_t cs, std::string& err) {
                                       nat_xq_ + (size_t) tb * (N / 32) * 36, hit_scratch_, dst_buf, cs, gy);
             } else {
                 moe_grouped_s2(gp, gs, gn, p_dst, p_tok, cap, cap, hit_xq_ + (size_t) tb * (N / 32) * 34,
-                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs);
+                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs, n);   // STRATA+ P-T12 measure v2: n token
             }
         };
         bool hits_in_combine = false;
@@ -2355,7 +2355,7 @@ std::string Verifier::profile_by_t_report() {
                                           "(gap)", "head", "hc0 norm", "hc0 down", "hc0 up", "hc1 norm", "hc1 down", "hc1 up"};
     std::string out;
     char b[96];
-    for (int T = 1; T <= 8; ++T) {
+    for (int T = 1; T <= strata::kernels::kVerifyMaxT; ++T) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
         if (prof_t_win_[T] == 0) continue;
         double total = 0;
         std::snprintf(b, sizeof b, "T%d (n=%lld):", T, (long long) prof_t_win_[T]);
@@ -2754,7 +2754,7 @@ void Verifier::accumulate_profile(const unsigned long long* stamps) {
     double before[2][kProfPer];
     std::memcpy(before, prof_sum_, sizeof before);
     accumulate_profile_inner(stamps);
-    if (last_t_ >= 1 && last_t_ <= 8) {
+    if (last_t_ >= 1 && last_t_ <= strata::kernels::kVerifyMaxT) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
         for (int k = 0; k < 2; ++k)
             for (int i = 0; i < kProfPer; ++i) prof_t_sum_[last_t_][k][i] += prof_sum_[k][i] - before[k][i];
         ++prof_t_win_[last_t_];
