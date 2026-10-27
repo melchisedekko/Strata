@@ -1,0 +1,112 @@
+{
+  "url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407",
+  "repository_url": "https://api.github.com/repos/ggml-org/llama.cpp",
+  "labels_url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407/labels{/name}",
+  "comments_url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407/comments",
+  "events_url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407/events",
+  "html_url": "https://github.com/ggml-org/llama.cpp/issues/27407",
+  "id": 5196018126,
+  "node_id": "I_kwDOJH_K4M8AAAABNbTxzg",
+  "number": 27407,
+  "title": "spec: greedy output diverges from non-speculative baseline under batched verification on CUDA (deterministic numerics; draft-simple alone reproduces, DFlash2 amplifies)",
+  "user": {
+    "login": "indubwestep",
+    "id": 42228841,
+    "node_id": "MDQ6VXNlcjQyMjI4ODQx",
+    "avatar_url": "https://avatars.githubusercontent.com/u/42228841?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/indubwestep",
+    "html_url": "https://github.com/indubwestep",
+    "followers_url": "https://api.github.com/users/indubwestep/followers",
+    "following_url": "https://api.github.com/users/indubwestep/following{/other_user}",
+    "gists_url": "https://api.github.com/users/indubwestep/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/indubwestep/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/indubwestep/subscriptions",
+    "organizations_url": "https://api.github.com/users/indubwestep/orgs",
+    "repos_url": "https://api.github.com/users/indubwestep/repos",
+    "events_url": "https://api.github.com/users/indubwestep/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/indubwestep/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "labels": [
+    {
+      "id": 6702083732,
+      "node_id": "LA_kwDOJH_K4M8AAAABj3mulA",
+      "url": "https://api.github.com/repos/ggml-org/llama.cpp/labels/stale",
+      "name": "stale",
+      "color": "ededed",
+      "default": false,
+      "description": null,
+      "archived_at": null,
+      "archived_by": null
+    }
+  ],
+  "state": "closed",
+  "locked": false,
+  "assignees": [
+
+  ],
+  "milestone": null,
+  "comments": 3,
+  "created_at": "2026-08-19T18:43:48Z",
+  "updated_at": "2026-10-09T01:23:33Z",
+  "closed_at": "2026-10-09T01:23:33Z",
+  "assignee": null,
+  "author_association": "NONE",
+  "issue_field_values": [
+
+  ],
+  "type": null,
+  "active_lock_reason": null,
+  "sub_issues_summary": {
+    "total": 0,
+    "completed": 0,
+    "percent_completed": 0
+  },
+  "issue_dependencies_summary": {
+    "blocked_by": 0,
+    "total_blocked_by": 0,
+    "blocking": 0,
+    "total_blocking": 0
+  },
+  "body": "## Summary\n\nWith speculative decoding enabled (`temp 0`, fixed seed, otherwise identical settings), greedy output diverges from the identical non-speculative run. The divergence is **deterministic** (reruns are byte-identical) and is classified as **CUDA numerical divergence under batched speculative verification**, not a logic bug: the plain `draft-simple` path — which exercises batched verification with none of the DFlash2 code — reproduces it on one workload, while the DFlash2 path amplifies it (diverges on both workloads tested, and earlier).\n\nOutputs remain coherent; this is a bit-exactness concern only, and speculative acceptance is unaffected. No fix is claimed here — this is a documentation/confirmation request.\n\n## Environment\n\n- llama.cpp at PR #27342 head: `5ecbe1ac17ec0484c5b44af0bd580cdc9c428ed4` (local build, MSVC 19.44, CUDA 12.4, sm_86)\n- OS: Windows 11 x86_64\n- GPU: NVIDIA RTX 3090 Ti 24 GB\n- Target: `empero-ai/Qwen3.8-27B-Ridge-GGUF` `Qwen3.8-27B-Ridge-3.7bpw.gguf` (IQ2_M)\n- Draft: `incoai/Qwen3.8-27B-DFlash2-GGUF` `Qwen3.8-27B-DFlash2-Q4_K_M.gguf` (1,143,006,752 bytes; SHA-256 `18a380efc9b7ed8d88677fc895f5c11ae170653434ee378f7348f715c14d0594`)\n\n## Repro (llama-cli, 6 runs)\n\nBaseline (`--spec-type none`):\n\n```\nllama-cli -m <target> -ngl 999 --flash-attn on -c 8192 \\\n  --cache-type-k q4_0 --cache-type-v q4_0 -b 256 -ub 128 -t 8 \\\n  --temp 0 -s 42 --no-display-prompt -no-cnv -st \\\n  -n 256 -f prompt_short.txt < nul\n```\n\nSpeculative variants add:\n\n```\n  -md <draft> --spec-draft-ngl 999 --spec-draft-n-max 7 --spec-draft-p-min 0 \\\n  --spec-type draft-simple        # or draft-dflash\n```\n\nRun the same with `-n 512 -f prompt_coding.txt`. Note: `--draft-model` is **not** a valid flag in this build; use `-md` (cli) / `--spec-draft-model` (server).\n\n## Results (token-level, same-vocab `llama-tokenize`)\n\n| workload | none vs draft-simple | none vs draft-dflash |\n|---|---|---|\n| short (n=256) | diverge at gen-token ~109 | diverge at gen-token ~49 |\n| coding (n=512) | **identical 512/512** | diverge at gen-token ~372 |\n\nStripped-output MD5 (static banner/prompt-echo removed; generation content only):\n\n| run | short | coding |\n|---|---|---|\n| none | `db0b78ede21fcb32543217e5cbfd437f` (1330 B) | `1d69d9619a1bde9249dac21e6fccaf99` (2482 B) |\n| draft-simple | `c55e97dec9b537272f72dc578e1f00dc` (1346 B) | `1d69d9619a1bde9249dac21e6fccaf99` (2482 B) — **= none** |\n| draft-dflash | `25dfca084f4cec36bc8f71f5eaa8da24` (1401 B) | `24d531f596c8aa41c1119ea01bd824d7` (2459 B) |\n\nReruns are byte-identical (determinism confirmed).\n\nExample near-tie flips (short workload): `\" storage of information.\"` vs `\", recall, forgetting\"`; `\". Too many\"` vs `\"syllables. Too\"`. Coding workload: digit flip `\"1, 2\"` vs `\"8, 4\"` in generated code.\n\n## Analysis\n\n- Batched verification alone (`draft-simple`, no DFlash hooks) perturbs CUDA target logits at near-ties: it diverges on the short workload yet is byte-identical on coding → **near-tie dependent, not systematic**.\n- `draft-dflash` diverges on both workloads and earlier: DFlash2's extraction graph (`llama_set_embeddings_layer_inp` graph-output marking) amplifies the numeric shift but is **not the sole cause** (proven by the `draft-simple` divergence).\n- Deterministic across reruns → consistent with CUDA fp-non-associativity in the batched verification decode (e.g. n_max=7 draft batch in one flash-attn batch vs sequential target decode) and/or graph-extraction side effects.\n- Supporting data point: z-lab's Metal validation of DFlash2 achieved byte-identical greedy output (see z-lab/llama.cpp-fork#1), suggesting a platform-numeric component.\n\n## Questions\n\n1. Is bit-exact greedy output expected to be preserved under batched speculative verification on CUDA? (MTP presumably shows the same class of divergence.)\n2. Is there a supported way to force the sequential target-decode path during verification, for bit-exact comparisons?\n3. If this is accepted as generic numerics, it may be worth a short note in PR #27342 so downstream users don't mistake it for output corruption.\n\nCross-links: PR #27342 (DFlash2), companion issue [mtmd vision position-gap](#27408), z-lab/llama.cpp-fork#1 (Metal byte-identical validation).\n",
+  "closed_by": {
+    "login": "github-actions[bot]",
+    "id": 41898282,
+    "node_id": "MDM6Qm90NDE4OTgyODI=",
+    "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/github-actions%5Bbot%5D",
+    "html_url": "https://github.com/apps/github-actions",
+    "followers_url": "https://api.github.com/users/github-actions%5Bbot%5D/followers",
+    "following_url": "https://api.github.com/users/github-actions%5Bbot%5D/following{/other_user}",
+    "gists_url": "https://api.github.com/users/github-actions%5Bbot%5D/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/github-actions%5Bbot%5D/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/github-actions%5Bbot%5D/subscriptions",
+    "organizations_url": "https://api.github.com/users/github-actions%5Bbot%5D/orgs",
+    "repos_url": "https://api.github.com/users/github-actions%5Bbot%5D/repos",
+    "events_url": "https://api.github.com/users/github-actions%5Bbot%5D/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/github-actions%5Bbot%5D/received_events",
+    "type": "Bot",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "reactions": {
+    "url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407/reactions",
+    "total_count": 0,
+    "+1": 0,
+    "-1": 0,
+    "laugh": 0,
+    "hooray": 0,
+    "confused": 0,
+    "heart": 0,
+    "rocket": 0,
+    "eyes": 0
+  },
+  "timeline_url": "https://api.github.com/repos/ggml-org/llama.cpp/issues/27407/timeline",
+  "performed_via_github_app": null,
+  "state_reason": "not_planned",
+  "pinned_comment": null
+}

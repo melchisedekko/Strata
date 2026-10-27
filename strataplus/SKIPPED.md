@@ -92,3 +92,4 @@ Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl
     strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl.sha256
     strataplus/bench/traces/raw/aprime_holdout_v14_ab/MANIFEST.sha256
     strataplus/bench/traces/raw/v11/e4v14_MANIFEST.sha256
+    strataplus/logs/tmp_scratch/dbg.jsonl

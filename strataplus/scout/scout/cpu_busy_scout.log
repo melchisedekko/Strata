@@ -73,3 +73,13 @@ END 2026-10-27 15:12:49 CET rc=0 ninja -j2 policy tests HIP644 patch
 START 2026-10-27 15:12:49 CET cmake HIP644 trace_ctl
 END 2026-10-27 15:13:20 CET rc=0 cmake HIP644 trace_ctl
 START 2026-10-27 15:13:20 CET ninja -j2 strata HIP644 trace_ctl
+END 2026-10-27 15:19:08 CET rc=1 ninja -j2 strata HIP644 trace_ctl
+START 2026-10-27 15:19:08 CET cmake HIP644 trace_hfc
+END 2026-10-27 15:19:49 CET rc=0 cmake HIP644 trace_hfc
+START 2026-10-27 15:19:49 CET ninja -j2 strata HIP644 trace_hfc
+END 2026-10-27 15:26:08 CET rc=1 ninja -j2 strata HIP644 trace_hfc
+START 2026-10-27 15:26:09 CET test draft_policy_frozen_test
+END 2026-10-27 15:26:09 CET rc=0 test draft_policy_frozen_test
+START 2026-10-27 15:26:09 CET test draft_policy_test
+END 2026-10-27 15:26:09 CET rc=0 test draft_policy_test
+2026-10-27T15:26:38+0100 END hfc_hip644_link rc=0 (script SCRIPT_RC=0; ninja strata rc=1 su patch/ctl/trace_ctl/trace_hfc, FAILED identici: iq_kernels.cu.o gemm.cu.o q36_engine.cu.o; test host rc=0)

@@ -38,6 +38,8 @@ for q in div:
         dd = r['after_A1_B1']
         if dd is not None: r['after_T_A1'] = T_at(x[1][q], dd); r['after_T_B1'] = T_at(y[1][q], dd)
         if 'base_tm0' in L: r['after_A1_Gtm0'] = fd(x[0][q], L['base_tm0'][0][q])
+    r['A1_T8_rounds_before_div'] = sum(1 for x in a[1][q] if x['pos'] < d and x['T'] >= 8)
+    r['B1_T8_rounds_before_div'] = sum(1 for x in b[1][q] if x['pos'] < d and x['T'] >= 8)
     r['group'] = 'T8' if 8 in (r['T_A1'], r['T_B1']) else 'nonT8'
     rows.append(r)
 res = {'label': 'proxy CPU, non AMD, llama.cpp non Strata', 'runs': list(R), 'n_prompts_set': len(ids), 'n_div_A1_B1': len(div), 'rows': rows}
@@ -57,4 +59,11 @@ def eff(x, y):
     return {k: {'rounds_same_input': v[0], 'vmargin_identical': v[1]} for k, v in by.items()}
 res['effect_tiled_var'] = {'aprime_rr1:aprime_tm0': eff('aprime_rr1', 'aprime_tm0'), 'aprime_rr1:aprime_rr2': eff('aprime_rr1', 'aprime_rr2'),
                            'default_a_rr1:default_a_tm0': eff('default_a_rr1', 'default_a_tm0')}
+# A1 completo (60 code/chat, 30 edit) vs greedy puro batch 1 (TF3), prima (A1 della run v3) e dopo (aprime_tm0_full)
+try:
+    open(f'{D}/aprime_tm0_full{sfx}.ok'); F = load(f'{D}/aprime_tm0_full{sfx}.jsonl'); A = load(f'{O}/aprime_r1{sfx}.jsonl'); T3 = load(f'{O}/holdout_tf_cap3_v14{sfx}.jsonl')
+    ks = sorted(T3[0]); res['full'] = {'n': len(ks), 'before_A1_eq_greedy': sum(fd(A[0][k], T3[0][k]) is None for k in ks),
+        'after_A1tm0_eq_greedy': sum(fd(F[0][k], T3[0][k]) is None for k in ks if k in F[0]), 'after_n': sum(k in F[0] for k in ks)}
+    if not sfx: res['full']['after_div_ids'] = [k for k in ks if k in F[0] and fd(F[0][k], T3[0][k]) is not None]
+except OSError: pass
 json.dump(res, open(out, 'w'), indent=1)

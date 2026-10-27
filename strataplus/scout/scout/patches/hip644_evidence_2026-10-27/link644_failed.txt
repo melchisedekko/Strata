@@ -1,0 +1,12 @@
+link644_build_patch.log:FAILED: CMakeFiles/strata_kernels.dir/src/kernels/cuda/iq_kernels.cu.o 
+link644_build_patch.log:FAILED: CMakeFiles/strata_prefill.dir/src/prefill/gemm.cu.o 
+link644_build_patch.log:FAILED: CMakeFiles/strata_qwen35.dir/src/qwen35/q36_engine.cu.o 
+link644_build_ctl.log:FAILED: CMakeFiles/strata_kernels.dir/src/kernels/cuda/iq_kernels.cu.o 
+link644_build_ctl.log:FAILED: CMakeFiles/strata_prefill.dir/src/prefill/gemm.cu.o 
+link644_build_ctl.log:FAILED: CMakeFiles/strata_qwen35.dir/src/qwen35/q36_engine.cu.o 
+link644_build_trace_ctl.log:FAILED: CMakeFiles/strata_kernels.dir/src/kernels/cuda/iq_kernels.cu.o 
+link644_build_trace_ctl.log:FAILED: CMakeFiles/strata_prefill.dir/src/prefill/gemm.cu.o 
+link644_build_trace_ctl.log:FAILED: CMakeFiles/strata_qwen35.dir/src/qwen35/q36_engine.cu.o 
+link644_build_trace_hfc.log:FAILED: CMakeFiles/strata_kernels.dir/src/kernels/cuda/iq_kernels.cu.o 
+link644_build_trace_hfc.log:FAILED: CMakeFiles/strata_prefill.dir/src/prefill/gemm.cu.o 
+link644_build_trace_hfc.log:FAILED: CMakeFiles/strata_qwen35.dir/src/qwen35/q36_engine.cu.o 

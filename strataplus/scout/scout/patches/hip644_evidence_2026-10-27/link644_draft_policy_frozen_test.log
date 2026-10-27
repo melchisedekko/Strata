@@ -1,0 +1,41 @@
+draft_policy_frozen_test
+  frozen spento: l'EMA muove il costo di T3                                  ok
+  frozen spento di default                                                   ok
+  frozen spento, round 0: il lookup sceglie T4                               ok
+  frozen spento, dopo 400 round: T6 e' stale e viene risondata               ok
+  frozen spento, dopo 400 round: chain risonda kmax (stale)                  ok
+  set_frozen(true): frozen() e' vero                                         ok
+  set_costs: n=1000 in tutti e 3 i bucket                                    ok
+  frozen: 4000 observe con round_ms > 0 non muovono la tabella               ok
+  frozen: nessun probe stale in choose (resta T4)                            ok
+  frozen: l'acceptance del lookup impara ancora                              ok
+  frozen: l'acceptance della chain impara ancora                             ok
+  frozen: observe_probs impara ancora                                        ok
+  frozen, 400 round senza T6: stale() falso, niente probe a T6               ok
+  frozen, 400 round senza T6: chain non risonda kmax                         ok
+  sbloccato dopo: T6 (mai usata) risulta stale                               ok
+  frozen, 400 round su T6 a 999 ms: il costo di T6 resta 80                  ok
+  sbloccato dopo: T6 usata con frozen -> last_ aggiornato, non stale         ok
+  keep_draft: probe su T2 senza tabella, nessuno con frozen                  ok
+  frozen: set_context passa ai bucket 0/1/2 senza robust                     ok
+  frozen + robust: set_context non copia tra bucket                          ok
+  loader: tabella vuota rifiutata                                            ok
+  loader: 1 bucket solo rifiutato (niente copia)                             ok
+  loader: 2 bucket rifiutati                                                 ok
+  loader: terzo bucket vuoto rifiutato                                       ok
+  loader: T4 mancante nel bucket 1 rifiutato                                 ok
+  loader: T3 = 0 nel bucket 1 rifiutato                                      ok
+  loader: campo vuoto (T2) nel bucket 0 rifiutato                            ok
+  loader: valore non numerico rifiutato                                      ok
+  loader: --spec 5 con 4 T rifiutato                                         ok
+  loader: tabella completa (con a capo) accettata e congelata                ok
+  loader: file inesistente rifiutato                                         ok
+  sha256: vettori noti (abc, vuoto, 1000 x 'a')                              ok
+  v2 parse: 2 bucket rifiutati, loaded resta false                           ok
+  v2 apply: tabella non caricata rifiutata, policy intatta                   ok
+  v2 parse: tabella completa validata                                        ok
+  v2 apply: S sceso (4 -> 3, cap dflash2) accettato                          ok
+  v2 apply: stessa tabella del percorso v1 (apply_frozen_costs_text)         ok
+  v2 apply: S salito oltre la tabella rifiutato                              ok
+  v2 load: file inesistente rifiutato                                        ok
+PASS

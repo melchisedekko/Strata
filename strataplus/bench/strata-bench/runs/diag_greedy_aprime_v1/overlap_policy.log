@@ -1,0 +1,2 @@
+2026-10-27 15:28:55 CET sovrapposizione: Policy run_rollback.sh/rollback_probe (pid 786854/786855/786856, nice 10, -t 6) avviato 15:15:51 CET (ps lstart) mentre gira aprime_tm0 (pid 780678, avviato 15:12:38 CET). Da ora il mio processo llama viene messo in pausa (SIGSTOP) finche' rollback_probe/logit_probe sono attivi.
+2026-10-27 15:29:38 CET STOP 780678 (probe Policy attivo: 786856 )
