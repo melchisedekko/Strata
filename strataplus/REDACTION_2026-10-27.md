@@ -72,3 +72,19 @@ registrato nei manifest; la colonna "originale" è quella registrata (e verifica
 Inoltre, nella sola copia pubblicata, `sync.sh` redige i log del monitor CPU (`cpu_*.log`, `cpu_busy*.log`), che
 registrano in tempo reale le righe di comando dei processi e possono quindi catturare il nome (questi log non hanno
 sha256 registrati). Qualsiasi altro file che contenga il nome resta fuori dalla pubblicazione (quarantena in `sync.sh`).
+
+### Log CPU con segnaposto (decisione del proprietario, 2026-10-27)
+
+Questi log si pubblicano redatti, non esclusi. Nella sola copia pubblicata, ogni riferimento al dataset di edit con
+licenza non pubblicabile (nomi di run che lo contengono) è sostituito da
+`[redatto: riferimento a dataset con licenza non pubblicabile]`; poi si applicano le altre sostituzioni sopra.
+L'originale locale (`/workspace/strata-plus/cpu_busy_bench.log`, a cui punta il link
+`/workspace/strata-bench/cpu_busy_bench.log`) non è modificato. Sono log live (appesi durante i benchmark): nessuno
+sha256 registrato, quello pubblicato cambia a ogni sync (vedi `MANIFEST.sha256`).
+
+| File pubblicato | Origine | Redazione |
+|---|---|---|
+| `bench/strata-bench/cpu_busy_bench.log` | link nella sorgente; pubblicato come file regolare (prima era un symlink assoluto, inutilizzabile fuori dalla macchina) | segnaposto + sostituzioni |
+| `logs/cpu_busy/cpu_busy_bench.log` | copia del log live | segnaposto + sostituzioni |
+
+La guardia finale di `sync.sh` resta invariata: se nella copia redatta resta un riferimento, il commit viene annullato.

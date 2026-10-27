@@ -106,3 +106,13 @@
 2026-10-27 02:12:57 | (in corso) | START agent_v12_live_combo  (strata-bench) |
 2026-10-27 02:12:57 | 2026-10-27 08:49:59 | agent_v12_live_combo  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 751 8.041
 2026-10-27 08:50:37 | (in corso) | START e4v14_tf_d7_p30_full  (strata-bench) |
+2026-10-27 08:50:37 | 2026-10-27 08:56:32 | e4v14_tf_d7_p30_full  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 20 4.948
+2026-10-27 08:57:02 | (in corso) | START e4v14_tf_d7_p30_full_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench) |
+2026-10-27 08:57:02 | 2026-10-27 09:00:14 | e4v14_tf_d7_p30_full_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 0 0.17
+2026-10-27 09:00:44 | (in corso) | START e4v14_tf_d7_p30_dvocab  (strata-bench) |
+2026-10-27 09:00:44 | 2026-10-27 09:28:37 | e4v14_tf_d7_p30_dvocab  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 4 0.997
+2026-10-27 09:29:08 | (in corso) | START e4v14_tf_d7_p30_dvocab_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench) |
+2026-10-27 09:29:08 | 2026-10-27 10:12:29 | e4v14_tf_d7_p30_dvocab_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 13 6.492
+2026-10-27 10:12:59 | (in corso) | START e4v14_tf_d7_p30_dvocab_en  (strata-bench) |
+2026-10-27 10:12:59 | 2026-10-27 10:27:50 | e4v14_tf_d7_p30_dvocab_en  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 2 1.136
+2026-10-27 10:30:46 | (in corso) | START e4v14_tf_d7_p30_dvocab_en_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench) |

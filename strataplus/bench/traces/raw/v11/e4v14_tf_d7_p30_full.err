@@ -15,3 +15,10 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=tf
 [e4v14_tf_d7_p30_full] rep 0 mtbench-87: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16719 ms
 [e4v14_tf_d7_p30_full] rep 0 mtbench-90: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 18881 ms
 [e4v14_tf_d7_p30_full] rep 0 mtbench-91: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16808 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-98: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 23306 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-124: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16669 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-126: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16823 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-130: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16948 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-137: 86 tok, 86 verify + 0 replay rounds, acc 0/0, decode 11350 ms
+[e4v14_tf_d7_p30_full] rep 0 mtbench-142: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 16759 ms
+g9_violations=0
