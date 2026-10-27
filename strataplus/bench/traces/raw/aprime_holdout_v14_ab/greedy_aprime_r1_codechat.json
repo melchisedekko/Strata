@@ -1,0 +1,27 @@
+{
+ "label": "proxy CPU, non AMD, llama.cpp non Strata",
+ "created": "2026-10-27 14:31:39 CET",
+ "files": {
+  "/workspace/strata-plus/traces/raw/aprime_holdout_v14_ab/aprime_r1.jsonl": "58dd282258b4c46019d6ed4acc41fdf1f63834efa9e61cf7047209538af11b79",
+  "/workspace/strata-plus/traces/raw/aprime_holdout_v14_ab/default_a_r1.jsonl": "c1c3d9198b1905be5b7dd89824b92b0e2535e895bc0838e6befae92ba6fe8ba7"
+ },
+ "prompts": 60,
+ "identical": 47,
+ "differs": [
+  "HumanEval/101",
+  "HumanEval/13",
+  "HumanEval/148",
+  "HumanEval/35",
+  "HumanEval/55",
+  "HumanEval/59",
+  "HumanEval/91",
+  "mtbench-101",
+  "mtbench-105",
+  "mtbench-115",
+  "mtbench-121",
+  "mtbench-129",
+  "mtbench-136"
+ ],
+ "missing": [],
+ "all_identical": false
+}

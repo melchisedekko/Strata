@@ -79,3 +79,15 @@ Mai pubblicati (non sono mai arrivati sul fork).
 
 Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
 `edit_np`), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
+
+### Rimossi in questo sync dal controllo licenze/quarantena
+    strataplus/bench/strata-bench/LANG_INVENTORY.md
+    strataplus/bench/strata-bench/LANG_LABEL_RULE.md
+    strataplus/bench/strata-bench/STATUS.md
+    strataplus/bench/strata-bench/datasets/hlang_editfix_holdout.jsonl
+    strataplus/bench/strata-bench/datasets/hlang_editfix_holdout.jsonl.sha256
+    strataplus/bench/strata-bench/datasets/hlang_editfix_prompts_meta.json
+    strataplus/bench/strata-bench/datasets/hlang_editfix_prompts_meta.json.sha256
+    strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl
+    strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl.sha256
+    strataplus/bench/traces/raw/v11/e4v14_MANIFEST.sha256

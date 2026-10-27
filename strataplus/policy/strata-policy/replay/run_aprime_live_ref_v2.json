@@ -1,0 +1,151 @@
+{
+ "title": "Run file pre-registrato v2: riferimento del replay di Strata Policy per la soglia (i) di Strata Bench (run (a') v3)",
+ "label": "proxy CPU, non AMD, llama.cpp non Strata; replay TF, non una misura live; nessun tempo e nessun tok/s",
+ "written": "2026-10-27 13:40:59 CET (UTC+1)",
+ "status": "scritto e reso read-only PRIMA di calcolare qualsiasi numero; non si modifica dopo",
+ "goal": "AL somma/somma per dominio del braccio (a') simulato su holdout_tf_d7, letto da Bench come POLICY_REPLAY_REF (aprime_toks_ab.py decide L75-79)",
+ "inputs": {
+  "trace_tf_d7": {
+   "path": "/workspace/strata-plus/traces/raw/v11_holdout/holdout_tf_d7.jsonl",
+   "sha256": "a16cf384f1dc5c06cbb5ae544051293413fa016fc3a1710401fad62b6ccad854"
+  },
+  "arbiter_py": {
+   "path": "/workspace/strata-bench/proxy/strata_arbiter_v1.py",
+   "sha256": "2b0e8b9a0c45d6927dca09db8f352a288305f5521e0c874ff45d4c87bf46611a"
+  },
+  "arbiter_hpp": {
+   "path": "/workspace/strata-bench/proxy/strata_arbiter_v1.hpp",
+   "sha256": "85bb5341d9995d495bd2dd72ba52349ccccbed4497eeb00da67e1b500d8e7c19"
+  },
+  "tracer_v14_cpp": {
+   "path": "/workspace/strata-bench/proxy/llama_spec_trace_v14.cpp",
+   "sha256": "ddea7320ba99054810275d0228c89d1d0b93abd7ab0e1e5584507e739b048283"
+  },
+  "bench_aprime_post_py": {
+   "path": "/workspace/strata-bench/tools/aprime_post.py",
+   "sha256": "808ebcc95997fef256bb4f3642f5740ff2aa6c4755a3c34750c20eecaab82e3e"
+  },
+  "bench_aprime_toks_ab_py": {
+   "path": "/workspace/strata-bench/tools/aprime_toks_ab.py",
+   "sha256": "7e1a2dcdd757421bed5939878f5647d42e792f68a5540aa0cafd3cc51eddb0fc"
+  },
+  "bench_run_v3_md": {
+   "path": "/workspace/strata-bench/runs/live_combo_aprime_holdout_v3.md",
+   "sha256": "2b01dae92a648de2c3bfeee0c07eb3f0aed85318a0f6f5f9708d2ba565015376"
+  },
+  "bench_run_v3_sh": {
+   "path": "/workspace/strata-bench/runs/run_live_combo_aprime_holdout_v3.sh",
+   "sha256": "11433cdfd87ed0e5da6e75a2d301e86562caa595a1f8464006912d42d8eb72fd"
+  },
+  "bench_run_v2_md": {
+   "path": "/workspace/strata-bench/runs/live_combo_aprime_holdout_v2.md",
+   "sha256": "3d734b32f979b4cd952547d0ae8cf9f1b4cdf29e91b9b7b154bc0ed3cbba0e04"
+  },
+  "mtp_cap_prefix_check_json": {
+   "path": "/workspace/strata-plus/traces/mtp_cap_prefix_check.json",
+   "sha256": "349866f270653c9fdced2e8a13a6b9fe94f1f0136aeb015b8c30640acb002ef2"
+  },
+  "replay_script": {
+   "path": "/workspace/strata-policy/replay/aprime_live_ref_v2.py",
+   "sha256": "c811322f58ba368d95c46397ae53010d9995e913f9ba0ac24cb6f8ae7f56d2e6"
+  },
+  "replay_script_v1_failed": {
+   "path": "/workspace/strata-policy/replay/aprime_live_ref.py",
+   "sha256": "4106b8a3923b80b4eb86631e561486c0a593881ea74e57ef9f25c144aa442033"
+  }
+ },
+ "checks_before_run": [
+  "sha256 di tutti gli input = questo file (lo script si ferma altrimenti)",
+  "trace_tf_d7 sha256 inizia con a16cf384 (richiesto dal Lead) e coincide con lo sha fissato in run_live_combo_aprime_holdout_v3.sh",
+  "nessun processo llama / aprime / build in corso (altrimenti stop)",
+  "nice -n 19, un solo processo python"
+ ],
+ "arm": {
+  "name": "(a') --live-src aprime = Strata --spec 8 --mtp-max-t 4",
+  "source": "live_combo_aprime_holdout_v2.md sez. 1 (tabella, L19-22); llama_spec_trace_v14.cpp L124-125; flag v3 md sez. 1 (--dmax 7 --spec-draft-n-max 3)"
+ },
+ "params": {
+  "S": 8,
+  "S_mtp": 4,
+  "spec_min_p": 0.0,
+  "mtp_cap": 3,
+  "lookup_dmax": 7,
+  "k_used": "min(k_full, S-1) = min(k_full, 7)",
+  "n_predict": 128,
+  "n_ctx": 8192,
+  "eog_ids_in_y": [
+   248046
+  ],
+  "eog_note": "eos_token_id del GGUF (<|im_end|>); controllato senza calcolare AL: e' l'unico token speciale presente nelle y del TF (solo in ultima posizione, 16 prompt)",
+  "arbiter": {
+   "impl": "proxy/strata_arbiter_v1.py importato cosi com'e (Arbiter, decide), nessuna reimplementazione",
+   "s_T": "s(T) parametrica nel costruttore, valore usato = default kShape {1,1.35,1.7,2.05,2.45,2.85,3.25,3.6} (strata_arbiter_v1.py L7, .hpp L29/L43; tracer v14 L126-127 senza --arb-s; v2 md sez. 4 punto 2, L65-69)",
+   "rho_margin": "0.03 (K_MARGIN, .py L9; .hpp L36; v2 md sez. 4 punto 3, L70)",
+   "probes": "kProbes 3 con q >= 0.85 (.py L9/L38; v2 md L64)",
+   "staleness": "kStaleRounds 300 (.py L9/L23)",
+   "priors": "kPriorQ {0.75,0.88,0.93,0.96}, kPriorN 4, bucket <6,<12,<24 (.py L8/L19; v2 md L90)",
+   "mtp_tok_ema": "K_TOK_ALPHA 0.05, decay lookup 0.97 (.py L8, observe L40-50)",
+   "reset": "Arbiter nuovo a ogni prompt (tracer v14 L199; v2 md sez. 4 punto 4, L71)"
+  },
+  "walk": {
+   "first_window": "round 0: T=1, nessuna choose, nessuna observe (v14 L357-359, L455; v2 md L75)",
+   "room": "room = 1 + n_draft_max, n_draft_max = max(min(n_ctx - n_past - 2, n_predict - n_predict_sofar - 1), 0) (v14 L330-333, L360)",
+   "mtp_cand": "primi min(n_draft_max, 3) token e probs MTP della riga TF alla stessa posizione (v14 L335) = TRONCAMENTO del TF d7 (limite)",
+   "lookup": "cand.lookup.tokens/match della riga TF (SuffixDrafter(3,64) propose(7), v14 L320) alla stessa posizione",
+   "decide": "arb.decide(A, 8, 4, 0.0, mtp_probs[:cap], k_used, match, lookup[0] o -1, mtp[0] o -2, room) (v14 L360)",
+   "draft": "lookup: lookup[:min(T-1,k)]; mtp: mtp_cand[:min(T-1,len)] (v14 L362-364)",
+   "accept": "accepted = lcp(draft, y[pos:]) con y = output_ids greedy del TF (= ref_holdout_tf.tsv); ids = y[pos:pos+accepted+1]; n_eos = primo EOG in ids +1 altrimenti len(ids); accepted_c = min(accepted, n_eos); committed = n_eos (v14 L408, L442-446)",
+   "observe": "A.observe(lookup, T, accepted_c, match) dopo ogni round non first_window (v14 L455)",
+   "stop": "EOG committato o n_predict >= 128 (v14 L477, L482); controllo: token committati = len(y) per ogni prompt"
+  }
+ },
+ "AL_definition": {
+  "text": "AL per dominio = somma su tutti i round verify (compreso il round first_window, T=1) di min(accepted+1, committed) / numero di round verify (somma/somma sul dominio). min(accepted+1, committed) = token accettati + il token bonus del target, troncato al primo EOG: e' cosi' che Bench definisce l'AL live.",
+  "sources": [
+   "tools/aprime_post.py L6 (definizione) e L43-45 (v = min(accepted+1, committed); s[0]+=v; s[1]+=1 su tutti i round non replay)",
+   "tools/aprime_post.py L53 (sumsum_all = somma v / numero round)",
+   "tools/aprime_toks_ab.py L74 (decide legge p['aprime']['AL'][dominio]['sumsum_all']) e L75-79 (ref = json.load(POLICY_REPLAY_REF)['AL'], dev = AL_live/ref - 1, |dev| <= 0.03 su code ed edit)",
+   "live_combo_aprime_holdout_v3.md sez. 5 (i), L65; live_combo_aprime_holdout_v2.md sez. 4 punto 5 (L72) e sez. 6 (3) (L125-127)"
+  ],
+  "domains": {
+   "keys": [
+    "code",
+    "edit",
+    "chat"
+   ],
+   "source": "chiavi = campo domain del tracer (pr.cat = 'category' dei prompt; aprime_post.py L43); decide usa code ed edit (aprime_toks_ab.py L78-79); chat compare solo in al_dev_vs_replay, non entra in within_3pct"
+  },
+  "informative_also": [
+   "media per prompt (mean_per_prompt_all)",
+   "somma/somma senza first_window",
+   "conteggi round per sorgente (first_window/mtp/lookup), gate, istogramma T"
+  ]
+ },
+ "outputs": {
+  "dir": "/workspace/strata-policy/replay/results/aprime_ref",
+  "reference": "aprime_ref_AL_<ET>.json",
+  "reference_sha256": "aprime_ref_AL_<ET>.json.sha256",
+  "coverage": "aprime_ref_coverage_<ET>.json",
+  "report": "REPORT.md (senza numeri del dominio edit) + REPORT_<ET>.md (con gli aggregati edit)",
+  "local_dir": "/workspace/policy-local/aprime_ref",
+  "per_prompt_local": "aprime_ref_perprompt_<ET>.json",
+  "et_rule": "<ET> = STRATAPLUS_EDIT_TAG (env) o ${STRATAPLUS_PRIVATE_ENV:-/workspace/lic_rm/edit_dataset.env}, come run_live_combo_aprime_holdout_v3.sh; il valore compare solo nei nomi dei file, mai nel contenuto; nessun dato per richiesta dell'edit sotto /workspace/strata-policy",
+  "readonly": "riferimento, .sha256, coverage e report chmod 444"
+ },
+ "command": "cd /workspace/strata-policy/replay && nice -n 19 python3 aprime_live_ref_v2.py run_aprime_live_ref_v2.json <sha256 di questo file>",
+ "cpu_log": "/workspace/strata-plus/cpu_busy_policy.log: riga INIZIO (in corso) e riga finale inizio|fine, formato delle righe esistenti",
+ "limits": [
+  "tf_d7 NON e' cap 3: i candidati MTP sono i primi 3 dei 7 del TF; la condizione cap-prefix non e' al 100% (mtp_cap_prefix_check.json all_pairs: 5210/5389 = 0.966784, all_100pct false). Bench rigenera il TF cap 3 (fase 0 v3); questo riferimento resta su holdout_tf_d7 come nomina la soglia del Lead (v3 md L65-70)",
+  "accettazione ricostruita (lcp con l'output greedy), assume che il live sia greedy-identico a y (controllo (ii) di Bench)",
+  "s(T) parametrica fissata al default kShape (nessun profilo misurato); su AMD choose usa l'EMA dei tempi (v2 md sez. 5 punto 2): scelte possibilmente diverse",
+  "probabilita' MTP non usate da (a') (spec_min_p = 0): il gate dipende solo da k_used > 0, len(mtp) > 0 e lookup[0] == mtp[0]",
+  "contaminazione CPU non rilevante: l'AL non dipende dai ms (nessun tempo letto dalla traccia)",
+  "proxy CPU, non AMD, llama.cpp non Strata; arbitro = copia di DraftPolicy (v2 md sez. 5)"
+ ],
+ "supersedes": {
+  "run_file": "/workspace/strata-policy/replay/run_aprime_live_ref.json",
+  "sha256": "1e139df78b10969b7278f65eba51bfd32f6021c7982e81ea76ccc52c3c39dc33",
+  "why": "il run v1 (13:40:05 CET) si e' fermato con rc=1 su un controllo di sanita' dello script v1 (aprime_live_ref.py L71: 'draft oltre la fine di y senza EOG') che scattava anche quando l'EOG e' l'ultimo token di ids; nessun numero prodotto ne' scritto. v2 cambia solo quella condizione (L71: not any(is_eog(x) for x in ids)) e due righe di docstring; parametri, definizione, output e limiti invariati. Testato prima su una traccia sintetica in /tmp (nessun dato reale).",
+  "v1_files_untouched": true
+ }
+}

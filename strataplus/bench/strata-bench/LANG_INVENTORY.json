@@ -1,0 +1,136 @@
+{
+ "label": "proxy CPU, non AMD, llama.cpp non Strata",
+ "created": "2026-10-27 13:31:17 CET",
+ "rule": {
+  "path": "LANG_LABEL_RULE.md",
+  "sha256": "344a793b42fb7cfc100698177a3b5207e6686dba591064f205d2c13471da49a3"
+ },
+ "tool_sha256": "04cf8439d2e72664281167eb8e230a389768d50a76e5efce6925c847c977bfa6",
+ "root": "/workspace/strata-plus/traces/raw",
+ "jsonl_files_scanned": 101,
+ "files_with_request_records": 62,
+ "unparsable_request_lines": 0,
+ "levels": [
+  {
+   "domain": "agent_edit",
+   "level": "L1",
+   "records": 150
+  },
+  {
+   "domain": "agent_strata",
+   "level": "L2",
+   "records": 40
+  },
+  {
+   "domain": "agent_strata",
+   "level": "L3",
+   "records": 54
+  },
+  {
+   "domain": "chat",
+   "level": "L3",
+   "records": 558
+  },
+  {
+   "domain": "code",
+   "level": "L1",
+   "records": 498
+  },
+  {
+   "domain": "edit",
+   "level": "L1",
+   "records": 490
+  }
+ ],
+ "rows": [
+  {
+   "domain": "agent_edit",
+   "lang": "python",
+   "records": 150,
+   "distinct_prompts": 30,
+   "files": 5,
+   "output_tokens": 19200,
+   "verify_rounds": 10701,
+   "drafted": 10090,
+   "accepted": 8499
+  },
+  {
+   "domain": "agent_strata",
+   "lang": "json",
+   "records": 12,
+   "distinct_prompts": 3,
+   "files": 4,
+   "output_tokens": 1091,
+   "verify_rounds": 619,
+   "drafted": 1110,
+   "accepted": 472
+  },
+  {
+   "domain": "agent_strata",
+   "lang": "python",
+   "records": 12,
+   "distinct_prompts": 3,
+   "files": 4,
+   "output_tokens": 925,
+   "verify_rounds": 576,
+   "drafted": 870,
+   "accepted": 349
+  },
+  {
+   "domain": "agent_strata",
+   "lang": "shell",
+   "records": 16,
+   "distinct_prompts": 4,
+   "files": 4,
+   "output_tokens": 982,
+   "verify_rounds": 559,
+   "drafted": 795,
+   "accepted": 423
+  },
+  {
+   "domain": "agent_strata",
+   "lang": "unknown",
+   "records": 54,
+   "distinct_prompts": 13,
+   "files": 6,
+   "output_tokens": 3232,
+   "verify_rounds": 1869,
+   "drafted": 2604,
+   "accepted": 1366
+  },
+  {
+   "domain": "chat",
+   "lang": "nl",
+   "records": 558,
+   "distinct_prompts": 80,
+   "files": 48,
+   "output_tokens": 68146,
+   "verify_rounds": 53016,
+   "drafted": 52383,
+   "accepted": 15165
+  },
+  {
+   "domain": "code",
+   "lang": "python",
+   "records": 498,
+   "distinct_prompts": 60,
+   "files": 45,
+   "output_tokens": 59848,
+   "verify_rounds": 30623,
+   "drafted": 44006,
+   "accepted": 29423
+  },
+  {
+   "domain": "edit",
+   "lang": "python",
+   "records": 490,
+   "distinct_prompts": 60,
+   "files": 45,
+   "output_tokens": 62220,
+   "verify_rounds": 31142,
+   "drafted": 47140,
+   "accepted": 31130
+  }
+ ],
+ "note": "solo aggregati; etichette per richiesta solo nella cartella locale (non pubblicata)"
+}

@@ -94,3 +94,7 @@
 2026-10-26 22:40:59 | 2026-10-26 22:41:32 | policy-local serve-trace v1 host build strata_spec+tests (b24+trace, v2+trace; 2 processi -j1, nice 19)
 2026-10-26 22:41:42 | serve-trace v1 host build rc: b24+trace=0, v2+trace=0; ctest 4/4 entrambi (serve_trace, suffix_drafter, controller, draft_policy)
 2026-10-26 22:42:27 | 2026-10-26 22:42:31 | policy-local serve-trace v1 syntax HIP: H1v2+trace, b24+HFCv2+trace (2 processi, nice 19); prima 7dd5cf1+trace rc=0, 7dd5cf1+HFCv2+trace rc=0 (131 warn)
+2026-10-27 13:40:05 | (in corso) | INIZIO strata-policy replay aprime_live_ref.py (riferimento POLICY_REPLAY_REF, python, nice 19, 1 processo, nessun llama) | rc=pending
+2026-10-27 13:40:05 | 2026-10-27 13:40:05 | FINE strata-policy replay aprime_live_ref.py (python, nice 19, 1 processo) | rc=1
+2026-10-27 13:41:04 | (in corso) | INIZIO strata-policy replay aprime_live_ref_v2.py (riferimento POLICY_REPLAY_REF, python, nice 19, 1 processo, nessun llama) | rc=pending
+2026-10-27 13:41:04 | 2026-10-27 13:41:04 | FINE strata-policy replay aprime_live_ref_v2.py (python, nice 19, 1 processo) | rc=0
