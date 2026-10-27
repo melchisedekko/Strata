@@ -57,10 +57,10 @@ registrato nei manifest; la colonna "originale" è quella registrata (e verifica
 | `bench/strata-bench/tools/lang_count_editfix.py` | `3a75dd860a1d438789d6192f27be7a5af9175b39fc8ffd1d4a95a63685b782cd` | `47042a1443f6d428f271a43d91bcbc9e6f56d477eec8c6f73ef36b8efdd57c7c` |
 | `bench/strata-bench/tools/post_holdout_lookup_v12.py` | `f37ec8f69461ff40a14a3881e60a91d798a89408e087457a916664eb864014e1` | `cd8bc39d5709de13598c3c70ed64f7c6d3f1aa00bf71a9bd1fd395ecce6697d9` |
 | `bench/strata-bench/run_e4_v14.sh` | `8da5f5f748cf709a12b67ca45e63018ae59867a098f5f863ce3b78ac740b6ff0` | `4fe031d3af57298c10fefe9f9d2bfae894262ef88db0c64cb6906cbaf7a9b1e8` |
-| `bench/strata-bench/LICENSE_INVENTORY.md` | `29bfb7c43a13614a1c01f8239dec019e9cae7dc0957549b60b98649c8d53e0c1` | `f41812ecbf9d5ee494ca865eef15958f84e6ef367dcdcce9e860bb858b3a9faa` |
-| `bench/strata-bench/LICENSE_INVENTORY.csv` | `80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc` | `77094a93d2bee113ebac918334f5f1f0f7e637c51f40c36c49357a280c069908` |
-| `bench/strata-bench/DATASETS.md` | `5d34e88ffc578aa55a98f00390cfc48a104fc3bfaf6f601b3ce3e21cca08882e` | `d44ebd01b44da0445b12b40877b8bbb9afc4e148e0a6f2b843ca39a5a3c14365` |
-| `bench/traces/DATASETS.md` | `f3ad9ab19eee88d514e827fef3c351e5097e025786f96180d2ccd6bbd34784bc` | `50e758fc1aafaf2b7742f0d51955671e77e377c8ab2c1f0ef9a2fe7a0075141e` |
+| `bench/strata-bench/LICENSE_INVENTORY.md` | `29bfb7c43a13614a1c01f8239dec019e9cae7dc0957549b60b98649c8d53e0c1` | `644d3c98a66939eeb6f285bcc6e7bddf9092d112884535c5ae43124634a4a067` |
+| `bench/strata-bench/LICENSE_INVENTORY.csv` | `80bf8ba8dee7e440ae614a88bca642813ed36fd527b09d23295ecf92604f2acc` | `a901d85c001b5e9fae0fca584de80617d0da11904cfdb1ff5d7e27fdc7723e7d` |
+| `bench/strata-bench/DATASETS.md` | `5d34e88ffc578aa55a98f00390cfc48a104fc3bfaf6f601b3ce3e21cca08882e` | `786ca5b98322713a7de08cc569ac9427ef30d231fe298b859e67313435d35ee2` |
+| `bench/traces/DATASETS.md` | `f3ad9ab19eee88d514e827fef3c351e5097e025786f96180d2ccd6bbd34784bc` | `adf43a4b57dade9353d6768a1efdea4ac5607677a4ded203274c220e932ee8c5` |
 | `bench/traces/AMD_PROTOCOL_v3.md` | `e963d80a02d19cd276ad19f0d1a50dbb629d1b4878baf9fcc48346d87d8ce59f` | `efbd718e53e29a748c4ec47386e4593b09ee070781da400d7eebb4886212cfb4` |
 | `bench/traces/docs_prev/LOG_SCHEMA.md.pre_0810` | `8f49ddc4d9065197f7d9be453a1f72f7943e4db4c2d76a1792444c9da011bb56` | `c4b16cbe98ea4f4fc7fd24bbfad2bd3fb3bfa871b34ee4a9f8cc0e85e100c681` |
 | `bench/traces/holdout_lookup_v12/post_holdout_lookup_v12.py` | `f37ec8f69461ff40a14a3881e60a91d798a89408e087457a916664eb864014e1` | `cd8bc39d5709de13598c3c70ed64f7c6d3f1aa00bf71a9bd1fd395ecce6697d9` |

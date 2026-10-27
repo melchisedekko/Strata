@@ -86,7 +86,7 @@ P(a≥j | T>j), pool_domain, j=1..7: 0.34 0.18 0.13 0.10 0.08 0.07 0.06
 
 P(a≥1 | match bucket) [n]: lookup: m3: 0.57 [1241], m4: 0.62 [1609], m8: 0.87 [575], m16: 0.96 [802]; pool_domain: m3: 0.39 [2134], m4: 0.43 [2484], m8: 0.84 [602], m16: 0.96 [802]
 
-## Dominio `edit` — 105 richieste, 105 cluster, 43542 token di y, sorgenti: edit_np
+## Dominio `edit` — una richiesta per cluster, 43542 token di y, sorgenti: edit_np
 
 | sorgente | copertura (pos. con proposta) | P(a≥1 \| proposta) | acc. media \| proposta | AL K=5 | AL K=7 | righe sprecate M4 (K=7) |
 |---|---|---|---|---|---|---|

@@ -35,7 +35,7 @@ dalla testa il 2026-10-26.
 ## 3. E1: `e1_per_request.csv`
 
 Il README diceva "restano solo id e numeri in `e1_per_request.csv`". Il file contiene ID e metriche per richiesta di
-399 righe Dolly (CC-BY-SA-3.0), 500 MBPP (CC-BY-4.0), 164 HumanEval e 105 `edit_np`: è stato tolto dalla testa il 2026-10-26.
+399 righe Dolly (CC-BY-SA-3.0), 500 MBPP (CC-BY-4.0), 164 HumanEval e le righe `edit_np`: è stato tolto dalla testa il 2026-10-26.
 Restano gli aggregati (`e1_summary.json`, `pool_sizes.json`, `E1_results.md`).
 
 ## 4. Cosa è stato fatto il 2026-10-26
