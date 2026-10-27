@@ -3,3 +3,7 @@
 use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [aprime_tm0] rep 0 HumanEval/2: 97 tok, 24 verify + 0 replay rounds, acc 74/91, decode 4050 ms
 [aprime_tm0] rep 0 HumanEval/13: 128 tok, 37 verify + 0 replay rounds, acc 91/120, decode 6067 ms
+[aprime_tm0] rep 0 HumanEval/23: 30 tok, 10 verify + 0 replay rounds, acc 20/27, decode 1695 ms
+[aprime_tm0] rep 0 HumanEval/28: 70 tok, 16 verify + 0 replay rounds, acc 54/57, decode 12439 ms
+[aprime_tm0] rep 0 HumanEval/35: 116 tok, 29 verify + 0 replay rounds, acc 88/96, decode 10724 ms
+[aprime_tm0] rep 0 HumanEval/55: 126 tok, 31 verify + 0 replay rounds, acc 96/102, decode 9770 ms

@@ -71,3 +71,5 @@ END 2026-10-27 15:12:48 CET rc=1 ninja -j2 strata HIP644 ctl
 START 2026-10-27 15:12:48 CET ninja -j2 policy tests HIP644 patch
 END 2026-10-27 15:12:49 CET rc=0 ninja -j2 policy tests HIP644 patch
 START 2026-10-27 15:12:49 CET cmake HIP644 trace_ctl
+END 2026-10-27 15:13:20 CET rc=0 cmake HIP644 trace_ctl
+START 2026-10-27 15:13:20 CET ninja -j2 strata HIP644 trace_ctl

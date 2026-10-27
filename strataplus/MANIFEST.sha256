@@ -109,8 +109,8 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata
 95fc0b2ed8c486fedcf74a61ee5cc2f36efa6bb79af297ccf5e1351fb4bd33bf  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_rr2.err
 64f089dae02fddee5d17a8ddaf272152cb2871dc0dadea1f3f136e8ece9280ee  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_rr2.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_rr2.ok
-09740c26cd97d9c14b213eac4386c46658373d0b1dfa40be807a2115f9b283f0  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_tm0.err
-cb9ec9ee9a8d4ccea0d2262f1cf4797b2475d694e8345a86fc962db74c38b97d  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_tm0.jsonl
+43c5610de7cfd581d3d6fb816b639fb7ce6567002edf50e9b46a657fc1a90945  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_tm0.err
+fab3392d6d687e7a075bcfe9b1ffe21582a28dae64b165924b4f09693f6f364d  ./bench/strata-bench/runs/diag_greedy_aprime_v1/aprime_tm0.jsonl
 8be43c8751210e51ffdc879ef92d7280e9d31153a6a1c8e1480411fa4f29612d  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r1.err
 3165fe76d0ad659eb760f13257e17f8272d7331e7b749cdb64a5783b4ccfef00  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r1.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r1.ok
@@ -129,6 +129,8 @@ f4c64ed30724df9d0187ca2450c2a291c2cc96817f8fe50a3eb688954bf02307  ./bench/strata
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata-bench/runs/diag_greedy_aprime_v1/ywrong_d3.jsonl.interrotto
 2a882b80bb6fe49ae8051bf67b224f0ba78ab2e582c84b08a0017a670aa41df9  ./bench/strata-bench/runs/diag_tiled_mm0_PREDICTION.md
 f09cec207910f4779f039b3c23db05d358d0b796dcaee17eb2e056c401c2581d  ./bench/strata-bench/runs/diag_tiled_mm0_PREDICTION.md.sha256
+f26643daec7b7216af2b20cf8984d885139f9d64f977c7441f78f126cc658faf  ./bench/strata-bench/runs/diag_tiled_mm0_PREDICTION_v2.md
+be831302000644c4cbf92c3436a6cba86b613d4db5ef42b508374b7e71ab96a2  ./bench/strata-bench/runs/diag_tiled_mm0_PREDICTION_v2.md.sha256
 81aca6c8e465b7627667139c3203fb30e2d23a4582e090614b400425ddd3460f  ./bench/strata-bench/runs/hlang_editfix_traces_v1.md
 2f64ae551b64ec7abcdb24a2198e17778c76ad01dba8d955dd1b6ad92515730e  ./bench/strata-bench/runs/hlang_editfix_traces_v1.md.sha256
 570bae36ae0908cdf180b37d9820eb57952604adbe46cc1a4f046097df3a9e20  ./bench/strata-bench/runs/live_combo_aprime_holdout.md.sha256
@@ -186,6 +188,7 @@ f4276c7bcb733f7013f8b52854e010c7a456e9f029c6a950cb36eedd53fb2263  ./bench/strata
 7f1237886b1c897e66a0e745fa0774bbf21b6c196deab51efc10640473ba1b26  ./bench/strata-bench/tools/cpu_judge_series.py
 45123247794ada0d482c111cf44203b7983cb475dee6a6af9c0c05f0b82dc258  ./bench/strata-bench/tools/diag_greedy_aprime_analyze.py
 584fea4c8c6c4e1913218cb564b2463f462ea45c5d0399eefe27d426a697dcc4  ./bench/strata-bench/tools/diag_greedy_aprime_report.py
+289894ceba11d5f7eaa0d5618c95373ee9b4e439e5fe4dfc50c0f64d9bccc139  ./bench/strata-bench/tools/diag_tiled_mm0_report.py
 6a1f9aa7db6cbe558b0d5501bfb0b08bf2f24022e446dcb04c97607fb9ffc16c  ./bench/strata-bench/tools/greedy_diag.py
 369ab08a21c6ff0586d4cb395e462da8548357005307b5f4de5e98a32f9f6386  ./bench/strata-bench/tools/greedy_v11.py
 fddd8bafcc25654d47dcab03be7811f4138436a5c2c53fa580223e4c7be966b1  ./bench/strata-bench/tools/knee_t8.py
@@ -787,6 +790,8 @@ f71d0b076e0a765ddcdf10dc2590a5c26328f15d24d44b4735704c640dbd67e8  ./plan/RULE_HL
 bbe288c077290c7fc5e0781668b4ba1e3311af63830e2a243d71ca91671c880b  ./plan/piano.md
 51368e5f1d71a9d0fc0139bb49077756d05eaa192606551dd8ec9e3bb085967d  ./policy/strata-policy/diag/arbiter_divergence_v1.md
 b972c26b7516bdf21c87767026d680c6fd2c5b1d794c7fe588424f8d4035b2af  ./policy/strata-policy/diag/arbiter_divergence_v1.md.sha256
+910639903869420e4b8f3ba8d91f69a15d2459ee05b65c985cf835b56be26125  ./policy/strata-policy/diag/arbiter_divergence_v1_edit_np.md
+bec66f1725953ffe28869670c2f362eb24d3ee477ca265b5fffd1663a1f939c4  ./policy/strata-policy/diag/arbiter_divergence_v1_edit_np.md.sha256
 abeb88b33156788dee4b11e9bc348be41bdbf0cc41483bcfc9c0a1ccbb33fc2c  ./policy/strata-policy/diag/check_probe_vs_tf.py
 b6b172a1952c200a130bc5a69c533236aae20c1eec0b2399d82065b9aeb935df  ./policy/strata-policy/diag/check_probe_vs_tf.py.sha256
 389b3ae8f5b975469f58c7e9a5c00547b8af78c0270b6c09b5a3c7a26f8c8f54  ./policy/strata-policy/diag/commit_check.py
@@ -1028,7 +1033,7 @@ fbd14fe69e4b544a61c3cff0c0e31f9af8cb90b62debffdfe11a34dd415d1f1f  ./scout/refs/g
 9bb7a224091be1c3865f6ee8032a64c60ada5984c2ba2cb24e3d5aa912f3583c  ./scout/refs/prs.txt
 aca8afed9da75b0f050b408d270766fd77627f1af401e240f61c3b47d0db02f9  ./scout/refs/q2b_index.json
 d117fa006ba9208500b2930ce69cbde436c647afa917cb7396a9bc9111a46dd2  ./scout/scout/clone.log
-2ba07ea3b410a3e11f973e9a32d9f9983b4462873a5d6c9fb0df33ba4037b261  ./scout/scout/cpu_busy_scout.log
+7f2f20ddd34f4a97949eb2d601b133b51f3e241a958853f879a3ab301af64bff  ./scout/scout/cpu_busy_scout.log
 ab4b5abb86aa9358a2fdbb874623cc277a89a6f6e39a18ebe4d2104a06417942  ./scout/scout/gguf_tensors.py
 4fe0021e85a7d1f37d1062ea5869290f91e7fe5712ceff316ea0d146d9eb6731  ./scout/scout/page/strata.canvas.tsx
 3e5e7e26ef72fb6577affc8d3ab3ec4faf84fb23a33d6bce50f92c1515a5541c  ./scout/scout/patches/strataplus-HFC-frozen-v1.md
