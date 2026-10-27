@@ -21,8 +21,8 @@ def T_at(rounds, d):
     return None
 R = {'A1': f'{O}/aprime_r1{sfx}.jsonl', 'B1': f'{O}/default_a_r1{sfx}.jsonl'}
 for t in ['base_r1', 'base_r2', 'aprime_rr1', 'aprime_rr2', 'default_a_rr1', 'default_a_rr2', 'aprime_tm0', 'default_a_tm0', 'base_tm0']:
-    try: open(f'{D}/{t}{sfx}.ok'); R[t] = f'{D}/{t}{sfx}.jsonl'
-    except OSError: pass
+    import os
+    if os.path.exists(f'{D}/{t}{sfx}.ok') or os.path.exists(f'{D}/{t}{sfx}.ok.orfano'): R[t] = f'{D}/{t}{sfx}.jsonl'
 L = {k: load(v) for k, v in R.items()}
 ids = [json.loads(l)['id'] for l in open(f'{D}/prompts{sfx}.jsonl')]
 div = [q for q in ids if fd(L['A1'][0][q], L['B1'][0][q]) is not None]
@@ -37,7 +37,11 @@ for q in div:
         r['after_A1_B1'] = fd(x[0][q], y[0][q]); r['after_A1_G'] = fd(x[0][q], L[G][0][q]); r['after_B1_G'] = fd(y[0][q], L[G][0][q])
         dd = r['after_A1_B1']
         if dd is not None: r['after_T_A1'] = T_at(x[1][q], dd); r['after_T_B1'] = T_at(y[1][q], dd)
-        if 'base_tm0' in L: r['after_A1_Gtm0'] = fd(x[0][q], L['base_tm0'][0][q])
+        if 'base_tm0' in L: r['after_A1_Gtm0'] = fd(x[0][q], L['base_tm0'][0][q]); r['after_B1_Gtm0'] = fd(y[0][q], L['base_tm0'][0][q])
+    if 'aprime_tm0' in L and 'default_a_tm0' in L and r['after_A1_B1'] is not None:
+        dd = r['after_A1_B1']; r['after_kv'] = [{k: z[k] for k in ('pos', 'T', 'kv_pos', 'ctx_len')} for z in (rr for rr in x[1][q] if rr['pos'] <= dd < rr['pos'] + max(rr['committed'], 1))] + \
+            [{k: z[k] for k in ('pos', 'T', 'kv_pos', 'ctx_len')} for z in (rr for rr in y[1][q] if rr['pos'] <= dd < rr['pos'] + max(rr['committed'], 1))]
+    r['before_kv'] = [{k: z[k] for k in ('pos', 'T', 'kv_pos', 'ctx_len')} for src in (a, b) for z in src[1][q] if z['pos'] <= d < z['pos'] + max(z['committed'], 1)]
     r['A1_T8_rounds_before_div'] = sum(1 for x in a[1][q] if x['pos'] < d and x['T'] >= 8)
     r['B1_T8_rounds_before_div'] = sum(1 for x in b[1][q] if x['pos'] < d and x['T'] >= 8)
     r['group'] = 'T8' if 8 in (r['T_A1'], r['T_B1']) else 'nonT8'
@@ -46,7 +50,7 @@ res = {'label': 'proxy CPU, non AMD, llama.cpp non Strata', 'runs': list(R), 'n_
 # controlli sull'intero set (inclusi i prompt identici di controllo)
 def ident(x, y): return sum(fd(L[x][0][q], L[y][0][q]) is None for q in ids) if x in L and y in L else None
 res['set_identical'] = {k: ident(*k.split(':')) for k in ['A1:B1', 'A1:base_r1', 'B1:base_r1', 'aprime_tm0:default_a_tm0', 'aprime_tm0:base_r1', 'default_a_tm0:base_r1',
-                        'base_tm0:base_r1', 'aprime_tm0:aprime_rr1', 'default_a_tm0:default_a_rr1', 'aprime_rr1:aprime_rr2', 'default_a_rr1:default_a_rr2']}
+                        'base_tm0:base_r1', 'aprime_tm0:base_tm0', 'default_a_tm0:base_tm0', 'aprime_tm0:aprime_rr1', 'default_a_tm0:default_a_rr1', 'aprime_rr1:aprime_rr2', 'default_a_rr1:default_a_rr2']}
 # effetto della variabile: round con stesso pos fra aprime_rr1 (tiled on) e aprime_tm0, prima della prima divergenza di output, per T
 def eff(x, y):
     if x not in L or y not in L: return None

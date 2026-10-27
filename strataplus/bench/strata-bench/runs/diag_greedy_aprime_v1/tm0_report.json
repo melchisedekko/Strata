@@ -1,0 +1,453 @@
+{
+ "label": "proxy CPU, non AMD, llama.cpp non Strata",
+ "runs": [
+  "A1",
+  "B1",
+  "base_r1",
+  "base_r2",
+  "aprime_rr1",
+  "aprime_rr2",
+  "default_a_rr1",
+  "default_a_rr2",
+  "aprime_tm0",
+  "default_a_tm0",
+  "base_tm0"
+ ],
+ "n_prompts_set": 19,
+ "n_div_A1_B1": 13,
+ "rows": [
+  {
+   "id": "HumanEval/13",
+   "before_A1_B1_pos": 111,
+   "T_A1": 4,
+   "T_B1": 4,
+   "before_A1_G": 111,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 84,
+   "after_B1_G": 84,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 108,
+     "T": 4,
+     "kv_pos": 206,
+     "ctx_len": 207
+    },
+    {
+     "pos": 108,
+     "T": 4,
+     "kv_pos": 206,
+     "ctx_len": 207
+    }
+   ],
+   "A1_T8_rounds_before_div": 3,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/35",
+   "before_A1_B1_pos": 102,
+   "T_A1": 4,
+   "T_B1": 1,
+   "before_A1_G": 102,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": null,
+   "after_B1_G": null,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 102,
+     "T": 4,
+     "kv_pos": 216,
+     "ctx_len": 217
+    },
+    {
+     "pos": 102,
+     "T": 1,
+     "kv_pos": 216,
+     "ctx_len": 217
+    }
+   ],
+   "A1_T8_rounds_before_div": 3,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/55",
+   "before_A1_B1_pos": 72,
+   "T_A1": 4,
+   "T_B1": 4,
+   "before_A1_G": 72,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 72,
+   "after_B1_G": 72,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 70,
+     "T": 4,
+     "kv_pos": 153,
+     "ctx_len": 154
+    },
+    {
+     "pos": 70,
+     "T": 4,
+     "kv_pos": 153,
+     "ctx_len": 154
+    }
+   ],
+   "A1_T8_rounds_before_div": 3,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/59",
+   "before_A1_B1_pos": 102,
+   "T_A1": 4,
+   "T_B1": 3,
+   "before_A1_G": 102,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 94,
+   "after_B1_G": 94,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 101,
+     "T": 4,
+     "kv_pos": 197,
+     "ctx_len": 198
+    },
+    {
+     "pos": 101,
+     "T": 3,
+     "kv_pos": 197,
+     "ctx_len": 198
+    }
+   ],
+   "A1_T8_rounds_before_div": 7,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/91",
+   "before_A1_B1_pos": 119,
+   "T_A1": 4,
+   "T_B1": 2,
+   "before_A1_G": null,
+   "before_B1_G": 119,
+   "after_A1_B1": null,
+   "after_A1_G": 119,
+   "after_B1_G": 119,
+   "after_A1_Gtm0": 121,
+   "after_B1_Gtm0": 121,
+   "before_kv": [
+    {
+     "pos": 117,
+     "T": 4,
+     "kv_pos": 254,
+     "ctx_len": 255
+    },
+    {
+     "pos": 118,
+     "T": 2,
+     "kv_pos": 255,
+     "ctx_len": 256
+    }
+   ],
+   "A1_T8_rounds_before_div": 12,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/101",
+   "before_A1_B1_pos": 121,
+   "T_A1": 4,
+   "T_B1": 4,
+   "before_A1_G": 121,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 121,
+   "after_B1_G": 121,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 121,
+     "T": 4,
+     "kv_pos": 266,
+     "ctx_len": 267
+    },
+    {
+     "pos": 118,
+     "T": 4,
+     "kv_pos": 263,
+     "ctx_len": 264
+    }
+   ],
+   "A1_T8_rounds_before_div": 3,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "HumanEval/148",
+   "before_A1_B1_pos": 27,
+   "T_A1": 8,
+   "T_B1": 4,
+   "before_A1_G": 27,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 27,
+   "after_B1_G": 27,
+   "after_A1_Gtm0": 27,
+   "after_B1_Gtm0": 27,
+   "before_kv": [
+    {
+     "pos": 25,
+     "T": 8,
+     "kv_pos": 265,
+     "ctx_len": 266
+    },
+    {
+     "pos": 27,
+     "T": 4,
+     "kv_pos": 267,
+     "ctx_len": 268
+    }
+   ],
+   "A1_T8_rounds_before_div": 3,
+   "B1_T8_rounds_before_div": 0,
+   "group": "T8"
+  },
+  {
+   "id": "mtbench-101",
+   "before_A1_B1_pos": 65,
+   "T_A1": 4,
+   "T_B1": 1,
+   "before_A1_G": 65,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 62,
+   "after_B1_G": 62,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 65,
+     "T": 4,
+     "kv_pos": 114,
+     "ctx_len": 115
+    },
+    {
+     "pos": 65,
+     "T": 1,
+     "kv_pos": 114,
+     "ctx_len": 115
+    }
+   ],
+   "A1_T8_rounds_before_div": 1,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "mtbench-105",
+   "before_A1_B1_pos": 100,
+   "T_A1": 4,
+   "T_B1": 2,
+   "before_A1_G": 100,
+   "before_B1_G": 115,
+   "after_A1_B1": null,
+   "after_A1_G": 5,
+   "after_B1_G": 5,
+   "after_A1_Gtm0": 56,
+   "after_B1_Gtm0": 56,
+   "before_kv": [
+    {
+     "pos": 99,
+     "T": 4,
+     "kv_pos": 320,
+     "ctx_len": 321
+    },
+    {
+     "pos": 99,
+     "T": 2,
+     "kv_pos": 320,
+     "ctx_len": 321
+    }
+   ],
+   "A1_T8_rounds_before_div": 0,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "mtbench-115",
+   "before_A1_B1_pos": 39,
+   "T_A1": 4,
+   "T_B1": 4,
+   "before_A1_G": 39,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 15,
+   "after_B1_G": 15,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 37,
+     "T": 4,
+     "kv_pos": 124,
+     "ctx_len": 125
+    },
+    {
+     "pos": 37,
+     "T": 4,
+     "kv_pos": 124,
+     "ctx_len": 125
+    }
+   ],
+   "A1_T8_rounds_before_div": 1,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "mtbench-121",
+   "before_A1_B1_pos": 93,
+   "T_A1": 4,
+   "T_B1": 3,
+   "before_A1_G": 93,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 124,
+   "after_B1_G": 124,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 91,
+     "T": 4,
+     "kv_pos": 128,
+     "ctx_len": 129
+    },
+    {
+     "pos": 92,
+     "T": 3,
+     "kv_pos": 129,
+     "ctx_len": 130
+    }
+   ],
+   "A1_T8_rounds_before_div": 1,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "mtbench-129",
+   "before_A1_B1_pos": 14,
+   "T_A1": 4,
+   "T_B1": 3,
+   "before_A1_G": 14,
+   "before_B1_G": null,
+   "after_A1_B1": null,
+   "after_A1_G": 47,
+   "after_B1_G": 47,
+   "after_A1_Gtm0": null,
+   "after_B1_Gtm0": null,
+   "before_kv": [
+    {
+     "pos": 12,
+     "T": 4,
+     "kv_pos": 56,
+     "ctx_len": 57
+    },
+    {
+     "pos": 12,
+     "T": 3,
+     "kv_pos": 56,
+     "ctx_len": 57
+    }
+   ],
+   "A1_T8_rounds_before_div": 1,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  },
+  {
+   "id": "mtbench-136",
+   "before_A1_B1_pos": 30,
+   "T_A1": 3,
+   "T_B1": 4,
+   "before_A1_G": 30,
+   "before_B1_G": 41,
+   "after_A1_B1": null,
+   "after_A1_G": 9,
+   "after_B1_G": 9,
+   "after_A1_Gtm0": 9,
+   "after_B1_Gtm0": 9,
+   "before_kv": [
+    {
+     "pos": 28,
+     "T": 3,
+     "kv_pos": 299,
+     "ctx_len": 300
+    },
+    {
+     "pos": 28,
+     "T": 4,
+     "kv_pos": 299,
+     "ctx_len": 300
+    }
+   ],
+   "A1_T8_rounds_before_div": 0,
+   "B1_T8_rounds_before_div": 0,
+   "group": "nonT8"
+  }
+ ],
+ "set_identical": {
+  "A1:B1": 6,
+  "A1:base_r1": 6,
+  "B1:base_r1": 15,
+  "aprime_tm0:default_a_tm0": 18,
+  "aprime_tm0:base_r1": 6,
+  "default_a_tm0:base_r1": 6,
+  "base_tm0:base_r1": 7,
+  "aprime_tm0:base_tm0": 14,
+  "default_a_tm0:base_tm0": 15,
+  "aprime_tm0:aprime_rr1": 8,
+  "default_a_tm0:default_a_rr1": 7,
+  "aprime_rr1:aprime_rr2": 19,
+  "default_a_rr1:default_a_rr2": 19
+ },
+ "effect_tiled_var": {
+  "aprime_rr1:aprime_tm0": {
+   "T<8": {
+    "rounds_same_input": 224,
+    "vmargin_identical": 0
+   },
+   "T>=8": {
+    "rounds_same_input": 41,
+    "vmargin_identical": 0
+   }
+  },
+  "aprime_rr1:aprime_rr2": {
+   "T<8": {
+    "rounds_same_input": 585,
+    "vmargin_identical": 585
+   },
+   "T>=8": {
+    "rounds_same_input": 47,
+    "vmargin_identical": 47
+   }
+  },
+  "default_a_rr1:default_a_tm0": {
+   "T<8": {
+    "rounds_same_input": 239,
+    "vmargin_identical": 0
+   }
+  }
+ }
+}

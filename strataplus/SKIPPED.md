@@ -90,6 +90,8 @@ Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl
     strataplus/bench/strata-bench/datasets/hlang_editfix_prompts_meta.json.sha256
     strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl
     strataplus/bench/strata-bench/datasets/hlang_editfix_tune.jsonl.sha256
+    strataplus/bench/strata-bench/runs/diag_greedy_aprime_v1/MANIFEST.sha256
+    strataplus/bench/strata-bench/runs/diag_greedy_aprime_v1/overlap_policy.log
     strataplus/bench/strata-bench/runs/diag_greedy_aprime_v1/proc_environ_tm0.log
     strataplus/bench/traces/raw/aprime_holdout_v14_ab/MANIFEST.sha256
     strataplus/bench/traces/raw/v11/e4v14_MANIFEST.sha256
