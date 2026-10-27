@@ -49,7 +49,7 @@ Questi file sono stati tolti dalla testa di `strataplus-research` il 2026-10-26 
 
 | Categoria | File | Motivo |
 |---|---|---|
-| Dati derivati dal dataset di edit con licenza non pubblicabile (`edit_np`: testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF @<revisione non pubblicata> "MIT" contro LICENSE del repository GitHub una licenza con una clausola che vieta l'uso come dati di training |
+| Dati derivati dal dataset di edit con licenza non pubblicabile (`edit_np`: testi, prompt tokenizzati, ID, metriche per richiesta) | 289 (par. 4b) | licenza in conflitto: card HF alla revisione fissata "MIT" contro LICENSE del repository GitHub una licenza con una clausola che vieta l'uso come dati di training |
 | `bench/e1/policy/results/e1_per_request.csv` | 1 (par. 4a) | ID e metriche per richiesta di Dolly (CC-BY-SA-3.0, share-alike) e MBPP (CC-BY-4.0, attribuzione), più `edit_np` |
 | `bench/strata-bench/datasets/subset_ids.json` | 1 (par. 4a) | 26 ID Spec-Bench (dati da fonti con licenze miste, non verificate) più `edit_np` |
 | `logs/tmp_scratch/gen/gen.py` | 1 (trovato il 2026-10-26, fuori dal par. 4) | contiene 2 ID `edit_np` e la diagnosi per richiesta del dominio edit |
@@ -79,3 +79,6 @@ Mai pubblicati (non sono mai arrivati sul fork).
 
 Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
 `edit_np`), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
+
+### Rimossi in questo sync dal controllo licenze/quarantena
+    strataplus/SKIPPED.md

@@ -11,7 +11,7 @@
 # 26 ID Spec-Bench (mista) + edit_np
 /bench/strata-bench/datasets/subset_ids.json
 
-# 4b. Solo edit_np (MIT sulla card HF @<revisione non pubblicata> vs licenza con restrizione d'uso per ML nel LICENSE GitHub)
+# 4b. Solo edit_np (MIT sulla card HF alla revisione fissata vs licenza con restrizione d'uso per ML nel LICENSE GitHub)
 # Cartelle che contengono solo file edit_np:
 /bench/traces/raw/v11_holdout/
 /logs/tmp_scratch/annt/

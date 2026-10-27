@@ -10,15 +10,15 @@ hash è registrato in `MANIFEST.sha256` e nei manifest delle tracce. Questo file
 
 In questo repository il dataset è indicato solo con l'etichetta generica `edit_np` (vedi `REDACTION_2026-10-27.md`).
 
-`DATASETS.md` e il README indicavano questo dataset (HF, revisione @<revisione non pubblicata>) come **MIT, incluso**. Non è corretto
+`DATASETS.md` e il README indicavano questo dataset (HF, revisione fissata `<revisione non pubblicata>`) come **MIT, incluso**. Non è corretto
 presentarlo così: le due fonti upstream sono in conflitto.
 
 - La card Hugging Face alla revisione usata (e su main, tag `license:mit`) dice MIT:
-  `<URL non pubblicato>` (card alla revisione <revisione non pubblicata>)
-- Il `LICENSE` del repo GitHub del dataset, aggiunto in seguito (commit <commit non pubblicato>), è una licenza con restrizione d'uso per ML. La clausola 4 vieta di usare i contenuti come dati di
+  `<URL non pubblicato>` (card alla revisione `<revisione non pubblicata>`)
+- Il `LICENSE` del repo GitHub del dataset, aggiunto in seguito (commit `<commit non pubblicato>`), è una licenza con restrizione d'uso per ML. La clausola 4 vieta di usare i contenuti come dati di
   training di modelli di machine learning (`<URL non pubblicato>`).
 
-Non è stabilito quale delle due valga per la revisione @<revisione non pubblicata>. Per questo, per decisione del proprietario, **nessun
+Non è stabilito quale delle due valga per la revisione fissata. Per questo, per decisione del proprietario, **nessun
 contenuto derivato da `edit_np` viene pubblicato**: testi, prompt tokenizzati, ID, metriche per richiesta e il
 classificatore H-CA stimato su `edit_np` (`results/v2/hca/edit_np_fitted/`, `replay/run_hca.json`, smoke/probe).
 Il dataset resta utilizzabile solo in locale. Restano pubblicati gli aggregati: `results/v2/hca/hca_results.json`,
