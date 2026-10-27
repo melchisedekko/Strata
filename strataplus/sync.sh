@@ -471,11 +471,11 @@ for l in open(priv, encoding="utf-8"):
 for rel in sys.argv[3:]:
     p = os.path.join(root, rel)
     if not os.path.isfile(p) or os.path.islink(p): continue
-    s = open(p, encoding="utf-8", errors="surrogateescape").read(); t = s
+    s = open(p, encoding="utf-8", errors="surrogateescape", newline="").read(); t = s
     for rx, b in subs: t = rx.sub(lambda m: b, t)
     if t != s:
         mode = stat.S_IMODE(os.stat(p).st_mode); os.chmod(p, mode | stat.S_IWUSR)
-        with open(p, "w", encoding="utf-8", errors="surrogateescape") as h: h.write(t)
+        with open(p, "w", encoding="utf-8", errors="surrogateescape", newline="") as h: h.write(t)
         os.chmod(p, mode)
 PY
 

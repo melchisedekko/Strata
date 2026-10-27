@@ -18,7 +18,7 @@ f504b6216a240354c044c2f1d39038d83a9c82ce435bcc525b8ae7973bf6fb4b  ./bench/strata
 2c4dd7e06505ee3763168a215b71f625c988d44a3c12b7a488b4b92613bb3608  ./bench/strata-bench/LANG_COUNT_editfix.json.sha256
 f66832925019193c6a5a502d127bc83645840f989f721e7915f2793af36010c0  ./bench/strata-bench/LANG_COUNT_editfix.md
 b93c74a209bbb697f013b9ae33808b9195f950f0cddbe432cee60337f7294262  ./bench/strata-bench/LANG_COUNT_editfix.md.sha256
-07b61c2afe0d9a957ad4a666eaea607cb89ebd32ff8e5bf596af45fa97c5b78c  ./bench/strata-bench/LICENSE_INVENTORY.csv
+77094a93d2bee113ebac918334f5f1f0f7e637c51f40c36c49357a280c069908  ./bench/strata-bench/LICENSE_INVENTORY.csv
 319946b325672bf45ca95b436bd1f33291b035e94aadf8de2bcdaeb447d41a49  ./bench/strata-bench/LICENSE_INVENTORY.md
 68934d6b56547ec2567802191fe2767ba8904e166b39ab1f1c6634f91e44afa2  ./bench/strata-bench/LICENSE_INVENTORY.sha256
 226d4b1479138476ac666219c8e817a250dd7766eefb7724d4cdc8943ec1e91b  ./bench/strata-bench/LOG_SCHEMA.md
@@ -233,7 +233,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 9adce4c36394aa11f84bbd50128eca238f6def225f2ab32363ee5fb817899d71  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-3a7b8de6b4c74c528ee27211d1a26c7534502a1c45f1dac83c2fd77b9e32b047  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_combo.log
+6c5e6d19239cb71289bb0874d75f18d75d30a85c25117665f448b8cf34270b17  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_combo.log
 569a3736b5641fdf973baeb45c98caf1b41438dffd4c511486dda422e8d1bdc5  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_lookup.log
 03018f145c85154ec920fa743039aef9d268bfa6dadd09b6361f671554ba3aa6  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
@@ -894,4 +894,4 @@ c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/strata
 542900a0d13e88f5bc01859fd02fd8a2467e7ebaddfccd35232a496f15f87526  ./scout/strata-plus/scout_greedy_rho.md
 e2a511665472d454af472d2a6607b4b9767fb7d48dec26fdf0f4aaefc6915d8a  ./scout/strata-plus/scout_patch_support.md
 72a4b1342c23ec12cabebd45ef396966eb23192df1e78c8e6abcac1c6f213d27  ./scout/strata-plus/scout_spec_HFC_v2.md
-d3aaab62ac80f2b065c20781929edffbb6110bcfe36f65a996d5236accd382d0  ./sync.sh
+bf119e14e2829cd974c99e0b9ca3785937dac61628f4968110c82a03db551f16  ./sync.sh
