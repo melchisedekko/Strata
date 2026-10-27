@@ -17,3 +17,7 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [aprime_tm0] rep 0 mtbench-115: 128 tok, 44 verify + 0 replay rounds, acc 84/127, decode 226040 ms
 [aprime_tm0] rep 0 mtbench-121: 128 tok, 45 verify + 0 replay rounds, acc 83/135, decode 414679 ms
 [aprime_tm0] rep 0 mtbench-129: 128 tok, 49 verify + 0 replay rounds, acc 79/148, decode 115305 ms
+[aprime_tm0] rep 0 mtbench-132: 67 tok, 31 verify + 0 replay rounds, acc 36/90, decode 480751 ms
+[aprime_tm0] rep 0 mtbench-134: 128 tok, 37 verify + 0 replay rounds, acc 91/111, decode 111105 ms
+[aprime_tm0] rep 0 mtbench-136: 128 tok, 44 verify + 0 replay rounds, acc 84/139, decode 103457 ms
+g9_violations=0

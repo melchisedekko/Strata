@@ -1,2 +1,6 @@
 2026-10-27 15:28:55 CET sovrapposizione: Policy run_rollback.sh/rollback_probe (pid 786854/786855/786856, nice 10, -t 6) avviato 15:15:51 CET (ps lstart) mentre gira aprime_tm0 (pid 780678, avviato 15:12:38 CET). Da ora il mio processo llama viene messo in pausa (SIGSTOP) finche' rollback_probe/logit_probe sono attivi.
 2026-10-27 15:29:38 CET STOP 780678 (probe Policy attivo: 786856 )
+2026-10-27 15:36:07 CET CAMBIO DI PIANO (Alessandro, 15:35 CET, budget): annullati run_diag_tiled_mm0_full_v1.sh e run_diag_fa_off_tm0_v1.sh (mai lanciati); run_diag_tiled_mm0_v1.sh fermato dopo default_a_tm0 (base_tm0 non eseguito; greedy puro = base_r1/TF3 gia' generati)
+2026-10-27 15:36:14 CET CONT 780678: ripresa in sovrapposizione con rollback_probe di Policy (per budget; Lead 15:28 chiede solo di annotare la sovrapposizione per la run tiled). Pausa totale 15:29:38-15:36:14 CET
+2026-10-27 15:46:41 CET revocato lo stop prima di base_tm0: con TILED_MM=0 cambiano gia' i logit del round 0 (prefill a batch >= 8 passa dal tiled), quindi il greedy puro va rigenerato con TILED_MM=0 (passo base_tm0 gia' previsto nello script tiled hashato)
+2026-10-27 16:11:22 CET ripristinato lo stop prima di base_tm0 (ordine budget 15:35 CET: confronto con il greedy puro gia' generato); limite dichiarato nel report

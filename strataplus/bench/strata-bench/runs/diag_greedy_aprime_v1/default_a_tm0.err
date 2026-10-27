@@ -1,0 +1,23 @@
+0.01.174.129 I cmn          init: llama threadpool init, n_threads = 6
+0.01.979.603 I common_speculative_init_result: creating MTP draft context against the target model 'models/qwen35-2b-mtp-q4_k_m.gguf'
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
+[default_a_tm0] rep 0 HumanEval/2: 97 tok, 25 verify + 0 replay rounds, acc 73/78, decode 56954 ms
+[default_a_tm0] rep 0 HumanEval/13: 128 tok, 42 verify + 0 replay rounds, acc 86/102, decode 84620 ms
+[default_a_tm0] rep 0 HumanEval/23: 30 tok, 10 verify + 0 replay rounds, acc 20/24, decode 20808 ms
+[default_a_tm0] rep 0 HumanEval/28: 70 tok, 19 verify + 0 replay rounds, acc 52/61, decode 41305 ms
+[default_a_tm0] rep 0 HumanEval/35: 116 tok, 31 verify + 0 replay rounds, acc 86/90, decode 91042 ms
+[default_a_tm0] rep 0 HumanEval/55: 126 tok, 34 verify + 0 replay rounds, acc 92/97, decode 70434 ms
+[default_a_tm0] rep 0 HumanEval/59: 128 tok, 40 verify + 0 replay rounds, acc 88/100, decode 71474 ms
+[default_a_tm0] rep 0 HumanEval/91: 128 tok, 38 verify + 0 replay rounds, acc 90/95, decode 91433 ms
+[default_a_tm0] rep 0 HumanEval/101: 128 tok, 32 verify + 0 replay rounds, acc 96/96, decode 77698 ms
+[default_a_tm0] rep 0 HumanEval/148: 128 tok, 32 verify + 0 replay rounds, acc 96/102, decode 79530 ms
+[default_a_tm0] rep 0 mtbench-101: 128 tok, 61 verify + 0 replay rounds, acc 67/83, decode 98263 ms
+[default_a_tm0] rep 0 mtbench-105: 128 tok, 44 verify + 0 replay rounds, acc 84/98, decode 105029 ms
+[default_a_tm0] rep 0 mtbench-113: 128 tok, 43 verify + 0 replay rounds, acc 85/106, decode 53293 ms
+[default_a_tm0] rep 0 mtbench-115: 128 tok, 48 verify + 0 replay rounds, acc 80/96, decode 6027 ms
+[default_a_tm0] rep 0 mtbench-121: 128 tok, 47 verify + 0 replay rounds, acc 81/104, decode 5999 ms
+[default_a_tm0] rep 0 mtbench-129: 128 tok, 56 verify + 0 replay rounds, acc 72/88, decode 6560 ms
+[default_a_tm0] rep 0 mtbench-132: 67 tok, 37 verify + 0 replay rounds, acc 30/38, decode 4018 ms
+[default_a_tm0] rep 0 mtbench-134: 128 tok, 41 verify + 0 replay rounds, acc 87/102, decode 5543 ms
+[default_a_tm0] rep 0 mtbench-136: 128 tok, 53 verify + 0 replay rounds, acc 75/115, decode 7691 ms
+g9_violations=0
