@@ -83,4 +83,3 @@ Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl
 ### Rimossi in questo sync dal controllo licenze/quarantena
     strataplus/bench/traces/raw/v11/e4v14_cmds.txt
     strataplus/bench/traces/raw/v11/tracer_v14_build_info.txt
-    strataplus/logs/tmp_scratch/_rx.txt
