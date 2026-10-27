@@ -59,3 +59,11 @@ START 2026-10-26 22:23:34 CET g++ -j1 hook_main_v2 (JOINT_DET)
 END 2026-10-26 22:23:35 CET rc=0 g++ -j1 hook_main_v2 (JOINT_DET)
 START 2026-10-26 22:23:35 CET ./hook_scenarios_v2.sh (JOINT_DET)
 END 2026-10-26 22:23:35 CET rc=0 ./hook_scenarios_v2.sh (JOINT_DET)
+2026-10-27T15:02:09+0100 START hfc_hip644_link 4 build nice19 -j2 (log /workspace/scout-local/hfc_hip644_link_run.log)
+START 2026-10-27 15:02:09 CET cmake HIP644 patch
+END 2026-10-27 15:02:38 CET rc=0 cmake HIP644 patch
+START 2026-10-27 15:02:38 CET ninja -j2 strata HIP644 patch
+END 2026-10-27 15:07:00 CET rc=1 ninja -j2 strata HIP644 patch
+START 2026-10-27 15:07:00 CET cmake HIP644 ctl
+END 2026-10-27 15:08:16 CET rc=0 cmake HIP644 ctl
+START 2026-10-27 15:08:16 CET ninja -j2 strata HIP644 ctl

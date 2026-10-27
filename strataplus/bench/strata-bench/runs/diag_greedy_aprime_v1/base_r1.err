@@ -1,0 +1,22 @@
+0.01.299.851 I cmn          init: llama threadpool init, n_threads = 6
+use_ckpt_tgt=0 use_ckpt_dft=0 mode=base
+[base_r1] rep 0 HumanEval/2: 97 tok, 97 verify + 0 replay rounds, acc 0/0, decode 4807 ms
+[base_r1] rep 0 HumanEval/13: 115 tok, 115 verify + 0 replay rounds, acc 0/0, decode 5582 ms
+[base_r1] rep 0 HumanEval/23: 30 tok, 30 verify + 0 replay rounds, acc 0/0, decode 1406 ms
+[base_r1] rep 0 HumanEval/28: 70 tok, 70 verify + 0 replay rounds, acc 0/0, decode 3262 ms
+[base_r1] rep 0 HumanEval/35: 116 tok, 116 verify + 0 replay rounds, acc 0/0, decode 5308 ms
+[base_r1] rep 0 HumanEval/55: 126 tok, 126 verify + 0 replay rounds, acc 0/0, decode 6316 ms
+[base_r1] rep 0 HumanEval/59: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6146 ms
+[base_r1] rep 0 HumanEval/91: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6359 ms
+[base_r1] rep 0 HumanEval/101: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5917 ms
+[base_r1] rep 0 HumanEval/148: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6678 ms
+[base_r1] rep 0 mtbench-101: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5977 ms
+[base_r1] rep 0 mtbench-105: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5994 ms
+[base_r1] rep 0 mtbench-113: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6092 ms
+[base_r1] rep 0 mtbench-115: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6114 ms
+[base_r1] rep 0 mtbench-121: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6095 ms
+[base_r1] rep 0 mtbench-129: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6006 ms
+[base_r1] rep 0 mtbench-132: 62 tok, 62 verify + 0 replay rounds, acc 0/0, decode 2958 ms
+[base_r1] rep 0 mtbench-134: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 137758 ms
+[base_r1] rep 0 mtbench-136: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 183865 ms
+g9_violations=0
