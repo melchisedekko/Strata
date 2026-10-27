@@ -1,0 +1,296 @@
+# H-FC — s(T) fisso calibrato contro EMA (specifica, Strata @7dd5cf1)
+
+Legenda stato: **[V]** = verificato nel codice @7dd5cf1 (rg/sed, file:riga); **[P]** = plausibile / proposta, non verificata da build o test.
+Nessuna build, nessuna modifica a /workspace/Strata (HEAD 7dd5cf1, status pulito). Licenza Strata: MIT.
+
+## 1. Obiettivo e stato
+
+- Obiettivo: sostituire in DraftPolicy la stima EMA dei costi di round per T con una tabella s(T) fissa, calibrata a parte (profilo P4 su AMD). Si vuole misurare se una tabella fissa sceglie finestre migliori dell'EMA, perché l'EMA è rumorosa per catture, refill e stalli. **[P]**
+- Candidato a sé, fuori da E-AMD-0.
+- Stato: **non implementato, solo specifica.** Base: 7dd5cf1. Il diff sotto è testuale e non va applicato.
+
+## 2. Patch proposta (diff testuale, NON applicare)
+
+### 2.0 Fatti di partenza
+
+- `observe` (draft_policy.cpp L154-173). **[V]**
+  - Dentro `if (round_ms > 0)` (L156-162): `clamp_sample` L157, alpha L158, EMA `cost_` L159, `cost_n_ += 1` L160, **`last_[bk_][t] = rounds_` L161**.
+  - Fuori dal ramo: `rounds_ += 1` L163, poi l'acceptance lookup `ok_/bad_` L164-167 oppure `mtp_tok_/mtp_n_` L168-172.
+- `observe_chain` (L258-279), stessa forma. **[V]**
+  - Dentro `if (round_ms > 0)` (L260-266): clamp_sample L261, alpha L262, EMA L263, `cost_n_` L264, **`last_` L265**.
+  - Fuori: `rounds_` L267, `mtp_tok_/mtp_n_` L269-272, `cok_/cbad_` L273-276.
+- **Quindi `last_` sta DENTRO il ramo del costo** (L161, L265). La patch lo sposta fuori solo con frozen attivo. **[V]**
+- `stale(t)` (L116): `cost_n_ > 0 && rounds_ - last_ > kStaleRounds(300)`. Viene usato in choose L142/L147 e in chain L250/L254. **[V]**
+- Probe sui T «non misurati», attivi quando `cost_n_ < kProbes` (3): choose L147, keep_draft L216/L223, chain L254. **[V]**
+- `cost_ms(t)` (L41-53): se `cost_n_[bk_][t] > 0` restituisce `cost_` così com'è, altrimenti scala con kShape. **[V]**
+- `set_context` (L76-97). **[V]**
+  - È un no-op senza robust (L77).
+  - Con robust, se il nuovo bucket non ha dati copia dal bucket vicino `cost_`, `cost_n_=1` e `last_` (L84-92), poi `bk_ = nb` (L96).
+  - Senza SPEC_COST, `bk_` resta quindi sempre 0.
+- `seed_costs` (L67-74): scrive solo i T con `ms > 0 && cost_n_ == 0` (L70), con `cost_n_ = weight`; `last_` non viene impostato. **[V]**
+- `clamp_sample` (L55-65): è attivo solo con robust ed è chiamato solo nel ramo del costo. **[V]**
+- generate.cpp, CLI. **[V]**
+  - `DraftPolicy policy(o.spec)` L16429.
+  - COST_TABLE letto solo se `spec_cost` (L16432) e passato con `seed_costs(ms, n, 6.0, bucket++)` L16442.
+  - `set_robust(spec_cost)` L16447.
+  - `set_chain_rule` L16448-16453.
+- generate.cpp, serve. **[V]**
+  - `DraftPolicy policy(S)` L11178, `spec_cost` L11179, `set_robust` L11182, `set_chain_rule` L11183-11188.
+  - **COST_TABLE non viene letto in serve**: rg trova solo L16432.
+
+### 2(a) Flag `frozen_` e `set_frozen(bool)` — draft_policy.hpp / draft_policy.cpp [P]
+
+```diff
+--- a/include/strata/spec/draft_policy.hpp   (7dd5cf1)
++++ b/include/strata/spec/draft_policy.hpp   (H-FC, proposta)
+@@ -58,3 +58,10 @@   (set_robust = hpp L60)
+     /// STRATA_SPEC_COST: a round time far above what is known for that width (the first use of a width captures its graph; a stalled
+     /// round) counts as a tenth of a sample, so one capture cannot price a width out of use.  Off: the cost EMA as it always was.
+     void set_robust(bool on) { robust_ = on; }
++    /// H-FC (STRATA_SPEC_COST_FROZEN): the row costs are a fixed table; observe()/observe_chain() still learn acceptance,
++    /// mtp_tok_ and last_, but never move cost_/cost_n_; set_context() only switches bucket; stale() is false.
++    void set_frozen(bool on) { frozen_ = on; }
++    bool frozen() const { return frozen_; }
++    /// H-FC: write every t in 1..n of `bucket` (overwrite, unlike seed_costs), cost_n_ = n_eff (>= kProbes: no probes).
++    void set_costs(const double* ms, int n, int bucket, double n_eff = 1000.0);
+ 
+@@ -93,5 +100,6 @@
+     double rounds_ = 0;                                    // rounds observed so far
+     bool robust_ = false;
++    bool frozen_ = false;                                  // H-FC: fixed cost table
+     double clamp_sample(int t, double ms) const;
+```
+
+```diff
+--- a/src/spec/draft_policy.cpp   (7dd5cf1)
++++ b/src/spec/draft_policy.cpp   (H-FC, proposta)
+@@ -67,8 +67,19 @@
+ void DraftPolicy::seed_costs(const double* ms, int n, double weight, int bucket) {
+     ...invariata (L67-74)...
+ }
++
++void DraftPolicy::set_costs(const double* ms, int n, int bucket, double n_eff) {
++    bucket = std::clamp(bucket, 0, kCtxBuckets - 1);
++    for (int t = 1; t <= std::min(n, kMaxT); ++t)
++        if (ms[t - 1] > 0.0) {                 // overwrite: measured or not
++            cost_[bucket][t] = ms[t - 1];
++            cost_n_[bucket][t] = n_eff;
++            last_[bucket][t] = rounds_;
++        }
++}
+ 
+ void DraftPolicy::set_context(long long pos) {
+-    if (!robust_) return;
++    if (!robust_ && !frozen_) return;
+     const int nb = pos < 6000 ? 0 : pos < 24000 ? 1 : 2;
+     if (nb == bk_) return;
++    if (frozen_) { bk_ = nb; return; }      // H-FC: no copy between buckets (the loader filled every bucket)
+     bool has = false;
+@@ -116 @@
+-bool DraftPolicy::stale(int t) const { return cost_n_[bk_][t] > 0 && rounds_ - last_[bk_][t] > kStaleRounds; }
++bool DraftPolicy::stale(int t) const {
++    return !frozen_ && cost_n_[bk_][t] > 0 && rounds_ - last_[bk_][t] > kStaleRounds;
++}
+@@ -154,10 +165,12 @@ void DraftPolicy::observe(bool lookup, int t, int accepted, int match, double round_ms) {
+     t = std::clamp(t, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         round_ms = clamp_sample(t, round_ms);
+         const double alpha = robust_ ? std::max(kCostAlpha, 1.0 / (cost_n_[bk_][t] + 1.0)) : kCostAlpha;   // a running mean for the first samples
+         cost_[bk_][t] = cost_n_[bk_][t] > 0 ? (1.0 - alpha) * cost_[bk_][t] + alpha * round_ms : round_ms;
+         cost_n_[bk_][t] += 1.0;
+         last_[bk_][t] = rounds_;
+-    }
++    } else if (round_ms > 0) {
++        last_[bk_][t] = rounds_;              // H-FC: the width was used; its cost stays the table's
++    }
+     rounds_ += 1.0;
+@@ -258,10 +271,12 @@ void DraftPolicy::observe_chain(int t_mtp, int k, int accepted, int match, double round_ms) {
+     const int t = std::clamp(t_mtp + k, 1, kMaxT);
+-    if (round_ms > 0) {
++    if (round_ms > 0 && !frozen_) {
+         ...L261-265 invariate...
+-    }
++    } else if (round_ms > 0) {
++        last_[bk_][t] = rounds_;              // H-FC
++    }
+     rounds_ += 1.0;
+```
+
+- Con frozen attivo si salta **solo** EMA `cost_`, `cost_n_` e `clamp_sample`. Continuano ad aggiornarsi `last_` (spostato nel ramo else, solo se frozen), `rounds_`, `ok_/bad_`, `mtp_tok_/mtp_n_`, `cok_/cbad_` e `observe_probs` (L190-197, che non tocca i costi). **[P]**
+- `set_context` con frozen cambia solo bucket e non copia nulla. Con robust e frozen insieme vince frozen. **[P]**
+- `stale()` con frozen restituisce false: niente re-probe ogni 300 round (vedi §3). L'aggiornamento di `last_` diventa allora irrilevante per stale, ma resta coerente per `set_context` in modalità non-frozen. **[P]**
+- Senza `set_frozen(true)` il comportamento è identico a 7dd5cf1: tutti i rami nuovi sono protetti da `frozen_`. **[P]**
+
+### 2(b) Seed sganciato da `spec_cost`: env `STRATA_SPEC_COST_FROZEN=<tabella>` [P]
+
+Scelta: un env nuovo che riceve la tabella inline, **nello stesso formato di STRATA_SPEC_COST_TABLE** (§2(c)). Non riuso COST_TABLE, così il comportamento attuale «seed con peso 6.0 solo con SPEC_COST=1» resta intatto. Se Bench lo preferisce si può passare a un path di file: è una variante con 1 helper in più.
+
+Helper da aggiungere in generate.cpp, in namespace anonimo, condiviso da CLI e serve:
+
+```diff
++// H-FC: STRATA_SPEC_COST_FROZEN="T1,..,T8[;T1,..;T1,..]" (ms per round, the STRATA_SPEC_COST_TABLE format): every width
++// 1..S of every context bucket is overwritten and the policy's row costs never move.  One list fills all three buckets.
++// A width of 1..S missing (or <= 0) is an error: an unmeasured width would be probed forever, never learned.
++static bool load_frozen_costs(strata::spec::DraftPolicy& policy, int S, std::string& err) {
++    const char* tab = std::getenv("STRATA_SPEC_COST_FROZEN");
++    if (tab == nullptr || tab[0] == '\0') return true;
++    constexpr int kM = strata::spec::DraftPolicy::kMaxT, kB = strata::spec::DraftPolicy::kCtxBuckets;
++    double ms[kB][kM] = {};
++    int n[kB] = {}, nb = 0;
++    for (const char* q = tab; *q != '\0' && nb < kB;) {      // the parser of L16435-16444, kept as is
++        if (n[nb] < kM) ms[nb][n[nb]++] = std::atof(q);
++        while (*q != '\0' && *q != ',' && *q != ';') ++q;
++        const bool end_list = *q == ';' || *q == '\0';
++        if (*q != '\0') ++q;
++        if (end_list) ++nb;
++    }
++    if (nb == 0) { err = "STRATA_SPEC_COST_FROZEN: empty table"; return false; }
++    for (int b = nb; b < kB; ++b) { std::copy(ms[0], ms[0] + kM, ms[b]); n[b] = n[0]; }   // one list -> every bucket
++    for (int b = 0; b < kB; ++b)
++        for (int t = 1; t <= S; ++t)
++            if (t > n[b] || ms[b][t - 1] <= 0.0) { err = "STRATA_SPEC_COST_FROZEN: bucket " + std::to_string(b) + " has no T" + std::to_string(t); return false; }
++    for (int b = 0; b < kB; ++b) policy.set_costs(ms[b], n[b], b);
++    policy.set_frozen(true);
++    std::fprintf(stderr, "strata: costo congelato (STRATA_SPEC_COST_FROZEN): %s\n", policy.cost_table_text().c_str());
++    return true;
++}
+```
+
+- Nota sulla semantica nb: con 2 liste, il bucket 2 copia la lista 0. Si può decidere di copiare la lista più vicina (1); da fissare con Bench. **[P]**
+
+CLI, subito dopo L16447 (`policy.set_robust(spec_cost);`), prima di `set_chain_rule` L16448:
+
+```diff
+         policy.set_robust(spec_cost);
++        if (std::string fe; !load_frozen_costs(policy, o.spec, fe)) { std::fprintf(stderr, "strata generate: %s\n", fe.c_str()); return 1; }
+         if (spec_cost && use_mtp)
+             mtp.set_chain_rule([&](int idx, float pj) {
+```
+
+- La chiamata va **dopo** il seed di COST_TABLE (L16432-16442), così frozen sovrascrive un eventuale seed. **[P]**
+
+Serve, subito dopo L11182 (`policy.set_robust(spec_cost);`), prima di L11183:
+
+```diff
+         policy.set_robust(spec_cost);
++        if (std::string fe; !load_frozen_costs(policy, S, fe)) { std::fprintf(stderr, "strata serve: %s\n", fe.c_str()); return 1; }
+         if (spec_cost && use_mtp)
+```
+
+- **Proposta: CLI obbligatorio, serve opzionale.** La patch serve costa 1 riga. Con DraftPolicy unica per processo («learned over the whole process», L11178), frozen vale per tutte le richieste. **[P]**
+- In serve ci sono 3 siti di observe: pipelined L14759, serie L15192 e L15195. Diventano frozen-safe dentro DraftPolicy senza toccarli. **[V]** per i siti, **[P]** per l'effetto.
+- La misura H-FC (§5) è CLI, coerente con T_CYCLE, che esiste solo in CLI. **[P]**
+
+### 2(c) Formato tabella s(T) [V, riuso]
+
+Il parser di STRATA_SPEC_COST_TABLE sta in generate.cpp L16432-16444; `seed_costs` in draft_policy.cpp L67-74.
+
+- **Sintassi:** `T1,T2,..,Tn;T1,..;T1,..`. Le liste separate da `;` sono i bucket di contesto `<6K`, `<24K` e più lunghi (commento L16433; `kCtxBuckets=3`, hpp L27). I valori dentro una lista sono separati da `,`. Ogni valore si legge con `std::atof` (L16437). **[V]**
+- **Unità:** ms di round per finestra di t righe, draft incluso (hpp L50: «round ms of the windows of 1..n rows, the draft included»). È la stessa grandezza che l'EMA impara da `round_ms` (generate.cpp L16702, Clock da t0 L16533 a fine round). Valori assoluti, non relativi. **[V]**
+- **T:** da 1 a n, con al massimo `kMaxT=8` valori per lista: l'array è `ms[kMaxT]` (L16434) e `if (n < kMaxT)` L16437, quindi i valori oltre l'ottavo vengono ignorati. **[V]**
+- **Valori mancanti:**
+  - un campo vuoto (`1,,3`) o non numerico dà `atof` = 0 (L16437);
+  - `seed_costs` salta `ms <= 0` (L70): quel T resta non misurato (scalato da kShape e soggetto a probe);
+  - una lista corta lascia senza seed i T oltre n;
+  - con una sola lista viene seminato solo il bucket 0 («one list seeds the first», L16433). Gli altri bucket li riempie `set_context` per copia, ma solo con robust (L77, L84-92). **[V]**
+- **Proposta:** stesso formato. Con frozen, un T mancante tra 1..S diventa errore all'avvio (vedi helper). Una lista unica vale per tutti i bucket. Il formato resta compatibile al 100% con COST_TABLE. **[P]**
+- Formato di uscita esistente, per confronto: `cost_table_text()` (draft_policy.cpp L98-114) stampa `ctx<6K: T1:x(n=..) ...`. Il report CLI `spec cost table` (L16745) esce solo con SPEC_COST. **[V]**
+
+### 2(d) Log all'avvio [P]
+
+- Su stderr, una volta: `strata: costo congelato (STRATA_SPEC_COST_FROZEN): ctx<6K: T1:<s1>(n=1000) … T8:<s8>(n=1000) | ctx<24K: … | ctx>=24K: …`, riusando `cost_table_text()` (L98-114, formato **[V]**).
+- Opzionale, a fine run: stampare `spec cost table` anche se frozen. Basta cambiare `if (spec_cost)` in `if (spec_cost || policy.frozen())` a L16745, così Bench verifica che la tabella non si è mossa (n resta 1000).
+
+## 3. Interazioni da verificare
+
+- **`stale()` (L116) e kStaleRounds=300 (L25).**
+  - Oggi un T usato raramente diventa stale dopo 300 round e choose (L142/L147) o chain (L250/L254) forzano `t_full` quando q ≥ 0.85 oppure p_mtp·c ≥ 0.6. **[V]**
+  - Con frozen, se stale non venisse disattivato, `last_` si aggiornerebbe solo per i T usati e i T mai scelti tornerebbero stale per sempre: i probe sarebbero inutili, perché il costo non si aggiorna. Per questo la patch fa `stale() = false` quando frozen. **[P]**
+- **Probe `cost_n_ < kProbes` (choose L147, keep_draft L216/L223, chain L254).** `set_costs` mette `cost_n_ = 1000`, che è ≥ kProbes=3, quindi nessun probe. Un T assente dalla tabella verrebbe sondato per sempre senza mai essere appreso: da qui l'errore all'avvio. **[V]** per le condizioni, **[P]** per la soluzione.
+- **`first_window` e `timed_round` (L16585 `timed_round = !first_window`).** Il primo round non chiama observe, observe_chain o observe_probs (L16713-16715). Con frozen non cambia nulla. `first_window` forza anche T=1 (L16551). **[V]**
+- **STRATA_SPEC_T_CYCLE (L16390-16396, applicato a L16553).** Forza T dopo la policy e prima del gate lookup.
+  - Con frozen, T_CYCLE continua a forzare T, mentre la policy (con costi fermi) continua a imparare l'acceptance.
+  - Il profilo `window cost (ms/round)` (L16709-16711, L16746-16750) viene da `round_ms` e non dalla policy, quindi frozen **non** altera la calibrazione. **[V]**
+  - Regola: la sessione di calibrazione va fatta senza STRATA_SPEC_COST_FROZEN. **[P]**
+- **`--lookup-chain` e `policy.chain` (L232-256).** chain usa `cost_ms`, `mtp_tokens`, `chain_rate`, `stale` e probe: con frozen usa la tabella fissa, mentre `cok_/cbad_` continuano a imparare (L273-276, fuori dal ramo del costo). I round con chain_n>0 passano da observe_chain (L16715). **[V]**
+- **SPEC_COST=1 (keep_draft / chain_rule).**
+  - keep_draft (L198-224) usa `cost_ms` e i probe `cost_n_ < kProbes`; con frozen e n=1000 lavora su s(T) fisso. **[V]**
+  - Precisazione: SPEC_COST di per sé passa da `observe` (L16714) e `observe_probs` (L16713). `observe_chain` entra solo se c'è `--lookup-chain` con chain_n>0 (L16715). **[V]**
+  - Con SPEC_COST e frozen insieme: robust resta attivo, ma `clamp_sample` non viene più chiamato e `set_context` non copia, quindi frozen domina. **[P]**
+  - Va deciso se H-FC si misura con SPEC_COST=0 (choose o min_p) oppure =1 (keep_draft): sono due bracci diversi. **[P]**
+- **Greedy: l'output non cambia.**
+  - DraftPolicy sceglie solo quali draft verificare. hpp L15: «It only chooses which drafts to verify: the output is unchanged»; L67: «It only chooses which rows are verified; the output is unchanged». **[V]** come contratto del codice.
+  - In greedy, la verifica accetta un draft solo se coincide con il token del modello in quella posizione e il primo non accettato viene sostituito dal token del modello. Quindi T cambia quanti token si committano per round, non quali. **[P]** come argomento; il meccanismo di accept non è stato ri-letto qui.
+  - Caveat: la parità bitwise dei logit tra larghezze T diverse (kernel per T) è un'ipotesi già discussa nelle §10/§11 di scout_patch_support.md, non verificata qui. Il gate di uguaglianza dell'output di E-AMD-0 va applicato anche a H-FC. **[P]**
+
+## 4. Calibrazione (decisione del Lead)
+
+- s(T) viene dal **profilo P4 misurato su AMD, in una sessione SEPARATA dall'A/B.** **[P]** (decisione)
+- Strumento esistente: STRATA_SPEC_T_CYCLE in CLI. **[V]**
+  - Env `STRATA_SPEC_T_CYCLE=1,2,3,4,5,6,7,8` (commento L16386-16388, parsing L16390-16396, valori 1..o.spec), quindi serve `--spec 8`.
+  - Per round `T = t_cycle[rounds % n]` (L16553).
+  - Il primo round di ogni larghezza (cattura del grafo) non viene contato: `t_cycle_seen[T]++ > 0` L16709.
+  - Si accumula `round_ms` per T (L16710-16711).
+  - A fine run (L16746-16750) stampa la riga: `window cost (ms/round) T1:<ms>(n=<k>) T2:… T8:…`.
+  - Con `--spec-oracle <file>` ogni riga viene accettata (commento L16387; flag L2619), così ogni T copre davvero T righe.
+- `STRATA_VERIFY_PROFILE=1` (verify.cpp L935) aggiunge, nello stesso blocco T_CYCLE (L16751-16753), la riga `GPU stages per window width (ms):` con `ver.profile_by_t_report()`. Sono gli **stadi GPU** per T, non il round completo, quindi **non** è la grandezza giusta per s(T): s(T) va presa dalla riga `window cost (ms/round)`, che include draft e commit come l'EMA. **[V]** per le righe, **[P]** per la scelta.
+- Riferimento d'uso già nel repo: tools/dflash2/README.md L11 («the report line `window cost (ms/round)` gives the cost of each width»). tools/dflash2/analyze2.py L4 contiene una tabella TV da un run T_CYCLE su un'altra configurazione. **Non usarla**: è citata solo come precedente del formato. **[V]**
+- Ricetta (segnaposti, **nessun numero reale**):
+  1. Sessione P4 su AMD, stessa build, modello, quant, flag e contesto dell'A/B: `STRATA_SPEC_T_CYCLE=1,2,3,4,5,6,7,8 strata generate … --mtp <dir> --spec 8 --spec-oracle <oracle> [STRATA_VERIFY_PROFILE=1]` ripetuto `<R>` volte (segnaposto). **[P]**
+  2. Dalla riga `window cost (ms/round) T1:<s1>(n=..) … T8:<s8>(n=..)` si prende `<s_t>`, la mediana sui `<R>` run (segnaposto). **[P]**
+  3. Per i bucket di contesto: un run per contesto rappresentativo (`<pos_bucket0>`, `<pos_bucket1>`, `<pos_bucket2>`, segnaposti) oppure una sola lista per tutti. **[P]**
+  4. Tabella: `STRATA_SPEC_COST_FROZEN="<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>"` (eventualmente `;…;…` per i 3 bucket). **[P]**
+- Avvertenza: con `--spec-oracle` i draft sono «perfetti», quindi il costo del draft MTP nel round può differire da un run reale. La differenza va confrontata con `spec cost table` di un run EMA (SPEC_COST=1, L16745) come sanity check. **[P]**
+
+## 5. Misura
+
+- **Solo su AMD**, come braccio opzionale dopo E-AMD-0. **[P]** (decisione)
+- Bracci, sulla stessa configurazione:
+  - EMA = 7dd5cf1 con H-FC compilato ma senza env;
+  - frozen = `STRATA_SPEC_COST_FROZEN=<tabella §4>`.
+- Coppie alternate (EMA/frozen, frozen/EMA, …), criterio identico a E-AMD-0 (stesso gate di uguaglianza dell'output e stessa metrica tok/s). **[P]**
+- Da registrare per ogni run: `window_hist`/«accepted per round» (L16758-16760) e `spec cost table` (L16745, con l'estensione 2(d)), per confermare che la tabella non si muove. **[V]** per le stampe esistenti.
+- **Su CPU non c'è nulla da misurare.** Al massimo Policy può fare un replay offline con STRATA_SPEC_TRACE (L16398, L16405; formato riga `T a sfx ms p1…`, L16704-16707) e contare quante scelte di T cambiano tra EMA e tabella fissa. È solo un conteggio, non una misura di velocità. **[V]** per il formato della trace, **[P]** per il metodo.
+
+## 6. Stima righe e file
+
+| file | cosa | righe (stima) |
+|---|---|---|
+| include/strata/spec/draft_policy.hpp | `set_frozen`, `frozen()`, `set_costs`, `frozen_` | ~+8 |
+| src/spec/draft_policy.cpp | `set_costs`; guardie in `set_context` (L77+), `stale` (L116), `observe` (L156-162), `observe_chain` (L260-266) | ~+20 / −4 |
+| src/program/generate.cpp | helper `load_frozen_costs`; 1 chiamata CLI (dopo L16447), 1 serve (dopo L11182); opzionale L16745 | ~+30 / −1 |
+| src/spec/draft_policy_test.cpp (opzionale) | test: frozen non muove `cost_`, `stale` falso, acceptance si muove | ~+25 |
+
+Totale circa 60 righe nette in 3 file (circa 85 col test). **[P]** (stima, non conteggio di un diff reale)
+
+- Licenza: MIT (Strata), patch compatibile.
+- **HIP / AMD: nessun impatto sui kernel.** La modifica è solo lato host (DraftPolicy e generate.cpp), senza toccare .cu/HIP, kVerifyMaxT o i buffer. **[V]** sui file coinvolti, **[P]** sull'assenza di effetti indiretti.
+
+## 7. Riepilogo dello stato delle affermazioni
+
+- **[V]**:
+  - `last_` dentro il ramo `round_ms > 0` (L161, L265);
+  - cosa sta dentro e fuori dal ramo (L156-172, L260-276);
+  - `stale` L116; probe L147/L216/L223/L254;
+  - `set_context` no-op senza robust e copia tra bucket (L77, L84-92);
+  - `seed_costs` solo su `cost_n_ == 0` con peso (L67-74);
+  - COST_TABLE solo CLI e solo con SPEC_COST (L16432); parser e unità (L16432-16444, hpp L50);
+  - siti di observe in CLI L16713-16715 e in serve L14759/L15190-15195;
+  - T_CYCLE e `window cost (ms/round)` (L16390-16396, L16553, L16709-16711, L16746-16750);
+  - STRATA_VERIFY_PROFILE (verify.cpp L935, generate.cpp L16751-16753);
+  - contratto «output unchanged» (hpp L15, L67).
+- **[P]**:
+  - il diff completo (2a, 2b, 2d), il nome dell'env e la semantica del riempimento dei bucket;
+  - n_eff = 1000;
+  - l'errore su T mancante;
+  - l'argomento greedy oltre il contratto;
+  - ricetta di calibrazione, piano di misura e stima delle righe.
+
+## Addendum A — decisioni del Lead (2026-10-26 19:45 CET), prevalgono sul testo sopra
+
+1. **Bracci:** un solo braccio H-FC, con lo stesso `STRATA_SPEC_COST` della configurazione vincente di E-AMD-0 (oggi 0). EMA contro frozen differiscono solo per il flag `frozen_`.
+2. **Bucket:** vanno calibrati tutti e 3 i bucket (<6K, <24K, oltre) nella sessione AMD separata. La regola «una lista sola vale per tutti e 3 i bucket» del punto (b) è **annullata**. Se nella tabella manca un bucket, o un T tra 1 e `--spec` in un bucket, l'avvio si blocca con un errore. Non si riempie niente e non si copiano valori dai bucket vicini.
+3. **Formato d'ingresso:** l'env `STRATA_SPEC_COST_FROZEN` contiene il **path di un file**, non la tabella inline. Il contenuto del file usa il formato del punto (c), con 3 liste separate da `;`. All'avvio lo sha256 del file va stampato su stderr insieme a `cost_table_text()`, così finisce nei metadati di ogni run e si può confrontare con il profilo P4 da cui è stato calibrato. [P] `load_frozen_costs` legge il file e poi passa la stringa al parser di L16432-16444 senza modificarlo.
+
+Lo stato non cambia: è solo una specifica, non implementata finché non c'è la macchina AMD.

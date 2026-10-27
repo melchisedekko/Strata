@@ -218,8 +218,8 @@ f49d4b1d4f79e7f79028b01660c4ab25fab0c5a34dd530910bd1b03c6f36fbc0  ./bench/traces
 6daba30c1ce9c8a491066dba39cf3980482d6e39f2e9217d55b1595d6c95caf0  ./bench/traces/p4_knee_T8.json
 5c1ab1d77a623f89c36f37c5035ca759f6c9b845becc4be45fc77a91883b7c7a  ./bench/traces/p4_knee_T8.json.sha256
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12/agent_v12_build_nollamafile.err
-b239e84bc04c13d85b2512b194690d168296e50e6e99eeb71d9a006b431e19d9  ./bench/traces/raw/agent_v12/agent_v12_live_combo.err
-3c9fd657f7f03b7cf53d5f2854087b84955769c05cd15cb1ff417870c74d0685  ./bench/traces/raw/agent_v12/agent_v12_live_combo.jsonl
+21812a9130b72459aed8434f27522d47a8f07adad790de2326816546e9101dd6  ./bench/traces/raw/agent_v12/agent_v12_live_combo.err
+0b865cd99d004e6ec7760826d293aed55afa37274dba2da83ae9eb31f10a48ab  ./bench/traces/raw/agent_v12/agent_v12_live_combo.jsonl
 e5edb313fae36bb9ee17a56120f04d102c850dc2de1c51c1bc702ed2849f6fc4  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.err
 cea153d62d6d7145ebef85a35b7542c333523ff10973590af2d59c81847f802c  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces/raw/agent_v12/agent_v12_live_lookup.ok
@@ -232,7 +232,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 6a7d269d7792f1475e374da6b6d9a2838f58503ae46ef590756c65b71eebc10d  ./bench/traces/raw/agent_v12/build_info.txt
 9adce4c36394aa11f84bbd50128eca238f6def225f2ab32363ee5fb817899d71  ./bench/traces/raw/agent_v12/cmds.txt
 ead20958dac05e278cc698eeaf7db15b01e4b48e75da8dae102c175bbdf6bffd  ./bench/traces/raw/agent_v12/cpu_agent_v12_build_nollamafile.log
-c23825d9852152c1bd90eed1bcbc59a1e9a21107ad33952ea02f98c705e02117  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_combo.log
+03d7caef17b666448bc67d14dcaadc04350728577f04d778065358482a0e7cd2  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_combo.log
 569a3736b5641fdf973baeb45c98caf1b41438dffd4c511486dda422e8d1bdc5  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_lookup.log
 03018f145c85154ec920fa743039aef9d268bfa6dadd09b6361f671554ba3aa6  ./bench/traces/raw/agent_v12/cpu_agent_v12_live_mtp_k3.log
 0b9961b752b12f78e2783bab1cb6ed63c7e9437a6d9da4a951ca73de0774773b  ./bench/traces/raw/agent_v12/cpu_agent_v12_tf_d7.log
@@ -651,6 +651,7 @@ cb2c40c25dd13385eb5096371fafe43f6f538d8d3fab4a89ad05949064eb5556  ./patches/stra
 2875566df6d7bffc7537465e726d861422ae2eb3e49d02b5bb7c24259ae02489  ./patches/strata-policy/strataplus-serve-trace-v1.patch
 b5e238ce2c0a6966e5595fce4d95587246bd6818617573c78b5a3fd9cb635d9e  ./patches/strata-policy/strataplus-serve-trace-v1.patch.sha256
 0186495cd30dd90d9ca53801571a93df11f06ec8c300a38a719829412438ae21  ./plan/PLAN_PAGE.md
+f71d0b076e0a765ddcdf10dc2590a5c26328f15d24d44b4735704c640dbd67e8  ./plan/RULE_HLANG2_ceiling.md
 590763c96e55c623b1540bf4dd2c35c211e4c688ecaade64c2e4148114c4700c  ./plan/log_format.md
 cb0cacb7aef99d859422efd5abfeaa739b5271137a27ce7c2a67c8cbd4edef5d  ./plan/piano.md
 ef9761874a37f1579b2534aeb7067a365b49f0c4956bb39ddff485a02cdf6497  ./policy/strata-policy/replay/README.md
@@ -888,6 +889,8 @@ c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/scout/
 9df20c13b73cb44f718022aa0f1d3d1069fe89ee9e2c4b3a5366828ee159c754  ./scout/scout/scripts/hfc_hip644_link.sh
 1b6d63911cb5d34714bdba8ad260a211b1bb4ad3a649501f82ab89a58ea87912  ./scout/scout/scripts/hfc_hip_build_deferred.sh
 c2ddb7edf3e28fadcc081abaef14aaafbc61626a8ffe151b6e8c312840f12229  ./scout/strata-plus/scout.md
+2a676b45af74150a1dc53579ce9dc5491682c87e18438c3c0beabf93ff922e00  ./scout/strata-plus/scout_HLANG_sota.md
 542900a0d13e88f5bc01859fd02fd8a2467e7ebaddfccd35232a496f15f87526  ./scout/strata-plus/scout_greedy_rho.md
 e2a511665472d454af472d2a6607b4b9767fb7d48dec26fdf0f4aaefc6915d8a  ./scout/strata-plus/scout_patch_support.md
+72a4b1342c23ec12cabebd45ef396966eb23192df1e78c8e6abcac1c6f213d27  ./scout/strata-plus/scout_spec_HFC_v2.md
 cf294a43549138e966b7ccc1853aa6d4201d53f5c44d35266698fc94b4691311  ./sync.sh
