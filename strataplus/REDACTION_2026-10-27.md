@@ -88,3 +88,20 @@ sha256 registrato, quello pubblicato cambia a ogni sync (vedi `MANIFEST.sha256`)
 | `logs/cpu_busy/cpu_busy_bench.log` | copia del log live | segnaposto + sostituzioni |
 
 La guardia finale di `sync.sh` resta invariata: se nella copia redatta resta un riferimento, il commit viene annullato.
+
+### Tracce v11 con segnaposto (decisione del proprietario, 2026-10-27)
+
+Righe di comando e build info del tracer v14: il nome del dataset compariva solo dentro identificativi (nome del file
+di prompt, tag della run, percorso di output). Nella sola copia pubblicata ogni occorrenza è sostituita dallo stesso
+segnaposto `[redatto: riferimento a dataset con licenza non pubblicabile]` (anche dentro tag e percorsi); il resto dei
+comandi è invariato. Sulle righe redatte, lo sha256 del file di prompt derivato è sostituito da `<sha256 non pubblicato>`.
+Gli originali in `/workspace/strata-plus/traces/raw/v11/` non sono modificati; gli sha256 pubblicati differiscono.
+
+| File pubblicato | Redazione |
+|---|---|
+| `bench/traces/raw/v11/e4v14_cmds.txt` | segnaposto in nomi di file, tag e percorsi |
+| `bench/traces/raw/v11/tracer_v14_build_info.txt` | segnaposto nel nome del file di prompt + sha256 di quella riga |
+
+Regola generale: un file `*.txt` in `bench/traces/raw/v11/` non escluso per licenza riceve lo stesso trattamento solo
+se **ogni** occorrenza è dentro un identificativo; altrimenti resta in quarantena (non pubblicato). I file di dati
+esclusi per licenza (elenco in `.gitignore`) restano esclusi. La guardia finale è invariata.

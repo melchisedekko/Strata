@@ -1,0 +1,27 @@
+tracer v14 (proxy CPU, non AMD), 2026-10-27 08:50:07 CET
+610534237f8cab9037a5f2d0c01d082a621c974b06283d278632da75453a3ac3  datasets/proxy_30.jsonl
+89c28ff8fc0a74d20074c83226f4637955235f43dbf52caa73c9153d79724684  datasets/proxy_30_codechat.jsonl
+<sha256 non pubblicato>  datasets/proxy_30_[redatto: riferimento a dataset con licenza non pubblicabile].jsonl
+ddea7320ba99054810275d0228c89d1d0b93abd7ab0e1e5584507e739b048283  proxy/llama_spec_trace_v14.cpp
+85bb5341d9995d495bd2dd72ba52349ccccbed4497eeb00da67e1b500d8e7c19  proxy/strata_arbiter_v1.hpp
+e030ec13f9e077c746ca3b7694d8639fc04eeed944daa00022220728bca06c5e  ./proxy/llama_spec_trace.v14.nollamafile
+ef3d929534cecb1c60dcb5953bb44452a75a6b91dd69cb2b09569dbde51d59f7  /workspace/llama.cpp/build-nollamafile/bin/libllama-common.so.0.7.0
+89f735fbb70b1192b00d111b6ee5d02239d0b4eec56a10456246ffdcee4bdcd6  /workspace/llama.cpp/build-nollamafile/bin/libllama.so
+89f735fbb70b1192b00d111b6ee5d02239d0b4eec56a10456246ffdcee4bdcd6  /workspace/llama.cpp/build-nollamafile/bin/libllama.so.0
+89f735fbb70b1192b00d111b6ee5d02239d0b4eec56a10456246ffdcee4bdcd6  /workspace/llama.cpp/build-nollamafile/bin/libllama.so.0.7.0
+75b39048253d77f3c99948adf82c187f3fd050069fb9a4bbe36c20fe2e944d51  /workspace/llama.cpp/build-nollamafile/bin/libggml-base.so
+75b39048253d77f3c99948adf82c187f3fd050069fb9a4bbe36c20fe2e944d51  /workspace/llama.cpp/build-nollamafile/bin/libggml-base.so.0
+75b39048253d77f3c99948adf82c187f3fd050069fb9a4bbe36c20fe2e944d51  /workspace/llama.cpp/build-nollamafile/bin/libggml-base.so.0.27.0
+31e0c41168c05450f378dde3f223a671f5d13781988409c2f1a8bf80fb738f96  /workspace/llama.cpp/build-nollamafile/bin/libggml-cpu.so
+31e0c41168c05450f378dde3f223a671f5d13781988409c2f1a8bf80fb738f96  /workspace/llama.cpp/build-nollamafile/bin/libggml-cpu.so.0
+31e0c41168c05450f378dde3f223a671f5d13781988409c2f1a8bf80fb738f96  /workspace/llama.cpp/build-nollamafile/bin/libggml-cpu.so.0.27.0
+d7c4c8871c9ef5993da132338151151c4127221094d556e2e76bb31498e75213  /workspace/llama.cpp/build-nollamafile/bin/libggml.so
+d7c4c8871c9ef5993da132338151151c4127221094d556e2e76bb31498e75213  /workspace/llama.cpp/build-nollamafile/bin/libggml.so.0
+d7c4c8871c9ef5993da132338151151c4127221094d556e2e76bb31498e75213  /workspace/llama.cpp/build-nollamafile/bin/libggml.so.0.27.0
+	libllama-common.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libllama-common.so.0 (0x00007f305ce00000)
+	libllama.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libllama.so.0 (0x00007f305c800000)
+	libggml-base.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml-base.so.0 (0x00007f305cd38000)
+	libggml.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml.so.0 (0x00007f305d300000)
+	libggml-cpu.so.0 => /workspace/llama.cpp/build-nollamafile/bin/libggml-cpu.so.0 (0x00007f305b80e000)
+GGML_LLAMAFILE:BOOL=OFF
+2
