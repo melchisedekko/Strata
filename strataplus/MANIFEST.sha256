@@ -2,7 +2,7 @@
 073125f129e1deabfb4dbb868b1592c31a6c32313f8fe749e0d5e21d02d594eb  ./ERRATA_LICENZE.md
 8b6df560b861a33523873ab8a22932987fbe7b8a655593e16c9717173249b9fd  ./README.md
 f044e0514b7cf7ba1538c840c4f67abaec7b6a12cd9233b5ef6d5009dc6db4bc  ./REDACTION_2026-10-27.md
-ca6afbaca4b9a906e3d4c0e5d03ee12250ca3fa7720491ac1d3c43b522854a1b  ./RIEPILOGO.md
+b3c405c4629e58291ce1a6980146fef139f4ac693e11848e01c5606912afc191  ./RIEPILOGO.md
 59c82184111dc133e57c93ca79a95238a498ae1434e566b111597710c1c19915  ./SECRET_SCAN_ALLOWLIST.txt
 84cd82c1b9c3922b4133ada443e4a40bdfb27b53852de5e45c7ddae35787ccf5  ./SKIPPED.md
 9de032f98e03b921cc0fe97bb2898b6a7dec0b021233c14882105a56b99a1681  ./bench/e1/policy/README.md
@@ -296,12 +296,12 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/traces
 f2845ffa6f46a4c30db399f616c31c9d13acc2b8139ab84c404d1444e819a6ab  ./bench/traces/raw/v11/cpu_abl_llamafile_off_base.log
 0918d2a2ab810a8fdf05a2b575ce882455b954014d01399f7bab766e2435e436  ./bench/traces/raw/v11/cpu_abl_llamafile_off_ywrong_T2.log
 d35f84fc94067dc9a31375f0ed12c152f3a9007b758ec3ef9b0315647530a4fe  ./bench/traces/raw/v11/cpu_abl_llamafile_on_ywrong_T2.log
-93f69f910194855e1711897758dd4919202682aa7b6c0be37d47c54d6fddb06d  ./bench/traces/raw/v11/cpu_e4v14_tf_d7_p30_full.log
+77b1daba439cbe7f3208d321bbf32ac7301f5187db1a8ce51271e7b5c546d422  ./bench/traces/raw/v11/cpu_e4v14_tf_d7_p30_full.log
 8e29e314e0497de47cfaa9b03163c08d177404b81d4d5e1e2a0dddb3a80a58ad  ./bench/traces/raw/v11/divergence_tune_p30.json.sha256
 6c17eb2d671debbea26227b96afeb1a012073a8c72d6365776cec781a6527378  ./bench/traces/raw/v11/e4v14_cmds.txt
 d1dd1a7f8ff3e87523a3835225794769467e7c9b5a227be42955aa16c392aa4b  ./bench/traces/raw/v11/e4v14_libllama_common_before.sha256
-a6657d119873d06e59f7c2076d5e9995af72527a321b3c3a088db51e63ec1697  ./bench/traces/raw/v11/e4v14_tf_d7_p30_full.err
-a12ea23759e3c4ad49cdf7fc6b313aab341dc58d5f06aa203334899d99e0f17b  ./bench/traces/raw/v11/e4v14_tf_d7_p30_full.jsonl
+173723a93d950ea1c0853df047eb82f8bf1f980a6be635bc16b0aee875544a49  ./bench/traces/raw/v11/e4v14_tf_d7_p30_full.err
+54566713f8da797df189bcc0e1c9f6c2a349db81080e24cd76948811d93c2518  ./bench/traces/raw/v11/e4v14_tf_d7_p30_full.jsonl
 2658797c7183dadc481bc07b2bcc2efa2308c85f836bde58538b492d14543a76  ./bench/traces/raw/v11/gguf_types/gguf_dump_q4_k_m.txt
 d21d4b78174681dbe9c9759782ed22d72aac2957d533fcff6391f69cf87a8f54  ./bench/traces/raw/v11/gguf_types/gguf_dump_q8_0.txt
 d4c4c321b1b3be7381289bcfb7918b216ee9a2e7e61799c22b893ded893e0901  ./bench/traces/raw/v11/gguf_types/type_tally.txt
@@ -688,6 +688,7 @@ cb2c40c25dd13385eb5096371fafe43f6f538d8d3fab4a89ad05949064eb5556  ./patches/stra
 2875566df6d7bffc7537465e726d861422ae2eb3e49d02b5bb7c24259ae02489  ./patches/strata-policy/strataplus-serve-trace-v1.patch
 b5e238ce2c0a6966e5595fce4d95587246bd6818617573c78b5a3fd9cb635d9e  ./patches/strata-policy/strataplus-serve-trace-v1.patch.sha256
 0186495cd30dd90d9ca53801571a93df11f06ec8c300a38a719829412438ae21  ./plan/PLAN_PAGE.md
+4132c24726699c87347818447417362ff94b7cda41b81d072bb85c12db804a69  ./plan/RULE_AMD_GO_PH1_PLANG.md
 f71d0b076e0a765ddcdf10dc2590a5c26328f15d24d44b4735704c640dbd67e8  ./plan/RULE_HLANG2_ceiling.md
 590763c96e55c623b1540bf4dd2c35c211e4c688ecaade64c2e4148114c4700c  ./plan/log_format.md
 bbe288c077290c7fc5e0781668b4ba1e3311af63830e2a243d71ca91671c880b  ./plan/piano.md
