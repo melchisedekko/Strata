@@ -17,3 +17,4 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_combo] rep 0 agent_v12-installer-fr#t3: 84 tok, 38 verify + 0 replay rounds, acc 46/150, decode 9499 ms
 [agent_v12_live_combo] rep 0 agent_v12-cuda-kernel#t0: 56 tok, 15 verify + 0 replay rounds, acc 41/65, decode 2432 ms
 [agent_v12_live_combo] rep 0 agent_v12-cuda-kernel#t1: 84 tok, 24 verify + 0 replay rounds, acc 60/100, decode 7271 ms
+[agent_v12_live_combo] rep 0 agent_v12-cuda-kernel#t2: 52 tok, 14 verify + 0 replay rounds, acc 38/62, decode 6039 ms
