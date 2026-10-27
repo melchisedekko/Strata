@@ -13,3 +13,10 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=base
 [base_tm0] rep 0 mtbench-101: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6529 ms
 [base_tm0] rep 0 mtbench-105: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6337 ms
 [base_tm0] rep 0 mtbench-113: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6285 ms
+[base_tm0] rep 0 mtbench-115: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 7027 ms
+[base_tm0] rep 0 mtbench-121: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6402 ms
+[base_tm0] rep 0 mtbench-129: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 15700 ms
+[base_tm0] rep 0 mtbench-132: 67 tok, 67 verify + 0 replay rounds, acc 0/0, decode 3171 ms
+[base_tm0] rep 0 mtbench-134: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 6007 ms
+[base_tm0] rep 0 mtbench-136: 128 tok, 128 verify + 0 replay rounds, acc 0/0, decode 5917 ms
+g9_violations=0

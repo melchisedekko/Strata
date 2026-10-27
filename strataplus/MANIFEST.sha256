@@ -2,7 +2,7 @@
 073125f129e1deabfb4dbb868b1592c31a6c32313f8fe749e0d5e21d02d594eb  ./ERRATA_LICENZE.md
 8b6df560b861a33523873ab8a22932987fbe7b8a655593e16c9717173249b9fd  ./README.md
 bb8b96952fc7145970ef19eeaaef269f6d7140735d4283dd40088d836fee49b3  ./REDACTION_2026-10-27.md
-753c7a6345d34062a856e26261dc59c9c6f78b3a5f2e3d22c2e0e6809ffae9da  ./RIEPILOGO.md
+b36ec99feb8ef3763911cdb360ee29b5e3aca1bc857306cb74ff9072e9b21562  ./RIEPILOGO.md
 59c82184111dc133e57c93ca79a95238a498ae1434e566b111597710c1c19915  ./SECRET_SCAN_ALLOWLIST.txt
 94b4ced0befb2a24f5b19ef789c509030537b3c1ccb2ad61c7d8b54c28d45d77  ./SKIPPED.md
 9de032f98e03b921cc0fe97bb2898b6a7dec0b021233c14882105a56b99a1681  ./bench/e1/policy/README.md
@@ -120,8 +120,8 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata
 12385211a50e25ac545edcc2cb91b30766cebae140a41a00361858b2d2a897d4  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r2.err
 0f180cc0b991397e5efb422f21cd49144f7701a44feaad11e943134fac42a79d  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r2.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_r2.ok
-aa9c42e58bfe92a4b5233fdb1bf0e615e05b931dc7b7f90603f766e3b6828044  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_tm0.err
-fe04976e7c6860dbae992325c5962aca702663ea478b0835460fd111de817ab0  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_tm0.jsonl
+506ebc7ec3176b4672fefd5c4d7de6c6b1d7e70f453bcb22adce8313cca55bb6  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_tm0.err
+6a4406a57eaba9f3cd9c0ae168f03b650a9ffe36dd0ea6a84837047c184c5839  ./bench/strata-bench/runs/diag_greedy_aprime_v1/base_tm0.jsonl
 c87204f88963ef78e7b73d71c98361212bd63f4750ecf42729c2230c4057ef05  ./bench/strata-bench/runs/diag_greedy_aprime_v1/default_a_rr1.err
 35abd732c97145ed54ceee98f0815a74751b17cd66ccfc999ec3c475887ef7bc  ./bench/strata-bench/runs/diag_greedy_aprime_v1/default_a_rr1.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./bench/strata-bench/runs/diag_greedy_aprime_v1/default_a_rr1.ok
