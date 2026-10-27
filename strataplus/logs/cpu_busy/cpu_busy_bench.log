@@ -104,3 +104,5 @@
 2026-10-26 20:14:36 | (in corso) | START agent_v12_live_lookup  (strata-bench) |
 2026-10-26 20:14:36 | 2026-10-27 02:12:27 | agent_v12_live_lookup  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 357 7.174
 2026-10-27 02:12:57 | (in corso) | START agent_v12_live_combo  (strata-bench) |
+2026-10-27 02:12:57 | 2026-10-27 08:49:59 | agent_v12_live_combo  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 751 8.041
+2026-10-27 08:50:37 | (in corso) | START e4v14_tf_d7_p30_full  (strata-bench) |

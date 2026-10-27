@@ -21,3 +21,7 @@ use_ckpt_tgt=0 use_ckpt_dft=0 mode=live
 [agent_v12_live_combo] rep 0 agent_v12-cuda-kernel#t3: 58 tok, 17 verify + 0 replay rounds, acc 41/79, decode 15017 ms
 [agent_v12_live_combo] rep 0 agent_v12-tokenizer-fr#t0: 51 tok, 16 verify + 0 replay rounds, acc 35/68, decode 22014 ms
 [agent_v12_live_combo] rep 0 agent_v12-tokenizer-fr#t1: 83 tok, 27 verify + 0 replay rounds, acc 56/97, decode 5099 ms
+[agent_v12_live_combo] rep 0 agent_v12-tokenizer-fr#t2: 82 tok, 27 verify + 0 replay rounds, acc 55/97, decode 7387 ms
+[agent_v12_live_combo] rep 0 agent_v12-tokenizer-fr#t3: 128 tok, 47 verify + 0 replay rounds, acc 81/176, decode 13142 ms
+[agent_v12_live_combo] rep 0 agent_v12-tokenizer-fr#t4: 82 tok, 36 verify + 0 replay rounds, acc 46/128, decode 12255 ms
+g9_violations=0

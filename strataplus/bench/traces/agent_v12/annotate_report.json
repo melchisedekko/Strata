@@ -1,0 +1,30 @@
+{
+ "agent_v12_live_combo": {
+  "requests": 23,
+  "greedy_equal_ref": 6,
+  "rounds": 507,
+  "k_over_cap": 122,
+  "mtp_over_k": 0
+ },
+ "agent_v12_live_lookup": {
+  "requests": 23,
+  "greedy_equal_ref": 8,
+  "rounds": 978,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "agent_v12_live_mtp_k3": {
+  "requests": 23,
+  "greedy_equal_ref": 5,
+  "rounds": 565,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ },
+ "agent_v12_tf_d7": {
+  "requests": 23,
+  "greedy_equal_ref": 23,
+  "rounds": 1470,
+  "k_over_cap": 0,
+  "mtp_over_k": 0
+ }
+}

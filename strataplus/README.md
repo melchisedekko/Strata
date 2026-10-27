@@ -6,6 +6,8 @@ benchmark, trace e log. **Non è codice da mergiare**: il branch `strataplus-res
 upstream `Niko1221/Strata@7dd5cf18e68c639a8773e096c5c79f971ea2a9f5` e aggiunge solo `strataplus/`.
 Il resto del repo è identico a 7dd5cf1.
 
+**Stato della coda di patch:** vedi [RIEPILOGO.md](RIEPILOGO.md) (cosa è archiviato, cosa manca, soglie GO, ordine delle build).
+
 ## Struttura
 
 | Cartella | Contenuto |

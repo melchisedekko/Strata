@@ -79,3 +79,6 @@ Mai pubblicati (non sono mai arrivati sul fork).
 
 Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl` (solo HumanEval MIT + MT-Bench Apache-2.0, nessuna riga
 `edit_np`), `commitpackft_selection_manifest.csv` e `commitpackft_selection_counts.json` (solo ID, licenza dichiarata e conteggi, nessun codice).
+
+### Rimossi in questo sync dal controllo licenze/quarantena
+    strataplus/bench/traces/raw/v11/tracer_v14_build_info.txt

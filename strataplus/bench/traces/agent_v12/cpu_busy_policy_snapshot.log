@@ -1,0 +1,96 @@
+# Strata Policy - finestre di uso CPU sul box (orari CET, UTC+1). Formato: inizio | fine | comando | nota
+# Retroattive (prima della richiesta di log, 04:43 CET):
+2026-10-25 04:39:47 | 2026-10-25 04:39:51 | clang++-17 -fsyntax-only generate.cpp (nice 19) | prova manuale HIP, ~3.6 s
+2026-10-25 04:40:41 | 2026-10-25 04:42:33 | apt-get install libhipblas-dev librocblas-dev (nice 19) | da /var/log/apt/history.log; per lo piu' download
+2026-10-25 04:42:37 | 2026-10-25 04:43:18 | cmake configure HIP in /tmp/jg/p6/bld (nice 19) | interrotto, nessuna build; dir rimossa
+2026-10-25 04:44:20 | 2026-10-25 04:44:24 | hip_clang: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:24 | 2026-10-25 04:44:28 | hip_gcc: check_hip.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:28 | 2026-10-25 04:44:31 | cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0
+2026-10-25 04:44:31 | 2026-10-25 04:44:35 | base_hip_clang: check_hip.sh patchwork generate_2962494.cpp (nice 19) | rc=0
+2026-10-25 04:44:51 | 2026-10-25 04:44:54 | neg_hip_clang: check_hip.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]
+2026-10-25 04:44:54 | 2026-10-25 04:44:58 | neg_cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=0  [inserimento fallito: file non modificato, run a vuoto]
+2026-10-25 04:45:06 | 2026-10-25 04:45:10 | neg_hip_clang: check_hip.sh patchwork (nice 19) | rc=1
+2026-10-25 04:45:10 | 2026-10-25 04:45:13 | neg_cuda_gcc: check_cuda.sh patchwork (nice 19) | rc=1
+2026-10-25 04:45:21 | 2026-10-25 04:45:23 | git diff/archive/apply --check P6 su 7dd5cf18 (leggero, nessuna compilazione) | ok
+2026-10-25 04:45:52 | 2026-10-25 04:45:53 | git diff/archive/apply --check P6 (e467f6e) su 7dd5cf18 (leggero) | ok
+2026-10-25 04:50:03 | 2026-10-25 04:50:03 | nice -n 19 python3 replay/holdout_v11_fulldraft.py (replay single-thread, full-draft post-hoc) | rc=127 (non partito: /usr/bin/time assente, 0 CPU)
+2026-10-25 04:50:07 | 2026-10-25 04:50:29 | nice -n 19 python3 replay/holdout_v11_fulldraft.py (replay single-thread, full-draft post-hoc) | rc=0
+2026-10-25 04:55:40 | 2026-10-25 04:56:18 | nice -n 19 python3 replay/holdout_v11_costvariants.py (replay single-thread, varianti costo draft A, post-hoc) | rc=0
+2026-10-25 04:59:21 | 2026-10-25 04:59:24 | nice -n 19 python3 replay/holdout_v11_speccost_vs_default.py (replay single-thread, SPEC_COST vs default min_p 0.5, post-hoc) | rc=0
+2026-10-25 06:44:31 | 2026-10-25 06:44:31 | nice -n 19 python3 replay/run_check_v12_wrapper.py (check_v12 confermativo, script congelato via wrapper, single-thread) | rc=3
+2026-10-25 06:48:19 | 2026-10-25 06:48:25 | nice -n 19 python3 replay/ceiling_third_source.py results/v2/ceiling_third_source (studio tetto terza fonte, offline, single-thread) | rc=0
+2026-10-25 06:48:40 | 2026-10-25 06:48:44 | nice -n 19 python3 /tmp/dbg_ceiling.py (debug sorgenti terza fonte, holdout code) | rc=0
+2026-10-25 06:51:56 | 2026-10-25 06:51:58 | nice -n 19 python3 replay/run_check_v12_wrapper_v2.py results/v2/check_v12_speccost_v2 (check_v12 v2, script congelato via wrapper v2, single-thread) | rc=0
+2026-10-25 06:53:28 | 2026-10-25 06:53:31 | nice -n 19 python3 replay/ceiling_long_window.py results/v2/ceiling_long_window (oracolo finestra lunga, solo AL, single-thread) | rc=0
+2026-10-25 06:56:39 | 2026-10-25 06:56:40 | nice -n 19 python3 replay/ceiling_installed_cfg.py results/v2/ceiling_installed_cfg (oracolo vs config installata, solo AL, single-thread) | rc=0
+2026-10-25 07:01:16 | 2026-10-25 07:01:22 | nice -n 19 python3 replay/lookup_rule_al.py results/v2/lookup_rule_al (regola min(match,16) vs oracolo + rho* parametrico, single-thread) | rc=0
+2026-10-25 07:03:28 | 2026-10-25 07:03:41 | nice -n 19 python3 replay/lookup_rule_al_addendum.py results/v2/lookup_rule_al_addendum (addendum C+D: colonna a', pareggi parametrici, single-thread) | rc=0
+2026-10-25 07:07:13 | 2026-10-25 07:07:13 | nice -n 19 python3 replay/lookup_only_replay.py results/v2/lookup_only_replay (replay lookup-only pre-registrato, dmax 7/12/16, single-thread) | rc=0
+2026-10-25 07:57:33 | 2026-10-25 07:57:35 | nice -n 19 python3 replay/lookup_prefix_replay.py results/v2/lookup_prefix_replay (replay lookup-only su prefisso comune vs live Bench holdout_lookup_v12, single-thread) | rc=0
+2026-10-25 07:58:17 | 2026-10-25 07:58:17 | nice -n 19 python3 replay/lookup_prefix_diag.py results/v2/lookup_prefix_replay (diagnosi edit, single-thread) | rc=0
+2026-10-25 08:04:03 | 2026-10-25 08:04:06 | nice -n 19 python3 replay/breakeven_dprime.py results/v2/breakeven_dprime (pareggio parametrico d' MTP3+lookup12, single-thread) | rc=0
+2026-10-25 08:07:50 | 2026-10-25 08:07:57 | nice -n 19 python3 replay/breakeven_dsecond.py results/v2/breakeven_dsecond (pareggio parametrico d'' MTP3+lookup11 T=12, single-thread) | rc=0
+2026-10-25 08:10:15 | 2026-10-25 08:10:15 | nice -n 19 python3 -c (lettura soglie H-LW da breakeven_dsecond.json, trivial) | rc=0
+2026-10-25 08:17:58 | 2026-10-25 08:18:34 | nice -n 19 tmp/pt12_syntax.sh (sintassi P-T12: HIP 5.7.1 clang++-17 host+device gfx1100, CUDA host g++; sequenziale, single-thread) | rc=0
+2026-10-25 08:18:46 | 2026-10-25 08:18:51 | nice -n 19 check_hip/check_cuda mtp.cpp native_expert.cpp (+ggml include) e prova clang -x cuda shared_expert.cu (sintassi P-T12, single-thread) | rc=0
+2026-10-25 08:20:16 | 2026-10-25 08:20:24 | nice -n 19 tmp/pt12_syntax_cuda.sh (sintassi P-T12 .cu CUDA 12.9 header, clang++-17 -x cuda sm_86 host-only+device-only, + controllo negativo; single-thread) | rc=0
+2026-10-25 08:20:31 | 2026-10-25 08:20:32 | nice -n 19 clang++-17 -x cuda host-only native_mmvq.cu a 7dd5cf1 (controllo baseline errori __ldcs; single-thread) | rc=0
+2026-10-25 08:20:53 | 2026-10-25 08:20:56 | nice -n 19 clang++-17 -x hip shared_expert.cu native_bf16.cu (ricontrollo dopo marker su righe messaggio; single-thread) | rc=0
+2026-10-25 08:21:38 | 2026-10-25 08:21:49 | nice -n 19 check_hip/check_cuda mtp.cpp generate.cpp con P_T12_mtp_optional applicato temporaneamente + git apply --check (single-thread) | rc=0
+2026-10-25 08:18:55 | 2026-10-25 08:19:13 | [REGISTRAZIONE A POSTERIORI, scritta 08:24:40] download+estrazione non annunciati di wheel PyPI nvidia_cuda_cccl_cu12 12.9.27 e nvidia curand (header) in /workspace/rocm-hdr/cudawhl/{dl,x}, finta cuda-root header-only in /workspace/rocm-hdr/cudaroot (version.json dichiara 12.1.0); solo per sintassi clang -x cuda P-T12; nessun pip install di sistema, nessun apt, nessuna modifica fuori da /workspace/rocm-hdr; I/O leggero, nessun job CPU pesante | rc=0
+2026-10-25 08:18:55 | 2026-10-25 08:19:13 | [integrazione alla riga precedente, scritta 08:24:45] file esatti: dl/nvidia_cuda_cccl_cu12-12.9.27 (3152243 B, 08:18:55) e dl/nvidia_curand_cu12-10.3.10.19 (68295626 B, 08:19:13); i wheel nvcc 12.9.86 e cuda_runtime 12.9.79 in cudawhl/ risalgono alle 04:40 (controllo sintassi P6) | rc=0
+2026-10-25 08:38:22 | 2026-10-25 08:39:01 | syntax check P-T12 v2, nice 19, 1 thread (nice -n 19 taskset -c 0 tmp/pt12v2_syntax.sh: HIP 5.7.1 clang++-17 host+device gfx1100, CUDA host g++; sequenziale) | rc=0
+2026-10-25 08:39:24 | 2026-10-25 08:39:30 | syntax check P-T12 v2, nice 19, 1 thread (ricontrollo mtp.cpp/native_expert.cpp HIP+CUDA host con -I ggml/include gia' presente in strata-bench/_deps; baseline iq_kernels.cu di b557725 HIP device; taskset -c 0) | rc=0
+2026-10-25 08:39:35 | 2026-10-25 08:39:45 | syntax check P-T12 v2, nice 19, 1 thread (nice -n 19 taskset -c 0 tmp/pt12v2_syntax_cuda.sh: clang++-17 -x cuda sm_86 host-only + device-only, header cudaroot/cudawhl gia' presenti; sequenziale) | rc=0
+2026-10-25 08:39:53 | 2026-10-25 08:39:55 | syntax check P-T12 v2, nice 19, 1 thread (baseline iq_kernels.cu b557725 vs v2, clang++-17 -x cuda sm_86 host-only; taskset -c 0) | rc=0
+2026-10-25 08:51:10 | 2026-10-25 08:51:14 | syntax check P-T12 v3, nice 19, 1 thread (nice -n 19 taskset -c 0 clang++-17 fused_gr.cu: -x hip gfx1100 device; -x cuda sm_86 host-only + device-only, header cudaroot gia' presenti; sequenziale) | rc=0
+2026-10-25 08:51:14 | 2026-10-25 08:51:15 | syntax check P-T12 v3, nice 19, 1 thread (nice -n 19 taskset -c 0 check_hip.sh + check_cuda.sh s2_expert_grouped_parity.cpp, caso 4b max_group=8, NON eseguito; sequenziale) | rc=0
+2026-10-26 19:24:00 | 2026-10-26 19:24:00 | [REGISTRAZIONE A POSTERIORI, scritta 19:29:20] sha256sum -c MANIFEST.sha256 in /workspace/strata-plus/traces/v1.1 (verifica 24 file, solo lettura, I/O leggero; orario approssimato ~19:24, inizio/fine esatti e uso di nice non registrati) | rc=0
+2026-10-26 19:29:20 | 2026-10-26 19:29:21 | nice -n 19 python3 replay/hca_coverage_probe.py /tmp/hca_probe.json (sonda copertura H-CA sui record v1.1, solo forma dei campi, nessuna metrica, single-thread) | rc=0
+2026-10-26 19:34:29 | 2026-10-26 19:34:29 | nice -n 19 python3 (scrittura replay/run_hca.json, run file H-CA fase 1, nessun calcolo, single-thread) | rc=0
+2026-10-26 19:29:47 | 2026-10-26 19:29:48 | [REGISTRAZIONE A POSTERIORI, scritta 19:34:49] nice -n 19 python3 (tentativo lettura vocab GGUF con gguf-py, single-thread; import fallito per yaml mancante, nessuna installazione) | rc=1
+2026-10-26 19:29:57 | 2026-10-26 19:29:57 | [REGISTRAZIONE A POSTERIORI, scritta 19:34:49] nice -n 19 python3 /tmp/hca/gguf_vocab.py (lettura kv tokenizer dal GGUF qwen35-2b-mtp-q4_k_m, parser minimale, single-thread) | rc=0
+2026-10-26 19:36:49 | 2026-10-26 19:36:52 | nice -n 19 python3 replay/hca.py smoke /tmp/hca_smoke.json (smoke H-CA: lettura tracce v1.1, forme, EOS, fence/segmenti, nessuna metrica, single-thread) | rc=0
+2026-10-26 19:41:02 | 2026-10-26 19:41:02 | nice -n 19 python3 (scrittura replay/run_hca_addendum1.json sha256 c3490e220313ec377e0fbc0f63f0994a228d351d0286b9248ec125a81726c386, addendum H-CA cross-fit, nessun calcolo, single-thread) | rc=0
+2026-10-26 19:42:06 | 2026-10-26 19:42:09 | nice -n 19 python3 replay/hca_v2.py smoke /tmp/hca_v2_smoke.json (smoke H-CA v2: sha run/addendum/hca.py, forme, fold, nessuna metrica, single-thread) | rc=0
+2026-10-26 19:42:20 | (in corso) | INIZIO nice -n 19 python3 replay/hca_v2.py eval results/v2/hca --authorized (H-CA eval, run_hca.json ea2bed9c1438175c279c291652a6e9dd552e14b24d694320befc9338249bf50b, addendum1 c3490e220313ec377e0fbc0f63f0994a228d351d0286b9248ec125a81726c386, hca.py 35ddc537b0306780ceb3d920476d64d1530eec097a55a53f5b3aacbf928ed348, hca_v2.py 4f24bba56ac734288ae1af3242c7b3ca09386ce3ca602382fe0ed354ad978ef6, OMP/OPENBLAS/MKL_NUM_THREADS=1) | rc=pending
+2026-10-26 19:42:20 | 2026-10-26 19:44:15 | FINE nice -n 19 python3 replay/hca_v2.py eval results/v2/hca --authorized (H-CA eval, hca_v2.py 4f24bba5…, addendum1 c3490e22…) | rc=0
+2026-10-26 19:46:14 | 2026-10-26 19:46:14 | nice -n 19 python3 (scrittura replay/run_hca_addendum2.json sha256 4ac1f236b7bf500760fa444d0c7f34e3810700b5f21236fc419389173fc60e49, regola edit_np sugli output, dopo eval; spostamento non modificante di results/v2/hca/hca_results.json in edit_np_fitted/hca_results_full_edit_np.json alle 19:45:34) | rc=0
+2026-10-26 19:46:30 | 2026-10-26 19:46:30 | nice -n 19 python3 replay/hca_split.py (split output H-CA: pubblicabile vs edit_np_fitted, nessun calcolo, single-thread) | rc=0
+2026-10-26 22:08:58 | (in corso) | INIZIO policy-local host build h1_host (nice 19, ninja -j2: strata_spec draft_policy_test joint_gate_test plus_knobs_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=pending
+2026-10-26 22:08:58 | 2026-10-26 22:09:03 | FINE policy-local host build h1_host (strata_spec draft_policy_test joint_gate_test plus_knobs_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=0
+2026-10-26 22:10:32 | (in corso) | INIZIO policy-local syntax check generate.cpp HIP/CUDA (patched + main_ctrl, nice 19, 2 processi) | rc=pending
+2026-10-26 22:10:32 | 2026-10-26 22:10:41 | FINE policy-local syntax check generate.cpp | rc=hip_p:0 cuda_p:0 hip_c:0 cuda_c:0
+2026-10-26 22:11:30 | (in corso) | INIZIO policy-local HIP configure-only h1 (nice 19, -j2, gfx1100;gfx1201) | rc=pending
+2026-10-26 22:11:30 | 2026-10-26 22:11:31 | FINE policy-local HIP configure-only h1 | rc=1
+2026-10-26 22:11:31 | (in corso) | INIZIO policy-local HIP configure-only ctrl (nice 19, -j2, gfx1100;gfx1201) | rc=pending
+2026-10-26 22:11:31 | 2026-10-26 22:11:31 | FINE policy-local HIP configure-only ctrl | rc=1
+2026-10-26 22:11:49 | 2026-10-26 22:11:52 | policy-local HIP configure-only h1 gfx1100 (clang++-17, ROCM_LIB multiarch) | rc=0
+2026-10-26 22:12:09 | (in corso) | INIZIO policy-local HIP gfx1100 TU-only (generate.cpp.o + strata_spec) patched & ctrl, nice 19, ninja -j1 ciascuno (2 tot), stop entro 22:24 | rc=pending
+2026-10-26 22:13:09 | 2026-10-26 22:13:09 | policy-local run_policy_checks.sh (host c++ -O2, 3 driver, 20000 round, nice 19, single-thread) | rc=2
+2026-10-26 22:12:09 | 2026-10-26 22:13:10 | FINE policy-local HIP gfx1100 TU-only | rc=patched:0 ctrl:0
+2026-10-26 22:13:14 | 2026-10-26 22:13:19 | policy-local run_policy_checks.sh (host c++ -O2, 3 driver, 20000 round, nice 19, single-thread) | rc=1
+2026-10-26 22:13:31 | 2026-10-26 22:13:37 | policy-local run_policy_checks.sh (host c++ -O2, 20000 round, nice 19, single-thread) | rc=0
+2026-10-26 22:14:13 | 2026-10-26 22:14:14 | policy-local host rebuild plus_knobs_test (nice 19, -j2) | rc=0
+2026-10-26 22:16:09 | (in corso) | INIZIO policy-local host build h1_only (nice 19, ninja -j2: strata_spec draft_policy_test joint_gate_test joint_det_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=pending
+2026-10-26 22:16:09 | 2026-10-26 22:16:14 | FINE policy-local host build h1_only (strata_spec draft_policy_test joint_gate_test joint_det_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=0
+2026-10-26 22:16:09 | 2026-10-26 22:16:18 | policy-local stage P-H1: syntax HIP/CUDA generate.cpp | rc=see logs syn_*_h1
+2026-10-26 22:18:10 | (in corso) | INIZIO policy-local host build lang_final (nice 19, ninja -j2: strata_spec draft_policy_test joint_gate_test joint_det_test lang_knob_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=pending
+2026-10-26 22:18:10 | 2026-10-26 22:18:16 | FINE policy-local host build lang_final (strata_spec draft_policy_test joint_gate_test joint_det_test lang_knob_test pool_source_test suffix_drafter_test controller_test spec_start_test) | rc=0
+2026-10-26 22:18:10 | 2026-10-26 22:18:19 | policy-local stage P-LANG (albero finale): syntax HIP/CUDA generate.cpp + host build (strata_spec + 9 test), nice 19 -j2 | rc=vedi logs syn_*_lang, lang_final
+2026-10-26 22:18:27 | (in corso) | INIZIO policy-local HIP gfx1100 TU-only albero finale (generate.cpp.o + strata_spec), nice 19 ninja -j2, stop entro 22:24 | rc=pending
+2026-10-26 22:18:27 | 2026-10-26 22:19:21 | FINE policy-local HIP gfx1100 TU-only albero finale | rc=0
+2026-10-26 22:19:59 | 2026-10-26 22:20:03 | policy-local run_policy_checks.sh albero finale 4c4a7002 vs b24c6a1d, N=20000, nice 19 | rc=0
+2026-10-26 22:20:17 | 2026-10-26 22:20:17 | policy-local probe clang++-17 --offload-arch=gfx1201 (file vuoto) | rc=1 invalid target ID (ROCm 5.7/clang 17: gfx1201 non supportato)
+2026-10-26 22:28:05 | 2026-10-26 22:28:08 | policy-local v2 H1 host build strata_spec+joint_det_test nice19 -j2 | rc=0
+2026-10-26 22:29:59 | 2026-10-26 22:30:07 | policy-local v2 (albero finale): syntax HIP/CUDA generate.cpp + host build strata_spec+9 test, nice 19, -j2 tot | rc=vedi logs syn_*_v2 v2_host
+2026-10-26 22:30:17 | (in corso) | INIZIO policy-local v2 HIP gfx1100 TU-only (generate.cpp.o + strata_spec), nice 19 ninja -j2, stop entro 22:40 | rc=pending
+2026-10-26 22:30:17 | 2026-10-26 22:31:12 | FINE policy-local v2 HIP gfx1100 TU-only | rc=0
+2026-10-26 22:31:17 | 2026-10-26 22:31:21 | policy-local v2 run_policy_checks.sh (driver sintetico, host) | rc=0
+2026-10-26 22:29:59 | 2026-10-26 22:30:07 | policy-local v2 esito voce precedente: host build rc=0, syntax HIP rc=0, syntax CUDA rc=0; test host 8/8 rc=0 e python serve.test_strata_lang 4/4 OK (22:29-22:31) | rc=0
+2026-10-26 22:39:22 | 2026-10-26 22:39:23 | policy-local serve-trace v1 host build (g++ serve_trace.cpp + serve_trace_test, nice 19, -j1) + test | rc=0 test rc=0
+2026-10-26 22:40:34 | 2026-10-26 22:40:38 | policy-local serve-trace v1 syntax HIP generate.cpp su b24c6a1d+trace e H1v2+LANGv2+trace (nice 19, 2 processi) | rc=vedi riga seguente
+2026-10-26 22:40:49 | 2026-10-26 22:40:53 | policy-local serve-trace v1 syntax HIP: b24+trace rc=0 (131 warn), v2+trace rc=0 (131 warn), 7dd5cf1+trace, 7dd5cf1+HFCv2+trace (vedi logs/st_syn_*.log)
+2026-10-26 22:40:59 | 2026-10-26 22:41:32 | policy-local serve-trace v1 host build strata_spec+tests (b24+trace, v2+trace; 2 processi -j1, nice 19)
+2026-10-26 22:41:42 | serve-trace v1 host build rc: b24+trace=0, v2+trace=0; ctest 4/4 entrambi (serve_trace, suffix_drafter, controller, draft_policy)
+2026-10-26 22:42:27 | 2026-10-26 22:42:31 | policy-local serve-trace v1 syntax HIP: H1v2+trace, b24+HFCv2+trace (2 processi, nice 19); prima 7dd5cf1+trace rc=0, 7dd5cf1+HFCv2+trace rc=0 (131 warn)
