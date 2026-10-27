@@ -116,3 +116,4 @@
 2026-10-27 10:12:59 | (in corso) | START e4v14_tf_d7_p30_dvocab_en  (strata-bench) |
 2026-10-27 10:12:59 | 2026-10-27 10:27:50 | e4v14_tf_d7_p30_dvocab_en  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 2 1.136
 2026-10-27 10:30:46 | (in corso) | START e4v14_tf_d7_p30_dvocab_en_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench) |
+2026-10-27 10:30:46 | 2026-10-27 11:57:13 | e4v14_tf_d7_p30_dvocab_en_[redatto: riferimento a dataset con licenza non pubblicabile]  (strata-bench, 1 processo llama) | exit 0 cpu(intervals_ge0.5 max, escl. sand-host): 22 4.832
