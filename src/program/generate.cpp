@@ -649,7 +649,8 @@ struct Options {
     /// floats, the MTP draft head's input) to this file.  Token path only.
     std::string dump_final_r;
     /// Plan v0.3 P6: speculative decoding with a verify window of this many tokens (the last accepted token and
-    /// spec-1 drafts); 0 = plain decode.  `spec_oracle` drafts from a token file (the expected continuation, for
+    /// spec-1 drafts); 0 = plain decode.  9..12 holds those rows for the suffix drafter's drafts (the MTP's own
+    /// windows stay at kMtpMaxT).  `spec_oracle` drafts from a token file (the expected continuation, for
     /// the exactness test); `spec_corrupt` N > 0 replaces every Nth draft with a wrong token.
 #if defined(STRATA_GPU_METAL)
     int spec = 2;   // Metal: a window of 2 by default (measured best on the M5 Max; an explicit --spec wins)
@@ -782,7 +783,7 @@ struct Options {
     int mtp_max_t = 0;
     /// --lookup-chain K (opt-in, 0 = off): prompt lookup CHAINED after the MTP's proposal.  The suffix drafter matches
     /// the context followed by the MTP's drafts and appends up to K of the tokens that followed that match to the same
-    /// verify window (the window grows to at most 8).  Greedy verification keeps the output; its own counts are kept.
+    /// verify window (at most --spec rows).  Greedy verification keeps the output; its own counts are kept.
     int lookup_chain = 0;
     int lookup_chain_min = 3;   ///< --lookup-chain-min M: the shortest match (in tokens, drafts included) it extends on
     /// --mtp-hnorm stream (opt-in): the draft layer's pre_fc_norm_hidden normalizes each hyper-connection stream on
@@ -938,12 +939,13 @@ void usage() {
                  "  --suffix-draft N     prompt lookup: draft from an earlier repeat of the last N+ tokens of context\n"
                  "                       when it pays (default 3; 0 = MTP only)\n"
                  "  --mtp-max-t M        cap the MTP's windows at M tokens (0 = --spec; longer ones come from suffixes)\n"
-                 "  --spec N             the MTP drafter's verify window: how many tokens it proposes per check (setup\n"
-                 "                       writes 4; --suffix-draft lets it grow by 2, up to 8, where a repeat is likely)\n"
+                 "  --spec N             the verify window: how many tokens a check holds (setup writes 4; --suffix-draft\n"
+                 "                       lets it grow by 2, up to 8, where a repeat is likely; 9..12 = long lookup\n"
+                 "                       windows, the MTP's own windows staying at 8, see docs/DETAILS.md)\n"
                  "  --spec-min-p P       how sure the draft layer must be to extend a verify window by another guess\n"
                  "                       (setup writes 0.5; --calibrate measures it on this PC, see docs/DETAILS.md)\n"
                  "  --lookup-chain K     opt-in: after the MTP's drafts, add up to K prompt-lookup drafts that continue\n"
-                 "                       them (the window grows to at most 8; default 0 = off)\n"
+                 "                       them (the window grows to at most --spec rows; default 0 = off)\n"
                  "  --lookup-chain-min M  the shortest context match --lookup-chain extends on (default 3)\n"
                  "  --mtp-hnorm pooled|stream  the draft layer's hidden-input norm: one RMS over all four streams\n"
                  "                       (default) or one per stream (llama.cpp's MTP graph)\n"
@@ -2798,12 +2800,6 @@ int main(int argc, char** argv) {
         }
         }
     }
-    // STRATA+ P-T12 measure v2: --serve (con o senza --mtp) ha ancora array per slot/finestra a 8 (verify.hpp batch,
-    // generate.cpp dwin_s / t2_rej / slots): fuori perimetro, si esce prima di qualunque allocazione o query al device
-    if (o.serve) {
-        std::fprintf(stderr, "build di misura P-T12: --serve non supportato (array batch a 8), usare solo la CLI\n");
-        return 2;
-    }
 #if defined(STRATA_USE_HIP)
     {   // gfx1151 (Strix Halo): the switches that are exact there are on by default (strata/core/arch_defaults.hpp); before
         // any engine code reads its switches (they are read at first use), and the user's own settings are kept
@@ -3213,20 +3209,34 @@ int main(int argc, char** argv) {
         return 2;
     }
     strata::core::qsa_set_kv_resident(o.kv_resident);
+    // Long lookup windows: --spec 9..12 holds those rows for the suffix drafter's drafts, which fill them only where
+    // the text repeats well past the MTP's cap (strata/spec/draft_policy.hpp).  The MTP's own windows stay at
+    // kMtpMaxT rows: its captured graphs, its step and round exec arrays and chain_launch are built for that width.
+#if defined(STRATA_GPU_METAL)
+    const int spec_cap = (int) strata::kernels::kMtpMaxT;   // the Metal window holds kMtpMaxT rows of its own
+#else
+    const int spec_cap = o.spec > strata::kernels::kMtpMaxT ? (int) strata::kernels::kVerifyMaxT
+                                                          : (int) strata::kernels::kMtpMaxT;
+#endif
+    if (o.mtp_max_t > strata::kernels::kMtpMaxT) {
+        std::fprintf(stderr, "strata generate: --mtp-max-t %d: the MTP's windows hold at most %d rows; %d\n", o.mtp_max_t,
+                     (int) strata::kernels::kMtpMaxT, (int) strata::kernels::kMtpMaxT);
+        o.mtp_max_t = strata::kernels::kMtpMaxT;
+    }
     // Prompt lookup (the suffix drafter, on by default): the MTP keeps its --spec windows and a lookup window may be
     // up to 2 tokens longer; the draft policy (strata/spec/draft_policy.hpp) takes one only where it pays. Code
     // edits +6-11%, ordinary text unchanged (bench/results/2026-09-27-spec). --suffix-draft 0 turns it off.
     if (o.suffix_draft > 0 && o.spec >= 2 && o.mtp_max_t == 0) {
-        o.mtp_max_t = o.spec;
-        o.spec = std::min(o.spec + 2, 8);   // kVerifyMaxT
+        o.mtp_max_t = std::min(o.spec, (int) strata::kernels::kMtpMaxT);
+        o.spec = std::min(o.spec + 2, spec_cap);
     }
     // --lookup-chain (opt-in): the MTP keeps its windows; a lookup chained after its drafts may lengthen one by up to K.
     // Sized from the cap actually in force: the suffix block above may already have raised --spec to --spec+2, so sizing
     // from mtp_max_t left K=1 and K=2 with a window identical to not passing the flag at all.
     if (o.lookup_chain > 0 && o.spec >= 2) {
-        if (o.mtp_max_t == 0) o.mtp_max_t = o.spec;
+        if (o.mtp_max_t == 0) o.mtp_max_t = std::min(o.spec, (int) strata::kernels::kMtpMaxT);
         const int chain_base = o.spec;
-        o.spec = std::max(chain_base, std::min(std::max(chain_base, o.mtp_max_t) + o.lookup_chain, 8));  // kVerifyMaxT
+        o.spec = std::max(chain_base, std::min(std::max(chain_base, o.mtp_max_t) + o.lookup_chain, spec_cap));
     }
     // dflash2-kern: right after the start the resident experts are the profile's, not this text's; a speculative round carries
     // 2-5 tokens, so the adaptive tier (one swap round per adapt_every VERIFY rounds) learned the text 2-5 times slower per
@@ -5478,7 +5488,8 @@ int main(int argc, char** argv) {
         const strata::core::OnDevice on_mtp(last_st && !mtp_first ? last_st->dev : -1);
         // --pipeline-windows 2: 8 rows (the chain runs on past the window in flight: its drafts, its bonus token and
         // the next window's drafts), and the round/step graphs carry the forcing kernel
-        const int mtp_t = o.pipeline_windows >= 2 ? strata::kernels::kVerifyMaxT : o.spec;
+        const int mtp_t = o.pipeline_windows >= 2 ? (int) strata::kernels::kMtpMaxT
+                                                  : std::min(o.spec, (int) strata::kernels::kMtpMaxT);
         if (o.pipeline_windows >= 2) mtp.set_force_capture(true);
         if (!o.mtp.empty() && !mtp.load(o.mtp, draft_geometry, last_st && !mtp_first ? last_st->ss : ss, mtp_t, err, o.mtp_window)) { std::fprintf(stderr, "strata generate: %s%s\n", err.c_str(), vram_free_note().c_str()); return 1; }
         mtp.set_ple_session(&ss);
@@ -11212,7 +11223,7 @@ int main(int argc, char** argv) {
         std::string line;
         int64_t rounds = 0;
         const int S = o.spec;
-        const int S_mtp = o.mtp_max_t > 0 ? std::min(o.mtp_max_t, S) : S;   // the MTP's windows; suffixes go up to S
+        const int S_mtp = std::min(o.mtp_max_t > 0 ? std::min(o.mtp_max_t, S) : S, (int) strata::kernels::kMtpMaxT);   // the MTP's windows; suffixes go up to S
         if (use_mtp && S_mtp < S) mtp.set_max_drafts(S_mtp - 1);
         // --pipeline-windows 2 loads the drafter with 8 rows: the serial loop's chain keeps its own length
         else if (use_mtp && mtp.max_t() > S_mtp) mtp.set_max_drafts(S_mtp - 1);
@@ -14290,8 +14301,8 @@ int main(int argc, char** argv) {
                 struct PW {
                     int T = 0, seq = 0;
                     int64_t p = 0;
-                    int32_t tok[8] = {};
-                    float prob[8] = {};    // prob[i]: the drafter's probability of tok[i + 1]
+                    int32_t tok[strata::kernels::kVerifyMaxT] = {};
+                    float prob[strata::kernels::kVerifyMaxT] = {};    // prob[i]: the drafter's probability of tok[i + 1]
                     float p_on = 0.0f;     // the chain's estimate that the window before is accepted whole, tok[0] its bonus
                     // launched: on stage 0; finished: done on every front stage (all but the last); s1: on the last
                     bool ready = false, launched = false, finished = false, s1 = false, s1_done = false;
@@ -14334,7 +14345,7 @@ int main(int argc, char** argv) {
                 bool b_done = false;     // B has been made from the chain in flight
                 int chain_n = 0;
                 int64_t pl_spec = 0, pl_on = 0, pl_undo = 0, pl_gate = 0, pl_fm = 0;
-                std::vector<int32_t> outp(8, 0);
+                std::vector<int32_t> outp(strata::kernels::kVerifyMaxT, 0);
                 bool ending = false;
                 A.T = 1;
                 A.p = p;
@@ -14820,7 +14831,7 @@ int main(int argc, char** argv) {
                         ++pl_on;
                         // the chain over A, forced through B's drafts: B's bonus guess and the next window's drafts
                         mtp.set_source_R(V1(A).final_R(0));
-                        chain_n = std::min(strata::kernels::kVerifyMaxT - 1, B.T + S_mtp - 1);
+                        chain_n = std::min((int) strata::kernels::kMtpMaxT - 1, B.T + S_mtp - 1);
                         if (!mtp.chain_launch(A.T, outp.data(), A.p, a, B.tok + 1, B.T - 1, chain_n, chain_n, err))
                             return die(err);
                         chain_kind = 1;
@@ -14849,7 +14860,7 @@ int main(int argc, char** argv) {
                         B = PW{};
                         if (!last) {
                             mtp.set_source_R(V1(A).final_R(0));
-                            chain_n = strata::kernels::kVerifyMaxT - 1;
+                            chain_n = strata::kernels::kMtpMaxT - 1;
                             if (!mtp.chain_launch(A.T, outp.data(), A.p, a, nullptr, 0, chain_n, chain_n, err))
                                 return die(err);
                             chain_kind = 2;
@@ -15130,7 +15141,8 @@ int main(int argc, char** argv) {
                 // STRATA_SPEC_PROB: the MTP drafts' distributions q, judged by rejection sampling (core/spec_prob.hpp);
                 // a suffix window and the lookup chain's tail are point masses and keep the exact-match rule
                 // (never on a first window: a merged one holds prompt tokens, not drafts)
-                if (use_mtp && mtp.prob() && !from_sfx && !first_window && T_mtp > 1) ver.set_spec_q(mtp.spec_q(), T_mtp - 1);
+                if (use_mtp && mtp.prob() && !from_sfx && !first_window && T_mtp > 1)
+                    ver.set_spec_q(mtp.spec_q(), std::min(T_mtp - 1, mtp.max_t() - 1));   // (a lookup window's rows past the MTP's own are point masses)
                 if (!ver.run(T, window.data(), p, win_pool_fn, win_pool_user, outv.data(), err) || drive.d.failed) {
                     std::printf("ERR %s\n", drive.d.failed && drive.d.fail ? drive.d.fail : err.c_str());
                     return 1;
@@ -15256,7 +15268,9 @@ int main(int argc, char** argv) {
                     std::printf("ERR %s\n", err.c_str());
                     return 1;
                 }
-                if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin_s.data(), T_mtp - 1, a);
+                // (the calibration sees only the drafts the MTP made: a lookup window's rows past them are point masses)
+                if (spec_cost && use_mtp && timed_round && !from_sfx)
+                    policy.observe_probs(dwin_s.data(), std::min(T_mtp - 1, mtp.max_t() - 1), a);
                 if (timed_round && !eos && chain_n == 0)
                     policy.observe(from_sfx, T, a, sfx_match,
                                    std::chrono::duration<double, std::milli>(Clock::now() - round0).count());
@@ -16474,7 +16488,8 @@ int main(int argc, char** argv) {
         if (const char* tf = std::getenv("STRATA_SPEC_TRACE"); tf != nullptr && tf[0] != '\0') spec_trace = std::fopen(tf, "w");
         std::vector<double> t_cycle_ms((size_t) o.spec + 1, 0.0);
         std::vector<int64_t> t_cycle_n((size_t) o.spec + 1, 0), t_cycle_seen((size_t) o.spec + 1, 0);
-        // STRATA+ P-T12 measure: miss CPU per larghezza (ExpertDispatch::multi_misses / multi_entries, delta del round) e round con miss
+        // STRATA_SPEC_T_CYCLE (bench): the CPU's misses per round by window width (ExpertDispatch::multi_misses /
+        // multi_entries, the round's delta) and the rounds that had one
         std::vector<int64_t> t_cycle_miss((size_t) o.spec + 1, 0), t_cycle_ent((size_t) o.spec + 1, 0),
             t_cycle_rmiss((size_t) o.spec + 1, 0);
         // plan v0.3 P6: with a native pack the first window is the last prompt token alone (it produces the first
@@ -16495,7 +16510,7 @@ int main(int argc, char** argv) {
         std::vector<float> hash_rows;
         std::vector<int64_t> accepted_hist((size_t) o.spec, 0);
         int64_t rounds = 0, drafts_total = 0, drafts_ok = 0, corrupt_counter = 0;
-        const int S_mtp = o.mtp_max_t > 0 ? std::min(o.mtp_max_t, o.spec) : o.spec;
+        const int S_mtp = std::min(o.mtp_max_t > 0 ? std::min(o.mtp_max_t, o.spec) : o.spec, (int) strata::kernels::kMtpMaxT);
         if (use_mtp && S_mtp < o.spec) mtp.set_max_drafts(S_mtp - 1);
         strata::spec::SuffixDrafter sfx(std::max(1, o.suffix_draft), 64, (size_t) o.max_context + 4096);
         strata::spec::DraftPolicy policy(o.spec);   // MTP or lookup window (see draft_policy.hpp)
@@ -16677,8 +16692,9 @@ int main(int argc, char** argv) {
             // (STRATA_ADAPT_NOWAIT=1: 0.1.37's non-blocking query, the A/B)
             if (adapt_nowait()) apply_pending(false);
                 else if (pending.empty() || ++pending_age >= adapt_lag()) apply_pending(true);
-            if (use_mtp && mtp.prob() && !from_sfx && T_mtp > 1 && o.spec_corrupt <= 0) ver.set_spec_q(mtp.spec_q(), T_mtp - 1);
-            const int64_t pt12_miss0 = drive.d.multi_misses, pt12_ent0 = drive.d.multi_entries;   // STRATA+ P-T12 measure
+            if (use_mtp && mtp.prob() && !from_sfx && T_mtp > 1 && o.spec_corrupt <= 0)
+                ver.set_spec_q(mtp.spec_q(), std::min(T_mtp - 1, mtp.max_t() - 1));   // (a lookup window's rows past the MTP's own are point masses)
+            const int64_t cycle_miss0 = drive.d.multi_misses, cycle_ent0 = drive.d.multi_entries;   // (STRATA_SPEC_T_CYCLE)
             if (!ver.run(T, window.data(), p, &drive_pool_multi, &drive, outv.data(), err)) {
                 // The graph of a window size is captured the first time it is used, and the draft source took VRAM: when the capture runs
                 // out of memory the window gets one row narrower (the widths below it are already captured) instead of the run failing.
@@ -16782,12 +16798,13 @@ int main(int argc, char** argv) {
             if (!t_cycle.empty() && timed_round && T <= o.spec && t_cycle_seen[(size_t) T]++ > 0) {
                 t_cycle_ms[(size_t) T] += round_ms;
                 ++t_cycle_n[(size_t) T];
-                const int64_t pt12_dm = drive.d.multi_misses - pt12_miss0;   // STRATA+ P-T12 measure
-                t_cycle_miss[(size_t) T] += pt12_dm;
-                t_cycle_ent[(size_t) T] += drive.d.multi_entries - pt12_ent0;
-                if (pt12_dm > 0) ++t_cycle_rmiss[(size_t) T];
+                const int64_t cycle_dm = drive.d.multi_misses - cycle_miss0;   // (STRATA_SPEC_T_CYCLE)
+                t_cycle_miss[(size_t) T] += cycle_dm;
+                t_cycle_ent[(size_t) T] += drive.d.multi_entries - cycle_ent0;
+                if (cycle_dm > 0) ++t_cycle_rmiss[(size_t) T];
             }
-            if (spec_cost && use_mtp && timed_round && !from_sfx) policy.observe_probs(dwin.data(), T_mtp - 1, a);
+            if (spec_cost && use_mtp && timed_round && !from_sfx)
+                policy.observe_probs(dwin.data(), std::min(T_mtp - 1, mtp.max_t() - 1), a);
             if (timed_round && chain_n == 0) policy.observe(from_sfx, T, a, sfx_match, round_ms);
             else if (timed_round) policy.observe_chain(T_mtp, chain_n, a, cm, round_ms);
             if (rounds % 64 == 0)
@@ -16825,11 +16842,11 @@ int main(int argc, char** argv) {
             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
                 if (t_cycle_n[i] > 0) std::printf(" T%zu:%.2f(n=%lld)", i, t_cycle_ms[i] / (double) t_cycle_n[i], (long long) t_cycle_n[i]);
             std::printf("\n");
-            // STRATA+ P-T12 measure: stessi round della riga sopra; v2: somma per round su tutti i layer, formato senza spazi
+            // (bench) the same rounds as the line above: the CPU misses per round, summed over every layer of a round
             std::printf("%-24s", "window CPU miss/round (sum over all layers; ent = entries/round, all layers; rmiss/rnomiss = rounds with/without a miss):");
             for (size_t i = 1; i < t_cycle_ms.size(); ++i)
                 if (t_cycle_n[i] > 0)
-                    std::printf(" T%zu:%.2f(ent=%.2f,rmiss=%lld,rnomiss=%lld)", i,   // STRATA+ P-T12 measure v2
+                    std::printf(" T%zu:%.2f(ent=%.2f,rmiss=%lld,rnomiss=%lld)", i,
                                 (double) t_cycle_miss[i] / (double) t_cycle_n[i], (double) t_cycle_ent[i] / (double) t_cycle_n[i],
                                 (long long) t_cycle_rmiss[i], (long long) (t_cycle_n[i] - t_cycle_rmiss[i]));
             std::printf("\n");

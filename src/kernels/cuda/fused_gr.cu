@@ -214,9 +214,9 @@ struct GrMulti {
     float* xn;
     int T;
 };
-static_assert(sizeof(GrMulti) <= 4096, "GrMulti is passed by value: kernel parameters are limited to 4 KB");   // STRATA+ P-T12 measure
-// STRATA+ P-T12 measure v2: a T <= 8 launch uses the MAX_T = 8 instances of 7dd5cf1 (its kFusedGrMaxT), not the
-// default MAX_T = 12 ones: the same kernels, registers and shared memory as the base at T <= 8.
+static_assert(sizeof(GrMulti) <= 4096, "GrMulti is passed by value: kernel parameters are limited to 4 KB");
+// The 8-row instances of every kernel below: a window of up to 8 rows launches those (the same kernels, registers and
+// shared memory as before a window could hold 12), and the 12-row ones serve 9..12 only.
 constexpr int kGrBaseMaxT = 8;
 static_assert(kGrBaseMaxT <= kFusedGrMaxT, "the base instances must fit the arrays");
 
@@ -1097,20 +1097,20 @@ int down_chunk(bool staged, int* tile_out) {
         tile[dev] = tv;
         int want = (int) (kFusedGrMaxT * tv * sizeof(float));
         if (optin > 0 && want > optin) want = optin;
-        int want8 = (int) (kGrBaseMaxT * tv * sizeof(float));   // STRATA+ P-T12 measure v2: the base's value for its instances
-        if (optin > 0 && want8 > optin) want8 = optin;   // STRATA+ P-T12 measure v2
+        int want8 = (int) (kGrBaseMaxT * tv * sizeof(float));   // the base instances' rows
+        if (optin > 0 && want8 > optin) want8 = optin;   // base rows
         if (small_tile) {
             cudaFuncSetAttribute(gr_down_multi_kernel<1280>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
             cudaFuncSetAttribute(gr_down_multi_kernel<1280, kFusedGrMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
-            cudaFuncSetAttribute(gr_down_multi_kernel<1280, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2: era want
-            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
-            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
+            cudaFuncSetAttribute(gr_down_multi_kernel<1280, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
+            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
+            cudaFuncSetAttribute(gr_down_multi_kernel<1280, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
         } else {
             cudaFuncSetAttribute(gr_down_multi_kernel<2560>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
             cudaFuncSetAttribute(gr_down_multi_kernel<2560, kFusedGrMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want);
-            cudaFuncSetAttribute(gr_down_multi_kernel<2560, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2: era want
-            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
-            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // STRATA+ P-T12 measure v2
+            cudaFuncSetAttribute(gr_down_multi_kernel<2560, 4, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
+            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
+            cudaFuncSetAttribute(gr_down_multi_kernel<2560, kGrBaseMaxT, true>, cudaFuncAttributeMaxDynamicSharedMemorySize, want8);   // base rows
         }
         auto set_staged_attr = [&](auto kernel, int max_t) {
             int ws = (int) (2 * max_t * H_TILE * sizeof(float));
@@ -1126,7 +1126,7 @@ int down_chunk(bool staged, int* tile_out) {
         set_staged_attr(gr_down_staged_kernel<5, true>, 5);
         set_staged_attr(gr_down_staged_kernel<6, true>, 6);
         set_staged_attr(gr_down_staged_kernel<4, false>, 4);
-        set_staged_attr(gr_down_staged_kernel<kGrBaseMaxT, false>, kGrBaseMaxT);   // STRATA+ P-T12 measure v2
+        set_staged_attr(gr_down_staged_kernel<kGrBaseMaxT, false>, kGrBaseMaxT);   // base rows
         set_staged_attr(gr_down_staged_kernel<kFusedGrMaxT, false>, kFusedGrMaxT);
         cudaGetLastError();      // drop any error the attempt left behind
         // The opt-in is a promise a pre-Volta card does not keep: an sm_60 answers 65536 and accepts the
@@ -1313,23 +1313,23 @@ void launch_multi(const GrMulti& m, int variant, cudaStream_t st, unsigned long 
             else if (exact_t && ct == 5) gr_down_staged_kernel<5, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
             else if (exact_t && ct == 6) gr_down_staged_kernel<6, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
             else if (max4) gr_down_staged_kernel<4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
-            else if (ct <= kGrBaseMaxT) gr_down_staged_kernel<kGrBaseMaxT, false><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+            else if (ct <= kGrBaseMaxT) gr_down_staged_kernel<kGrBaseMaxT, false><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // base rows
             else gr_down_staged_kernel<><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
         } else if (tv == 1280) {
             if (q8w) {   // STRATA_HC_REQ8
                 if (max4) gr_down_multi_kernel<1280, 4, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
-                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // base rows
                 else gr_down_multi_kernel<1280, kFusedGrMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
             } else if (max4) gr_down_multi_kernel<1280, 4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
-            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<1280, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // base rows
             else gr_down_multi_kernel<1280><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
         } else {
             if (q8w) {   // STRATA_HC_REQ8
                 if (max4) gr_down_multi_kernel<2560, 4, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
-                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+                else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // base rows
                 else gr_down_multi_kernel<2560, kFusedGrMaxT, true><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
             } else if (max4) gr_down_multi_kernel<2560, 4><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
-            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // STRATA+ P-T12 measure v2
+            else if (ct <= kGrBaseMaxT) gr_down_multi_kernel<2560, kGrBaseMaxT><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);   // base rows
             else gr_down_multi_kernel<2560><<<DOWN_BLOCKS + 1, THREADS, smem, st>>>(c);
         }
     }
@@ -1340,50 +1340,50 @@ void launch_multi(const GrMulti& m, int variant, cudaStream_t st, unsigned long 
 #endif
 #if !STRATA_GR_FAST_BUILD
     if (!q8w && m.a[0].q8_mixed != nullptr && qfuse_hc_local()) {
-        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // (STRATA_NO_MULTI_GR: the 12 rows)
             case 1: gr_up_q32_kernel<1, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
             case 2: gr_up_q32_kernel<2, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
             case 3: gr_up_q32_kernel<3, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
             case 4: gr_up_q32_kernel<4, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
             case 5: gr_up_q32_kernel<5, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
             case 6: gr_up_q32_kernel<6, true><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
-            case 7: case 8: gr_up_q32_kernel<kGrBaseMaxT, false><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+            case 7: case 8: gr_up_q32_kernel<kGrBaseMaxT, false><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;   // the 8-row instance
             default: gr_up_q32_kernel<kFusedGrMaxT, false><<<Q32_BLOCKS, Q32_THREADS, 0, st>>>(m); break;
         }
         return;
     }
 #endif
     if (q8w) {   // STRATA_HC_REQ8: the up kernel on int8 rows
-        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // (STRATA_NO_MULTI_GR: the 12 rows)
             case 1: gr_up_multi_kernel<1, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 2: gr_up_multi_kernel<2, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 3: gr_up_multi_kernel<3, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 4: gr_up_multi_kernel<4, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 5: gr_up_multi_kernel<5, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 6: gr_up_multi_kernel<6, true, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
-            case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+            case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // the 8-row instance
             default: gr_up_multi_kernel<kFusedGrMaxT, false, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         }
     } else if (n_tok >= 3 && up75_on()) {   // T 1-2: gr_up_multi_kernel is as fast or faster (fused_gr_bench, cold)
-        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+        switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // (STRATA_NO_MULTI_GR: the 12 rows)
             case 1: gr_up75_kernel<1, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 2: gr_up75_kernel<2, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 3: gr_up75_kernel<3, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 4: gr_up75_kernel<4, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 5: gr_up75_kernel<5, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
             case 6: gr_up75_kernel<6, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
-            case 7: case 8: gr_up75_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+            case 7: case 8: gr_up75_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // the 8-row instance
             default: gr_up75_kernel<kFusedGrMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         }
     } else
-    switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // STRATA+ P-T12 measure v2: base = 8 con STRATA_NO_MULTI_GR
+    switch (no_multi_gr ? (n_tok <= kGrBaseMaxT ? kGrBaseMaxT : kFusedGrMaxT) : n_tok) {   // (STRATA_NO_MULTI_GR: the 12 rows)
         case 1: gr_up_multi_kernel<1, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         case 2: gr_up_multi_kernel<2, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         case 3: gr_up_multi_kernel<3, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         case 4: gr_up_multi_kernel<4, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         case 5: gr_up_multi_kernel<5, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
         case 6: gr_up_multi_kernel<6, true><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
-        case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // STRATA+ P-T12 measure v2: era il default <8>
+        case 7: case 8: gr_up_multi_kernel<kGrBaseMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;   // the 8-row instance
         default: gr_up_multi_kernel<kFusedGrMaxT, false><<<UPM_BLOCKS, THREADS, 0, st>>>(m); break;
     }
 }
@@ -2197,9 +2197,9 @@ void launch_q8(const GrMulti& m, float* scratch, cudaStream_t st, unsigned long 
         case 5: launch_q8_t<5>(m, part, ssg, st, stamp_buf, stamp_i0); break;
         case 6: launch_q8_t<6>(m, part, ssg, st, stamp_buf, stamp_i0); break;
         case 7: launch_q8_t<7>(m, part, ssg, st, stamp_buf, stamp_i0); break;
-        case 8: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;   // STRATA+ P-T12 measure: era il default (troncava T > 8)
-        default:   // STRATA+ P-T12 measure: guardia, STRATA_HC_Q8 non supporta T > 8
-            std::fprintf(stderr, "STRATA measurement patch: fused_gr STRATA_HC_Q8 path called with T=%d > 8\n", m.T);
+        case 8: launch_q8_t<8>(m, part, ssg, st, stamp_buf, stamp_i0); break;
+        default:   // STRATA_HC_Q8's path has instances up to 8 rows
+            std::fprintf(stderr, "fused_gr: the STRATA_HC_Q8 path holds at most 8 rows, called with T=%d\n", m.T);
             std::exit(1);
     }
 }
@@ -3019,7 +3019,7 @@ void fused_gr_persist_init() {
         return finite && rel < 1e-4 ? 0 : 2;
     };
     int max_t = 0;
-    for (int T = 1; T <= kGrBaseMaxT && ok; ++T) {   // STRATA+ P-T12 measure v3 (C7): kernel_t covers 1..8 (nullptr above), as 7dd5cf1's 1..kFusedGrMaxT = 8
+    for (int T = 1; T <= kGrBaseMaxT && ok; ++T) {   // 1..8 rows here, as before
         const int r = check(T);
         if (r == 1) ++timeouts; else if (r == 2) { bad_t = T; ok = false; }
         if (r != 0) break;

@@ -1857,9 +1857,9 @@ __global__ void __launch_bounds__(256) native_gu_kernel(const unsigned long long
 }
 
 // native_gu_kernel with the group's entries taken GRP_NC at a time, each weight part decoded once per pass.
-// A group has at most one entry per token of the window (kVerifyMaxT = 12 in the P-T12 measurement build, 8 in 7dd5cf1;
-// setup writes --spec 4, and a split window has halves of <= 4), so 4 takes such windows in one pass (a 12-row window
-// takes up to 3); 8 would take ~64-80 registers against ~48 (ptxas -v).   // STRATA+ P-T12 measure v2: commento aggiornato
+// A group has at most one entry per token of the window (kVerifyMaxT = 12, from 8: setup writes --spec 4, and a split
+// window has halves of <= 4), so 4 takes such windows in one pass (a 12-row window takes up to 3); 8 would take
+// ~64-80 registers against ~48 (ptxas -v).
 constexpr int GRP_NC = 4;
 
 template<int TG, bool STAGE_GRID = kStageIqGrid<TG>, bool SUB16 = true>

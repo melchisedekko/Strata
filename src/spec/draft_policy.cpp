@@ -8,9 +8,15 @@ namespace strata::spec {
 namespace {
 
 // The shape of a round's cost by window size, relative to one token, used only for sizes not measured yet (the
-// measured round times replace it). Between the RTX 5070's measured curves: +10 ms per token with every missed expert
-// on the CPU (bench/results/2026-09-27-spec/window-cost), flatter with the default CPU/DMA split.
-constexpr double kShape[DraftPolicy::kMaxT + 1] = {0.0, 1.0, 1.35, 1.7, 2.05, 2.45, 2.85, 3.25, 3.6};
+// measured round times replace it). T1..T8: between the RTX 5070's measured curves: +10 ms per token with every
+// missed expert on the CPU (bench/results/2026-09-27-spec/window-cost), flatter with the default CPU/DMA split.
+// T9..T12: the RX 6800 XT's measured verify cost per round (ms, 0/16K/100K context, code and chat:
+// T8 177.2, T9 215.3, T10 199.6, T11 212.3, T12 223.3 against T1 69.3), each taken relative to that T8 and times
+// this shape's T8, so the curve stays continuous where the two measurements meet. An odd width costs more than the
+// even one below it (215.3 at 9 against 199.6 at 10, a property of the window itself, not of this patch): the shape
+// keeps the measured values as they are.
+constexpr double kShape[DraftPolicy::kMaxT + 1] = {0.0, 1.0, 1.35, 1.7, 2.05, 2.45, 2.85, 3.25, 3.6,
+                                                  4.37, 4.05, 4.31, 4.53};
 constexpr double kCostAlpha = 0.1;    // EMA weight of a new round time
 constexpr double kTokAlpha = 0.05;    // EMA weight of a new MTP window outcome
 constexpr double kCalDecay = 0.995;   // the MTP probability -> acceptance table fades slowly
@@ -122,19 +128,22 @@ double DraftPolicy::mtp_tokens(int t) const {
 
 DraftPolicy::Pick DraftPolicy::choose(int t_mtp, int lookup_k, int match) const {
     Pick p;
-    p.t = std::clamp(t_mtp, 1, max_t_);
+    p.t = std::clamp(t_mtp, 1, kMtpMaxT);   // the MTP's own window holds at most kMtpMaxT rows
     if (lookup_k <= 0) return p;
     const double base = mtp_tokens(p.t) / cost_ms(p.t);
     const double q = lookup_rate(match);
     double e = 1.0, qi = 1.0, best = 0.0;
     int best_t = 0;
-    for (int k = 1; k <= std::min(lookup_k, max_t_ - 1); ++k) {
+    // Rows past the MTP's cap are a long lookup window, and only a match at least as long as the window's drafts says
+    // anything about them: k <= match or the window still fits the MTP's cap (k <= kMtpMaxT - 1).
+    const int kmax = std::min({lookup_k, max_t_ - 1, std::max(match, kMtpMaxT - 1)});
+    for (int k = 1; k <= kmax; ++k) {
         qi *= q;
         e += qi;
         const double r = e / cost_ms(k + 1);
         if (r > best) { best = r; best_t = k + 1; }
     }
-    const int t_full = std::min(lookup_k, max_t_ - 1) + 1;
+    const int t_full = kmax + 1;
     if (best_t > 0 && best > base * (1.0 + margin_)) {
         p.lookup = true;
         p.t = best_t;
@@ -197,7 +206,7 @@ void DraftPolicy::observe_probs(const float* p, int n, int accepted) {
 }
 
 bool DraftPolicy::keep_draft(ChainState& st, int idx, float p, int cap) const {
-    cap = std::clamp(cap, 1, max_t_);
+    cap = std::clamp(cap, 1, std::min(max_t_, kMtpMaxT));   // a chained MTP window is still an MTP window
     if (idx == 0) {
         st = ChainState{};
         st.best_v = 1.0 / cost_ms(1);

@@ -18,7 +18,12 @@
 
 namespace strata::kernels {
 
-inline constexpr int kVerifyMaxT = 12;   // STRATA+ P-T12 measure: 8 -> 12 (solo misura s(12)/s(8))
+/// The widest verify window: the last accepted token and up to kVerifyMaxT - 1 drafts.  Only the suffix drafter's
+/// drafts (prompt lookup, --spec 9..12) fill the rows past kMtpMaxT: the MTP's own windows stop there.
+inline constexpr int kVerifyMaxT = 12;
+/// The MTP drafter's widest window.  Its captured graphs, its step and round exec arrays and chain_launch are built
+/// for this many rows, so neither --mtp-max-t nor --spec raises it (see docs/DETAILS.md, "Draft layer").
+inline constexpr int kMtpMaxT = 8;
 
 /// For token t of T: conv over [history(3) | qkv_0 .. qkv_t] -> SiLU -> L2 norm of the q/k heads -> h[t].
 /// `history` is NOT written, but with `commit` (one token): it then keeps the token, as gdn_conv_commit.  Bitwise

@@ -3129,7 +3129,7 @@ def engine_args(cfg: dict) -> list[str]:
     return learned_profile_args(cfg, args)
 
 
-PARALLEL_MAX = 8      # the engine's batch window holds at most 8 rows (kVerifyMaxT); --batch-mtp waves more through it
+PARALLEL_MAX = 8      # the server's own cap on --batch slots (--batch-mtp waves more through the engine's window)
 
 
 def parallel_args(cfg: dict, args: list[str]) -> list[str]:

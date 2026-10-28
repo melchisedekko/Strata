@@ -344,7 +344,7 @@ bool RemoteExperts::begin(int64_t layer, const float* x, const int32_t* ids, int
         strata::kernels::quantize_q8_0_scaled(zero_copy_ ? z_x_ : d_x_, d_q8_, d_scales_, n_tok * H, s);
         strata::kernels::moe_grouped_s2(d_ptr_, d_start_, d_count_, d_dst_, d_tok_,
                                         groups_, (int64_t) dst_.size(), d_q8_, d_scales_, d_scratch_, zero_copy_ && !reduce ? z_out_ : d_out_, s,
-                                        (int) n_tok);   // STRATA+ P-T12 measure v2: n_tok token
+                                        (int) n_tok);
     }
     const uint64_t compact_bytes = (uint64_t) (reduce ? n_tok : dst_.size()) * H * sizeof(float);
     if (reduce) {

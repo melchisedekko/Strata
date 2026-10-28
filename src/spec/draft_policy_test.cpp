@@ -114,6 +114,16 @@ int main() {
               "chain: stale full size is re-probed despite a profitable shorter chain");
         check(probes > 0 && confident, "chain: stale re-probes retain the MTP confidence gate");
     }
+    {
+        // --spec 9..12: rows past the MTP's cap are a long lookup window, and only a match that long may fill them
+        auto cheap_rows = [](int t) { return 40.0 + 0.5 * (t - 1); };   // a card whose rows are nearly free (UMA-like)
+        DraftPolicy p(12);
+        for (int t = 2; t <= 12; ++t) p.observe(false, t, 1, 0, cheap_rows(t));    // a weak MTP window at every size
+        for (int i = 0; i < 40; ++i) p.observe(true, 12, 11, 40, cheap_rows(12));  // a long match, always accepted
+        check(p.choose(4, 11, 40).lookup && p.choose(4, 11, 40).t == 12,
+              "a long match fills a lookup window past the MTP's cap");
+        check(p.choose(4, 11, 6).t <= DraftPolicy::kMtpMaxT, "a short match keeps the window within the MTP's cap");
+    }
     std::printf(g_fail ? "FAIL\n" : "PASS\n");
     return g_fail ? 1 : 0;
 }

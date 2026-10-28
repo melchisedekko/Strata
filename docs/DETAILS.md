@@ -312,6 +312,17 @@ adaptive tier's swap policy offline.
 When the start stops with "the draft head does not fit" (a 12 GB card with a long context), the engine says how much it needs
 and which smaller subset fits. Setup suggests `--draft-vocab en` on cards under 14 GB; nothing changes unless you pass it.
 
+`--spec` up to 8 is the stock behaviour: the MTP's windows hold `--spec` tokens, and where the text repeats a lookup may
+make them 2 longer. `--spec 9` to `--spec 12` (opt-in, CUDA and HIP engines; setup never writes it, and the Mac engine
+stays at 8) lets the verify window hold
+that many tokens, and then only prompt-lookup drafts fill the rows past 8: the MTP's own windows stay at 8, because its
+graphs are built for that width. The draft policy takes a window of 9-12 rows only where the repeat is at least as long
+as the window and the measured cost per row says it pays. Long verbatim repeats (code, edits, agent sessions re-reading
+their input) then commit 9-11 tokens per round instead of 7-8: on an RX 6800 XT a row past the eighth costs about 11 ms
+against ~68 ms for a round, the same at 0, 16K and 100K of context. Verification is unchanged - a row of a wider window
+holds the same drafts it would hold in any other - so the output differs from a narrower window's only by the grouping
+caveat below.
+
 **Reproducible output.** With the IQ models the CPU rounds one-token expert groups and multi-token groups differently, so the
 same prompt at temperature 0 can end in a different, equally good answer when drafting, cache state or a resumed conversation
 differ. `STRATA_IQ_MT_MIN=1` uses the multi-token kernels for every group, so the answer no longer depends on drafting (IQ3_S

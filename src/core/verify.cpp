@@ -2100,7 +2100,7 @@ bool Verifier::record_window(int T, cudaStream_t cs, std::string& err) {
                                       nat_xq_ + (size_t) tb * (N / 32) * 36, hit_scratch_, dst_buf, cs, gy);
             } else {
                 moe_grouped_s2(gp, gs, gn, p_dst, p_tok, cap, cap, hit_xq_ + (size_t) tb * (N / 32) * 34,
-                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs, n);   // STRATA+ P-T12 measure v2: n token
+                               hit_xs_ + (size_t) tb * (N / 32), hit_scratch_, dst_buf, cs, n);
             }
         };
         bool hits_in_combine = false;
@@ -2355,7 +2355,7 @@ std::string Verifier::profile_by_t_report() {
                                           "(gap)", "head", "hc0 norm", "hc0 down", "hc0 up", "hc1 norm", "hc1 down", "hc1 up"};
     std::string out;
     char b[96];
-    for (int T = 1; T <= strata::kernels::kVerifyMaxT; ++T) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
+    for (int T = 1; T <= strata::kernels::kVerifyMaxT; ++T) {
         if (prof_t_win_[T] == 0) continue;
         double total = 0;
         std::snprintf(b, sizeof b, "T%d (n=%lld):", T, (long long) prof_t_win_[T]);
@@ -2754,7 +2754,7 @@ void Verifier::accumulate_profile(const unsigned long long* stamps) {
     double before[2][kProfPer];
     std::memcpy(before, prof_sum_, sizeof before);
     accumulate_profile_inner(stamps);
-    if (last_t_ >= 1 && last_t_ <= strata::kernels::kVerifyMaxT) {   // STRATA+ P-T12 measure: 8 -> kVerifyMaxT
+    if (last_t_ >= 1 && last_t_ <= strata::kernels::kVerifyMaxT) {
         for (int k = 0; k < 2; ++k)
             for (int i = 0; i < kProfPer; ++i) prof_t_sum_[last_t_][k][i] += prof_sum_[k][i] - before[k][i];
         ++prof_t_win_[last_t_];
@@ -3771,8 +3771,8 @@ bool Verifier::stage_batch(const int* rows, int S, int hbase, const int32_t* tok
 
 bool Verifier::run_slots(int S, const int32_t* tokens, const int64_t* pos, PoolMultiFn pool, void* user, int32_t* out,
                          std::string& err) {
-    int rows[8] = {};
-    for (int t = 0; t < S && t < 8; ++t) rows[t] = t;
+    int rows[strata::kernels::kVerifyMaxT] = {};
+    for (int t = 0; t < S && t < strata::kernels::kVerifyMaxT; ++t) rows[t] = t;
     return run_slot_rows(rows, S, tokens, pos, pool, user, out, err);
 }
 
@@ -3947,8 +3947,8 @@ bool Verifier::sample_rows(int S, std::string& err) {
 bool Verifier::batch_launch(int base, int S, const int32_t* tokens, const int64_t* pos, std::string& err) {
     const OnDevice on_device(device_);
     if (b_running_) { err = "verify: batch_launch while this stage is busy"; return false; }
-    int rows[8] = {};
-    for (int t = 0; t < S && t < 8; ++t) rows[t] = base + t;
+    int rows[strata::kernels::kVerifyMaxT] = {};
+    for (int t = 0; t < S && t < strata::kernels::kVerifyMaxT; ++t) rows[t] = base + t;
     if (pre_launch_ && !pre_launch_(cs_, err)) return false;
     if (!stage_batch(rows, S, base, tokens, pos, err)) return false;
     cudaError_t le = cudaGraphLaunch(exec_bm_[bkey(rows, S, base)], cs_);

@@ -1128,7 +1128,7 @@ bool MtpDrafter::record_rest(int step_row, cudaStream_t cs, std::string& err) {
                            grp_start_, grp_counts_, hit_dst_, hit_slot_, cs);
         quantize_q8_0_scaled(mixed_, hit_xq_, hit_xs_, (int64_t) T * N, cs);
         moe_grouped_s2(grp_ptr_, grp_start_, grp_counts_, hit_dst_, hit_slot_, (int64_t) T * K, (int64_t) T * K, hit_xq_,
-                       hit_xs_, hit_scratch_, parts_, cs, (int) T);   // STRATA+ P-T12 measure v2: T token
+                       hit_xs_, hit_scratch_, parts_, cs, (int) T);
         g_mp.stamp(10, cs);
         if (branch_on) {
             if (cudaStreamWaitEvent(cs, sh_join_, 0) != cudaSuccess) { err = "mtp: the shared expert's join"; return false; }
@@ -1568,11 +1568,26 @@ bool MtpDrafter::draft(int T, const int32_t* tokens, int64_t p, int a, int32_t* 
     }
 #endif
     const OnDevice on_device(device_);
-    if (T < 1 || T > max_t_ || a < 0 || a >= T) { err = "mtp: draft arguments out of range"; return false; }
+    if (T < 1 || T > strata::kernels::kVerifyMaxT || a < 0 || a >= T) {
+        err = "mtp: draft arguments out of range";
+        return false;
+    }
     if (chain_live_) { err = "mtp: a pipelined chain is still in flight"; return false; }
     // #783 PR-i (stuchapin909): the round runs for the cells up to the accepted row a (T = a + 1): the K/V of the rejected
     // rows is not caught up - no later read reaches a cell past the one being drafted and the next round writes it first
     if (!mtp_catchup_all()) T = a + 1;
+    // A verify window wider than the MTP's own (--spec 9..12, a lookup window, a --lookup-chain tail): the rows its
+    // graphs have no room for are caught up through the prompt pass first, and the round then runs on max_t_ of the
+    // window's rows - every window row gets its K/V, in the same per-row kernels a round that held all T would run.
+    int w = 0;
+    if (T > max_t_) {
+        w = catch_up_wide(T, tokens, p, a, err);
+        if (w < 0) return false;
+        tokens += w;
+        p += w;
+        a -= w;
+        T -= w;
+    }
     const bool cp = coupled_active_;   // coupled draft sampling for this request: its own graphs
     if (!capture_round(T, cp, err)) return false;
     // Draft j writes its K/V at cell p + a + j, and the K/V ends at max_cells (its page table has no page past it):
@@ -1601,7 +1616,7 @@ bool MtpDrafter::draft(int T, const int32_t* tokens, int64_t p, int a, int32_t* 
     h_row_[1] = 0;
     if (h_force_ != nullptr) for (int j = 0; j < 16; ++j) h_force_[j] = -1;   // the forcing kernels: no-ops here
     std::atomic_thread_fence(std::memory_order_seq_cst);
-    if (!stage_source_R(T, err)) return false;
+    if (!stage_source_R(T, w, err)) return false;
 
     SessionState* const pss = ple_ss_ ? ple_ss_ : ss_;
     const bool do_ple = pss != nullptr && pss->ple.ready() && pss->ple.table != nullptr;
@@ -1738,14 +1753,54 @@ bool MtpDrafter::draft(int T, const int32_t* tokens, int64_t p, int a, int32_t* 
     return true;
 }
 
-bool MtpDrafter::stage_source_R(int T, std::string& err) {
-    if (src_R_ == nullptr || src_R_ == window_R_) return true;
+// A verify window wider than the MTP's own.  The round's graphs hold max_t_ rows, so the rows they have no room
+// for are caught up through the prompt pass first: record_front's K/V write for a row, the same kernels on the same
+// step records the round's own catch-up runs, so those cells end up in the drafter's K/V exactly as a round that
+// held all T rows would leave them.  The round's rows are contiguous and must hold the accepted row `a`: the
+// window's last max_t_ rows when `a` is past their front (a wide window usually accepts many rows), else the max_t_
+// rows from `a` on - and then the rows behind them are caught up too, in a second pass.
+// Returns the offset the round's rows start at within the window, or -1 with `err`.
+int MtpDrafter::catch_up_wide(int T, const int32_t* tokens, int64_t p, int a, std::string& err) {
+    if (T <= max_t_) return 0;
+    if (src_R_ == nullptr && window_R_ == nullptr) { err = "mtp: the window's residual rows are not bound"; return -1; }
+    const int64_t HCN = g_->hc * g_->n_embd;
+    const float* const R = src_R_ != nullptr ? src_R_ : window_R_;   // the buffer the round's rows come from
+    const int k = T - max_t_;              // the rows the round has no room for
+    const int w = std::min(a, k);          // w of them at the window's front, the rest behind the round's own rows
+    // sync = false: the round's graph follows these on the drafter's stream, and the caller polls that as usual
+    if (w > 0 && !prefill(R, tokens, w, p, err, false)) return -1;
+    if (w < k && !prefill(R + (size_t) (w + max_t_) * (size_t) HCN, tokens + w + max_t_, k - w, p + w + max_t_, err,
+                          false))
+        return -1;
+    return w;
+}
+
+bool MtpDrafter::stage_source_R(int T, int row0, std::string& err) {
+    const float* const src = src_R_ != nullptr ? src_R_ : window_R_;
+    if (row0 <= 0 && (src_R_ == nullptr || src_R_ == window_R_)) return true;   // the rows are where the round reads them
     const Clock::time_point t_src = Clock::now();
     struct SrcTime { MtpDrafter& d; Clock::time_point t; ~SrcTime() { d.ms_src += ms_since(t); ++d.n_src; } } src_time{*this, t_src};
-    if (cudaMemcpyAsync((void*) window_R_, src_R_, (size_t) T * (size_t) (g_->hc * g_->n_embd) * sizeof(float),
-                        cudaMemcpyDeviceToDevice, cs_) != cudaSuccess) {
-        err = "mtp: staging the window's residual rows failed";
-        return false;
+    const int64_t HCN = g_->hc * g_->n_embd;
+    if (src != window_R_) {   // set_source_R's rows (a cross-card copy when the drafter is on another card)
+        if (cudaMemcpyAsync((void*) window_R_, src + (size_t) row0 * (size_t) HCN, (size_t) T * (size_t) HCN * sizeof(float),
+                            cudaMemcpyDeviceToDevice, cs_) != cudaSuccess) {
+            err = "mtp: staging the window's residual rows failed";
+            return false;
+        }
+        return true;
+    }
+    // The rows are already in the bound buffer (a window wider than the round, see catch_up_wide): they move down by
+    // `row0` rows in place, in chunks whose source starts where the previous chunk's destination ended, so no copy
+    // overlaps another.  The rows below `row0` are the ones the prompt pass has just read, and the round was their
+    // only reader - it no longer holds them.
+    for (int done = 0; done < T; done += row0) {
+        const int nr = std::min(row0, T - done);
+        if (cudaMemcpyAsync((void*) (window_R_ + (size_t) done * (size_t) HCN),
+                            window_R_ + (size_t) (row0 + done) * (size_t) HCN, (size_t) nr * (size_t) HCN * sizeof(float),
+                            cudaMemcpyDeviceToDevice, cs_) != cudaSuccess) {
+            err = "mtp: staging the window's residual rows failed";
+            return false;
+        }
     }
     return true;
 }
@@ -1774,10 +1829,21 @@ bool MtpDrafter::chain_launch(int T, const int32_t* tokens, int64_t p, int a, co
     const OnDevice on_device(device_);
     if (chain_live_) { err = "mtp: a chain is already in flight"; return false; }
     if (!force_on_ || ev_chain_ == nullptr) { err = "mtp: chains need prepare_chain"; return false; }
-    if (T < 1 || T > max_t_ || a < 0 || a >= T || n_out < 1 || n_out > max_t_ - 1 || n_force < 0 || n_force > n_out ||
-        n_force > 16) {
+    if (T < 1 || T > strata::kernels::kVerifyMaxT || a < 0 || a >= T || n_out < 1 || n_out > max_t_ - 1 || n_force < 0 ||
+        n_force > n_out || n_force > 16) {
         err = "mtp: chain arguments out of range";
         return false;
+    }
+    // a window wider than the MTP's own (--spec 9..12, a lookup window): the rows past its graphs are caught up
+    // through the prompt pass first, as draft() does, and the round then holds max_t_ of the window's rows
+    int w = 0;
+    if (T > max_t_) {
+        w = catch_up_wide(T, tokens, p, a, err);
+        if (w < 0) return false;
+        tokens += w;
+        p += w;
+        a -= w;
+        T -= w;
     }
     if (round_exec_[T] == nullptr) { err = "mtp: chain graphs not prepared"; return false; }
     for (int j = 1; j < n_out; ++j)
@@ -1801,7 +1867,7 @@ bool MtpDrafter::chain_launch(int T, const int32_t* tokens, int64_t p, int a, co
     h_row_[0] = a;
     h_row_[1] = 0;
     std::atomic_thread_fence(std::memory_order_seq_cst);
-    if (!stage_source_R(T, err)) return false;
+    if (!stage_source_R(T, w, err)) return false;
     chain_early_ = std::max(0, std::min(n_early, n_out));
     bool ok = cudaGraphLaunch(round_exec_[T], cs_) == cudaSuccess;
     if (ok && chain_early_ >= 1) ok = cudaEventRecord(ev_step_[0], cs_) == cudaSuccess;

@@ -18,11 +18,18 @@
 #include <array>
 #include <string>
 
+#include "strata/kernels/verify_kernels.hpp"
+
 namespace strata::spec {
 
 class DraftPolicy {
 public:
-    static constexpr int kMaxT = 8;
+    /// The widest window the policy may pick: the verify window's capacity (12).  Rows past kMtpMaxT are filled by
+    /// lookup drafts only, and only where the match is long enough to cover them (see choose()).
+    static constexpr int kMaxT = strata::kernels::kVerifyMaxT;
+    /// The MTP's own widest window: the drafter's graphs are built for these rows, so the policy never asks for a
+    /// longer MTP window (--spec 9..12 widens the suffix drafter's windows, not the MTP's).
+    static constexpr int kMtpMaxT = strata::kernels::kMtpMaxT;
     static constexpr int kBuckets = 4;
     static constexpr int kCtxBuckets = 3;   // STRATA_SPEC_COST: row costs per context length (< 6K, < 24K, longer)
 
@@ -32,7 +39,9 @@ public:
         bool lookup = false;
         int t = 1;                      // window size (1 + drafts)
     };
-    /// `t_mtp`: the MTP's window; `lookup_k`: the lookup proposal's length (0 = none); `match`: its match length.
+    /// `t_mtp`: the MTP's window (at most kMtpMaxT); `lookup_k`: the lookup proposal's length (0 = none); `match`: its
+    /// match length.  A lookup window wider than kMtpMaxT is only taken when the match is at least as long as the
+    /// drafts it would fill: a row past the MTP's cap costs about a sixth of a round, so a short repeat is no evidence.
     Pick choose(int t_mtp, int lookup_k, int match) const;
     /// After the round: the window it used, the drafts accepted, and the round's time (verify + commit + draft).
     void observe(bool lookup, int t, int accepted, int match, double round_ms);
@@ -72,7 +81,7 @@ public:
         int kept = 0;                     ///< best_rows - 1
     };
     /// Draft `idx` (0-based, probability p) was just computed: update `st` and say whether to compute draft idx + 1.
-    /// idx == 0 starts a new chain.  `cap` = the widest window (rows).
+    /// idx == 0 starts a new chain.  `cap` = the widest window (rows), held to kMtpMaxT.
     bool keep_draft(ChainState& st, int idx, float p, int cap) const;
     /// After a round of the MTP window T whose drafts were p[0..T-1): `accepted` of them held.  Teaches draft_rate().
     void observe_probs(const float* p, int n_window_drafts, int accepted);

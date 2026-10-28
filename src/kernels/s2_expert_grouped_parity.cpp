@@ -12,7 +12,7 @@
 //   3. `moe_hit_grouped_s2_multi`    verify window: each hit reads its own token's activation row
 //   4. `moe_grouped_s2`              host-built groups of 1..8 entries, one of them a mapped HOST blob (the PCIe
 //                                    share), and more group capacity than groups
-//      4b. STRATA+ P-T12 measure v3: the same with max_group = 8 (the GM = 8 instances), also vs max_group = 0
+//      4b. the same with max_group = 8 (the 8-entry group kernels), also against max_group = 0
 //   5. `moe_group_resident` + `moe_grouped_s2`   the MTP layer's shape, with and without fp32 scales
 //   6. an activation row that is only 2-byte aligned: the new path must fall back to the previous kernels
 //   7. a slot stride that is not a multiple of 8 (BLOB + 4), and 8. an arena 4 bytes past an aligned address: the
@@ -412,7 +412,7 @@ void check_all() {
         up(d_etok, etok);
         const Scratch s = make_scratch(n);
         float* d_out = dalloc<float>((size_t) n * H);
-        Run r_g0[2];   // STRATA+ P-T12 measure v3: the max_group = 0 (GMAX) runs, for the <8> case below
+        Run r_g0[2];   // the max_group = 0 (GMAX) runs, for the 8-entry case below
         for (int scaled = 1; scaled >= 0; --scaled) {
             Run r;
             const std::string name = std::string("moe_grouped_s2 (") + std::to_string(n_groups) + " groups" +
@@ -422,11 +422,11 @@ void check_all() {
                                   s.p, d_out, nullptr);
             }, &r);
             reference(name.c_str(), r, s, ent, x, scaled ? &xs : nullptr);
-            r_g0[scaled] = r;   // STRATA+ P-T12 measure v3
+            r_g0[scaled] = r;
         }
-        // ---- 4b. STRATA+ P-T12 measure v3: the same groups (every group <= 8 entries, T = 8) with max_group = 8, so
-        // the GM = 8 instances run (those of 7dd5cf1's GMAX = 8): previous vs new kernels bitwise (twice), the same
-        // host reference, and bitwise against the max_group = 0 (GMAX = 12) run of the same inputs
+        // ---- 4b. the same groups (every group <= 8 entries, T = 8) with max_group = 8, so the GM = 8 instances run
+        // (a window of at most 8 tokens takes those): previous vs new kernels bitwise (twice), the same host
+        // reference, and bitwise against the max_group = 0 (GMAX = 12) run of the same inputs
         for (int scaled = 1; scaled >= 0; --scaled) {
             Run r;
             const std::string name = std::string("moe_grouped_s2 max_group 8 (") + std::to_string(n_groups) +
