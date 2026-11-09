@@ -8,34 +8,6 @@
     bench/strata-bench/proxy/llama_spec_trace.v12.nollamafile
     bench/strata-bench/proxy/llama_spec_trace.v14.nollamafile
     bench/strata-bench/proxy/strata_proxy_spec
-    logs/tmp_scratch/jg/fin/bug
-    logs/tmp_scratch/jg/fin/bug_g
-    logs/tmp_scratch/jg/fin/controller_test_gsan
-    logs/tmp_scratch/jg/fin/controller_test_plain
-    logs/tmp_scratch/jg/fin/controller_test_san
-    logs/tmp_scratch/jg/fin/draft_policy_test_gsan
-    logs/tmp_scratch/jg/fin/draft_policy_test_plain
-    logs/tmp_scratch/jg/fin/draft_policy_test_san
-    logs/tmp_scratch/jg/fin/jg
-    logs/tmp_scratch/jg/fin/jg_san
-    logs/tmp_scratch/jg/fin/joint_gate_test_gsan
-    logs/tmp_scratch/jg/fin/joint_gate_test_plain
-    logs/tmp_scratch/jg/fin/joint_gate_test_san
-    logs/tmp_scratch/jg/fin/pool_source_test_gsan
-    logs/tmp_scratch/jg/fin/pool_source_test_plain
-    logs/tmp_scratch/jg/fin/pool_source_test_san
-    logs/tmp_scratch/jg/fin/spec_start_test_gsan
-    logs/tmp_scratch/jg/fin/spec_start_test_plain
-    logs/tmp_scratch/jg/fin/spec_start_test_san
-    logs/tmp_scratch/jg/fin/suffix_drafter_test_gsan
-    logs/tmp_scratch/jg/fin/suffix_drafter_test_plain
-    logs/tmp_scratch/jg/fin/suffix_drafter_test_san
-    logs/tmp_scratch/jg/jgtest
-    logs/tmp_scratch/jg/jgtest2
-    logs/tmp_scratch/jg/jgtest_pre
-    logs/tmp_scratch/jg/oob_nd
-    logs/tmp_scratch/jg/oob_post
-    logs/tmp_scratch/jg/oob_pre
 
 ## Esclusi dalla scansione segreti (contenuto sospetto, NON pubblicato)
 
@@ -95,5 +67,3 @@ Pubblicati dopo revisione: `holdout_90_codechat.jsonl`, `proxy_30_codechat.jsonl
     strataplus/bench/strata-bench/runs/diag_greedy_aprime_v1/proc_environ_tm0.log
     strataplus/bench/traces/raw/aprime_holdout_v14_ab/MANIFEST.sha256
     strataplus/bench/traces/raw/v11/e4v14_MANIFEST.sha256
-    strataplus/logs/tmp_scratch/dbg.jsonl
-    strataplus/logs/tmp_scratch/pe.json
