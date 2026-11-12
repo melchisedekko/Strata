@@ -1,0 +1,1419 @@
+arXiv:1902.10672v2 [math.NT] 12 May 2021
+
+ON CARMICHAEL AND POLYGONAL NUMBERS,
+BERNOULLI POLYNOMIALS,
+AND SUMS OF BASE-P DIGITS
+BERND C. KELLNER AND JONATHAN SONDOW
+Abstract. We give a new characterization of the set C of Carmichael numbers in the context of p-adic theory, independently of
+the classical results of Korselt and Carmichael. The characterization originates from a surprising link to the denominators of the
+Bernoulli polynomials via the sum-of-base-p-digits function. More
+precisely, we show that such a denominator obeys a triple-product
+identity, where one factor is connected with a p-adically defined
+subset S of the squarefree integers that contains C. This leads to the
+definition of a new subset C ′ of C, called the “primary Carmichael
+numbers”. Subsequently, we establish that every Carmichael number equals an explicitly determined polygonal number. Finally, the
+set S is covered by modular subsets Sd (d ≥ 1) that are related to
+the Knödel numbers, where C = S1 is a special case.
+
+1. Introduction
+A composite positive integer m is called a Carmichael number if the
+congruence
+am−1 ≡ 1 (mod m)
+(1.1)
+
+holds for all integers a coprime to m (see [11, Sec. A13], [24, Chap. 2,
+Sec. IX]). Clearly, if m were a prime, then this congruence would be
+valid by Fermat’s little theorem.
+Let “number” mean “positive integer” unless otherwise specified, and
+let p always denote a prime. A first result on Carmichael numbers is
+the following criterion (for a proof, see [6] or [8, p. 134]).
+
+Theorem 1.1 (Korselt’s criterion [20] (1899)). A composite number m
+is a Carmichael number if and only if m is squarefree and every prime
+divisor p of m satisfies p − 1 | m − 1.
+2020 Mathematics Subject Classification. 11B68 (Primary), 11B83 (Secondary).
+Key words and phrases. Carmichael numbers, Bernoulli numbers and polynomials,
+Knödel numbers, polygonal numbers, denominator, sum of base-p digits, p-adic
+valuation.
+1
+
+2
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+Korselt did not give any examples of such numbers, while Carmichael
+succeeded in determining the first ones, e.g.,
+561 = 3 · 11 · 17,
+
+1105 = 5 · 13 · 17,
+
+and 1729 = 7 · 13 · 19.
+
+Apparently unaware of Korselt’s result, Carmichael showed the following properties.
+Theorem 1.2 (Carmichael [3,4] (1910,1912)). Every Carmichael number m is odd and squarefree and has at least three prime factors. If p
+and q are prime divisors of m, then
+m
+(i) p − 1 | m − 1, (ii) p − 1 |
+− 1, (iii) p ∤ q − 1.
+p
+An easy consequence of part (ii) is that (see [6])
+√
+p < m.
+
+(1.2)
+
+Denote the set of Carmichael numbers by
+C = {561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, . . . } .
+
+In 1994 Alford, Granville, and Pomerance [1] proved that C is infinite,
+i.e., infinitely many Carmichael numbers exist. More precisely, they
+showed that if C(x) denotes the number of Carmichael numbers less
+than x, then C(x) > x2/7 for sufficiently large x. This was improved by
+Harman [13] in 2008 to
+C(x) > x1/3
+
+for all large x.
+
+In the other direction, Erdős [9] in 1956 improved a result of Knödel
+[19] to show that
+C(x) < x1−c log log log x/ log log x
+
+for all large x,
+
+where c > 0 is a constant. For which estimate is closer to the true
+asymptotic for C(x), see Granville and Pomerance’s discussion in [10]
+(see also [24, Chap. 4, Sec. VIII]).
+The purpose of the present paper is to give a new characterization of
+the Carmichael numbers in the context of p-adic theory, independently
+of the results of Korselt and Carmichael in Theorems 1.1 and 1.2. The
+characterization originates from a surprising link to the denominators
+of the Bernoulli polynomials via the sum-of-base-p-digits function sp .
+The link is introduced in Sections 2 and 3. Section 2 also introduces
+a p-adically defined set of squarefree integers S ⊃ C, and the subset of
+“primary Carmichael numbers” C ′ ⊂ C. Section 4 establishes that every
+Carmichael number equals an explicitly determined polygonal number.
+Subsequently, Sections 5, 6, and 7 contain the postponed proofs of
+the results in Sections 2, 3, and 4, respectively.
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+3
+
+Finally, in Section 8 the set S is covered by modular subsets Sd for
+d = 1, 2, 3, . . . , providing a modular generalization of C = S1 . It turns
+b d of the so-called
+out that each Sd is contained in a certain superset K
+d-Knödel numbers Kd .
+2. Carmichael numbers and squarefree integers
+
+Define S to be the set of squarefree integers greater than 1:
+S = {2, 3, 5, 6, 7, 10, . . . } .
+
+Denoting by sp (n) the sum of the base-p digits of n, we further define
+two subsets of S, namely,
+and
+
+S := {m ∈ S : p | m =⇒ sp (m) ≥ p}
+C ′ := {m ∈ S : p | m =⇒ sp (m) = p} .
+
+Note that C ′ is a subset of S. One computes that
+and
+
+S = {231, 561, 1001, 1045, 1105, 1122, 1155, 1729, 2002, . . . }
+
+C ′ = {1729, 2821, 29341, 46657, 252601, 294409, 399001, . . . } .
+
+We will show that C ′ ⊂ C (see Theorem 2.1). If m ∈ C ′ , then
+sp (m) = p for all primes p | m, so we call m a primary Carmichael
+number (hence the notation C ′ , meaning “C prime”). The first one is
+1729, Ramanujan’s famous “taxicab” number, defined by him as “the
+smallest number expressible as the sum of two [positive] cubes in two
+different ways” (see [12, p. 12]). The first primary Carmichael number
+not congruent to 1 modulo 4 is
+1152271 ≡ 3 (mod 4),
+
+while the first element of C ′ with more than three prime factors is
+10606681 = 31 · 43 · 73 · 109.
+
+We can now state our first main results. The following one extends
+parts of Theorem 1.2 to a larger set.
+Theorem 2.1. There are the strict inclusions
+C ′ ⊂ C ⊂ S ⊂ S.
+
+Moreover,√for any m ∈ S each prime factor p satisfies the property (1.2)
+that p < m. In particular, m must have at least three (respectively,
+four) prime factors, if m is odd (respectively, even).
+Theorem 2.1 leads to a new criterion for the Carmichael numbers.
+
+4
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+Theorem 2.2. We have the characterization
+C = {m ∈ S : p | m =⇒ sp (m) ≡ 1
+
+(mod p − 1)} .
+
+In other words, an integer m > 1 is a Carmichael number if and only
+if m is squarefree and each of its prime divisors p satisfies both
+sp (m) ≥ p
+
+and sp (m) ≡ 1
+
+(mod p − 1).
+
+From this characterization it follows directly
+√ that m is odd and has at
+least three prime factors, each less than m.
+Unlike the criterion of Korselt, that in Theorem 2.2 does not assume compositeness. Indeed, all results of Theorems 2.1 and 2.2 are
+deduced only from properties of the function sp . In this vein, we
+√ can
+even sharpen the consequence of Theorems 2.1 and 2.2 that p < m if
+p | m.
+Theorem 2.3. For certain subsets T ⊆ S, we have the sharp estimate
+√
+p ≤ αT m (m ∈ T, p | m)
+
+with
+
+and
+
+
+0.7237 . . ., q = 11,
+if T = S,
+.r
+1 
+0.7177 . . ., q = 17,
+if T = C,
+αT = 1
+2− =
+q  0.7071 . . ., q = 66337, if T = C ′ ,
+.r
+
+1
+= 0.5789 . . . , q = 61, if T = Seven ,
+q
+where Seven := {m ∈ S : m is even}.
+αT = 1
+
+3−
+
+Interestingly, to achieve the nontrivial bounds in Theorem 2.3, in
+each of the sets S, C, and C ′ we find certain polygonal numbers, as
+discussed in Section 4 and Table 4.1.
+It is not obvious from its definition that the set S is infinite. However,
+that is an immediate corollary of Theorem 2.1 and the existence of
+infinitely many Carmichael numbers. An independent proof showing
+directly that S is infinite, without involving the set C, would certainly
+be of interest.
+Corollary 2.4. The set S is infinite.
+
+If one could show that C ′ is infinite, this would give not only a new
+proof of the infinitude of Carmichael numbers, but also another proof
+that S is infinite.
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+5
+
+Let C ′ (x) and S(x) count the numbers of elements of C ′ and S less
+than x, respectively. Table 2.1 reports the slow but steady increase in
+size of C ′(x) compared to C(x) and S(x).
+x
+103
+104
+105
+106
+107
+108
+109
+1010
+
+C ′ (x) C(x)
+0
+2
+4
+9
+19
+51
+107
+219
+
+1
+7
+16
+43
+105
+255
+646
+1547
+
+S(x)
+2
+57
+636
+7048
+75150
+801931
+8350039
+86361487
+
+Table 2.1. Distributions of C ′ (x), C(x), and S(x).
+For the values of C(10n ) up to n = 16 and n = 21, as well as a
+more detailed analysis of their distribution, see [10] and Pinch [22],
+respectively. The primary Carmichael numbers with more than three
+prime factors seem to occur rarely. Indeed, up to 1010 there are only
+five elements of C ′ with four (but not more) prime factors.
+Granville and Pomerance [10] gave a precise conjecture that Carmichael numbers with exactly three prime factors should satisfy
+C3 (x) = O(x1/3 / log3 x).
+Heath-Brown [14] showed the upper bound C3 (x) = O(x7/20+ε ) for any
+fixed ε > 0.
+3. Bernoulli numbers and polynomials
+The Bernoulli polynomials are defined by the generating function
+X
+text
+tn
+=
+B
+(x)
+n
+et − 1 n≥0
+n!
+
+(|t| < 2π)
+
+where
+n  
+X
+n
+Bk xn−k
+Bn (x) =
+k
+k=0
+
+(n ≥ 0)
+
+and Bk = Bk (0) ∈ Q is the kth Bernoulli number.
+
+6
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+For n ≥ 1 denote by Dn , Dn , and Dn the denominators (see [17])
+Dn := denom(Bn ) = 2, 6, 1, 30, 1, 42, 1, 30, 1, 66, . . . ,
+
+Dn := denom Bn (x) − Bn = 1, 1, 2, 1, 6, 2, 6, 3, 10, 2, . . . ,
+
+Dn := denom Bn (x) = 2, 6, 2, 30, 6, 42, 6, 30, 10, 66, . . . .
+
+The denominators of the Bernoulli numbers are well known by the
+von Staudt–Clausen theorem of 1840 (see [5, 26]) to be
+
+2,
+if n = 1,
+
+
+1,
+if n ≥ 3 is odd,
+Q
+(3.1)
+Dn =
+
+p, if n ≥ 2 is even.
+
+p−1 | n
+
+The initial connection between the Carmichael numbers and the denominators of the Bernoulli numbers and polynomials results from the
+known relations
+m ∈ C =⇒ m | Dm−1 | Dm−1 .
+
+(3.2)
+
+The first relation, m ∈ C ⇒ m | Dm−1 , actually holds as an equivalence:
+An odd composite number m is a Carmichael number if and only if m
+divides Dm−1 (see Pomerance, Selfridge, and Wagstaff [23, p. 1006]).
+The equivalence follows easily from Korselt’s criterion and the von
+Staudt–Clausen theorem. The second relation, Dm−1 | Dm−1 , is easily seen, since even
+Dn = lcm(Dn , Dn )
+(3.3)
+holds for all n ≥ 1 (cf. [16, Thm. 4]). Now the sum-of-base-p-digits
+function sp comes into play, as follows.
+The authors [15–17] have recently shown that the denominators of
+the Bernoulli polynomials Bn (x) − Bn (which have no constant term)
+are given by the remarkable formula
+Y
+Dn =
+p
+(3.4)
+sp (n) ≥ p
+
+in which the product is finite since sp (n) = n if p > n. Moreover, the
+following relation, supplementary to (3.3), holds for n ≥ 1 (see [17]):
+
+Dn = lcm Dn+1 , rad(n + 1)
+(3.5)
+Q
+where rad(n) := p | n p.
+In particular, Dn , Dn , and Dn are squarefree. Furthermore, these
+denominators obey the following properties (see [17]):
+
+Dn = lcm Dn+1 , rad(n + 1) , if n ≥ 3 is odd,
+(3.6)
+
+Dn = lcm Dn+1 , rad(n + 1) , if n ≥ 2 is even,
+(3.7)
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+7
+
+and (see [15])
+rad(n + 1) | Dn ,
+
+if n + 1 is composite.
+
+(3.8)
+
+To substantiate the relationship between the Carmichael numbers
+and the Bernoulli polynomials, we introduce for n ≥ 1 the decomposition
+⊥
+(3.9)
+Dn = D⊤
+n · Dn
+where
+Y
+Y
+⊥
+D⊤
+:=
+p
+and
+D
+:=
+p.
+(3.10)
+n
+n
+p∤n
+sp (n) ≥ p
+
+p|n
+sp (n) ≥ p
+
+Additionally, we define the complementary number to D⊤
+n for n ≥ 1 as
+Y
+⋆
+D⊤
+p,
+(3.11)
+n :=
+p|n
+sp (n) < p
+
+which satisfies the relation
+⋆
+
+⊤
+rad(n) = D⊤
+n · Dn .
+
+(3.12)
+
+As an application of these definitions, the next theorem gives a complete description of the structure of the denominator Dn of the Bernoulli polynomial Bn (x) in terms of a decomposition of Dn into three
+factors. (The result may be compared to the von Staudt–Clausen theorem in (3.1), which describes the structure of the denominator of the
+Bernoulli number Bn .) Furthermore, we obtain for all squarefree numbers m > 1 a generalization of (3.2), when omitting its middle term
+Dm−1 .
+Theorem 3.1. For n ≥ 1 the denominator Dn of the Bernoulli polynomial Bn (x) splits into the triple product
+⋆
+
+Moreover,
+
+⊤
+⊤
+D n = D⊥
+n+1 · Dn+1 · Dn+1 .
+
+m ∈ S ⇐⇒ m | Dm−1 .
+The interplay of the three factors of Dn instantly yields the two
+relations
+⊤⋆
+(3.13)
+D n = D⊥
+n+1 · rad(n + 1) = Dn+1 · Dn+1 .
+Explicit product formulas for Dn , in the contexts of (3.3) and (3.13),
+are given in [16, Thm. 4] and [17, Cor. 1], respectively.
+We can now state our second main result. It establishes a fundamental relationship between the Bernoulli polynomials and the Carmichael
+numbers, since C ⊂ S by Theorem 2.1.
+
+8
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+Theorem 3.2. The following claims are true:
+(i) The sequence (D⊤
+n )n≥1 contains all elements of S. More precisely,
+m ∈ S ∪ {1} ⇐⇒ m = D⊤
+m ⇐⇒ m | Dm .
+
+(ii) If m + 1 is composite, then rad(m + 1) | D⊥
+m.
+
+Corollary 3.3. The sequence (D⊤
+n )n≥1 contains all the Carmichael
+numbers. More precisely,
+m ∈ C =⇒ m = D⊤
+m,
+
+m | Dm , m | D⊥
+m−1 , and m | Dm−1 ,
+
+but the converse does not hold.
+
+Remark 3.4. The sequence (D⊥
+n )n≥1 very rarely intersects the Carmichael numbers. Indeed, the only example below 106 is D⊥
+198 = 2465 ∈
+C.
+Remark 3.5. Comparing the definitions of the complementary num⋆
+bers D⊤
+n and the set S, one immediately observes that the sequence
+⋆
+(D⊤
+n )n≥1 cannot contain any elements of S, and thus none of the Car⋆
+michael numbers. Interestingly, it turns out that (D⊤
+n )n≥1 is connected
+with the quotients Dn /Dn+1 and Dn /Dn+1 (as introduced in [17]),
+which are integral for odd and even indices n by (3.6) and (3.7), respectively.
+Remark 3.6. It was actually the observation of the unexpected relationship
+m ∈ C =⇒ m = D⊤
+m,
+as stated in Corollary 3.3, which led to the new characterization of the
+Carmichael numbers via the sum-of-base-p-digits function sp , given in
+Theorem 2.2.
+4. Polygonal numbers
+Surprisingly, the polygonal numbers (see [2, Chap. XVIII] and [7,
+pp. 38–42]) are connected with the Carmichael numbers and the set S.
+Initially, we consider the following polygonal numbers for n ≥ 1:
+Pn = n(3n − 1)/2,
+
+Hn = n(2n − 1),
+
+On = n(3n − 2),
+
+which are the nth pentagonal, hexagonal, and octagonal numbers, respectively. They satisfy an important property when n = p is an odd
+prime:
+sp (Hp ) = sp (Op ) = p and sp (2Pp ) = p + 1.
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+9
+
+To establish a connection between the set S and the polygonal numbers, we first introduce some definitions. Define P (n) to be the greatest
+prime factor of n if n ≥ 2, and set P (1) := 1. Also, denote the (doubleshifted) p-adic value of n by
+
+
+n
+ℓ(n) :=
+P (n)2
+
+
+
+
+n
+= min 2 .
+p|n p
+
+
+We shall use the abbreviation ℓ = ℓ(n) later on, if there is no ambiguity in context. Finally, we need Legendre’s formula (see [25, Sec. 5.3,
+p. 241]), which gives the p-adic valuation vp of a factorial by
+vp (n!) =
+
+n − sp (n)
+.
+p−1
+
+(4.1)
+
+For simplicity, twice a polygonal number will be called a quasi polygonal number. The next theorem shows the special cases when m ∈ S
+equals a (quasi) polygonal number Hp , Op , or 2Pp with p = P (m), the
+classification being determined by the parameter ℓ(m).
+Theorem 4.1. Let m ∈ S, and set p = P (m) and ℓ = ℓ(m). Then the
+following statements hold:
+(i) We have ℓ ≥ 1.
+(ii) There is the equivalence
+ℓ = 1 ⇐⇒ m = Hp is a hexagonal number.
+(iii) There is the equivalence
+ℓ = 2 ⇐⇒ m =
+
+(
+
+Op , if sp (m) = p,
+2Pp , if sp (m) > p.
+
+In particular, for m ∈ C ′ we have ℓ = 2 if and only if m = Op
+is an octagonal number.
+As needed later, Table 4.1 reports the first occurrences of the polygonal numbers Hp and Op in each of the sets S, C, and C ′ , as well as the
+first occurrence of 2Pp in S. In contrast to the relatively small values in
+Table 4.1, the exceptionally large number 8801128801, which is indeed
+the least hexagonal number in C ′ , could be found only by a computer
+search.
+
+10
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+set
+S
+C
+C′
+
+m
+
+factors
+
+231
+3 · 7 · 11
+561
+3 · 11 · 17
+8801128801 181 · 733 · 66337
+
+p = P (m) ℓ(m) number
+11
+17
+66337
+
+1
+1
+1
+
+H11
+H17
+H66337
+
+S
+C
+C′
+
+1045
+2465
+2821
+
+5 · 11 · 19
+5 · 17 · 29
+7 · 13 · 31
+
+19
+29
+31
+
+2
+2
+2
+
+O19
+O29
+O31
+
+S
+
+11102
+
+2 · 7 · 13 · 61
+
+61
+
+2
+
+2P61
+
+Table 4.1. First occurrences of (quasi) polygonal numbers
+Hp and Op in S, C, and C ′ , as well as 2Pp in S.
+
+To generalize the results, we further consider the polygonal numbers
+of rank r ≥ 3, also called r-gonal numbers, namely,
+1
+Grn = (n2 (r − 2) − n(r − 4)),
+2
+
+where Pn = G5n , Hn = G6n , and On = G8n . Note though that an
+r-gonal number can also be an r ′ -gonal number with r 6= r ′ ; for instance,
+G6n = G32n−1 for n ≥ 1. Note also that Gr1 = 1 and Gr2 = r cover for
+r ≥ 3 all positive integers except 2. For that reason, our results on
+polygonal numbers Grn will implicitly involve only those with n ≥ 3.
+Clearly, for fixed n ≥ 3 the sequence of such numbers (Grn )r≥3 is strictly
+increasing.
+To extend the results of Theorem 4.1, one may ask which m ∈ S
+are equal to a (quasi) polygonal number Grp or 2Grp for p = P (m) and
+some r ≥ 3. The example
+m = 2145 = H33 = 3 · 5 · 11 · 13 ∈ S \ C
+shows that m is indeed a polygonal number, but m is not of the form
+Grp with p = P (m) = 13, as verified by the consecutive values
+30
+G29
+13 = 2119 < m = 2145 < 2197 = G13 .
+
+The next theorem clarifies this situation by showing that an element
+m ∈ S equals a (quasi) polygonal number Grp or 2Grp with p = P (m)
+if and only if sp (m) satisfies certain conditions.
+Theorem 4.2. Let m ∈ S, and set p = P (m) and ℓ = ℓ(m). Further
+define the integers η ≥ 1 and 0 ≤ µ < p − 1 satisfying
+sp (m) = η(p − 1) + µ.
+
+(4.2)
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+11
+
+The number m equals a (quasi) polygonal number Grp or 2Grp for some
+r ≥ 3 if and only if µ can be written as
+p−1
+with (d, e) ∈ {(1, 0), (1, 1), (2, 0)} .
+2
+Then in these cases we have that
+2
+m = d · Grp with r = (ℓ + vp (ℓ!) + η + d) + e.
+d
+µ=d+e
+
+(4.3)
+
+(4.4)
+
+As an application we obtain the following corollary for the Carmichael numbers.
+Corollary 4.3. All Carmichael numbers are polygonal numbers. More
+precisely, if m ∈ C, p = P (m), and ℓ = ℓ(m), then
+m = Grp
+
+with r = 2(ℓ + vp (ℓ!) + η + 1),
+
+(4.5)
+
+where η ≥ 1 is the integer satisfying sp (m) = η(p−1)+1. In particular,
+relation (4.5) holds with η = 1 for all primary Carmichael numbers
+m ∈ C ′.
+The first few numbers satisfying the conditions of Theorem 4.1 are
+listed in Table 4.2. Additional numbers below 7000 satisfying the conditions of Theorem 4.2, but not covered by Theorem 4.1, are listed in
+Table 4.3. As a special case, the taxicab number 1729 equals the 12–
+gonal number G12
+19 . Regarding Corollary 4.3, the first element of C with
+η = 2 is
+1050985 = 5 · 13 · 19 · 23 · 37 = G1580
+37 .
+m
+231 ∈ S
+561 ∈ C
+1045 ∈ S
+2465 ∈ C
+2821 ∈ C ′
+3655 ∈ S
+5565 ∈ S
+8911 ∈ C
+10585 ∈ C
+11102 ∈ S
+
+p = P (m) sp (m) ℓ(m) number
+11
+17
+19
+29
+31
+43
+53
+67
+73
+61
+
+11
+17
+19
+29
+31
+43
+53
+67
+73
+62
+
+1
+1
+2
+2
+2
+1
+1
+1
+1
+2
+
+H11
+H17
+O19
+O29
+O31
+H43
+H53
+H67
+H73
+2P61
+
+Table 4.2. The first (quasi) polygonal numbers
+Hp , Op , and 2Pp in S.
+
+12
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+m
+1105 ∈ C
+1122 ∈ S
+1729 ∈ C ′
+3458 ∈ S
+3570 ∈ S
+5005 ∈ S
+5642 ∈ S
+6118 ∈ S
+6545 ∈ S
+6601 ∈ C
+6734 ∈ S
+
+p = P (m) sp (m) ℓ(m) number
+17
+17
+19
+19
+17
+13
+31
+23
+17
+41
+37
+
+17
+18
+19
+20
+18
+13
+32
+24
+17
+41
+38
+
+3
+3
+4
+9
+12
+29
+5
+11
+22
+3
+4
+
+G10
+17
+2H17
+G12
+19
+2G12
+19
+2G15
+17
+66
+G13
+2O31
+2G14
+23
+G50
+17
+G10
+41
+2G737
+
+Table 4.3. Additional (quasi) polygonal numbers
+Grp and 2Grp in S below 7000.
+
+5. Proofs of Theorems 2.1, 2.2, and 2.3
+Recall the definitions and notation of Section 4. From Legendre’s
+formula (4.1) one easily sees that
+n ≡ sp (n)
+
+(mod p − 1).
+
+(5.1)
+
+Proof of Theorem 2.1. By the definitions and the computed examples,
+we immediately obtain the strict inclusions C ′ ⊂ S ⊂ S. √
+Given m ∈ S, we first show that p | m implies p < m. As m is
+squarefree, we can write
+m
+= a0 + a1 p
+(5.2)
+p
+with 1 ≤ a0 ≤ p − 1 and a1 ≥ 0. Since
+a0 + sp (a1 ) = sp (m/p) = sp (m) ≥ p,
+
+(5.3)
+
+m = 2qp with p > q,
+
+(5.4)
+
+we infer
+√ that a1 ≥ 1. Consequently, we obtain a0 + a1 p > p, implying
+that m > p. As a result, m must have at least three prime factors.
+Now let m be even. Suppose to the contrary that in this case m has
+only three prime factors. Hence we have
+where p and q are odd primes. By sp (2q) = sp (m) ≥ p, we infer that
+2q ≥ p. Together with (5.4) we then obtain that 2p > 2q > p. Using
+(5.2), we conclude that m/p = 2q = a0 + a1 p with a1 = 1. Since
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+13
+
+a0 = 2q − p < p − 1, it follows that sp (m) < p, giving a contradiction.
+Thus, if m is even, then m must have at least four prime factors.
+Next, we show that C is equal to the set
+
+S̃ := {m ∈ S : p | m =⇒ sp (m) ≡ 1 (mod p − 1)} .
+Resolving the definition of S, for m ∈ S˜ we have the condition
+p | m =⇒ sp (m) ≥ p and sp (m) ≡ 1 (mod p − 1).
+
+(5.5)
+
+Moreover, applying (5.1) then yields
+m ≡ sp (m) ≡ 1
+
+(mod p − 1).
+
+For any n ∈ S, we have n > 1 is squarefree, so
+
+sp (n) = 1 ⇐⇒ n = p.
+
+(5.6)
+(5.7)
+
+By (5.6) and (5.7), condition (5.5) implies that
+m is composite,
+
+and p | m =⇒ p − 1 | m − 1.
+
+(5.8)
+
+Thus m satisfies Korselt’s criterion. Hence, we conclude that S̃ ⊆ C.
+Conversely, any m ∈ C satisfies (5.8). In view of (5.1), we then have
+sp (m) ≡ 1 (mod p−1). Since m is squarefree and composite, from (5.7)
+we deduce that sp (m) ≥ p. This implies that (5.5) holds, so m ∈ S̃ and
+˜ proving that C = S̃.
+consequently C ⊆ S,
+′
+Now, if m ∈ C , then (5.5) holds, so m ∈ C. Considering the computed
+examples again, we finally deduce that C ′ ⊂ C ⊂ S ⊂ S. This completes
+the proof of the theorem.
+
+Proof of Theorem 2.2. The first statement is the equality C = S̃, established in the proof of Theorem 2.1. Since m ∈ S̃ if and only if (5.5)
+holds, the second statement then follows.
+Moreover, Theorem 2.1 also implies by C ⊂ S
+√ that any m ∈ C has at
+least three prime factors, each satisfying p < m. As m is composite
+and squarefree, an odd prime p divides m. Using (5.1), we then get
+
+relation (5.6), so p − 1 | m − 1, whence m is odd.
+
+Proof of Theorem 2.3. Consider a non-empty subset T ⊆ S and define
+P (m)
+αT := sup √ ,
+m
+m∈T
+where αT ≤ 1 by Theorem 2.1. Clearly, this definition includes for any
+m ∈ T that
+√
+p | m =⇒ p ≤ αT m,
+(5.9)
+but it suffices to study the case where p = P (m) is the greatest prime
+divisor of m. To show that the estimate in (5.9) is sharp,
+√ we further
+′
+′
+have to find an explicit m ∈ T such that αT = P (m )/ m′ holds.
+
+14
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+Now, let m ∈ T . In view of (5.2) and (5.3), we obtain by (5.9) that
+a0
+m
+1
+=
++ a1
+(5.10)
+≤
+2
+αT
+P (m)2
+P (m)
+with 1 ≤ a0 ≤ P (m) − 1 and a1 ≥ 1. Thus, we are interested in
+finding firstly a minimal number a1 , and secondly a minimal fraction
+a0 /P (m) ∈ (0, 1). If they exist, then αT is determined.
+Next, we assume that there exists an element m ∈ T with a1 = 1.
+(This is true for the sets of interest T = S, C, C ′ .) From now on, let
+p = P (m). Since m ∈ S, we have the condition sp (m) = a0 + a1 ≥ p,
+so a0 = p − 1. Then (5.10) becomes
+1
+m
+p−1
+1
+≤ 2 =
++1=2− .
+(5.11)
+2
+αT
+p
+p
+p
+Hence, to determine a minimal αT , we also have to determine a minimal p satisfying (5.11). Since p = P (m) and m = p(2p−1), the factor p
+strictly increases with m. As a consequence, we can identify the aforementioned element m′ as the minimal element m′ ∈ T for which a1 = 1.
+Finally, we achieve that
+s
+.
+1
+.
+2−
+αT = 1
+P (m′ )
+Now we use a link to the polygonal numbers. Since
+m′ = p(2p − 1) = Hp ,
+
+(5.12)
+
+we have to find the least hexagonal number Hp in each of the sets
+T = S, C, C ′ . This is done in Table 4.1, providing the solutions
+P (m′ ) = 11, 17, 66337 for T = S, C, C ′ ,
+
+respectively.
+There remains the case when m ∈ Seven . For this purpose, let T =
+Seven with m ∈ T and p = P (m). Note that p is odd, since m is composite. We adapt and reuse the arguments that lead to (5.10) and (5.11).
+By (5.10) we have to find again a minimal a1 ≥ 1. The case a1 = 1
+implies (5.12) and so an odd m = Hp for odd p. Therefore, we show
+that case a1 = 2 works, as follows. By sp (m) = a0 + a1 ≥ p, we obtain
+two solutions a0 = p − 2 and a0 = p − 1. Since a0 = p − 2 implies
+m = p(3p − 2) = Op , being odd for odd p, there remains the case
+a0 = p − 1. Then we get m = p(3p − 1) = 2Pp , which is always even.
+Similar to (5.11), we deduce that
+1
+p−1
+1
+m
++2=3− .
+≤ 2 =
+2
+αT
+p
+p
+p
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+15
+
+To find the minimal element m′ ∈ T with a1 = 2, we have to find
+the least quasi pentagonal number 2Pp in T . Table 4.1 shows that
+P (m′ ) = 61. With that we finally obtain
+s
+.
+1
+3−
+αT = 1
+.
+P (m′ )
+This completes the proof of the theorem.
+
+
+
+6. Proofs of Theorems 3.1 and 3.2 and Corollary 3.3
+Proof of Theorem 3.1. From relations (3.5) and (3.12) we get
+
+⊤⋆
+Dn = lcm Dn+1 , D⊤
+n+1 · Dn+1 ,
+
+⊥
+⊤
+and the decomposition (3.9) gives Dn+1 = D⊤
+n+1 · Dn+1 . Since Dn+1 ,
+⋆
+⊤
+D⊥
+n+1 , and Dn+1 are pairwise coprime by the definitions in (3.10) and
+(3.11), the desired triple product formula follows.
+If m ∈ S, then m = rad(m) > 1. By relation (3.5), we then have
+m | Dm−1 . Conversely, if m | Dm−1 , then m > 1 is squarefree, so
+m ∈ S. This proves the required equivalence and completes the proof
+of the theorem.
+
+
+Proof of Theorem 3.2. We have to show two parts:
+(i). It suffices to prove the second statement. The definitions of S and
+⊤
+Dn yield immediately that m ∈ S ∪ {1} if and only if D⊤
+m = m. Since
+⊤
+D⊤
+|
+D
+by
+(3.9),
+we
+have
+that
+D
+=
+m
+implies
+m
+|
+D
+.
+n
+m Conversely, if
+n
+m
+⊤
+m | Dm , then Dm = m by (3.4) and (3.9). This proves (i).
+(ii). If m + 1 is composite, then we have by (3.8) and (3.9) that
+⊥
+rad(m + 1) | Dm = D⊤
+m · Dm .
+
+Since gcd(m, m + 1) = 1, we infer by (3.10) that rad(m + 1) | D⊥
+m,
+proving (ii).
+
+Proof of Corollary 3.3. The implication follows from Theorem 3.2 parts
+(i) and (ii), using the strict inclusion C ⊂ S and the compositeness
+of Carmichael numbers. The converse does not hold, by Theorem 3.2
+part (i) and considering S \ C.
+
+7. Proofs of Theorems 4.1 and 4.2 and Corollary 4.3
+Proof of Theorem 4.1. Fix m ∈ S and set p = P (m) and ℓ = ℓ(m). We
+have to show three parts:
+(i). As m is squarefree, we obtain
+m
+= a0 + a1 p = a0 + ℓ p,
+(7.1)
+p
+
+16
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+where 1 ≤ a0 ≤ p − 1 and a1 ≥ 0. The case a1 = 0 would imply
+sp (m) = sp (m/p) = a0 < p. Since sp (m) ≥ p by m ∈ S, we must have
+ℓ = a1 ≥ 1. We shall use (7.1) implicitly in the remaining parts.
+(ii). If ℓ = 1, then sp (m) = a0 + 1 ≥ p, since m ∈ S. But a0 ≤ p − 1,
+so a0 = p − 1. Thus m = p(p − 1 + p) = Hp . Conversely, if m = Hp ,
+then ℓ = a1 = 1.
+(iii). Assume that sp (m) = p. If ℓ = 2, then a0 + 2 = sp (m) = p, so
+a0 = p − 2 and m = p(p − 2 + 2p) = Op . Conversely, if m = Op , then
+ℓ = a1 = 2.
+In particular, it then follows for m ∈ C ′ that ℓ = 2 if and only if
+m = Op , since sp (m) = p by the definition of C ′ .
+Assume now that sp (m) > p. If ℓ = 2, then a0 + 2 = sp (m) > p, so
+a0 > p − 2. But a0 ≤ p − 1, so a0 = p − 1 and m = p(p − 1 + 2p) = 2Pp .
+Conversely, if m = 2Pp , then ℓ = a1 = 2. This proves the theorem. 
+Proof of Theorem 4.2. Fix m ∈ S and set p = P (m) and ℓ = ℓ(m).
+Since sp (m) ≥ p, we can determine the integers η ≥ 1 and 0 ≤ µ < p−1
+satisfying (4.2). Again, as in (7.1) we have m/p = a0 + ℓ p, where
+1 ≤ a0 ≤ p − 1 and ℓ ≥ 1. Using (4.2) we then obtain
+m
+= η(p − 1) + µ − sp (ℓ) + ℓ p.
+p
+Now let d ∈ {1, 2}. Resolving the desired equality
+d · Grp = m
+
+yields the equation
+d 2
+(p (r − 2) − p(r − 4)) = p (η(p − 1) + µ − sp (ℓ) + ℓ p)
+2
+with solution
+
+
+ℓ − sp (ℓ)
+µ−d
+2
+ℓ+
+.
++η+d+
+r=
+d
+p−1
+p−1
+
+(7.2)
+
+By Legendre’s formula (4.1) we have
+
+ℓ − sp (ℓ)
+= vp (ℓ!).
+p−1
+
+(7.3)
+
+2 µ−d
+·
+∈ Z.
+d p−1
+
+(7.4)
+
+Since d | 2 and r ∈ Z, formulas (7.2) and (7.3) imply the condition
+ẽ :=
+
+Since m ∈ S has at least three prime factors by Theorem 2.1, we
+have p = P (m) ≥ 5. This and the fact that 0 ≤ µ < p − 1 allow us to
+continue deriving solutions of (7.4) for µ, as follows.
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+17
+
+In case d = 2, we infer that µ = 2 and ẽ = 0. In case d = 1, we get
+the solutions µ = 1 and ẽ = 0, as well as µ = 1 + (p − 1)/2 and ẽ = 1.
+One easily observes that all solutions of (7.4) for µ, d, and ẽ coincide
+with condition (4.3) when taking e = ẽ. Finally, relation (4.4) with
+e = ẽ follows from (7.2) by considering (7.3) and (7.4). This completes
+the proof of the theorem.
+
+Proof of Corollary 4.3. If m ∈ C, then sp (m) = η(p − 1) + 1 with η ≥ 1
+by Theorem 2.2. In particular, if m ∈ C ′ , then η = 1 by definition of the
+set C ′ . Since C ⊂ S by Theorem 2.1, relation (4.5) follows by applying
+Theorem 4.2 with parameters (d, e) = (1, 0).
+
+8. Modular properties of the set S
+Define for a positive integer d the subset Sd of S by
+
+Sd := {m ∈ S : p | m =⇒ sp (m) ≡ d (mod p − 1)} .
+
+Theorem 2.2 shows that S1 = C. Thus the sets Sd can be viewed as
+a generalization, with the Carmichael numbers as a special case. The
+first terms of the sets Sd for d = 1, 2, 3 are (compare Table 8.1)
+S1 = {561, 1105, 1729, 2465, 2821, 6601, 8911, 10585, 15841, . . . } ,
+S2 = {1122, 3458, 5642, 6734, 11102, 13202, 17390, 17822, . . . } ,
+S3 = {3003, 3315, 5187, 7395, 8463, 14763, 19803, 26733, . . . } .
+
+Let ϕ denote Euler’s totient function. The Carmichael function λ
+(see [3]) is defined for m = pe11 · · · pekk with p1 < · · · < pk by
+λ(m) = lcm(λ(pe11 ), . . . , λ(pekk )),
+
+where λ(pe ) = δ ϕ(pe ) with δ = 21 if p = 2 and e ≥ 3, otherwise δ = 1.
+For positive integers m the Carmichael function λ has the property
+that
+aλ(m) ≡ 1 (mod m)
+(8.1)
+holds for all integers a coprime to m, where λ(m) is the smallest possible positive exponent. Since (8.1) generalizes the Euler–Fermat congruence, it follows that λ(m) divides ϕ(m). Moreover, for m ∈ S we
+have the relation
+λ(m) = lcm(p1 − 1, . . . , pk − 1),
+
+(8.2)
+
+m = p1 · · · pk ≥ 231 and k ≥ 3.
+Define the function ρ for positive integers m by
+
+(8.3)
+
+where
+
+ρ(1) = 0,
+
+ρ(2) = 1,
+
+18
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+and
+ρ(m) ≡ m
+
+(mod λ(m)) (m ≥ 3),
+
+(8.4)
+
+being the least positive residue.
+In view of (8.1) and (8.4) the Fermat congruence (1.1) can be restated
+for m ≥ 1 in the form
+am−ρ(m) ≡ 1 (mod m),
+
+holding for all integers a coprime to m. As a special case, one has
+ρ(m) = 1 ⇐⇒ m is prime or m ∈ C,
+which Carmichael proved with m ≡ 1 (mod λ(m)) in place of ρ(m) = 1.
+Moreover, since λ(m) is even for m ≥ 3 by construction, we have the
+parity relation
+ρ(m) ≡ m (mod 2) (m ≥ 3).
+(8.5)
+m
+231 561 1001 1045 1105 1122 1155 1729 2002
+1
+41 145
+1
+2
+15
+1
+22
+ρ(m) 21
+60 180
+48
+80
+60
+36
+60
+λ(m) 30 80
+
+Table 8.1. First values of ρ(m) and λ(m) for m ∈ S.
+Theorem 8.1. If m ∈ S, then ρ(m) equals the least positive index
+d < λ(m) such that m ∈ Sd . Moreover, we have
+m ∈ Sd + j λ(m)
+
+(j ∈ Z≥0 ).
+
+Proof. Given m ∈ S, factor m = p1 · · · pk and consider by (8.3) and (8.4)
+the congruences
+d ≡ m ≡ ρ(m)
+
+(mod λ(m)).
+
+From (5.1) and (8.2), we further deduce the system of congruences
+d ≡ m ≡ spν (m)
+
+(mod pν − 1) (ν = 1, . . . , k).
+
+Thus, d = ρ(m) < λ(m) is the least positive index such that m ∈ Sd .
+Moreover, it also follows that m ∈ Sd + j λ(m) for j ≥ 1.
+
+Define the d-Knödel numbers Kd (see [18]) to be the set of composite
+integers m > d such that
+am−d ≡ 1 (mod m)
+
+(8.6)
+
+holds for all integers a coprime to m. (Note that the usual but equivalent definition is further restricted to 1 < a < m.) For example, the
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+19
+
+1-Knödel numbers are the Carmichael numbers: K1 = C. For d = 2, 3
+the d-Knödel numbers are
+K2 = {4, 6, 8, 10, 12, 14, 22, 24, 26, 30, 34, 38, 46, 56, 58, 62, 74, . . . } ,
+
+K3 = {9, 15, 21, 33, 39, 51, 57, 63, 69, 87, 93, 111, 123, 129, 141, . . . } .
+Makowski [21] showed that each of the sets Kd for d ≥ 2 is infinite.
+More precisely, for given d ≥ 2 he proved the existence of infinitely
+many primes p > d such that (see [24, pp. 125–126])
+dp ∈ Kd .
+
+(8.7)
+
+Our final theorem shows properties of the sets Sd , as well as a connection with generalizations of the sets Kd . Avoiding the restriction
+b d of Kd to be all
+m > d on numbers m ∈ Kd , we define the superset K
+composites m > 1 satisfying (8.6) for all a coprime to m. Note that
+b 1 and, in case d is composite, d ∈ K
+bd.
+K1 = K
+Theorem 8.2. The following statements hold:
+b d for d ≥ 2.
+(i) We have S1 = K1 = C and Sd ⊂ K
+(ii) All elements of Sd have the same parity as d for d ≥ 1.
+(iii) A cover of the set S is
+[
+Sd .
+S=
+d≥1
+
+Proof. We have to show three parts:
+(i). We have S1 = K1 = C by definition. Fix d ≥ 2. If m ∈ Sd , then
+Theorem 8.1 implies that d ≡ ρ(m) (mod λ(m)). By (8.3) and (8.4)
+this translates to d ≡ m (mod λ(m)). Finally, (8.1) and (8.6) imply
+b d . This shows that Sd ⊆ K
+bd.
+that m ∈ K
+bd.
+By (8.7) there exists a prime p > d such that m′ = dp ∈ Kd ⊆ K
+bd,
+Since sp (m′ ) = d < p, it follows that m′ ∈
+/ S. This implies that Sd 6= K
+bd.
+and finally Sd ⊂ K
+(ii). Fix d ≥ 1 and m ∈ Sd . As in part (i) we have d ≡ ρ(m) ≡ m
+(mod λ(m)). ByS(8.5) the result follows.
+(iii). Set U = d ≥ 1 Sd . Since Sd ⊂ S for d ≥ 1, it follows that U ⊆ S.
+By Theorem 8.1 we obtain for any m ∈ S an index d = ρ(m) such that
+m ∈ Sd . As a consequence, S ⊆ U and finally S = U.
+
+References
+[1] W. R. Alford, A. Granville, and C. Pomerance, There are infinitely many
+Carmichael numbers, Ann. of Math. 139 (1994), 703–722.
+[2] A. H. Beiler, Recreations in the Theory of Numbers, Dover, New York, 1966.
+
+20
+
+BERND C. KELLNER AND JONATHAN SONDOW
+
+[3] R. D. Carmichael, Note on a new number theory function, Bull. Amer. Math.
+Soc. 16 (1910), 232–238.
+[4] R. D. Carmichael, On composite numbers P which satisfy the Fermat congruence aP −1 ≡ 1 (mod P ), Amer. Math. Monthly 19 (1912), 22–27.
+[5] T. Clausen, Lehrsatz aus einer Abhandlung über die Bernoullischen Zahlen,
+Astr. Nachr. 17 (1840), 351–352.
+[6] K. Conrad, Carmichael numbers and Korselt’s criterion, expository paper
+(2016), 1–3. Link: carmichaelkorselt.pdf.
+[7] J. H. Conway and R. K. Guy, The Book of Numbers, Springer–Verlag, New
+York, 1996.
+[8] R. Crandall and C. B. Pomerance, Prime Numbers: A Computational Perspective, 2nd ed., Springer, New York, 2005.
+[9] P. Erdős, On pseudoprimes and Carmichael numbers, Publ. Math. Debrecen
+4 (1956), 201–206.
+[10] A. Granville and C. Pomerance, Two contradictory conjectures concerning Carmichael numbers, Math. Comp. 71 (2002), 883–908.
+[11] R. K. Guy, Unsolved Problems in Number Theory, 3rd ed., Springer, New York,
+2004.
+[12] G. H. Hardy, Ramanujan, Cambridge Univ. Press, New York, 1940.
+[13] G. Harman, Watt’s mean value theorem and Carmichael numbers, Int. J. Number Theory 4 (2008), 241–248.
+[14] D. R. Heath-Brown, Carmichael numbers with three prime factors, Hardy–
+Ramanujan J. 30 (2007), 6–12.
+[15] B. C. Kellner, On a product of certain primes, J. Number Theory 179 (2017),
+126–141.
+[16] B. C. Kellner and J. Sondow, Power-sum denominators, Amer. Math. Monthly
+124 (2017), 695–709.
+[17] B. C. Kellner and J. Sondow, The denominators of power sums of arithmetic
+progressions, Integers 18 (2018), Article A95, 1–17.
+[18] W. Knödel, Carmichaelsche Zahlen, Math. Nachr. 9 (1953), 343–350.
+[19] W. Knödel, Eine obere Schranke für die Anzahl der Carmichaelschen Zahlen
+kleiner als x, Arch. Math. 4 (1953), 282–284.
+[20] A. Korselt, Problème chinois, L’Intermédiaire Math. 6 (1899), 142–143.
+[21] A. Makowski, Generalization of Morrow’s D numbers, Simon Stevin 36 (1962),
+71.
+[22] R. G. E. Pinch, The Carmichael numbers up to 1021 , Proceedings of Conference
+on Algorithmic Number Theory 2007, A. Ernvall-Hytönen et al., eds., TUCS
+General Publication 46, Turku Centre for Computer Science, 2007, 129–131.
+[23] C. Pomerance, J. L. Selfridge, and S. Wagstaff, The pseudoprimes to 25 · 109 ,
+Math. Comp. 35 (1980), 1003–1026.
+[24] P. Ribenboim, The New Book of Prime Number Records, Springer, New York,
+2012.
+
+ON CARMICHAEL NUMBERS AND BERNOULLI POLYNOMIALS
+
+21
+
+[25] A. M. Robert, A Course in p-adic Analysis, GTM 198, Springer–Verlag, New
+York, 2000.
+[26] K. G. C. von Staudt, Beweis eines Lehrsatzes die Bernoullischen Zahlen betreffend, J. Reine Angew. Math. 21 (1840), 372–374.
+Göttingen, Germany
+Email address: bk@bernoulli.org
+New York, USA
+Email address: jsondow@alumni.princeton.edu
+
+

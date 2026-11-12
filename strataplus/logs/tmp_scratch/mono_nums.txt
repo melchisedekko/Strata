@@ -1,0 +1,369 @@
+10080 4 10e_pw.tex:753 10e_pw.tex:788 10e_pw.tex:987 10f_pw_conditional.tex:271
+10120 1 06c_census.tex:118
+10192 1 06b_wrap.tex:525
+10243 1 06c_census.tex:118
+10753 1 10e_pw.tex:567
+11535 1 10e_pw.tex:467
+11544 2 06_refutation.tex:515 99_closing.tex:56
+11550 2 10a_off_carmichael.tex:556 10a_off_carmichael.tex:557
+11551 4 10a_off_carmichael.tex:306 10a_off_carmichael.tex:555 10a_off_carmichael.tex:556 10a_off_carmichael.tex:557
+12780 4 10e_pw.tex:758 10e_pw.tex:790 10e_pw.tex:992 10f_pw_conditional.tex:273
+13411 1 06c_census.tex:336
+13441 1 10e_pw.tex:567
+13590 8 06b_wrap.tex:843 06c_census.tex:100 06c_census.tex:102 06c_census.tex:109
+13591 17 06b_wrap.tex:525 06b_wrap.tex:525 06b_wrap.tex:780 06b_wrap.tex:839
+13596 1 06c_census.tex:99
+13673 1 07b_ladder.tex:895
+14593 3 10a_off_carmichael.tex:180 10a_off_carmichael.tex:184 10a_off_carmichael.tex:263
+14764 2 10e_pw.tex:389 10e_pw.tex:454
+16182 2 06c_census.tex:364 06c_census.tex:401
+16183 4 06b_wrap.tex:666 06c_census.tex:307 06c_census.tex:357 06c_census.tex:395
+16384 1 07e_ladder_lower.tex:138
+16992 1 07l_numerators.tex:882
+16993 3 07k_korselt.tex:917 07l_numerators.tex:881 07l_numerators.tex:889
+17430 1 06c_census.tex:248
+17761 1 10b_counts.tex:126
+18793 2 07b_ladder.tex:623 07c_two_ladders.tex:608
+20000 1 07j_local.tex:778
+20858 1 06c_census.tex:249
+21840 4 10e_pw.tex:759 10e_pw.tex:790 10e_pw.tex:992 10f_pw_conditional.tex:273
+22146 7 10e_pw.tex:378 10e_pw.tex:409 10e_pw.tex:410 10e_pw.tex:449
+22147 5 10e_pw.tex:384 10e_pw.tex:395 10e_pw.tex:397 10e_pw.tex:423
+22792 1 06b_wrap.tex:377
+24115 1 07c_two_ladders.tex:202
+24604 2 10e_pw.tex:389 10e_pw.tex:458
+25057 3 07b_ladder.tex:623 07c_two_ladders.tex:608 07c_two_ladders.tex:611
+25087 1 07b_ladder.tex:671
+25491 1 07l_numerators.tex:889
+26880 4 10e_pw.tex:755 10e_pw.tex:789 10e_pw.tex:988 10f_pw_conditional.tex:272
+26923 3 06_refutation.tex:472 07k_korselt.tex:547 07k_korselt.tex:558
+27103 1 10a_off_carmichael.tex:306
+27720 2 07h_least_safe.tex:721 07h_least_safe.tex:767
+28817 2 07h_least_safe.tex:658 07h_least_safe.tex:658
+29616 1 06b_wrap.tex:377
+30391 2 06b_wrap.tex:376 06b_wrap.tex:377
+31321 2 07b_ladder.tex:623 07c_two_ladders.tex:608
+31747 1 06b_wrap.tex:255
+31850 3 10a_off_carmichael.tex:180 10a_off_carmichael.tex:184 10a_off_carmichael.tex:263
+32066 1 06c_census.tex:249
+32079 3 10a_off_carmichael.tex:180 10a_off_carmichael.tex:184 10a_off_carmichael.tex:263
+32154 2 06_refutation.tex:117 07c_two_ladders.tex:183
+32749 1 10f_pw_conditional.tex:830
+32964 1 10a_off_carmichael.tex:558
+35854 1 06c_census.tex:249
+37850 3 10a_off_carmichael.tex:180 10a_off_carmichael.tex:184 10a_off_carmichael.tex:263
+38471 1 10a_off_carmichael.tex:558
+38669 1 07f_exponent.tex:370
+38790 7 10a_off_carmichael.tex:83 10a_off_carmichael.tex:89 10a_off_carmichael.tex:119 10a_off_carmichael.tex:135
+38791 26 01_intro.tex:434 07j_local.tex:499 07j_local.tex:785 10a_off_carmichael.tex:69
+38796 10 10a_off_carmichael.tex:118 10a_off_carmichael.tex:119 10a_off_carmichael.tex:120 10a_off_carmichael.tex:158
+40231 1 10a_off_carmichael.tex:558
+40685 1 10f_pw_conditional.tex:830
+41041 1 07g_window.tex:300
+44293 5 10e_pw.tex:384 10e_pw.tex:395 10e_pw.tex:397 10e_pw.tex:424
+45126 1 10b_counts.tex:742
+46140 2 10e_pw.tex:389 10e_pw.tex:457
+46657 7 06_refutation.tex:70 06_refutation.tex:514 06_refutation.tex:516 06_refutation.tex:525
+47321 2 06_refutation.tex:252 06b_wrap.tex:253
+48231 2 06_refutation.tex:117 07c_two_ladders.tex:183
+49831 2 07e_ladder_lower.tex:576 07e_ladder_lower.tex:579
+50141 2 06_refutation.tex:473 07k_korselt.tex:550
+50976 1 07b_ladder.tex:589
+56393 1 07f_exponent.tex:372
+57750 1 10a_off_carmichael.tex:557
+57751 3 10a_off_carmichael.tex:306 10a_off_carmichael.tex:555 10a_off_carmichael.tex:558
+57756 2 10a_off_carmichael.tex:556 10a_off_carmichael.tex:556
+57942 2 06c_census.tex:365 06c_census.tex:401
+57943 4 06b_wrap.tex:666 06c_census.tex:307 06c_census.tex:357 06c_census.tex:395
+59797 2 07e_ladder_lower.tex:576 07e_ladder_lower.tex:579
+60000 1 07d_invariant.tex:119
+60059 1 06_refutation.tex:483
+60060 4 06_refutation.tex:482 06_refutation.tex:493 06_refutation.tex:499 07k_korselt.tex:555
+62191 1 10a_off_carmichael.tex:305
+65312 1 06c_census.tex:477
+69763 2 07e_ladder_lower.tex:577 07e_ladder_lower.tex:579
+85523 1 06c_census.tex:249
+87150 3 06c_census.tex:246 06c_census.tex:247 06c_census.tex:248
+87151 5 06c_census.tex:241 06c_census.tex:247 06c_census.tex:249 06c_census.tex:255
+87776 1 10e_pw.tex:527
+93176 1 10e_pw.tex:528
+93871 1 06c_census.tex:336
+94231 1 07k_korselt.tex:543
+96936 1 07e_ladder_lower.tex:681
+100703 1 07f_exponent.tex:373
+101479 2 06_refutation.tex:473 07k_korselt.tex:548
+104675 3 07c_two_ladders.tex:190 07c_two_ladders.tex:196 07c_two_ladders.tex:196
+110731 5 10e_pw.tex:384 10e_pw.tex:396 10e_pw.tex:397 10e_pw.tex:425
+116004 1 07f_exponent.tex:370
+123978 1 07g_window.tex:310
+128402 1 07k_korselt.tex:558
+130560 1 07b_ladder.tex:589
+135511 1 10a_off_carmichael.tex:306
+142118 1 06c_census.tex:478
+147204 1 07c_two_ladders.tex:596
+158138 1 06c_census.tex:478
+169176 1 07f_exponent.tex:372
+174307 1 06c_census.tex:247
+175417 1 10f_pw_conditional.tex:830
+188460 2 06_refutation.tex:470 07k_korselt.tex:544
+188461 17 06_refutation.tex:469 06_refutation.tex:491 06_refutation.tex:506 07g_window.tex:302
+193340 1 07f_exponent.tex:370
+221461 5 10e_pw.tex:384 10e_pw.tex:396 10e_pw.tex:397 10e_pw.tex:426
+223194 1 07j_local.tex:765
+236605 1 07c_two_ladders.tex:190
+243160 3 06c_census.tex:475 06c_census.tex:475 06c_census.tex:476
+243161 1 06c_census.tex:472
+247129 1 06c_census.tex:436
+277700 1 06c_census.tex:436
+281960 1 07f_exponent.tex:372
+283620 1 07e_ladder_lower.tex:587
+285723 1 07c_two_ladders.tex:190
+294409 4 07c_two_ladders.tex:591 07c_two_ladders.tex:594 07g_window.tex:303 10a_off_carmichael.tex:324
+300000 1 07_chernick.tex:241
+302106 1 07f_exponent.tex:373
+341280 1 07c_two_ladders.tex:190
+345003 1 06c_census.tex:478
+347041 3 10e_pw.tex:503 10e_pw.tex:531 10e_pw.tex:953
+385467 1 07j_local.tex:765
+390398 1 07c_two_ladders.tex:190
+414660 1 10f_pw_conditional.tex:830
+418700 2 06_refutation.tex:160 06b_wrap.tex:257
+418701 11 06_refutation.tex:153 06_refutation.tex:158 06_refutation.tex:186 07c_two_ladders.tex:169
+421324 1 10e_pw.tex:527
+447244 1 10e_pw.tex:528
+468729 1 07j_local.tex:764
+503510 1 07f_exponent.tex:373
+522328 1 07c_two_ladders.tex:190
+627003 1 07d_schedule.tex:328
+627070 4 06c_census.tex:427 06c_census.tex:429 06c_census.tex:431 06c_census.tex:435
+627071 5 06c_census.tex:306 06c_census.tex:425 06c_census.tex:429 06c_census.tex:432
+631986 3 10e_pw.tex:506 10e_pw.tex:524 10e_pw.tex:527
+631987 1 10e_pw.tex:551
+642562 1 07j_local.tex:772
+661658 1 07j_local.tex:769
+670866 3 10e_pw.tex:508 10e_pw.tex:524 10e_pw.tex:528
+670867 1 10e_pw.tex:555
+691110 1 10e_pw.tex:510
+702204 1 10e_pw.tex:527
+745404 1 10e_pw.tex:528
+796869 1 06c_census.tex:223
+850784 1 07j_local.tex:764
+932928 1 07b_ladder.tex:590
+946420 2 06_refutation.tex:160 06b_wrap.tex:253
+946421 6 06_refutation.tex:153 06_refutation.tex:159 06_refutation.tex:187 07c_two_ladders.tex:169
+1024651 1 10a_off_carmichael.tex:325
+1066297 1 07e_ladder_lower.tex:683
+1142892 2 06_refutation.tex:160 06b_wrap.tex:255
+1142893 6 06_refutation.tex:153 06_refutation.tex:159 06_refutation.tex:188 07c_two_ladders.tex:169
+1152271 1 10a_off_carmichael.tex:326
+1152721 1 06c_census.tex:478
+1163233 1 07e_ladder_lower.tex:683
+1254006 2 07c_two_ladders.tex:202 07c_two_ladders.tex:202
+1254007 7 06_refutation.tex:53 06_refutation.tex:140 06_refutation.tex:218 06_refutation.tex:238
+1260169 1 07e_ladder_lower.tex:683
+1263973 1 10e_pw.tex:551
+1309014 1 07e_ladder_lower.tex:590
+1316640 1 10e_pw.tex:527
+1341733 1 10e_pw.tex:555
+1365120 1 06_refutation.tex:160
+1365121 6 06_refutation.tex:153 06_refutation.tex:159 06_refutation.tex:189 07c_two_ladders.tex:169
+1366676 1 06c_census.tex:436
+1394806 1 10f_pw_conditional.tex:414
+1397640 1 10e_pw.tex:528
+1401644 1 06c_census.tex:325
+1540949 1 06c_census.tex:478
+1561592 1 06_refutation.tex:160
+1561593 6 06_refutation.tex:153 06_refutation.tex:159 06_refutation.tex:190 07c_two_ladders.tex:169
+1702120 1 06c_census.tex:475
+1702121 2 06c_census.tex:472 06c_census.tex:476
+1702128 1 06c_census.tex:475
+1754358 1 06c_census.tex:436
+1992173 1 06c_census.tex:218
+2089312 1 06_refutation.tex:160
+2089313 6 06_refutation.tex:153 06_refutation.tex:159 06_refutation.tex:191 07c_two_ladders.tex:169
+2095104 1 07b_ladder.tex:590
+2421006 1 06c_census.tex:436
+2508012 11 06_refutation.tex:117 06_refutation.tex:124 06_refutation.tex:169 06b_wrap.tex:259
+2508013 73 00_abstract.tex:42 01_intro.tex:97 01_intro.tex:188 01_intro.tex:287
+2552581 1 07e_ladder_lower.tex:587
+2642869 1 06c_census.tex:127
+2712112 1 06c_census.tex:437
+2836201 1 07e_ladder_lower.tex:587
+3119821 1 07e_ladder_lower.tex:588
+3159931 1 10e_pw.tex:551
+3354331 1 10e_pw.tex:555
+3984346 3 06c_census.tex:222 06c_census.tex:223 06c_census.tex:224
+3987660 2 10e_pw.tex:514 10e_pw.tex:596
+4389490 5 06c_census.tex:429 06c_census.tex:432 06c_census.tex:434 06c_census.tex:435
+4389491 5 06c_census.tex:306 06c_census.tex:425 06c_census.tex:432 06c_census.tex:436
+4389498 2 06c_census.tex:427 06c_census.tex:429
+5444489 1 10a_off_carmichael.tex:328
+5968873 1 10a_off_carmichael.tex:329
+6200349 1 06c_census.tex:245
+6319861 1 10e_pw.tex:551
+6486240 2 07e_ladder_lower.tex:689 07h_least_safe.tex:785
+6486480 1 07h_least_safe.tex:728
+6670296 1 10e_pw.tex:512
+6708661 1 10e_pw.tex:555
+8159159 1 07f_exponent.tex:370
+9241881 4 06b_wrap.tex:781 06b_wrap.tex:850 06b_wrap.tex:855 06c_census.tex:127
+9439201 3 07h_least_safe.tex:826 10a_off_carmichael.tex:295 10a_off_carmichael.tex:330
+11884749 2 06b_wrap.tex:852 06c_census.tex:128
+11898923 1 07f_exponent.tex:372
+13945211 1 06c_census.tex:218
+15855744 1 07b_ladder.tex:591
+16333034 2 06c_census.tex:128 06c_census.tex:146
+17017183 1 07e_ladder_lower.tex:590
+18326197 1 07e_ladder_lower.tex:590
+18476965 1 06c_census.tex:94
+19635211 1 07e_ladder_lower.tex:590
+20138200 2 10f_pw_conditional.tex:843 99_closing.tex:83
+20523013 1 06c_census.tex:128
+21248333 1 07f_exponent.tex:373
+25153470 1 06c_census.tex:128
+25574914 2 06b_wrap.tex:852 06c_census.tex:129
+27712049 3 06b_wrap.tex:781 06b_wrap.tex:846 06c_census.tex:129
+27890422 1 06c_census.tex:218
+29764893 2 06b_wrap.tex:852 06c_census.tex:129
+33546240 1 07b_ladder.tex:591
+34395350 2 06b_wrap.tex:852 06c_census.tex:129
+36953929 10 06b_wrap.tex:380 06b_wrap.tex:841 06b_wrap.tex:846 06c_census.tex:92
+43402443 1 06c_census.tex:245
+75254541 1 10a_off_carmichael.tex:199
+83160963 1 10a_off_carmichael.tex:199
+92940573 1 06c_census.tex:365
+110270160 1 07h_least_safe.tex:735
+138233258 1 10a_off_carmichael.tex:291
+141353463 1 10a_off_carmichael.tex:199
+141524161 1 10a_off_carmichael.tex:200
+150489685 7 10a_off_carmichael.tex:81 10a_off_carmichael.tex:99 10a_off_carmichael.tex:157 app_lean.tex:274
+158415503 1 10a_off_carmichael.tex:200
+160626818 1 10a_off_carmichael.tex:242
+160626819 4 10a_off_carmichael.tex:201 10a_off_carmichael.tex:207 10a_off_carmichael.tex:238 10a_off_carmichael.tex:242
+178663674 3 01_intro.tex:359 06_refutation.tex:206 99_closing.tex:78
+184156753 1 10a_off_carmichael.tex:393
+184746889 4 06b_wrap.tex:376 06b_wrap.tex:380 06b_wrap.tex:525 06c_census.tex:239
+188100961 2 07e_ladder_lower.tex:691 07h_least_safe.tex:788
+194587201 2 07e_ladder_lower.tex:691 07h_least_safe.tex:788
+201073441 2 07e_ladder_lower.tex:691 07h_least_safe.tex:788
+216608003 1 10a_off_carmichael.tex:201
+216778701 1 10a_off_carmichael.tex:201
+225724829 1 10a_off_carmichael.tex:201
+226056054 6 10a_off_carmichael.tex:376 10a_off_carmichael.tex:595 10a_off_carmichael.tex:637 10a_off_carmichael.tex:638
+228842209 3 07_chernick.tex:67 07_chernick.tex:238 07b_ladder.tex:622
+235881359 1 10a_off_carmichael.tex:202
+261079296 1 07b_ladder.tex:592
+295572823 1 10a_off_carmichael.tex:390
+300979368 6 10a_off_carmichael.tex:89 10a_off_carmichael.tex:89 10a_off_carmichael.tex:118 10a_off_carmichael.tex:136
+300979369 23 01_intro.tex:434 10a_off_carmichael.tex:68 10a_off_carmichael.tex:68 10a_off_carmichael.tex:80
+332787213 1 06c_census.tex:364
+406746895 1 10a_off_carmichael.tex:390
+418356331 1 06c_census.tex:213
+429802001 1 10a_off_carmichael.tex:305
+435816791 1 10a_off_carmichael.tex:390
+482450191 1 10a_off_carmichael.tex:393
+511121161 1 06c_census.tex:239
+536838144 1 07b_ladder.tex:592
+620042922 1 06c_census.tex:536
+667081801 5 10a_off_carmichael.tex:306 10a_off_carmichael.tex:555 10a_off_carmichael.tex:563 10a_off_carmichael.tex:567
+710382401 1 07b_ladder.tex:608
+764074764 1 10a_off_carmichael.tex:393
+814195712 1 10a_off_carmichael.tex:394
+836712661 2 06c_census.tex:212 06c_census.tex:304
+931170240 1 07h_least_safe.tex:742
+937854873 1 06c_census.tex:364
+1122424032 1 10a_off_carmichael.tex:390
+1130280270 2 10a_off_carmichael.tex:428 10a_off_carmichael.tex:428
+1130280271 8 10a_off_carmichael.tex:354 10a_off_carmichael.tex:361 10a_off_carmichael.tex:407 10a_off_carmichael.tex:424
+1217772950 1 10a_off_carmichael.tex:394
+1258903981 1 06c_census.tex:336
+1284526766 1 10a_off_carmichael.tex:394
+1358151561 1 06c_census.tex:534
+1519085506 1 06c_census.tex:241
+1582392378 2 10a_off_carmichael.tex:428 10a_off_carmichael.tex:428
+1582392379 8 10a_off_carmichael.tex:354 10a_off_carmichael.tex:361 10a_off_carmichael.tex:408 10a_off_carmichael.tex:424
+2430556506 1 06c_census.tex:529
+3038171011 5 06c_census.tex:241 06c_census.tex:268 06c_census.tex:305 06c_census.tex:354
+3109606266 1 06c_census.tex:536
+3672754633 1 10a_off_carmichael.tex:306
+4492059939 1 06c_census.tex:537
+4544947489 1 10a_off_carmichael.tex:303
+5252866664 1 06c_census.tex:534
+6092561148 1 06c_census.tex:537
+7164594575 1 06c_census.tex:535
+7911961902 3 10a_off_carmichael.tex:381 10a_off_carmichael.tex:382 10a_off_carmichael.tex:388
+9186456501 1 06c_census.tex:537
+10527064309 1 06c_census.tex:537
+10529952261 1 06c_census.tex:535
+12152782531 4 06c_census.tex:308 06c_census.tex:512 06c_census.tex:528 06c_census.tex:534
+17013895543 4 06c_census.tex:308 06c_census.tex:512 06c_census.tex:529 06c_census.tex:536
+29932453009 1 07b_ladder.tex:608
+33923737964 1 07m_families.tex:1064
+46921080097 1 07l_numerators.tex:881
+73079110849 3 07m_families.tex:1021 07m_families.tex:1057 98_open_problems.tex:178
+80387021934 2 07m_families.tex:1022 07m_families.tex:1061
+93842160193 3 07h_least_safe.tex:826 07k_korselt.tex:917 07l_numerators.tex:881
+206944722241 1 06c_census.tex:473
+299185051239 1 06c_census.tex:487
+299185051240 1 06c_census.tex:485
+413889444481 1 06c_census.tex:472
+539919257473 1 07b_ladder.tex:625
+548489404417 1 07b_ladder.tex:625
+557059551361 1 07b_ladder.tex:625
+641650641976 1 06c_census.tex:373
+803870219329 2 07m_families.tex:1021 07m_families.tex:1060
+975364699676 2 07b_ladder.tex:612 07c_two_ladders.tex:617
+1376261255431 1 06c_census.tex:426
+1489054211572 1 06c_census.tex:373
+2130704853548 1 06c_census.tex:374
+2692581340384 1 06c_census.tex:358
+2752522510861 4 06c_census.tex:306 06c_census.tex:425 06c_census.tex:500 10a_off_carmichael.tex:253
+3254457827220 1 06c_census.tex:374
+3896108469196 1 06c_census.tex:375
+4743512038792 1 06c_census.tex:375
+5385162680767 6 06b_wrap.tex:666 06c_census.tex:307 06c_census.tex:327 06c_census.tex:357
+7374469955761 1 07c_two_ladders.tex:614
+12067788378905 1 10e_pw.tex:465
+14748939911521 2 07b_ladder.tex:623 07c_two_ladders.tex:608
+33432760972801 1 07b_ladder.tex:609
+54311423955933 1 10e_pw.tex:410
+90522309761311 1 10e_pw.tex:465
+108622357428901 2 10e_pw.tex:426 10e_pw.tex:458
+150859616893487 1 10e_pw.tex:462
+181029905376953 1 10e_pw.tex:462
+207875902089241 2 07e_ladder_lower.tex:579 07j_local.tex:798
+217243733900731 2 10e_pw.tex:425 10e_pw.tex:457
+543101977706677 2 10e_pw.tex:424 10e_pw.tex:454
+1086179432815363 2 10e_pw.tex:423 10e_pw.tex:453
+1086228479118660 1 10e_pw.tex:409
+4752990589440601 1 10f_pw_conditional.tex:792
+9085838517557761 1 10e_pw.tex:498
+9505981178881201 2 10f_pw_conditional.tex:716 10f_pw_conditional.tex:768
+346119368431525355 1 10a_off_carmichael.tex:410
+600013681699022641 1 07h_least_safe.tex:826
+894273443482227355 4 10a_off_carmichael.tex:353 10a_off_carmichael.tex:424 app_lean.tex:274 app_lean.tex:288
+1563052960797295969 1 07e_ladder_lower.tex:683
+1788546886964454708 1 10a_off_carmichael.tex:378
+1788546886964454709 1 10a_off_carmichael.tex:354
+2672544482180680205 1 10e_pw.tex:433
+3341087935340056589 1 10e_pw.tex:432
+8018357598861379229 1 10e_pw.tex:432
+10023625882179728341 1 10e_pw.tex:433
+22586358394248244201 2 07e_ladder_lower.tex:588 07j_local.tex:799
+24055615898561844360 1 10e_pw.tex:442
+24055615898561844361 2 10e_pw.tex:383 10e_pw.tex:500
+103383086269614579667 1 06c_census.tex:513
+206766172539229159333 2 06c_census.tex:308 06c_census.tex:512
+718132609376191497601 2 10e_pw.tex:502 10e_pw.tex:952
+759176170223816217600 1 10e_pw.tex:605
+6123441772837643468761 2 07e_ladder_lower.tex:591 07j_local.tex:800
+29373060433276966700161 1 07m_families.tex:1049
+58746120866553933400321 1 07m_families.tex:1050
+3679849015584910947612001 1 07h_least_safe.tex:787
+7359698031169821895224001 1 07e_ladder_lower.tex:691
+15952585018644172593910441 1 10e_pw.tex:505
+20255561818039774459636201 1 10e_pw.tex:507
+24638461220793765442114081 1 10e_pw.tex:509
+21825241302354798940900884725761 1 10e_pw.tex:511
+164967611063869521134304579081216001 1 07b_ladder.tex:624
+27224159871922604904217687612666423201 1 10e_pw.tex:513

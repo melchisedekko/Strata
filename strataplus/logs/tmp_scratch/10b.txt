@@ -1,0 +1,765 @@
+
+\section{How Large the Exceptional Set Is}
+\label{sec:counts}
+
+The previous section produced one exceptional semiprime, and one is enough to
+answer whether the absence of a witness survives off the Korselt locus; it is not
+enough to answer how much of it there is. What Part~V settled is \emph{which}
+moduli have no witness: exactly the divisors of $G(N)$
+(Theorem~\ref{thm:reduction} of \S\ref{sec:invariant}),
+and on a composite the invariant is positive ($\lv$ \lean{residueGcd\_pos}) and
+divides $N(N-1)$ ($\lv$ \lean{residueGcd\_dvd\_mul\_sub\_one}), both in
+\S\ref{sec:invariant}. Write $G(N) = \GE{N-1}{x}$ for its value at the canonical
+exponent $e = N-1$ (Definition~\ref{def:exponent-invariant},
+\S\ref{sec:exponent}). None of that bounds the \emph{size} of $G(N)$: Parts~II--V fix the coefficient,
+the exponent, the shift, the window and the modulus, and none of them constrains
+the invariant. So $G(N) > 1$ is a condition that no parameter predicts, and this
+section counts the numbers at which it holds.
+
+Two sets carry the count. For $X \ge 1$ let
+\[
+  \mathcal{B}(X) \;=\; \bigl\{(p,q) \;:\; p < q \text{ odd primes},\;
+  pq \le X,\; G(pq) > 1 \bigr\}
+  \qquad (\lean{blindSemiprimes}) ,
+\]
+the exceptional semiprimes below $X$ --- the semiprimes at which some $C_M$ has no
+witness; and let $\mathcal{M}(X)$ be the same set with
+$G(pq) > 1$ replaced by $\lean{AllZero}\bigl((pq+1)/2\bigr)$
+(\lean{missedSemiprimes}), the semiprimes on which the criterion of 2009 vanishes
+at every base (\S\ref{sec:definitions}). One predicate separates the two, and the
+section keeps them apart, because they answer different questions:
+$\mathcal{B}$ is about the absence of a witness at a modulus, $\mathcal{M}$ about the
+vanishing of a formula. Every figure below is either a cardinality of one of these
+two sets at a stated $X$, or a measured density quoted with its range. None of
+them counts operations: the cost of the criterion is
+\S\ref{sec:schedule}'s and \S\ref{sec:least-safe}'s, and no sentence of this
+section bears on it.
+
+One member is proved, and it is \S\ref{sec:off-carmichael}'s.
+$N = 300\,979\,369 = 7759 \cdot 38791$ has $G(N) = 2$ and is not a Carmichael
+number ($\lv$ \lean{blind\_modulus\_off\_carmichael}, $\lv$
+\lean{residueGcd\_counterexample\_eq\_two}, \S\ref{sec:off-carmichael}). So
+$\mathcal{B}(X)$ is nonempty from $X = 300\,979\,369$ on, which is all the
+previous section was asked to supply. The number returns once, in
+\S\ref{sec:counts-mass}, as one member of a measured census; it is not this
+section's headline, and no figure of this section is built on it.
+
+What the section proves is two bounds, and they are not the same kind of
+statement. The upper one is a counting theorem about one local image at a time,
+and it becomes $X^{1/2+2\gamma}$ for every $\gamma > 0$ once the published
+theorem on exponential sums over subgroups of $\mathbb{F}_q^{\times}$ is fed into
+it. The lower one is a counting theorem about a single family, and it rests on two
+hypotheses that are open: Bateman--Horn for the pair $\bigl(n, 1+j(n-1)\bigr)$,
+and one fixed-coset density. Each bound carries its hypothesis in the statement,
+the section says at each display which hypothesis that is, and the two together
+pin the exponent at $1/2$ --- which is the answer to the question of quantity.
+That answer is conditional twice over, and saying so is part of the answer.
+
+\subsection{One image, and the count it bounds}
+\label{sec:counts-index}
+
+The route is an index, and the index is \S\ref{sec:families}'s. On $N = pc$ with
+$p$ prime, $1 < c$ and $\gcd(p,c) = 1$, the invariant is bounded by the index of
+ the local image: $G(N) \le \gcd(N-1,\, p-1)$ ($\lv$
+\lean{residueGcd\_le\_gcd\_sub\_one}, \S\ref{sec:families-pin}), because the
+integers of one coset that are congruent to $p$ modulo a divisor $M$ of $G(N)$
+number at most $(p-1)/M$, so $M \cdot |S_p| \le p-1$ ($\lv$
+\lean{mul\_card\_powRange\_le}). Two consequences are drawn from it in this
+subsection. Every divisor $M$ of $G(N)$ lies below every prime factor $p$ to which the bound applies,
+$M < p$ ($\lv$ \lean{lt\_prime\_of\_dvd\_residueGcd}); and on a semiprime the
+bound is the one between the two predecessors, $G(pq) \le \gcd(p-1, q-1)$
+($\lv$ \lean{residueGcd\_semiprime\_le\_gcd}), since
+$\gcd(pq-1, q-1) = \gcd(p-1, q-1)$ ($\lv$ \lean{gcd\_sub\_one\_semiprime},
+\S\ref{sec:wrap}). \S\ref{sec:families} proved both as the boundary of its own
+method --- a bound on the size of the invariant is not a bound on the number of
+numbers that attain it --- and left the counting to this Part.
+
+The hypothesis the count needs is about how a coset of a local image sits in
+$(0,q)$. For a function $L : \N \to \N$, say that $L$ \emph{meets the lower half}
+if, for every prime $q$, every $u$ coprime to $q$ and every exponent $e$: whenever
+the image $S_q = \{\, b^{e} \bmod q : b \text{ prime to } q \,\}$
+(\lean{powImage}) has order $|S_q| \ge L(q)$, every coset $u S_q$ has an integer
+representative in $[1, q/2)$. That is the proposition \lean{CosetMeetsLowerHalf},
+and it is not empty: if $|S_q|$ is even, then $-1 \in S_q$ ($\lv$
+\lean{exists\_pow\_eq\_neg\_one\_mod\_prime}, \S\ref{sec:local}), so a coset
+contains both $x$ and $q-x$ and one of the two lies below $q/2$ ($\lv$
+\lean{coset\_meets\_lower\_half\_of\_even}). Failing orders are therefore odd;
+a sweep of the primes below $2 \cdot 10^{4}$ finds the largest failing order
+$s = 15$ at $q = 17761$, with $\log s / \log q$ falling from $0.43$ to $0.28$
+across the range (\texttt{experiments/\allowbreak coset\_lower\_half\_test.py}).
+That is a measurement about small primes and it is not used as anything else.
+
+The engine is one image, and it is worth stating before the count, because the
+count is its contrapositive. Suppose $L$ meets the lower half, and let $N = pc$
+with $p$ prime, $1 < c$, $\gcd(p,c) = 1$, and the image at $p$ of order at least
+$L(p)$. Then $G(N) = 1$ ($\lvCond$ \lean{residueGcd\_eq\_one\_of\_large\_image}).
+The proof reads the side coset as integers. If a prime $\ell$ divided $G(N)$,
+then $\ell \le G(N) \le \gcd(N-1,p-1) \le p-1$, and every element $X$ of the
+coset $u S_p$ satisfies $X \equiv p \pmod{\ell}$ ($\lv$
+\lean{dvd\_prime\_sub\_side}, \S\ref{sec:families-pin}); as an integer in
+$(0,p)$ it is $X = p - \ell k$ with $0 < k < p/\ell$, and reading $k$ modulo $p$
+gives $k \equiv -X/\ell \pmod p$. So the whole coset $-(\ell c)^{-1} S_p$ would
+lie in $(0, p/2)$. The hypothesis, applied to the opposite coset, puts an element
+of $(\ell c)^{-1} S_p$ below $p/2$, that is an element of
+$-(\ell c)^{-1} S_p$ above it --- and an integer of $(0,p)$ above $p/2$ is not in
+$(0, p/2)$. Read contrapositively: if $G(N) > 1$, then at every prime
+$p \parallel N$ the local image is small,
+\[
+  \frac{p-1}{\gcd(N-1,\, p-1)} \;<\; L(p)
+  \qquad (\lvCond\ \lean{local\_image\_lt\_of\_one\_lt\_residueGcd}) .
+\]
+That inequality is the sharpest form the Part's sentence takes. An exceptional $N$ has
+no large local image anywhere, so it is close to Korselt at each of its primes;
+what the five parameters cannot supply is missing at every single local image at
+once.
+
+\begin{theorem}[The count, at the index of one local image]
+\label{thm:counts-upper}
+\lvCond{} \lean{card\_blind\_semiprimes\_le}
+Let $L : \N \to \N$ meet the lower half, in the sense that for every prime $q$,
+every $u$ coprime to $q$ and every $e$ with $|S_q| \ge L(q)$, the coset $u S_q$
+has an integer representative in $[1, q/2)$. Let $X \ge 1$ and $K \ge 1$ be such
+that $L(q) \le K$ for every $q \le X$. Then
+\[
+  \#\,\mathcal{B}(X) \;\le\; \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\, K^{2} .
+\]
+\end{theorem}
+
+\begin{proof}
+\emph{The three numbers of an exceptional pair.} Let $(p,q) \in \mathcal{B}(X)$, and put
+$x = (pq+1)/2$, so that $N(x) = pq$ and $x \ge 2$, the two factors being odd
+primes with $p \ge 3$. Write
+\[
+  g = \gcd(p-1,\, q-1) , \qquad a = \frac{p-1}{g} , \qquad
+  b = \frac{q-1}{g} .
+\]
+The exponent at $x$ is $N(x) - 1 = pq - 1$, and
+$\gcd(pq-1, q-1) = \gcd(p-1,q-1) = g$ ($\lv$ \lean{gcd\_sub\_one\_semiprime}).
+
+\emph{The image at the larger prime is small.} By the engine stated above,
+$G(pq) > 1$ forces
+$(q-1)/\gcd(pq-1, q-1) < L(q)$, that is $b < L(q)$. Since $q \le pq \le X$, the
+bound on the level gives $L(q) \le K$, so $1 \le b < K$.
+
+\emph{The other two are small as well.} The quotient $a$ satisfies $a \le b$,
+because $p < q$. And $g \le p-1 < p$, while $p^{2} < pq \le X$ gives
+$p \le \lfloor \sqrt X \rfloor$; hence $g \le \lfloor \sqrt X \rfloor$.
+
+\emph{Recovery.} The pair is determined by $(g,a,b)$: from $p - 1 = ga$ and
+$q - 1 = gb$ both primes are read off. So $(p,q) \mapsto (g,a,b)$ is an
+injection of $\mathcal{B}(X)$ into the product of the three ranges.
+
+\emph{Counting the target.} There are $\lfloor \sqrt X \rfloor + 1$ values of
+$g$ and $K$ values of each of $a$ and $b$, so at most
+$(\lfloor \sqrt X \rfloor + 1) K^{2}$ triples. The bound follows.
+\end{proof}
+
+The statement is worth restating in the form in which it will be used, because
+that form is its whole content: the bound is a statement about the \emph{index},
+not about the absence of a witness. It says that an exceptional semiprime is
+determined by the common
+divisor of its two predecessors and by the two quotients, and that all three are
+small. What makes it a count of the exceptional set is the hypothesis, which
+converts
+$G > 1$ into the smallness of one quotient; what keeps it honest is that the
+hypothesis is written into the statement and is not proved here.
+
+\subsection{The published theorem, read twice}
+\label{sec:counts-bgk}
+
+The hypothesis of the count is a consequence of a theorem that is not in
+Mathlib, and the transcription matters. \lean{BGKBound} states the
+Bourgain--Glibichuk--Konyagin theorem as published, in the form of Theorem~1.1 of
+\cite{Kowalski2024SmallSubgroups}: for every $\gamma > 0$ there are $\nu > 0$ and
+$C$, depending on $\gamma$ alone, such that
+\[
+  \Bigl| \sum_{h \in H} e(ah/q) \Bigr| \;\le\; C\,|H|\, q^{-\nu}
+\]
+for every prime $q$, every subgroup $H \subseteq \mathbb{F}_q^{\times}$ of order
+at least $q^{\gamma}$, and every $a \not\equiv 0$. The transcription is the one
+sentence that makes it usable: every subgroup of the cyclic group
+$\mathbb{F}_q^{\times}$ is the image of a power map $b \mapsto b^{e}$, of order
+$(q-1)/\gcd(e, q-1)$, and its elements are the integers of
+$\lean{powImage}\, q\, e$, a set that is nonempty because it contains $1$ ($\lv$
+\lean{one\_le\_card\_powImage}). The
+statement is a proposition in the development, never an axiom, and the bound is
+kept on the real and imaginary parts, which is the form the trigonometric
+argument below consumes (\lean{ExpSumSmall}).
+
+One variant is recorded beside it. \lean{ShkredovBound} is the same inequality
+with Shkredov's exponent made explicit, $\nu = \delta/(27 + 2/\delta)$, and
+Shkredov's form implies the one used here ($\lvCond$
+\lean{bgkBound\_of\_shkredovBound}). The section states the theorem once, in the
+ineffective form, and notes that a reader who wants numbers has the exponent; the
+threshold below is not computed either way, because the constant is not.
+
+\emph{The threshold.} Given $\nu$ and $C$, choose $Q$ with $(3C)^{1/\nu} < q$ for
+every $q \ge Q$. Then $C q^{-\nu} < 1/3$, so every nontrivial exponential sum
+over an image of order at least $q^{\gamma}$ is below one third of the image's
+size ($\lvCond$ \lean{expSumSmall\_of\_bgkBound}). This is the hypothesis
+\lean{ExpSumSmall}, and it is named as a hypothesis at every use.
+
+\emph{From sums to cosets, without Erd\H{o}s--Tur\'an.} The polynomial
+\[
+  P(t) \;=\; 1 + 2 \sin 2\pi t - \cos 4\pi t
+\]
+has mean $1$ and is $\le 0$ on $[1/2,1)$, because
+$1 + 2\sin\theta - \cos 2\theta = 2 \sin\theta\,(\sin\theta + 1) \le 0$ for
+$\theta \in [\pi, 2\pi)$ ($\lv$ \lean{trig\_upper\_half}). Suppose a whole coset
+$u S_q$ lay in $(q/2, q)$. Summing $P$ over it gives
+$|S_q| + 2\,\mathrm{Im}\,S(u) - \mathrm{Re}\,S(2u) \le 0$, which is impossible
+when both sums are below $|S_q|/3$. Hence every coset of a large image meets
+$[1, q/2)$ ($\lvCond$ \lean{cosetMeetsLowerHalf\_of\_expSumSmall}), which is the
+hypothesis of the count, discharged from the published theorem.
+
+\emph{The idempotent, and the coset below it.} The two-image form of the engine
+needs one idempotent coefficient in the upper half. For $N = pq$ with
+$qu \equiv 1 \pmod p$ and $pv \equiv 1 \pmod q$, one has $p \le 2u$ or
+$q \le 2v$ ($\lv$ \lean{idem\_coeff\_upper\_half}): otherwise $0 < qu + pv < pq$
+would be $1$ modulo $pq$. On the side given by that inequality, a coset element
+below the coefficient produces a side residue below the idempotent, and the
+side-residue criterion of \S\ref{sec:korselt} gives $G = 1$ ($\lv$
+\lean{residueGcd\_eq\_one\_of\_coset\_below}). The two-image statement is then:
+if both local images of a semiprime have order at least $L$, then $G = 1$
+($\lvCond$ \lean{residueGcd\_eq\_one\_of\_large\_images}), and with the
+exponential-sum hypothesis in place of the coset hypothesis,
+$\lvCond$ \lean{residueGcd\_eq\_one\_of\_large\_images\_expSum}. It is the
+statement that an exceptional $N$ is close to Korselt at \emph{both} primes; the count
+needs the one-image form, applied at the larger prime alone, which is the
+statement of this subsection.
+
+\begin{theorem}[A large local image forces $G = 1$]
+\label{thm:large-image-BGK}
+\lvCond{} \lean{residueGcd\_eq\_one\_of\_large\_image\_BGK}
+Assume $\lean{BGKBound}$. Then for every $\gamma > 0$ there is $Q$ such that for
+every $x \ge 2$ and all $p, c$ with $p$ prime, $1 < c$, $N(x) = pc$ and
+$\gcd(p,c) = 1$: if $Q \le p$ and
+\[
+  p^{\gamma} \;\le\; \frac{p-1}{\gcd\bigl(N(x)-1,\; p-1\bigr)} ,
+\]
+then $G(N(x)) = 1$.
+\end{theorem}
+
+\begin{proof}
+\emph{The level.} Put
+\[
+  \lean{bgkLevel}\,\gamma\, Q\, q \;=\;
+  \begin{cases} \lceil q^{\gamma} \rceil & Q \le q ,\\ q & q < Q , \end{cases}
+\]
+a level that is the threshold above $Q$ and vacuous below it, since no image has
+order at least $q$. At that level the exponential-sum bound holds
+($\lvCond$ \lean{bgkLevel\_hyp}): above the threshold it is
+$\lean{ExpSumSmall}$ from \lean{expSumSmall\_of\_bgkBound}, and below it no image
+qualifies, the hypothesis being empty.
+
+\emph{The coset hypothesis.} Apply the derivation of the previous paragraph at
+the level \lean{bgkLevel}, with the value $L(2) = 2$ at $q = 2$, which the
+threshold supplies by $3 \le Q$. Then \lean{CosetMeetsLowerHalf} holds at that
+level ($\lvCond$ \lean{cosetMeetsLowerHalf\_of\_expSumSmall}).
+
+\emph{The one-image engine.} With the coset hypothesis in hand, the theorem of
+\S\ref{sec:counts-index} applies at the single prime $p$: above the threshold the
+level at $p$ is $\lceil p^{\gamma} \rceil$, and
+$\lceil p^{\gamma} \rceil \le (p-1)/\gcd(N-1,p-1)$ because the quotient is an
+integer of size at least $p^{\gamma}$. The hypothesis of this statement,
+$p^{\gamma} \le (p-1)/\gcd(N-1,p-1)$, is exactly what that comparison needs.
+Hence $G(N(x)) = 1$.
+\end{proof}
+
+The content of the display is its contrapositive, and the prose states it that
+way rather than in a footnote: an exceptional $N$ has \emph{every} local image small,
+and equivalently
+\[
+  \gcd\bigl(N-1,\, p-1\bigr) \;>\; \tfrac14\, p^{1-\gamma}
+  \qquad \text{at every } p \parallel N ,
+\]
+for $p$ above a threshold that depends on $\gamma$ alone. (The factor $1/4$ is
+the one the ceiling costs: $\lceil p^{\gamma} \rceil \le 2p^{\gamma}$ and
+$p - 1 \ge p/2$.) That is the quantitative form of ``no parameter explains'': an
+exceptional $N$ is one whose primes each see almost all of the predecessor $p-1$ inside
+the exponent $N-1$ --- the numbers as close to Korselt as a non-Korselt number
+can be. The exponential-sum version of the same statement, with
+\lean{ExpSumSmall} in place of the coset hypothesis, is $\lvCond$
+\lean{residueGcd\_eq\_one\_of\_large\_image\_expSum}; the two differ only in which
+hypothesis is written into the signature.
+
+\subsection{The count at the exponent}
+\label{sec:counts-count}
+
+\begin{theorem}[The exceptional semiprimes are $X^{1/2+2\gamma}$]
+\label{thm:counts-BGK}
+\lvCond{} \lean{card\_blind\_semiprimes\_BGK}
+Assume $\lean{BGKBound}$. Then for every $\gamma > 0$ there is $Q$ such that for
+every $X \ge 1$,
+\[
+  \#\,\mathcal{B}(X) \;\le\;
+  \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\,
+  \bigl(Q + \lceil X^{\gamma} \rceil\bigr)^{2} .
+\]
+\end{theorem}
+
+\begin{proof}
+\emph{The level and its maximum.} Take the level \lean{bgkLevel} of the previous
+subsection, and $K = Q + \lceil X^{\gamma} \rceil$. Above the threshold the level
+at $q$ is $\lceil q^{\gamma} \rceil$, which is at most $\lceil X^{\gamma} \rceil$
+for $q \le X$; below it the level is $q$, which is at most $X$ and hence at most
+$K$. So $L(q) \le K$ on $[0,X]$.
+
+\emph{The hypothesis of the count.} The level's exponential-sum bound gives
+\lean{CosetMeets\allowbreak{}LowerHalf} and, with it, the hypothesis of
+Theorem~\ref{thm:counts-upper}, including its case $q = 2$.
+
+\emph{The count.} Theorem~\ref{thm:counts-upper} at that $K$ gives
+$(\lfloor \sqrt X \rfloor + 1)K^{2}$, which is the displayed bound.
+\end{proof}
+
+Read as an order of magnitude the theorem says
+$\#\,\mathcal{B}(X) \ll_{\gamma} X^{1/2+2\gamma}$ for every $\gamma > 0$, and
+the constant is ineffective: $\gamma$ is given, $Q$ exists, and no value of it is
+produced. Two things about the statement deserve to be said where it stands
+rather than in a note. The exponent $1/2$ is not an accident of the injection ---
+the injection is the pair of predecessors, and the exponent of a semiprime is
+what it is --- but the $2\gamma$ is what the hypothesis costs, and it can be
+made arbitrarily small only because BGK is available for every $\gamma$. And the
+theorem counts \emph{all} of the exceptional semiprimes, with no condition on their number of
+prime factors beyond the two the injection needs.
+
+\subsection{The same input on the criterion's side}
+\label{sec:counts-fejer}
+
+\S\ref{sec:wrap-image} left one hypothesis undischarged and said that the
+derivation was this section's. The hypothesis is \lean{CosetMeetsClassesMod4}:
+for a level $L$, every coset of a local image of order at least $L(q)$ has an
+integer representative in every class modulo four. The derivation is the same
+mechanism as the last subsection, with one change that costs a factor: the
+substitution of ``every class modulo four'' for ``the lower half'' forces the
+exponential sums to be small at ratio $1/26$ instead of $1/3$, and the
+trigonometric polynomial that carries the ratio is a Fej\'er kernel of degree
+eleven. The numbers $11$ and $26$ are not chosen; they are computed, and the
+paragraph says where each comes from.
+
+\emph{The kernel.} For $n \ge 0$ and real $t$,
+\[
+  F_n(t) \;=\; \frac{1}{n+1}\,
+  \Bigl| \sum_{k=0}^{n} e(kt) \Bigr|^{2}
+  \;=\; 1 + \sum_{k=1}^{n} \frac{2\,(n+1-k)}{n+1}\, \cos 2\pi k t ,
+\]
+the first form by definition (\lean{fejerKernel}) and the equality by expanding
+the square (\lean{fejerKernel\_eq\_normSq}, \lean{normSq\_sum}) and regrouping
+the double sum by the difference of its indices (\lean{card\_pair\_add},
+\lean{sum\_cos\_of\_pair\_diff}, \lean{fejerKernel\_cosine}).
+
+\emph{The coefficients at eleven.} At $n = 11$ the coefficients are
+$c_k = 2(12-k)/12$ (\lean{fejer11CosineCoeff}), and their absolute sum is
+\[
+  \sum_{k=1}^{11} |c_k| \;=\; 11
+  \qquad (\lv\ \lean{fejer11\_cosine\_coeff\_abs\_sum}) ,
+\]
+because $\sum_{k=1}^{11}(12-k) = 66$ and $66/6 = 11$. This is the first of the
+four numbers: eleven modes, whose coefficients fall from $11/6$ to $1/6$ and
+whose total weight is exactly the number of modes.
+
+\emph{The sidelobe level.} The chord identity $|1 - e^{i\theta}| = 2|\sin(\theta/2)|$
+($\lv$ \lean{normSq\_one\_sub\_exp\_mul\_I}, $\lv$
+\lean{norm\_one\_sub\_exp\_mul\_I}) turns the geometric-series bound
+($\lv$ \lean{geom\_exp\_sum\_norm\_le}) into the reciprocal-sine bound
+$F_{11}(x) \le 1/(12 \sin^{2}\pi x)$ ($\lv$
+\lean{fejerKernel\_le\_inv\_sin\_sq}). On the sidelobes $|x| \in [1/8, 1/2]$ this
+is at most
+$\lambda = 1/(12 \sin^{2}(\pi/8))$ (\lean{fejer11Lambda}, $\lv$
+\lean{fejerKernel\_le\_lambda\_of\_eighth}), and
+\[
+  \lambda \;<\; \frac{15}{26}
+  \qquad (\lv\ \lean{fejer11Lambda\_lt\_fifteen\_div\_twenty\_six}) ,
+\]
+from $\sin^{2}(\pi/8) = (2 - \sqrt 2)/4$ and $\sqrt 2 < 64/45$. So the mean of
+the minorant $m(t) = F_{11}(t - 1/8) - \lambda$ (\lean{fejerMinorant11}) is
+$1 - \lambda > 11/26$ ($\lv$
+\lean{fejer11\_mean\_gt\_eleven\_div\_twenty\_six}). That is where $26$ and the
+mean $11/26$ come from: the eleven modes are charged at $1/26$ of the mass each,
+against a mean strictly above $11/26$, and the inequality is strict by exactly
+the margin the next paragraph needs.
+
+\emph{The minorant vanishes off the arc.} Call $t$ \emph{outside the quarter arc}
+if it lies outside the open interval of length $1/4$ centred at $1/8$, modulo
+one (\lean{OutsideQuarterArc}); every real $t$ outside the quarter arc has an
+ integer translate with $|t - 1/8 - k| \in [1/8, 1/2]$ ($\lv$
+\lean{exists\_repr\_outsideQuarterArc}), the kernel is one-periodic ($\lv$
+\lean{fejerKernel\_add\_int}), and a point at distance at least $1/4$ from $0$
+modulo one is outside the arc ($\lv$
+\lean{outsideQuarterArc\_of\_ge\_one\_fourth}, $\lv$
+\lean{outsideQuarterArc\_add\_int}). Hence
+$m(t) \le 0$ off the arc ($\lv$ \lean{fejerMinorant11\_nonpos\_of\_outside}),
+which is the pointwise half of the package, stated as
+\lean{FejerPointwiseMinorantWorks} and proved as
+\lean{fejerPointwiseMinorantWorks}.
+
+\emph{The minorant as a series.} Off the arc the minorant is nonpositive, and on
+the arc it is a trigonometric polynomial:
+\[
+  m(t) \;=\; (1 - \lambda) + \sum_{k=1}^{11} c_k \cos 2\pi k\,(t - 1/8)
+  \qquad (\lv\ \lean{fejerMinorant11\_eq\_trig}) ,
+\]
+by the addition formula for the cosine ($\lv$ \lean{cos\_sub\_eighth}). At a point
+$t = (u b^{e} \bmod q)/q - \delta$ of the shifted lattice each term splits into a
+cosine sum and a sine sum over the image, with a phase that does not depend on the
+element ($\lv$ \lean{cos\_affine\_shift}). The sums are bounded by the hypothesis
+\lean{ExpSumSmallR}, the ratio $\rho$ form of the exponential-sum bound,
+identified with the earlier form at $\rho = 1/3$ ($\lv$
+\lean{expSumSmall\_iff\_expSumSmallR}): a cosine sum and a sine sum are each below
+$\rho |S_q|$ ($\lvCond$ \lean{abs\_sum\_cos\_lt\_of\_expSumSmallR}, $\lvCond$
+\lean{abs\_sum\_sin\_lt\_of\_expSumSmallR}), and any fixed linear combination is
+below $\sqrt{\alpha^{2}+\beta^{2}}\,\rho\,|S_q|$ ($\lvCond$
+\lean{abs\_linear\_comb\_expSum\_le}).
+
+\emph{The contradiction.} Suppose a whole coset lay outside the arc. Summing $m$
+over it gives $\le 0$ by the pointwise half, while the series and the bound at
+$\rho = 1/26$ give
+\[
+  \sum_{x \in uS_q} m(x/q) \;\ge\; |S_q|\,(1-\lambda)
+  - \sum_{k=1}^{11} |c_k| \cdot \frac{|S_q|}{26}
+  \;>\; |S_q|\,\Bigl(\frac{11}{26} - \frac{11}{26}\Bigr) \;=\; 0 ,
+\]
+the strict inequality being $1 - \lambda > 11/26$ and the second term being
+$11\,|S_q|/26$ by the absolute sum of the coefficients. So some element of the
+coset lies inside the arc. Writing $v$ with $4v \equiv 1 \pmod q$ ($\lv$
+\lean{exists\_inv\_four\_of\_odd\_prime}, $\lv$ \lean{exists\_inv\_four}) the arc
+condition becomes $4X < q$ for $X = (u b^{e} \bmod q)$, and for each $a < 4$ one
+shifts into the exact class $X = a + 4Y$ with $a + 4Y < q$ ($\lv$
+\lean{mod4\_iff\_scaled\_lt}). The four forms of that conclusion --- open quarter,
+quarter, affine quarter, exact class --- are one statement with four signatures
+($\lvCond$ \lean{coset\_meets\_open\_quarter\_of\_expSumSmall26}, $\lvCond$
+\lean{coset\_meets\_quarter\_of\_expSumSmall26}, $\lvCond$
+\lean{coset\_meets\_quarter\_affine\_of\_expSumSmall26}, $\lvCond$
+\lean{coset\_meets\_class\_of\_expSumSmall26}), and the interval form is the
+proposition \lean{CosetMeetsQuarterInterval}.
+
+\emph{The package, and the gate at thirteen.} The two halves are packaged as
+\lean{FejerElevenModeFourierWorks} and \lean{FejerQuarterMinorantWorks}, proved as
+$\lv$ \lean{fejerElevenModeFourierWorks} and $\lv$ \lean{fejerQuarterMinorantWorks};
+the Fourier conclusion is $\lvCond$ \lean{fejer\_eleven\_mode\_fourier}, and its
+conversion from an arc to a residue class is $\lvCond$
+\lean{fejer\_affine\_class\_mod4}. The level is \lean{bgkLevelClasses}, the
+$1/26$ analogue of the previous level, and the published theorem supplies it
+($\lvCond$ \lean{expSumSmallR\_of\_bgkBound}, $\lvCond$
+\lean{expSumSmall26\_of\_bgkBound}, $\lvCond$ \lean{bgkLevelClasses\_hyp}). One
+gate remains: the argument needs $13 \le q$, and the level supplies it, because
+below the threshold the level is $q$ and no image can have order at least $q$
+($\lv$ \lean{bgkLevelClasses\_gate}). With the gate,
+\lean{CosetMeetsClassesMod4} follows at that level ($\lvCond$
+\lean{cosetMeetsClassesMod4\_of\_expSumSmall26}), and the hypothesis
+\S\ref{sec:wrap-image} left open is discharged.
+
+Two theorems of \S\ref{sec:wrap-image} then run on the discharged hypothesis, and
+they are stated here only to say that they do: at one large local image the
+criterion does not vanish ($\lvCond$
+\lean{not\_allZero\_of\_large\_image\_BGK}), and the semiprimes on which the
+criterion vanishes at every base are counted by the same injection
+($\lvCond$ \lean{card\_missed\_semiprimes\_BGK}), with
+$(\lfloor \sqrt X \rfloor + 1)(Q + \lceil X^{\gamma} \rceil)^{2}$ as the bound.
+Neither is displayed: the composites at which the criterion of 2009 vanishes at
+every base are Part~III's subject
+(\S\ref{sec:census}), and what this section supplies is the hypothesis under
+which the count of \S\ref{sec:wrap-image} becomes a theorem. The criterion's side
+therefore has a bound of the same shape as the invariant's, and the same
+ineffective constant, because it is the same exponential sum read through a
+different minorant.
+
+\subsection{The lower shape}
+\label{sec:counts-lower}
+
+The upper bound says how many there can be. The lower bound says how many there
+must be, on one family, and it is where the counting sets of the family belong:
+they are what the lower bound counts, and they arrive after the upper bound
+rather than before it, because a set defined to be counted is only worth defining
+once the counting has a shape.
+
+Write $q_j(n) = 1 + j(n-1)$ (\lean{familyQ}, definitionally equal to that
+expression by $\lv$ \lean{familyQ\_eq}), and for $X \ge 1$ let
+\[
+  \mathcal{P}_j(X) = \bigl\{\, p \;:\; p \text{ and } q_j(p) \text{ prime},\;
+  2 < p,\; p\,q_j(p) \le X \,\bigr\}
+  \qquad (\lean{familyPairs}) ,
+\]
+with $\mathcal{P}^{\mathrm{b}}_j(X) \subseteq \mathcal{P}_j(X)$ the members on
+which $G(p\,q_j(p)) > 1$ (\lean{familyBlind}) and
+$\mathcal{P}^{\mathrm{m}}_j(X) \subseteq \mathcal{P}_j(X)$ the members on which
+the criterion vanishes, $\lean{AllZero}\bigl((p\,q_j(p)+1)/2\bigr)$
+(\lean{familyMiss}). The mate is the larger of the two primes whenever $j \ge 2$
+and $p > 2$ ($\lv$ \lean{lt\_familyQ}), so a member of $\mathcal{P}_j(X)$ is a
+genuine pair $p < q$ and $\mathcal{P}^{\mathrm{b}}_j(X)$ sits inside
+$\mathcal{B}(X)$ ($\lv$ \lean{familyBlind\_mem\_blindSemiprimes}) and
+$\mathcal{P}^{\mathrm{m}}_j(X)$ inside $\mathcal{M}(X)$ ($\lv$
+\lean{familyMiss\_mem\_missedSemiprimes}); counting a subset counts at most the
+whole, in the two cases
+$\lv$ \lean{card\_familyBlind\_le\_blindSemiprimes} and
+$\lv$ \lean{card\_familyMiss\_le\_missedSemiprimes}.
+
+Two hypotheses, and then the theorem. The \emph{Bateman--Horn} hypothesis for the
+family is $\lean{BatemanHornFamily}\, j\, C$: there is $C > 0$ with
+$|\mathcal{P}_j(X)| \ge C \sqrt X/(\log X)^{2}$ for all large $X$. Its linear
+form is the classical count of the pairs of linear forms
+$\bigl(n,\, 1 + j(n-1)\bigr)$, $\lean{BatemanHornLinear}\, j\, C$, and it implies
+the product form ($\lvCond$ \lean{batemanHornFamily\_of\_linear}). The
+passage is the plumbing of the subsection: if $j Y^{2} \le X$ then the pairs
+$n \le Y$ inject into $\mathcal{P}_j(X)$ ($\lv$
+\lean{linear\_le\_familyPairs}), using $q_j(n) \le jn$ ($\lv$
+\lean{familyQ\_le\_mul}); the choice $Y = \lfloor \sqrt{X/j} \rfloor$ satisfies
+$j Y^{2} \le X$ ($\lv$ \lean{j\_mul\_sqrt\_sq\_le}); and
+$\sqrt X \le \sqrt j\,(Y+1) \le 2\sqrt j\, Y$ ($\lv$
+\lean{sqrt\_le\_mul\_sqrt\_div}) halves the logarithm at the cost of the
+constant, $\log X \ge 2 \log Y$. The constant the passage produces is
+$C/(4\sqrt j)$, which the last line weakens to $C$; the prose says only that it
+is a constant, because the factor is $4\sqrt j$ and nothing depends on its value.
+
+The \emph{density} hypothesis is $\lean{FixedCosetBlindDensity}\, j\, \delta$:
+there is $\delta > 0$ with
+$|\mathcal{P}^{\mathrm{b}}_j(X)| \ge \delta\,|\mathcal{P}_j(X)|$ for all large
+$X$; the same shape with $\mathcal{P}^{\mathrm{m}}_j$ in place of
+$\mathcal{P}^{\mathrm{b}}_j$ is $\lean{FixedCosetMissDensity}\, j\, \delta$. The
+shape of the conclusion is the predicate $\lean{GrowsLikeSqrtOverLogSq}\, F\, c$:
+$c > 0$ and $F(X) \ge c\sqrt X/(\log X)^{2}$ from some point on. With these, the
+lower half of the count is four lines.
+
+\begin{theorem}[The lower shape]
+\label{thm:counts-lower}
+\lvCond{} \lean{card\_blind\_semiprimes\_ge}
+Assume $\lean{BatemanHornFamily}\, j\, C$ and
+$\lean{FixedCosetBlindDensity}\, j\, \delta$, with $j \ge 2$, $C > 0$ and
+$\delta > 0$. Then there is $X_0$ such that for every $X \ge X_0$ with $X \ge 2$,
+\[
+  \#\,\mathcal{B}(X) \;\ge\; \delta\,C\,
+  \frac{\sqrt X}{(\log X)^{2}} ,
+\]
+that is, $\lean{GrowsLikeSqrtOverLogSq}$ holds for $X \mapsto \#\,\mathcal{B}(X)$
+with constant $\delta C$.
+\end{theorem}
+
+\begin{proof}
+\emph{The two thresholds.} Unpack the two hypotheses: $C > 0$ and $X_1$ with
+$|\mathcal{P}_j(X)| \ge C\sqrt X/(\log X)^{2}$ for $X \ge X_1$, and
+$\delta > 0$ with $|\mathcal{P}^{\mathrm{b}}_j(X)| \ge
+\delta\,|\mathcal{P}_j(X)|$ for $X \ge X_2$. Take
+$X \ge \max(X_1, X_2)$.
+
+\emph{The chain.} Multiplying the first inequality by $\delta > 0$ gives
+$\delta C \sqrt X/(\log X)^{2} \le \delta\,|\mathcal{P}_j(X)|$, which is at most
+$|\mathcal{P}^{\mathrm{b}}_j(X)|$ by the second, which is at most
+$\#\,\mathcal{B}(X)$ because every member of $\mathcal{P}^{\mathrm{b}}_j(X)$ is a
+semiprime at which some $C_M$ has no witness and the
+correspondence $p \mapsto (p, q_j(p))$ is injective ($\lv$
+\lean{card\_familyBlind\_le\_blindSemiprimes}). The chain is the statement, with
+$X_0 = \max(X_1,X_2)$ and $c = \delta C > 0$.
+\end{proof}
+
+The theorem is a packaging, and it is proved as one: the density hypothesis is
+close to the conclusion, and the substance of the section is the upper bound and
+the location of the mass. What the packaging does do is name the two inputs
+exactly, which is the point --- the lower shape for $\mathcal{B}$ rests on
+Bateman--Horn and on one equidistribution input, and on nothing else. The same
+four lines give the count for $\mathcal{M}$,
+$\lvCond$ \lean{card\_missed\_semiprimes\_ge}, with
+$\lean{FixedCosetMissDensity}$ in place of
+$\lean{FixedCosetBlindDensity}$; it is the statement that pairs with the count of
+\S\ref{sec:wrap-image} and it is named once, here, because the composites at which
+the criterion vanishes at every base are not this Part's subject.
+
+\subsection{The exponent is one half}
+\label{sec:counts-exponent}
+
+The two bounds are now in hand, and the exponent follows from them without
+further mathematics.
+
+\begin{theorem}[The exponent of the count]
+\label{thm:exponent-half}
+\lvCond{} \lean{blind\_exponent\_half\_conditional}
+Assume $\lean{BGKBound}$, $\lean{BatemanHornFamily}\, j\, C$ and
+$\lean{FixedCosetBlindDensity}\, j\, \delta$, with $j \ge 2$, $C > 0$ and
+$\delta > 0$. Then for every $\gamma > 0$ there are $c > 0$, $Q$ and $X_0$ such
+that for every $X \ge X_0$ with $X \ge 2$,
+\[
+  c\,\frac{\sqrt X}{(\log X)^{2}} \;\le\; \#\,\mathcal{B}(X) \;\le\;
+  \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\,
+  \bigl(Q + \lceil X^{\gamma} \rceil\bigr)^{2} .
+\]
+\end{theorem}
+
+\begin{proof}
+\emph{Below.} Theorem~\ref{thm:counts-lower} at $\delta$ and $C$ gives
+$c = \delta C > 0$ and $X_0$ with the lower inequality.
+
+\emph{Above.} Theorem~\ref{thm:counts-BGK} at the given $\gamma$ gives $Q$ with
+the upper inequality for every $X$.
+
+Together they are the display, and the two quantifier orders are different: $Q$
+depends on $\gamma$, and the lower constant does not.
+\end{proof}
+
+The exponent is $1/2$ in the sense that
+\[
+  \frac{X^{1/2}}{(\log X)^{2}} \;\ll\; \#\,\mathcal{B}(X) \;\ll_{\gamma}\;
+  X^{1/2+2\gamma}
+\]
+for every $\gamma > 0$, and \emph{not} in the sense that the asymptotic constant
+is known. The constant is a conjecture and is not assumed anywhere. With
+Bateman--Horn's constant $C_{BH}(j)$ for the pair and the density $\delta_j$, the
+prediction is
+\[
+  \#\,\bigl(\text{exceptional family members} \le X\bigr) \;\sim\;
+  \delta_j\, C \,\frac{\sqrt{X/j}}{\log^{2} X} ,
+\]
+where the halving of the logarithm at $Y = \sqrt{X/j}$ contributes a factor $4$,
+so that the constant $C$ in the display is $4\,C_{BH}(j)$; the statement is the proposition
+\lean{BlindCountAsymptotic}, it is never used as a hypothesis, and the factor is
+measured rather than derived
+(\texttt{experiments/\allowbreak cursorG\_bh\_constant.py}). The same conjecture
+for the criterion's own set --- the same shape with $\mathcal{M}(X)$ and
+$\mathcal{P}^{\mathrm{m}}_j(X)$ in place of the exceptional sets --- is the proposition
+\lean{MissCountAsymptotic}, and neither is assumed anywhere in this section.
+
+\subsection{Where the mass sits}
+\label{sec:counts-mass}
+
+An exponent does not say where the members are, and for this section the ``where''
+is a stronger statement than the ``how many'' of \S\ref{sec:counts-exponent}.
+Three steps locate it, and each is a statement about the local images rather than
+about the count.
+
+\emph{Even $j$: nothing.} If $j$ is even and $p > 2$, the two valuations
+separate:
+\[
+  v_2\bigl(p\,q_j(p) - 1\bigr) \;<\; v_2\bigl(q_j(p) - 1\bigr)
+  \qquad (\lv\ \lean{family\_even\_two\_adic\_gap}) ,
+\]
+because $p\,q_j(p) - 1 = (p-1)(1 + jp)$ with $1 + jp$ odd, while
+$q_j(p) - 1 = j(p-1)$ with $j$ even. A gap in the $2$-adic valuation collapses
+the invariant ($\lv$ \lean{residueGcd\_eq\_one\_of\_padicValNat\_lt},
+\S\ref{sec:local}), so every member of the family has $G = 1$ ($\lv$
+\lean{family\_even\_residueGcd\_eq\_one}) and the criterion does not vanish at any of
+them
+($\lv$ \lean{family\_even\_not\_allZero}, by $\lv$
+\lean{not\_allZero\_of\_padicValNat\_lt}, \S\ref{sec:wrap}). The first live
+value of $j$ on the family is therefore odd, and the smallest odd $j \ge 2$ is
+$3$.
+
+\emph{$j = 3$: nothing, and provably so.} Here $q_3(p) = 3p-2$ ($\lv$
+\lean{familyQ\_three}), so $q_3(3) = 7$ ($\lv$
+\lean{familyQ\_three\_seven}) and $(3,7)$ is a member for every $X \ge 21$
+($\lv$ \lean{familyPairs\_three\_contains\_three}). But every member has
+$G = 1$ ($\lv$ \lean{residueGcd\_eq\_one\_of\_three\_mul\_sub\_two},
+\S\ref{sec:local}), so the family's exceptional set is empty
+($\lv$ \lean{familyBlind\_three\_eq\_empty}). Hence the density hypothesis is
+\emph{false} at $j = 3$ for every $\delta > 0$ ($\lv$
+\lean{not\_fixedCosetBlindDensity\_three}): a family none of whose members is
+exceptional cannot be exceptional for a positive proportion of its members, and
+the family is nonempty
+($\lv$ \lean{one\_le\_card\_familyPairs\_three}). So the density
+hypothesis is not vacuous everywhere; it is refuted at the one
+degree where the theory says it must be, which is what makes its failure
+informative.
+
+\emph{$j = 5$: one class.} If $G > 1$ on a member of the family at $j = 5$, then
+\[
+  p \;\equiv\; 7 \pmod 8
+  \qquad (\lv\ \lean{family\_five\_seven\_mod\_eight\_of\_one\_lt}) ,
+\]
+and the proof separates the alternatives. On $q \equiv 1 \pmod 4$ --- which is
+what $p \equiv 1 \pmod 4$ gives, since $q = 5p - 4$ --- the invariant collapses
+outright ($\lv$ \lean{residueGcd\_eq\_one\_of\_family\_five\_one\_mod\_four},
+\S\ref{sec:families-five}). On $p \equiv 3 \pmod 8$ the numerator at $p$ is
+$v_p = (p+1)/4$, which is odd; the invariant divides it ($\lv$
+\lean{residueGcd\_dvd\_numerator}, \S\ref{sec:numerators}) and divides $2$ ($\lv$
+\lean{residueGcd\_dvd\_two\_of\_family\_five}, \S\ref{sec:families-five}), so
+$G = 1$ ($\lv$
+\lean{family\_five\_residueGcd\_eq\_one\_of\_not\_seven\_mod\_eight}). The exceptional set
+therefore lives on a single residue class, of weight $1/4$ among the members, and
+the density of the previous subsection is the density \emph{on that class}
+multiplied by that weight.
+
+\begin{conjecture}[The density at $j = 5$]
+\label{conj:delta-five}
+\sorry{}
+For every $\delta < 31/4096$ the fixed-coset density for exceptional members holds at
+$j = 5$: $\lean{FixedCosetBlindDensity}\, 5\, \delta$.
+\end{conjecture}
+
+The number is a model, and the model is the geometric face. On the class
+$p \equiv 7 \pmod 8$ the coset of the fifth roots is equidistributed modulo the
+primes of the family, its reduced elements fill the cube $[0,3/4]^{3}$, and the
+condition $G > 1$ is $1/2 \le \sum x_i \le 5/4$ there; the volume of that region
+is $31/128$, the parity factor $1/8$ brings the proportion on the class to $31/1024$, and
+multiplying by the class weight $1/4$ gives
+$31/4096 \approx 0.00757$. The theorem behind the model --- fixed-coset
+equidistribution of the roots of $\Phi_5$ modulo primes --- is open, and the
+development has no \texttt{sorry} for it: the density is a hypothesis in a
+signature (\lean{FixedCosetBlindDensity}), and the conjecture above is the
+statement that it holds at that constant, not a gap in a proof.
+Remark~\ref{rem:mass} records what has been measured against the model, with its
+ranges and its scripts.
+
+\begin{remark}[The mass, measured]
+\label{rem:mass}
+The model is checked against the family, and the check is a measurement with a
+range and a script, never a layer of proof. On the members with $p < 6 \cdot
+10^{6}$ the observed density of $G = 2$ is $348/45126 = 0.00771$
+(\texttt{experiments/\allowbreak delta5\_geometric.py}), against the model's
+$0.00757$. The same count on a scan to $q < 3 \cdot 10^{7}$, split by whether
+$p$ is prime, gives $0.00771$ on the prime side and $0.00741$ on the composite
+side, with a two-proportion $z$-score of $+0.71$
+(\texttt{experiments/\allowbreak family\_independence\_test.py}): primality of
+$p$ is not what the coset condition sees, which is what makes the product
+heuristic legitimate. And the count itself, over $j \in \{5,7,9,11,13\}$ with
+$p < 3 \cdot 10^{6}$ and complete for $N \le 4.5 \cdot 10^{13}$, is in
+Table~\ref{tab:count-blinds}. The last column is the ratio that the model would
+make constant; it rises from $0.021$ to $0.037$ across three decades, which is
+the honest reading of a range this short --- the shape is right, and the range
+does not pin the constant.
+\end{remark}
+
+\begin{table}[htbp]
+\centering
+\caption{Exceptional family members counted by
+\texttt{experiments/\allowbreak blind\_semiprime\_count.py}, for
+$j \in \{5,7,9,11,13\}$ with $p < 3 \cdot 10^{6}$ and complete for
+$N \le 4.5 \cdot 10^{13}$. The last column is
+$\#\,\mathcal{P}^{\mathrm{b}}_j(X) \big/ (\sqrt X/\log^{2} X)$, the ratio that
+the model behind Conjecture~\ref{conj:delta-five} would drive to a constant. No
+cell carries a marker: the figures are computed, not proved.}
+\label{tab:count-blinds}
+\begin{tabular}{rrr}
+\toprule
+$X$ & exceptional & exceptional $\big/ (\sqrt X/\log^{2} X)$ \\
+\midrule
+$10^{10}$ & $4$   & $0.021$ \\
+$10^{11}$ & $12$  & $0.024$ \\
+$10^{12}$ & $50$  & $0.038$ \\
+$10^{13}$ & $131$ & $0.037$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{The reading.} The mass sits on one class of one family, the class
+$p \equiv 7 \pmod 8$ of $q = 1 + 5(p-1)$, and $300\,979\,369$ is the member of
+it that the book proves: $38791 - 1 = 5\,(7759 - 1)$, so the pair is on the
+family at $j = 5$, its smaller prime is $7759 \equiv 7 \pmod 8$, and its
+invariant is $2$ (\S\ref{sec:off-carmichael}). That closes the question the
+section opened, in the only form in which the book can close it: the exceptional set off
+Korselt is infinite if the density holds, sparse at the square-root scale, and
+located on a single class of a single family.
+
+\subsection{Scope}
+\label{sec:counts-honesty}
+
+Nothing here makes the criterion a test: the cost is in the bases, and it
+is \S\ref{sec:schedule}'s and \S\ref{sec:least-safe}'s subject --- this section
+counts numbers, not operations. Nothing here says that an exceptional $N$ is a
+Carmichael number: that is false (\S\ref{sec:off-carmichael}), and
+the sets counted here are semiprimes off the Korselt locus. And nothing numbered
+in this section is unconditional. Its one unconditional input is the index bound
+recalled at the head of \S\ref{sec:counts-index},
+$G(N) \le \gcd(N-1,p-1)$, with the two corollaries drawn from it; each of the
+five displays carries its hypothesis in its statement, $L$'s bound in
+Theorem~\ref{thm:counts-upper}, the exponential-sum bound in
+Theorems~\ref{thm:large-image-BGK} and~\ref{thm:counts-BGK}, Bateman--Horn and
+the density in Theorem~\ref{thm:counts-lower}, and all three in
+Theorem~\ref{thm:exponent-half}.

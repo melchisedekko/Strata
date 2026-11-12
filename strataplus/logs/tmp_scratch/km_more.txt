@@ -1,0 +1,21 @@
+<=1e18: total=783 4|k=191  k-range scanned 1..91723
+  claimed (783, 191)
+(1e18,1e19]: total=652 4|k=163  k-range scanned 91718..197608
+  claimed (652, 163)
+(1e19,1e20]: total=1196 4|k=267  k-range scanned 197603..425730
+  claimed (1196, 267)
+(1e20,1e21]: total=2134 4|k=529  k-range scanned 425725..917205
+  claimed (2134, 529)
+29723*0.92028= 27353.48244
+round= 27353
+5646993409: N=5646993409 primes=True kor=True N%4=1 four=True C=0 v=[12, 32, 56, 348] PW=True
+--- earlier (1,2,5,10) members ---
+  j=30 m=22146 N=24055615898561844361 primes=[22147, 44293, 110731, 221461] four=True C=0
+8639e11: N=863944704001 primes=True kor=True N%4=1 four=True C=0 v=[4, 40, 564, 4000] PW=True
+3.73e13: N=37344340640881 primes=True kor=True N%4=1 four=True C=0 v=[84, 132, 2744, 1856] PW=True
+1.44e15: N=1445611610730601 primes=True kor=True N%4=1 four=True C=0 v=[128, 432, 2972, 16052] PW=True
+with 27402: 998.9375 vs 997.4
+prereg E_A with 27353: 997.419
+1286=1266+3+17 1286
+sum C18 scan 1401644 plus ω=12? scan said C 18  no 12, and 0 at end of prereg C(d,1e18) recount includes 0 for last
+sum 1401644 claimed 1401644 True

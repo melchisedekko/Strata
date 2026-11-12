@@ -1,0 +1,308 @@
+=== sections/04_upper_blade.tex
+1: \section{The upper bound}
+2: \label{sec:least-safe-upper_blade}
+3: 
+4: \Cref{sec:least-safe-lcm_criterion} turned the absence of a witness below $B$ into
+5: the divisibility $\operatorname{lcm}(1,\ldots,B) \mid G(N)$. At $B = \ell(N) - 1$
+6: it says that $\operatorname{lcm}(1,\ldots,\ell(N)-1)$ divides $G(N)$, and $G(N)$
+7: itself divides $N(N-1)$ (\cref{thm:least-safe-dvd-mul-sub-one}), so a least common
+8: multiple of size about $N^2$ has to be large. This section makes that
+9: quantitative for every odd composite, from one elementary inequality on
+10: $\operatorname{lcm}(1,\ldots,y)$, and the inequality comes from a binomial
+11: coefficient: every prime power dividing $\binom{2n}{n}$ is at most $2n$, so
+12: $\binom{2n}{n}$ divides $\operatorname{lcm}(1,\ldots,2n)$, while
+13: $4^n \le 2n\binom{2n}{n}$; together, $2^{2n} \le 2n \operatorname{lcm}(1,\ldots,2n)$,
+14: which the three lemmas below bring to the form spent at $y = \ell(N) - 1$.
+15: 
+16: \begin{lemma}\lv\lean{centralBinom\_dvd\_lcm\_Icc}
+17: \label{lem:least-safe-central-binom-dvd-lcm}
+18: Let $n \ge 1$. Then $\binom{2n}{n}$ divides
+19: $\operatorname{lcm}(1,\ldots,2n)$.
+20: \end{lemma}
+21: \begin{proof}
+22: Write $C = \binom{2n}{n}$ and $L = \operatorname{lcm}(1,\ldots,2n)$, both nonzero.
+23: Divisibility of positive integers is decided prime by prime, so fix a prime $p$:
+24: the valuation of a binomial coefficient obeys $p^{v_p(C)} \le 2n$
+25: (\lean{pow\_factorization\_centralBinom\_le}), so $p^{v_p(C)}$ is a positive
+26: integer at most $2n$, hence one of the members of $[1,2n]$, and $L$ is divisible
+27: by each of its members. Therefore $p^{v_p(C)} \mid L$, that is
+28: $v_p(C) \le v_p(L)$, at every prime $p$, and $C \mid L$.
+29: \end{proof}
+30: 
+31: \begin{lemma}\lv\lean{four\_pow\_le\_mul\_lcm\_Icc}
+32: \label{lem:least-safe-four-pow-le-mul-lcm}
+33: Let $n \ge 1$. Then $4^n \le 2n \cdot \operatorname{lcm}(1,\ldots,2n)$.
+34: \end{lemma}
+35: \begin{proof}
+36: For $n \ge 1$, $4^n \le 2n\binom{2n}{n}$
+37: (\lean{Nat.four\_pow\_le\_two\_mul\_self\_mul\_centralBinom}), the elementary bound
+38: that Erd\H{o}s's proof of Bertrand's postulate turns on, and
+39: $\binom{2n}{n} \le \operatorname{lcm}(1,\ldots,2n)$ by
+40: \cref{lem:least-safe-central-binom-dvd-lcm}, since a divisor of a positive integer
+41: is at most it. Multiplying the second inequality by $2n$ and chaining the two,
+42: \[
+43:   4^n \;\le\; 2n\binom{2n}{n} \;\le\; 2n\,\operatorname{lcm}(1,\ldots,2n).
+44: \]
+45: \end{proof}
+46: 
+47: \begin{lemma}\lv\lean{two\_pow\_pred\_le\_mul\_lcm}
+48: \label{lem:least-safe-two-pow-pred-le-mul-lcm}
+49: For every $y \ge 1$, $2^{y-1} \le y \cdot \operatorname{lcm}(1,\ldots,y)$.
+50: \end{lemma}
+51: \begin{proof}
+52: Split on the parity of $y \ge 1$. If $y = 2n$ is even then $n \ge 1$, and
+53: \cref{lem:least-safe-four-pow-le-mul-lcm} at $n$ reads
+54: $2^{2n} \le 2n \cdot \operatorname{lcm}(1,\ldots,2n) = 2n \cdot
+55: \operatorname{lcm}(1,\ldots,y)$; writing $2^{2n} = 2 \cdot 2^{2n-1}$ and
+56: cancelling the factor $2$ gives $2^{y-1} \le n \cdot
+57: \operatorname{lcm}(1,\ldots,y)$, and $n \le y$ gives the claim. If $y = 1$ the
+58: claim is $1 \le 1$. If $y = 2(n+1)+1 \ge 3$ is odd, \cref{lem:least-safe-four-pow-le-mul-lcm} at $n+1$ reads $2^{y-1} = 2^{2(n+1)} \le 2(n+1) \cdot \operatorname{lcm}(1,\ldots,2(n+1))$, and both factors grow when $2(n+1)$ is replaced by the odd endpoint $y$: $2(n+1) \le y$, and $\operatorname{lcm}(1,\ldots,2(n+1)) \le \operatorname{lcm}(1,\ldots,y)$ because the shorter one divides the longer (\lean{lcm\_Icc\_mono}).
+59: \end{proof}
+60: 
+61: \begin{theorem}\lv\lean{leastSafeModulus\_le}
+62: \label{thm:least-safe-modulus-le}
+63: Let $N$ be an odd composite. Then
+64: \[
+65:   \ell(N) \;\le\; 2\log_2\bigl(N(N-1)\bigr) + 3 .
+66: \]
+67: \end{theorem}
+68: \begin{proof}
+69: Let $G = G(N)$ and $T = N(N-1)$, so that $\ell(N) = \ell(G)$ is the least
+70: non-divisor of $G$. For an odd composite $N$ the invariant is a positive integer
+71: (\cref{thm:least-safe-pos}, \lean{residueGcd\_pos}), which is what makes
+72: $\ell(G)$ defined, and $\ell(N) \ge 2$
+73: (\cref{prop:least-safe-modulus-ge-two}, \lean{two\_le\_leastSafeModulus}), so
+74: $y = \ell(N) - 1 \ge 1$ and
+75: \cref{lem:least-safe-two-pow-pred-le-mul-lcm} at that $y$ reads
+76: \[
+77:   2^{\ell(N)-2} \;\le\; (\ell(N)-1)\,\operatorname{lcm}(1,\ldots,\ell(N)-1).
+78: \]
+79: 
+80: Two divisors of $G$ bound the two factors on the right. At $B = \ell(N) - 1$,
+81: \cref{thm:least-safe-lcm-before} (\lean{lcm\_before\_leastSafe\_dvd}) gives
+82: $\operatorname{lcm}(1,\ldots,\ell(N)-1) \mid G$; and $\ell(N) - 1$ is an integer
+83: $m$ with $1 \le m < \ell(N)$, so it divides $G$ by
+84: \cref{lem:least-safe-modulus-below-dvd} (\lean{dvd\_of\_lt\_leastSafeModulus}).
+85: Separately $G \mid T$ (\cref{thm:least-safe-dvd-mul-sub-one},
+86: \lean{residueGcd\_dvd\_mul\_sub\_one}), and $T > 0$ because $N \ge 3$. A divisor
+87: of a positive integer is at most it, so each of these two divisors of $G$ is at most $T$:
+88: \[
+89:   (\ell(N)-1)\,\operatorname{lcm}(1,\ldots,\ell(N)-1) \;\le\; T \cdot T = T^2 .
+90: \]
+91: 
+92: Two elementary facts about $\log_2$ are all that is left: $2^k \le n$ with
+93: $n > 0$ gives $k \le \log_2 n$ (\lean{le\_log2\_of\_pow\_le}), and
+94: $\log_2(T^2) \le 2\log_2 T + 1$ (\lean{log2\_sq\_le}). As $T^2 > 0$ they give
+95: $\ell(N) - 2 \le \log_2(T^2) \le 2\log_2 T + 1$, that is
+96: \[
+97:   \ell(N) \;\le\; 2\log_2\bigl(N(N-1)\bigr) + 3 .
+98: \]
+99: \end{proof}
+100: 
+101: The bound is also exported as \lean{leastSafeModulus\_residueGcd\_le} \lv.
+102: 
+103: The bound above is not the sharpest available. For every odd composite $N$,
+104: $\ell(N) \le \lfloor \log_2 N / 2 \rfloor + \log_2(\log_2 N + 2) + 3$; and for
+105: squarefree $N$ with at least three prime factors, in particular for every
+106: Carmichael number,
+107: $\ell(N) \le \lfloor \log_2 N / 3 \rfloor + \log_2(\log_2 N + 2) + 3$
+108: (\cite{Companion-residue-gcd}, \lean{leastSafeModulus\_le\_half\_log2} and
+109: \lean{leastSafeModulus\_le\_third\_log2}). Both are quoted, not used.
+110: 
+111: At the running example, the inequality at $y = \ell(N) - 1 = 6$ reads
+112: $2^5 = 32 \le 6 \cdot 60 = 360$, and the bound itself allows much more:
+113: $2^{165} \le N(N-1) < 2^{166}$, so $\log_2\bigl(N(N-1)\bigr) = 165$ and
+114: \cref{thm:least-safe-modulus-le} gives $\ell(N) \le 2 \cdot 165 + 3 = 333$
+115: against a true value of $7$: the bound holds with much room to spare.
+=== sections/05_record_ladder.tex
+1: \section{Seven records}
+2: \label{sec:least-safe-record_ladder}
+3: 
+4: \Cref{sec:least-safe-upper_blade} bounded $\ell(N)$ above: every odd composite is
+5: seen by some modulus of size $O(\log N)$. This section exhibits individual composites with
+6: their $\ell(N)$. Seven odd composites are known whose least safe
+7: moduli are $7$, $8$, $11$, $13$, $17$, $19$ and $23$, and for each the whole
+8: computation is a divisibility statement about one number: a machine-checked
+9: $G(N)$, and its least non-divisor, whose divisors are the moduli that have no
+10: witness at $N$. The table below lists them in increasing $\ell(N)$. Four of
+11: the seven are theorems of this section; the other three are stated where their
+12: certificates are (\cref{sec:least-safe-certificates}).
+13: 
+14: \begin{table}[htbp]
+15:   \centering
+16:   \caption{The records. Each row is an odd composite $N$ with the stated
+17:     $\ell(N)$, ordered by $\ell(N)$, with the member's decimal expansion
+18:     printed beneath it for the four rows above the rule; the three rows below the rule are the records whose members are stated in \cref{sec:least-safe-certificates}; the certificates behind all seven rows are in \cref{app:least-safe-certificates}.}
+19:   \label{tab:least-safe-ladder}
+20:   \begin{tabular}{@{}rrrl@{}}
+21:     \toprule
+22:     $\ell(N)$ & $G(N)$ & $m$ & $K$ \\
+23:     \midrule
+24:     $7$ & $60$ & $29$ & $6486240$ \\
+25:     \multicolumn{4}{@{}l}{$N = 7359698031169821895224001$} \\
+26:     \addlinespace[3pt]
+27:     $8$ & $420$ & $209$ & $23601123000$ \\
+28:     \multicolumn{4}{@{}l}{$N = 121743572279260616337106970304278490001$} \\
+29:     \addlinespace[3pt]
+30:     $11$ & $5040$ & $419$ & $1094162424600$ \\
+31:     \multicolumn{4}{@{}l}{$N = 97048940404974711363791828287812695521836001$} \\
+32:     \addlinespace[3pt]
+33:     $13$ & $27720$ & $4619$ & $854021634025560$ \\
+34:     \multicolumn{4}{@{}l}{$N = 61423212019676954455426453373083752772573891910374548001$} \\
+35:     \midrule
+36:     $17$ & $6486480$ & $360359$ & $28475431726698356400$ \\
+37:     $19$ & $110270160$ & $12252239$ & $5985917979608424412114560$ \\
+38:     $23$ & $931170240$ & $232792559$ & $27104577797036681065696572000$ \\
+39:     \bottomrule
+40:   \end{tabular}
+41: \end{table}
+42: 
+43: Every member in the table is a member of the consecutive family of
+44: \cite{Companion-monograph}. There $m$ is odd and $K$ is even with $K \ge m + 3$,
+45: the three factors are
+46: \[
+47:   P = mK + 1, \qquad Q = (m+1)K + 1, \qquad R = (m+2)K + 1,
+48: \]
+49: and the member is their product $N = PQR$. For the four rows above the rule the
+50: factors are, in the rows' order, $188100961$, $194587201$ and $201073441$;
+51: $4932634707001$, $4956235830001$ and $4979836953001$; $458454055907401$,
+52: $459548218332001$ and $460642380756601$; and $3944725927564061641$,
+53: $3945579949198087201$ and $3946433970832112761$; the product of each triple is
+54: the member printed beneath its row.
+55: 
+56: For every row below the first, the pair consisting of that row's $G(N)$ and of
+57: the least non-divisor of that number is a machine-checked theorem. In the
+58: table's order the pair at the second row is
+59: \lean{residueGcd\_consec\_record\_eq\_four\_twenty} and
+60: \lean{leastSafeModulus\_four\_twenty}; at the third,
+61: \lean{residueGcd\_consec\_record\_eq\_five\_forty} and
+62: \lean{leastSafeModulus\_five\_forty}; at the fourth,
+63: \lean{residueGcd\_consec\_record\_eq\_twenty\_seven\_seven\_twenty} and
+64: \lean{leastSafeModulus\_twenty\_seven\_seven\_twenty}; at the fifth,
+65: \lean{residueGcd\_consec\_record\_eq\_six\_four\_eight\_six\_four\_eight\_zero}
+66: and \lean{leastSafeModulus\_six\_four\_eight\_six\_four\_eight\_zero}; at the
+67: sixth,
+68: \lean{residueGcd\_consec\_record\_eq\_one\_one\_zero\_two\_seven\_zero\_one\_six\_zero}
+69: and \lean{leastSafeModulus\_one\_one\_zero\_two\_seven\_zero\_one\_six\_zero}; and
+70: at the seventh,
+71: \lean{residueGcd\_consec\_record\_eq\_nine\_three\_one\_one\_seven\_zero\_two\_four\_zero}
+72: and \lean{leastSafeModulus\_nine\_three\_one\_one\_seven\_zero\_two\_four\_zero}.
+73: The first row is the running example of \cref{ex:least-safe-sixty}; its
+74: invariant is computed from the closed form of \cref{thm:least-safe-consec-closed-form}, in the theorem below, and its least
+75: non-divisor is the lemma below.
+76: 
+77: \begin{lemma}\lv\lean{leastSafeModulus\_sixty}
+78: \label{lem:least-safe-sixty}
+79: $\ell(60) = 7$.
+80: \end{lemma}
+81: \begin{proof}
+82: Since $60 = 2^2 \cdot 3 \cdot 5$, each of $2, 3, 4, 5, 6$ divides $60$, while
+83: $7 \nmid 60$. The least integer $M \ge 2$ that does not divide $60$ is therefore
+84: $7$, and by \cref{def:least-safe-modulus} that integer is $\ell(60)$.
+85: \end{proof}
+86: 
+87: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_seven}
+88: \label{thm:least-safe-exists-seven}
+89: There is an odd composite $N$ with $\ell(N) = 7$.
+90: \end{theorem}
+91: \begin{proof}
+92: Take the first row of \cref{tab:least-safe-ladder}: the member of
+93: \cref{ex:least-safe-sixty}, at $m = 29$ and $K = 6486240$, with the three factors
+94: $P = 188100961$, $Q = 194587201$ and $R = 201073441$. It is odd and at least $3$,
+95: as every member of the consecutive family is. The three factors are prime, and
+96: they are small enough for trial division in the kernel to settle it
+97: (\cref{sec:least-safe-certificates}). By \cref{lem:least-safe-consec-korselt} (at $m = 29$, $K = 6486240$:
+98: $2K+3 = 29 \cdot 447327$, $K = 30 \cdot 216208$, $2K+2m+1 = 31 \cdot 418469$) the
+99: Korselt divisibilities $P - 1 = mK$, $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide
+100: $N - 1$; $m = 29$ is odd and $K = 6486240$ is even with $K \ge m + 3$, so the closed form of
+101: \cref{thm:least-safe-consec-closed-form} applies,
+102: and the divisors of $G(N)$ are the common divisors of $(m+1)^2 = 900$,
+103: $(P - m^2)/2 = 94050060$ and $(R - (m+2)^2)/2 = 100536240$, whose gcd is $60$.
+104: Hence $G(N) = 60$, as the value theorem
+105: \lean{residueGcd\_consec\_record\_eq\_sixty} records. Were $N$ prime, $G(N)$ would
+106: be $0$ (\cref{thm:least-safe-zero-iff-prime},
+107: \lean{residueGcd\_eq\_zero\_iff\_prime}), and $G(N)$ is not $0$; so $N$ is composite, and
+108: $G(N) = 60$ is positive, which is what makes $\ell(N)$ defined at that value. By
+109: \cref{lem:least-safe-sixty} the least non-divisor of $60$ is $7$. Hence
+110: $\ell(N) = 7$.
+111: \end{proof}
+112: 
+113: The first record is the instance the paper starts from, and its three factors are
+114: small enough for trial division in the kernel to settle their primality. The records
+115: at $\ell = 8$, $11$ and $13$ carry factors too large for that: their primality is taken on
+116: credit until \cref{sec:least-safe-certificates}. All four read their invariant off
+117: the closed form on the family, where the primality of the three factors and the
+118: Korselt divisibilities join the row's data.
+119: 
+120: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_eight}
+121: \label{thm:least-safe-exists-eight}
+122: There is an odd composite $N$ with $\ell(N) = 8$.
+123: \end{theorem}
+124: \begin{proof}
+125: Take the second row of \cref{tab:least-safe-ladder}: its member $N$, the product
+126: of the three factors $P = 4932634707001$, $Q = 4956235830001$ and
+127: $R = 4979836953001$. The factors are prime; what makes that statement
+128: theorem-grade is the certificate machinery of
+129: \cref{sec:least-safe-certificates}.
+130: 
+131: The closed form of the invariant on the consecutive family
+132: (\cref{thm:least-safe-consec-closed-form}, \lean{consec\_dvd\_residueGcd\_iff}) applies to a
+133: member whose three factors are prime and whose Korselt divisibilities
+134: $P - 1 = mK$, $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide $N - 1$, and it then
+135: reads $M \mid G(N)$ exactly when $M \mid (m+1)^2$, $2M \mid P - m^2$ and
+136: $2M \mid R - (m+2)^2$. Both hypotheses hold here: the three factors are prime,
+137: and the Korselt divisibilities hold by \cref{lem:least-safe-consec-korselt} at $m = 209$,
+138: $K = 23601123000$: $2K+3 = 209 \cdot 225848067$, $K = 210 \cdot 112386300$ and
+139: $2K+2m+1 = 211 \cdot 223707329$. So, reading the closed form, the divisors of
+140: $G(N)$ are the common divisors of $(m+1)^2 = 44100$,
+141: $(P - m^2)/2 = 2466317331660$ and $(R - (m+2)^2)/2 = 2489918454240$,
+142: whose gcd is $420$; hence $G(N) \mid 420$, and $420 \mid G(N)$ because the form
+143: reads the three divisibilities at $M = 420$. So $G(N) = 420$, as the row's value
+144: theorem \lean{residueGcd\_consec\_record\_eq\_four\_twenty} records.
+145: 
+146: The member is composite. Were $N$ prime, its invariant would be $0$
+147: (\cref{thm:least-safe-zero-iff-prime}, \lean{residueGcd\_eq\_zero\_iff\_prime}), against
+148: $G(N) = 420$. So $G(N) = 420 \ge 1$ makes $\ell(N)$ defined at this value, and
+149: $\ell(N)$ is the least non-divisor of $420$: each of $2, \ldots, 7$ divides
+150: $420 = 2^2 \cdot 3 \cdot 5 \cdot 7$, and $8$ does not, so $\ell(N) = 8$, as the
+151: row's value theorem \lean{leastSafeModulus\_four\_twenty} records. The second
+152: row's member is therefore an odd composite with $\ell(N) = 8$.
+153: \end{proof}
+154: 
+155: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_eleven}
+156: \label{thm:least-safe-exists-eleven}
+157: There is an odd composite $N$ with $\ell(N) = 11$.
+158: \end{theorem}
+159: \begin{proof}
+160: Take the third row of \cref{tab:least-safe-ladder}: its member $N$, with factors
+161: $P = 458454055907401$, $Q = 459548218332001$ and $R = 460642380756601$, at
+162: $m = 419$ and $K = 1094162424600$. The three factors are prime, and each step of
+163: the second row's proof has its counterpart here with this row's data. The
+164: Korselt divisibilities $P - 1 = mK$, $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide
+165: $N - 1$, so the closed form applies; the three numbers $(m+1)^2 = 176400$,
+166: $(P - m^2)/2 = 229227027865920$ and $(R - (m+2)^2)/2 = 230321190289680$
+167: have gcd $5040$, and the divisibilities hold at $M = 5040$, so $G(N) = 5040$, as
+168: \lean{residueGcd\_consec\_record\_eq\_five\_forty} records. The member is
+169: composite, since $G(N)$ is not $0$; so $\ell(N)$ is defined at $G(N) = 5040$,
+170: and $5040$ is divisible by each of $2, \ldots, 10$ and not by $11$, so
+171: $\ell(N) = 11$, as \lean{leastSafeModulus\_five\_forty} records.
+172: \end{proof}
+173: 
+174: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_thirteen}
+175: \label{thm:least-safe-exists-thirteen}
+176: There is an odd composite $N$ with $\ell(N) = 13$.
+177: \end{theorem}
+178: \begin{proof}
+179: Take the fourth row of \cref{tab:least-safe-ladder}: its member $N$, the product
+180: of the prime factors $P = 3944725927564061641$, $Q = 3945579949198087201$ and
+181: $R = 3946433970832112761$ at $m = 4619$ and $K = 854021634025560$. Again each
+182: step of the second row's proof has its counterpart here. The Korselt
+183: divisibilities $P - 1 = mK$, $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide $N - 1$,
+184: so the closed form applies; $(m+1)^2 = 21344400$, $(P - m^2)/2 =
+185: 1972362963771363240$ and $(R - (m+2)^2)/2 = 1973216985405379560$ have gcd
+186: $27720$, and the divisibilities hold at $M = 27720$, so $G(N) = 27720$, as
+187: \lean{residueGcd\_consec\_record\_eq\_twenty\_seven\_seven\_twenty} records. The
+188: member is composite, and $\ell(N)$ is defined at $G(N) = 27720$, which is
+189: divisible by each of $2, \ldots, 12$ and not by $13$; so $\ell(N) = 13$, as
+190: \lean{leastSafeModulus\_twenty\_seven\_seven\_twenty} records.
+191: \end{proof}

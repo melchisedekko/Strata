@@ -1,0 +1,195 @@
+======= 8+2 MEMBERS =======
+1_2_5_10 m22146: N=24055615898561844361 omega=4 C=0 four=True v=[3076, 14764, 46140, 24604] OK
+  q_22147=150859616893487 OK
+  q_44293=181029905376953 OK
+  q_110731=90522309761311 OK
+  q_221461=12067788378905 OK
+1_2_6_9 m691110: N=24638461220793765442114081 omega=4 C=0 four=True v=[155500, 394920, 1658668, 555352] OK
+5_7_15_21 m6670296: N=21825241302354798940900884725761 omega=4 C=0 four=True v=[16154624, 13132144, 21886916, 2188684] OK
+k5 m=28: N=9085838517557761 omega=5 C=0 four=True v=[4, 216, 100, 5408, 96] OK
+  v_29 claimed 4, computed 4
+k5-class m3987660: N=27224159871922604904217687612666423201 omega=5 C=0 four=True v=[394384, 1281748, 25634956, 3450864, 17089968] OK
+  m factor 3987660= {2: 2, 3: 1, 5: 1, 41: 1, 1621: 1} claimed {2:2,3:1,5:1,41:1,1621:1}
+  1621-1= 1620 factors True 3987660=21840*182+12780 True
+d7: N=718132609376191497601 omega=7 C=0 four=True v=[4, 4, 12, 388, 140, 1196, 400] OK
+1_2_5_10 m631986: N=15952585018644172593910441 omega=4 C=0 four=True v=[87776, 421324, 1316640, 702204] OK
+1_2_5_10 m670866: N=20255561818039774459636201 omega=4 C=0 four=True v=[93176, 447244, 1397640, 745404] OK
+smallest 2508013: N=2508013 omega=3 C=0 four=True v=[20, 36, 100] OK
+  m=22146 mod 720 = 546
+  m=631986 mod 720 = 546
+  m=670866 mod 720 = 546
+all 546? True
+
+======= TABLE ARITHMETIC =======
+sum C 20138200 claimed 20138200 True
+sum PW21 7648 claimed 7648 True
+sum PW18 1266 claimed 1266 True
+sum PWband 6382 claimed 6382 True
+splits OK True
+1.1% = 0.011161027301347687 claimed 1.1% 1.1
+93.6% = 0.9361924686192469 claimed 93.6% 93.6
+1266+74= 1340 =1340? True
+confirm2 halves 20138200 True
+
+======= k5 TUPLE COUNT =======
+mu formula 5302911 claimed 5302911 True
+brute gcd=1 5302911 True
+
+======= RESULT FILES vs TABLE =======
+--- pw_scan ---
+PW<=1e18 3 1148
+PW<=1e18 4 99
+PW<=1e18 5 19
+C 18 3 35586
+C 18 4 40685
+C 18 5 178063
+C 18 6 414660
+C 18 7 460553
+C 18 8 223997
+C 18 9 44993
+C 18 10 3058
+C 18 11 49
+C 19 3 65309
+C 19 4 63343
+C 19 5 306310
+C 19 6 849564
+C 19 7 1159167
+C 19 8 720406
+C 19 9 196391
+C 19 10 20738
+C 19 11 576
+C 19 12 2
+C 20 3 120625
+C 20 4 98253
+C 20 5 514381
+C 20 6 1681744
+C 20 7 2774702
+C 20 8 2148017
+C 20 9 762963
+C 20 10 114232
+C 20 11 5804
+C 20 12 56
+C 21 3 224763
+C 21 4 151566
+C 21 5 846627
+C 21 6 3230120
+C 21 7 6363475
+C 21 8 6015901
+C 21 9 2714473
+C 21 10 547528
+C 21 11 42764
+C 21 12 983
+
+PW18 from scan {3: 1148, 4: 99, 5: 19} match True
+C 1e21 from prereg [224763, 151566, 846627, 3230120, 6363475, 6015901, 2714473, 547528, 42764, 983] match table True
+--- pinch head ---
+All 1401644 Carmichael numbers below 1e18 (Pinch); true 2009 rule. Misses: 1340.
+k  N%4  count  misses  heuristic n*4^-k/(k-1)!  c_k
+3  1  32749  1148  255.85  4.49
+3  3  2837  74  nan  nan
+4  1  40685  99  26.49  3.74
+5  1  175417  19  7.14  2.66
+5  3  2646  0  nan  nan
+6  1  414660  0  0.84  0.00
+7  1  459200  0  0.04  0.00
+7  3  1353  0  nan  nan
+8  1  223997  0  0.00  0.00
+9  1  44991  0  0.00  0.00
+9  3  2  0  nan  nan
+10  1  3058  0  0.00  0.00
+11  1  49  0  0.00  0.00
+misses with N = 3 (mod 4): 74
+  5385162680767 = 5743 * 16183 * 57943
+  8105109541171 = 3607 * 6011 * 373823
+  10702227556351 = 6871 * 20611 * 75571
+  19288340548471 = 8363 * 18131 * 127207
+  33422278670551 = 8779 * 13399 * 284131
+  50928061685551 = 1087 * 190051 * 246523
+  285727236481891 = 2683 * 93871 * 1134487
+  367
+1340 in pinch True
+families file counts {('admissible', 4): 98, ('obstructed', 4): 1, ('admissible', 5): 15, ('obstructed', 5): 4}
+--- k5 search ---
+=== P-W k=5 combo search, a_i<=60; heuristic (Bateman-Horn), NOT a result ===
+sanity k=4 (1,2,5,10) r=546 M=720: S=124.5354 E24=2.211 E27=7.408 E30=26.198
+sanity pw_ok class j<20: True
+5-tuples gcd=1: 5302911; surviving T>=1: 1195
+tuples with a P-W class: 1; classes (min period): 1
+admissible classes (local check & S>0): 1 in 1 tuples
+classes with E(1e30)>=1: 0; total E(1e30) all classes: 0.02555
+
+-- top 30 by E(1e30) --
+a                               r         M         S       E24       E27       E30
+(2, 3, 10, 15, 30)          12780     21840      1729         0  0.006378   0.02555
+
+-- first real instances (all a_i m+1 prime, n<1e35) for classes with E(1e30)>=1 --
+
+survival count [1, 1, 7, 26] 71
+
+--- larsen ---
+The Larsen shape (every prime = 3 (mod 4)) on all Carmichael numbers < 1e18 (Pinch).
+
+omega, N mod 4, shape -> count, misses (true 2009 rule), expected under h_k = 4^{1-k}/(k-1)! * shape weight
+  k= 3 N%4=1 all1:    18108  misses   708  expected   565.88
+  k= 3 N%4=1 mixed:    14641  misses   440  expected   457.53
+  k= 4 N%4=1 all1:    16357  misses    47  expected    42.60
+  k= 4 N%4=1 all3:     1334  misses     2  expected     3.47   <-- Larsen shape
+  k= 4 N%4=1 mixed:    22994  misses    50  expected    59.88
+  k= 5 N%4=1 all1:    44945  misses     6  expected     7.32
+  k= 5 N%4=1 mixed:   130472  misses    13  expected    21.24
+  k= 6 N%4=1 all1:    55361  misses     0  expected     0.45
+  k= 6 N%4=1 all3:     3053  misses     0  expected     0.02   <-- Larsen shape
+  k= 6 N%4=1 mixed:   356246  misses     0  expected     2.90
+  k= 7 N%4=1 all1:    28881  misses     0  expected     0.01
+  k= 7 N%4=1 mixed:   430319  misses     0  expected     0.15
+  k= 8 N%4=1 all1:     5145  misses     0  expected     0.00
+  k= 8 N%4=1 all3:      211  misses     0  expected     0.00   <-- Larsen shape
+  k= 8 N%4=1 mixed:   218641  misses     0  expected     0.00
+  k= 9 N%4=1 all1:      258  misses     0  expected     0.00
+  k= 9 N%4=1 mixed:    44733  misses     0  expected     0.00
+  k=10 N%4=1 all1:        1  misses     0  expected     0.00
+  k=10 N%4=1 mixed:     3057  misses     0  expected     0.00
+  k=11 N%4=1 mixed:       49  misses     0  expected     0.00
+
+Larsen shape totals (N = 1 (mod 4), every prime = 3 (mod 4)): 4598 numbers, 2 misses, expected 3.50
+  -> the zero is UNINFORMATIVE if expected << 1; informative (a real deficit) only if expected >~ 3.
+
+N = 3 (mod 4), for reference (miss needs every prime = 3 (mod 4), omega odd, carry):
+  k= 3 N%4=3 all3:     2837  misses    74
+  k= 5 N%4=3 all3:     2646  misses     0
+  k= 7 N%4=3 all3:     1353  misses     0
+  k= 9 N%4=3 all3:        2  misses     0
+
+
+======= RATE ARITHMETIC =======
+h3 0.03125 27353*h3 854.78125 claimed 855 855.0
+(27353-652)*h3+163 997.40625 claimed 997.4 997.4
+1/(k-1)! {3: 0.5, 4: 0.16666666666666666, 5: 0.041666666666666664, 6: 0.008333333333333333, 7: 0.001388888888888889, 8: 0.0001984126984126984}
+k=3 obs=0.4988 law=0.50000000 dev=-0.24%
+k=4 obs=0.16791 law=0.16666667 dev=0.75%
+k=5 obs=0.040614 law=0.04166667 dev=-2.53%
+k=6 obs=0.0076304 law=0.00833333 dev=-8.44%
+k=7 obs=0.0011793 law=0.00138889 dev=-15.09%
+k=8 obs=0.00013536 law=0.00019841 dev=-31.78%
+4^{1-3}=0.06250000 obs=0.060764 dev=-2.78%
+4^{1-4}=0.01562500 obs=0.014072 dev=-9.94%
+4^{1-5}=0.00390625 obs=0.0034314 dev=-12.16%
+4^{1-6}=0.00097656 obs=0.00069823 dev=-28.50%
+4^{1-7}=0.00024414 obs=0.00014405 dev=-41.00%
+4k/10^{21/3}=1.2000e-06
+4k/10^{21/4}=8.9975e-05
+4k/10^{21/5}=1.2619e-03
+4k/10^{21/6}=7.5895e-03
+4k/10^{21/7}=2.8000e-02
+4k/10^{21/8}=7.5884e-02
+  ratio to P(C=0) k=3: 2.406e-06
+  ratio to P(C=0) k=4: 0.0005359
+  ratio to P(C=0) k=5: 0.03107
+  ratio to P(C=0) k=6: 0.9946
+  ratio to P(C=0) k=7: 23.74
+  ratio to P(C=0) k=8: 560.6
+10^30 k=4: 5.0596e-07
+10^30 k=6: 2.4000e-04
+10^30 k=8: 5.6905e-03
+
+ISSUES SO FAR []

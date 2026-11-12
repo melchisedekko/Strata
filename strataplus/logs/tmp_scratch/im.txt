@@ -1,0 +1,1217 @@
+arXiv:2005.05248v1 [math.RA] 11 May 2020
+
+Arithmetic of idempotents in Z/mZ
+Kelly Isham and Laura Monroe ∗
+
+Abstract
+Idempotent elements are a well-studied part of ring theory, with several identities
+of the idempotents in Z/mZ already known. Although the idempotents are not closed
+under addition, there are still interesting additive identities that can be derived and
+used.
+In this paper, we give several new identities on idempotents in Z/mZ. We relate
+finite sublattices over Z/kZ for all integers k to an infinite lattice that is embedded
+in the divisibility lattice on N and to each other as sublattices of this infinite lattice.
+Using this relation, we generalize several identities on idempotents in Z/mZ to those
+involving idempotents related to these finite sublattices.
+Finally, as an application of the above idempotent identities, we derive an algorithm
+for calculating modular exponentiation over Z/mZ.
+
+1
+
+Introduction
+
+An element d in a ring R is idempotent if d2 = d. In 1882, Peirce published [6], which demonstrated the important role that idempotent and nilpotent elements play in ring theory. Since
+then, researchers have tried to understand properties of idempotents in both commutative
+and noncommutative rings. Many important results involve sets of idempotents that are
+primitive and orthogonal. An idempotent d is primitive if dR is indecomposable. A pair
+{d, e} of idempotents are orthogonal if de = 0 in R. In this paper, we focus on idempotents in R = Z/mZ. We give more attention to the idempotents that are not orthogonal or
+primitive.
+While additive identities involving the primitive orthogonal idempotents modulo m are
+known (see for example the summary paper on idempotents [7]), we have not found many
+identities involving arbitrary idempotents in the literature. In this paper, we provide several
+new identities. Further, we establish a connection between the infinite divisibility lattice
+and idempotents by defining consistent sublattices. We generalize the idempotent identities
+modulo m to identities involving the elements of the consistent sublattices modulo g where
+g is the supremum of the given sublattice.
+This publication is unclassified and has been assigned LANL identifier LA-UR-20-23432. A portion of this
+work was performed at the Ultrascale Systems Research Center (USRC) at Los Alamos National Laboratory,
+supported by the U.S. Department of Energy contract DE-FC02-06ER25750. The first author was supported
+in part by an appointment with the National Science Foundation (NSF) Mathematical Sciences Graduate
+Internship (MSGI) Program sponsored by the NSF Division of Mathematical Sciences.
+∗
+
+1
+
+Idempotents play an important role in understanding exponentiation modulo m. Several
+authors including Hewitt and Zuckerman in [3] and Schwarz in [8] have studied the orbits
+a, a2 , . . . in Z/mZ and have shown that eventually ak = d for some idempotent element
+d ∈ Z/mZ. In [4], we define the sequential power graph with vertex set V = Z/mZ and
+edges (a, b) such that a = ci and b = ci+1 for some c ∈ Z/mZ and i ∈ N. Also in [4], we show
+that much of the structure of this graph follows directly from the idempotents. In Section
+6, we use some additive identities on idempotents and results about the components of the
+sequential power graph to provide an algorithm based on the Chinese Remainder Theorem
+for computing be (mod m), assuming the factorization of m is known. We hope that the
+identities in this paper will be useful in other applications as well.
+
+2
+
+Notation
+
+Throughout this paper, we assume that the factorization of m is known. Theorem 3.1 provides the structure of idempotents modulo m. Let I = {i1 , . . . , is }. To introduce notation
+ei
+e
+e
+early on, this theorem shows that dI = aI pi11 · · · pisis such that dI ≡ 1 (mod pj j ) for all
+j ∈ R \ I. The idempotent dI is determined by the set I.
+We define certain notations that we will use throughout this paper.
+• m = pe11 · · · perr is the modulus.
+• R = {1, 2, . . . , r} is the set of all indices referring to the prime powers dividing m.
+• I = {i1 , . . . , is } ⊂ R defines the primes that divide the idempotent dI .
+e
+
+e
+
+ gI = gcd(dI , m) = pi1i1 · · · pisis is the greatest common divisor of dI and m.
+ dI = aI gI is the idempotent corresponding to I, with aI relatively prime to
+m
+= gR\I .
+gI
+• R \ I = {is+1 , . . . , ir } ⊂ R defines the set dual to I in the following sense
+ei
+
+e
+
+s+1
+ gR\I = gcd(dR\I , m) = pis+1
+· · · pirir is the greatest common divisor of dR\I and
+m.
+
+ dR\I = aR\I gR\I is the idempotent corresponding to R \ I, with aR\I relatively
+m
+= gI .
+prime to gR\I
+
+3
+
+The idempotents of Z/mZ
+
+3.1
+
+Known identities
+
+The idempotents of Z/mZ have been well-studied. We begin with the structure theorem for
+idempotents modulo m.
+
+2
+
+Theorem 3.1. [3, Theorem 2.2] Let I = {i1 , . . . , is } ⊆ R. Then the idempotents of Z/mZ
+are of the form aI gI (mod m) for any aI satisfying aI gI ≡ 1 (mod gmI ) such that gcd(aI , gmI ) =
+1.
+Corollary 3.2. [3, Theorem 2.2] There are 2r idempotent elements in Z/mZ.
+It is well-known (see e.g. [7]) that dR\{i} for i = 1, . . . , r are the primitive orthogonal
+idempotents of Z/mZ. The following proposition follows immediately from this fact.
+Proposition 3.3. [6, Proposition 41], [7, Page 1237] The direct sum dR\{1} (Z/mZ)× ×· · · ×
+dR\{r} (Z/mZ)× is the Peirce decomposition of the ring Z/mZ, up to order of idempotents.
+Further, the idempotents under multiplication are well-understood.
+Proposition 3.4. [3, Corollary 2.21] The idempotents of Z/mZ form a monoid under multiplication.
+Q
+Proposition 3.5. [3, Corollary 2.21] Let {I} be a set of subsets of R. Then I dI ≡ dS I
+(mod m).
+
+Remark 3.6. All idempotents besides 1 are zero divisors, so cannot be units. Proposition
+3.5 shows in a different way that the all idempotents not equal to 1 cannot be units.
+
+3.2
+
+Lattice of idempotents
+
+There is a standard partial ordering on idempotents d, e in a ring R given by d ≤ e if and
+only if de = ed = e in R. If R is commutative, the idempotents form a lattice. While there
+is a standard definition of the meet and join of this lattice, we will instead give an equivalent
+definition when R = Z/mZ. By Proposition 3.5, if dI and dJ are idempotents in Z/mZ,
+then dI dJ ≡ dJ (mod m) if and only if I ∪ J = J. Therefore, we can express this partial
+ordering in a simpler way. This partial order induces a lattice structure on the idempotents
+modulo m.
+Definition 3.7. Let dI , dJ be idempotents in Z/mZ. Then dI ≤ dJ if and only if I ⊆ J.
+The idempotents in Z/mZ form a lattice with dI ∨ dJ = dI∪J and dI ∧ dJ = dI∩J . The
+infimum is d{} = 1 and the supremum is dR = 0.
+Example 3.8. Let m = pe11 pe22 pe33 . Then the lattice for idempotents in Z/mZ is given by
+0
+
+d{1,2}
+
+d{1,3}
+
+d{2,3}
+
+d{1}
+
+d{2}
+
+d{3}
+
+1
+3
+
+Observe that this lattice is isomorphic to the lattice of subsets of {1, 2, 3} under the
+partial ordering ⊆.
+Definition 3.9. The k th level of the idempotent lattice is the row in the lattice consisting
+of elements dI where |I| = k. We say the 0th level of the lattice is {1}. An idempotent is a
+top-level idempotent if it is an element of the (r − 1)st row.
+Remark 3.10. There is another way of defining the lattice of idempotents. Recall that
+dI ≡ gI aI (mod p) where gI is the product of the prime powers from index set I dividing
+m. Define a partial ordering dI ≤ dJ if and only if gI |gJ . The meet is dI ∨ dJ = lcm(gI , gJ )
+and the join is dI ∧ dJ = gcd(gI , gJ ). This lattice is isomorphic to the subset lattice and
+thus to our above definition of the idempotent lattice modulo m. To see this, notice that
+lcm(gI , gJ ) = gI∪J and gcd(gI , gJ ) = gI∩J .
+We introduce the lattice of idempotents here to provide motivation for our additive
+identities below. In particular, the example of an idempotent lattice will be useful as we
+provide additive identities across a level of the lattice (Proposition 3.21) or across an entire
+sublattice (Proposition 3.24)
+
+3.3
+
+Addition on idempotents
+
+Although the idempotents form a multiplicative monoid, and not a group or a ring, there
+is still a good amount of structure to this set. Addition on idempotents is not as simple as
+multiplication. For one thing, the idempotents are not closed under addition; still, there are
+some additive identities that can be proved.
+Much is known, classically and otherwise, about the primitive orthogonal idempotent
+elements (dR\{i} ) including several of the additive identities that we cite below. However, to
+our knowledge, there are very few identities involving the other levels of idempotents in the
+literature. We provide several new additive identities involving these other level idempotents.
+Proposition 3.11. [6] Let dI be the idempotent in Z/mZ defined by set I. Then 1 − dI
+(mod m) is the idempotent dR\I .
+Corollary 3.12. [6] Let dI and dR\I be idempotents in Z/mZ defined by sets I and R \ I
+respectively. Then dI + dR\I ≡ 1 (mod m).
+Now that we have established a few basic addition formulas, we note that we can impose
+subtraction on idempotents as well. Observe that division of idempotents is undefined since
+all idempotents not equal to 1 are zero divisors.
+Corollary 3.13. dJ − dI ≡ dJ + dR\I − 1 (mod m).
+Proposition 3.14.
+P[7, Lemma 11] Let R 6= ∅. Let J = {j1 , . . . , js } ⊂ R and let dJ be
+idempotent. Then i∈R\J dR\{i} ≡ dJ (mod m).
+P
+Proposition 3.15. [8, Lemma 2.3] Let R 6= ∅. Then ri=1 dR\{i} ≡ 1 (mod m).
+
+We now introduce an important additive identity. This will be useful in the proofs of the
+theorems below.
+4
+
+Proposition 3.16. dI + dJ ≡ dI∪J + dI∩J (mod m).
+Proof. By Proposition 3.14, we have
+X
+dI ≡
+dR\{i}
+
+(mod m)
+
+i∈R\I
+
+≡
+
+X
+
+X
+
+dR\{i} −
+
+i∈R\(I∩J)
+
+dR\{i}
+
+(mod m)
+
+i∈I\J
+
+Focusing on the last term, by properties of sets we obtain
+X
+X
+X
+X
+dR\{i} ≡
+dR\{i} −
+dR\{i} −
+dR\{i}
+i∈R
+
+i∈I\J
+
+i∈R\(I∪J)
+
+≡ 1 − dI∪J − dR\J
+
+(mod m)
+
+i∈J
+
+(mod m)
+
+Putting these together,
+
+dI ≡ dI∩J − 1 − dI∪J − dR\J
+(mod m)
+≡ dI∩J − 1 + dI∪J + dR\J (mod m)
+Therefore we obtain
+dI + dJ ≡ dI∩J − 1 + dI∪J + dR\J + dJ
+≡ dI∩J + dI∪J (mod m)
+by Proposition 3.11.
+Corollary 3.17. Let dI and dJ be idempotent. If m is odd, dI + dJ is idempotent if and
+only if dI + dJ ≡ dI∩J (mod m).
+Proof. Observe that (dI + dJ )2 ≡ dI + dJ if and only if 2dI dJ ≡ 0 (mod m). Since m is odd,
+dI + dJ is idempotent if and only if dI dJ ≡ 0 (mod m). This occurs if and only if dI∪J ≡ 0
+(mod m).
+P
+Proposition 3.18. If I1 , . . . , Ik are pairwise disjoint and I1 ∪ · · · ∪ Ik = J, then ki=1 dIi ≡
+k − 1 + dJ (mod m).
+Proof. We will prove this by induction on k.
+If k = 1, then dI1 ≡ 1 − 1 + dI1 (mod m).
+Suppose
+
+Pk−1
+
+i=1 dIi ≡ (k − 2) + dJ ′
+k
+X
+
+(mod m) where J ′ = I1 ∪ · · · ∪ Ik−1. Then
+
+dIi ≡ (k − 2) + dJ ′ + dIk ≡ k − 2 + 1 + dJ
+
+i=1
+
+by Proposition 3.16 and since J ′ ∩ Ik = ∅ and J ′ ∪ Ik = J.
+
+5
+
+(mod m)
+
+P
+Corollary 3.19. If I1 , . . . , Ik are pairwise disjoint and I1 ∪· · ·∪Ik = R, then ki=1 dIi ≡ k−1
+(mod m).
+P
+Corollary 3.20. Let I ⊆ R with |I| = k > 1. We have i∈I d{i} ≡ k − 1 + dI (mod m).
+The following theorem provides additive identities for the k th level of idempotents (all dJ
+such that |J| = k) for all k = 0, . . . , r − 1.
+
+P
+Theorem 3.21. Let |R| = r > 0, and let 0 ≤ k < r. Then |J|=k dJ ≡ r−1
+(mod m).
+k
+
+Proof. For k = r − 1, this proposition
+P is equivalent to Proposition 3.15.
+Let k < r − 1. If |J| = k, dJ ≡
+dI (mod m), where I = R \ {i} for each i ∈ R \ J, by
+Proposition 3.14. These I are the (r − 1)-element subsets of R such that JP
+⊂ I, so each dI
+r−1
+is a summand of exactly k of the dJ . This means that the summation
+dI = 1 occurs
+
+
+P
+P
+r−1
+r−1
+times in |J|=k dJ , so |J|=k dJ = k .
+k
+
+Lemma 3.22. Suppose |I| = k. We sum over all dJ so that |J| = k − n and J ⊂ I where
+0 < n < k. In other words, we sum over all elements in the idempotent lattice n levels below
+dI that eventually connect to dI . This gives
+
+ 
+
+X
+k−1
+k−1
+dI (mod m).
++
+dJ ≡
+n−1
+n
+|J|=k−n
+J⊂I
+
+Proof.
+X
+
+|J|=k−n
+J⊂I
+
+by Proposition 3.14. Note that
+X
+i∈R\J
+
+X
+
+dJ =
+
+X
+
+dR\{i}
+
+|J|=k−n i∈R\J
+J⊂I
+
+dR\{i} =
+
+X
+
+dR\{i} +
+
+i∈R\I
+
+X
+
+dR\{i}
+
+i∈(I\J)
+
+
+and that |I \ J| = n. Further, there are nk subsets J satisfying the conditions. Therefore
+  X
+X X
+X
+k
+dR\{i} +
+dR\{i}
+dJ ≡
+n
+|J|=k−n
+J⊂I
+
+|J|=k−n i∈(I\J)
+J⊂I
+
+i∈R\I
+
+ 
+X
+k
+dI +
+≡
+n
+
+X
+
+dR\{i}
+
+|J|=k−n i∈(I\J)
+J⊂I
+
+We now focus on understanding this last summation. When taking the summation of |J| =
+k − n, J ⊂ I, every term in the summation will contain all dR\{i} such that i 6∈ I. That is,
+
+6
+
+(k )(k−n)
+times since
+every term will contain dR\I . Each element in R \ {i} for i ∈ I occurs n k
+
+k
+there are n terms, each containing k − n terms from I and all occur equally often. Thus,
+X
+
+X
+
+dR\{i} =
+
+|J|=k−n i∈(I\J)
+J⊂I
+
+k
+(k − n)
+n
+
+
+
+k
+
+dR\I
+
+Putting these together,
+X
+
+|J|=k−n
+J⊂I
+
+ 
+k
+dI +
+dJ ≡
+n
+
+k
+(k − n)
+n
+
+
+
+k
+
+dR\I
+
+!
+
+
+ 
+k
+k
+(k − n)
+(k
+−
+n)
+k
+n
+n
+dI +
+−
+≡
+k
+k
+n
+
+
+
+
+k−1
+k−1
+(mod m).
+dI +
+≡
+n
+n−1
+The last lemma seems abstract, so consider the following corollary when n = 1.
+Corollary 3.23. Suppose |I| = k. We sum over all dJ so that |J| = k − 1 and J ⊂ I. In
+other words, we sum over all elements in the idempotent lattice in the level directly below dI
+that are connected to dI . This gives the identity
+X
+dJ ≡ (k − 1) + dI (mod m).
+|J|=k−1,J⊂I
+
+With Lemma 3.22 established, we can now determine the summation of all idempotents
+below dI in terms of I only. We state the theorem modulo m and provide a corollary for
+determining the summation modulo gI as well.
+P
+Theorem 3.24. Let |I| = k. Then J⊆I dJ ≡ 2k−1 (1 + dI ) (mod m).
+Proof. By Lemma 3.22,
+
+X
+
+|J|=k−n
+J⊂I
+
+dJ ≡
+
+
+
+
+ 
+k−1
+k−1
+dI
++
+n−1
+n
+
+(mod m).
+
+When J = ∅, the idempotent is dJ = 1 and when J = I, the idempotent is dJ = dI .
+
+7
+
+Therefore
+X
+
+dJ ≡ 1 + dI +
+
+k−1 X
+X
+
+dJ
+
+(mod m)
+
+n=1 |J|=k−n
+J⊂I
+
+J⊆I
+
+≡ 1 + dI +
+≡2
+
+k−1
+
+
+k−1 
+X
+k−1
+
++ dI
+
+n=1
+k−1 
+X
+
+n=0
+k−1
+k−1
+≡2
++ 2 dI
+
+n
+
+k−1
+n
+
++ dI
+
+
+
+
+k−1 
+X
+k−1
+n=1
+
+n−1
+
+(mod m)
+
+(mod m)
+
+(mod m)
+
+P
+Corollary 3.25. Let |I| = k. Then J⊆I dJ ≡ 2k−1 (mod gI ).
+P
+Corollary 3.26. I⊆R dI ≡ 2r−1 (mod m).
+
+4
+
+Sublattices of the infinite divisibility lattice
+
+In Section 3.2, we defined the lattice of idempotents in Z/mZ. In this section, we seek
+to generalize the notion of an idempotent lattice. By Remark 3.10, the idempotent lattice
+modulo m can be defined in terms of the elements gI = gcd(dI , m) for each I ⊆ R. We
+generalize this definition of the idempotent lattice modulo m to both finite and infinite
+lattices. These will be subsets of the infinite divisibility lattice on N, which we call consistent
+sublattices. Since the only idempotents in Z are 0 and 1, the notion of an infinite idempotent
+lattice in N does not make sense. However, the construction of the infinite divisibility lattice
+on N permits us to relate an infinite set of finite lattices over Z/mZ for integers m to each
+other as sublattices of this infinite lattice.
+
+4.1
+
+An infinite lattice related to the idempotents modulo m
+
+Definition 4.1. The infinite divisibility lattice on N is given by the partial ordering a ≤ b
+if and only if a|b. The meet of two elements a, b is a ∨ b = lcm(a, b) and the join is a ∧ b =
+gcd(a, b).
+Definition 4.2. List the primes in increasing order with p1 = 2. Let S ⊆ N and T ⊆ S.
+Let E be an infinite sequence E = (e1 , e2 , . . .) of elements in N ∪ {0} so that ei > 0 for all
+i ∈ S and ei = 0 for all i 6∈ S. A sublattice of the infiniteQ
+divisibility lattice is consistent if
+the elements of this lattice are exactly the integers gK = k∈K pekk for all T ⊆ K ⊆ S. We
+denote this sublattice LE,S,T .
+Remark 4.3. Suppose S = {s1 , . . . , sr } is finite and T = ∅. Notice that E contains only
+e
+e
+finitely many nonzero elements. Set m = pss11 · · · pssrr and let dK be the idempotent modulo
+m corresponding to set K ⊆ S. The consistent sublattice defined by sets E, S and T = ∅
+8
+
+contains exactly the elements gK = gcd(m, dK ). Therefore LE,S,T is isomorphic to the a
+sublattice of the idempotent lattice modulo m. Since gK depends only on the sets E, S, and
+T , it makes sense to extend the notion of the elements gK when S is infinite.
+Suppose S is infinite, T ⊆ S, and
+i ∈ S and ei = 0 if
+Q E =es(e1 , e2 , . . .) with ei > 0 ifQ
+i 6∈ S. Write the supremum gS = s∈S ps and the infimum gT = t∈T pet t . Let LE,S,T
+be the Q
+consistent sublattice with supremum gS and infimum gT . Then b ∈ L if and only if
+e
+b = gT j∈K pj j for some K ⊆ S \ T.
+
+Definition 4.4. A consistent sublattice of the infinite divisibility lattice is maximally consistent if S = N and T = ∅, that is, if the supremum is divisible by every prime and the
+infimum is 1.
+We can uniquely determine a maximally consistent sublattice from the first level, which
+consists of prime powers. It is clear that there is a bijection between sequences of positive
+integers and maximally consistent sublattices; each sequence of positive integers (e1 , e2 , . . .)
+determines a distinct maximally consistent sublattice by setting the first level equal to
+{pe11 , pe22 , . . .} and this correspondence is surjective.
+Proposition 4.5. The set of maximally consistent sublattices of L is uncountable and has
+cardinality of R.
+Proof. The set of maximally consistent sublattices of L has the cardinality of R. From the
+remark above, we know that each maximally consistent sublattice is uniquely determined
+by the sequence (e1 , e2 , . . .) of positive integers. There is a bijection of the set of such
+sequences to R by sending (e1 , e2 , . . .) to .(e1 − 1)(e2 − 1) · · · . The inverse of this function is
+.b1 b2 . . . 7→ (b1 + 1, b2 + 1, . . .).
+
+Remark 4.6. Let the idempotent lattice modulo m be denoted Lm . Observe that there is
+a bijection between finite maximally consistent lattices and lattices of the form Lm .
+
+4.2
+
+Sublattices of the finite consistent lattices
+
+Let LE,S,T be a finite consistent lattice and let S ′ ⊇ S be a finite set. Then LE,S,T can be
+extended to the finite maximally consistent lattice LE,S ′,∅ . As noted in the remark above,
+LE,S ′,∅ is isomorphic to the lattice Lm of idempotents in Z/mZ where m = gS ′ is the supremum of LE,S ′,T . Therefore finite consistent sublattices are isomorphic to sublattices of Lm .
+We denote this sublattice of Lm by Lm,S,T since the sequence E is clear given m.
+In the next section, we will consider idempotent identities on sublattices of Lm . We use
+notions from consistent lattices throughout.
+
+5
+
+Idempotents in sublattices
+
+Many of the theorems we have proved in Section 3 have analogues in the consistent lattices
+Lm,S,T of Lm . For notation, we set gS to be the supremum of Lm,S,T and we let dS be
+the corresponding idempotent modulo m. Recall that m = gS ′ for some finite set S ′ ⊇ S.
+Similarly, gT is the infimum and dT is the corresponding idempotent modulo m.
+9
+
+5.1
+
+Multiplication on idempotents in finite consistent lattices
+
+Proposition 5.1.QLet Lm,S,T be a sublattice of Lm . Let {I} be a set of subsets of S that
+contain T . Then I dI ≡ dS I (mod gS ).
+
+Proof. Since gS |m and this equivalence holds (mod m), then this equivalence must also hold
+(mod gS ).
+
+5.2
+
+Addition on idempotents in finite consistent lattices
+
+In this section, we generalize the additive identities established in Section 3.3. Observe that
+for any element gI ∈ Lm,S,T , T ⊆ I ⊆ S. Therefore all sets considered in the following
+propositions and theorems must contain T .
+Proposition 5.2. Let Lm,S,T be a sublattice of Lm and let T ⊆ I, J ⊆ S. Then dI + dJ ≡
+dI∪J + dI∩J (mod gS ).
+Proof. This holds modulo m and gS |m.
+Proposition 5.3. Let Lm,S,T ⊆ Lm . Let I1 , . . . , Ik be sets such that T ⊆ Iℓ ⊆ S for all
+1 ≤ ℓ ≤ k and Iℓ ∩ Ij = T for all ℓ 6= j. Suppose that I1 ∪ · · · ∪ Ik = J. We have
+Pk
+i=1 dIi ≡ (k − 1)dT + dJ (mod gS ).
+Proof. We will prove this by induction on k.
+
+If k = 1, then dI1 ≡ (1 − 1)dT + dI1 (mod gS ).
+Pk−1
+dIi ≡ (k − 2)dT + dJ ′ (mod gS ). Observe
+Let J ′ = I1 ∪ · · · ∪ Ik−1 and assume that i=1
+that J ′ ∩ Ik = T and J ′ ∪ Ik = J. Applying Proposition 5.2 gives
+k
+X
+
+dIi ≡ (k − 2)dT + dJ ′ + dIk ≡ (k − 2)dT + dT + dJ
+
+(mod gS ).
+
+i=1
+
+Corollary 5.4. Let Lm,S,T be a sublattice of Lm . If I1 , . . . , Ik are sets such that T ⊆ Iℓ ⊆ S
+P
+for all 1 ≤ ℓ ≤ k, Iℓ ∩ Ij = T for all ℓ 6= j, and I1 ∪ · · · ∪ Ik = S, then ki=1 dIi ≡ (k − 1)dT
+(mod gS ).
+P
+Corollary 5.5. Let Lm,S,T be as above. Let T ⊆ I ⊆ S with |I| = k > 1. Then i∈I dT ∪{i} ≡
+(k − 1)dT + dI (mod gS ).
+The following corollary is a generalization of Corollary 3.12. Here, the infimum is dT ,
+so if gI = gcd(dI , gS ) and gJ = gcd(dJ , gS ) are elements in Lm,S,T , we require T ⊆ J as
+well. Therefore, J = S \ I does not make sense in this setting. The correct generalization is
+J = (S \ I) ∪ T = S \ (I \ T ).
+Corollary 5.6. Let T ⊆ I ⊆ S and Lm,S,T ⊆ Lm . We have dI + dS\(I\T ) ≡ dT (mod gS ).
+10
+
+Lemma 5.7. Suppose S 6= ∅. Let Lm,S,T ⊆ Lm , and T ⊂ I ⊆ S. Then
+dS\(I\T ) (mod gS ).
+
+P
+
+i∈I\T dS\{i} ≡
+
+Proof. We will prove the lemma using induction on |I| > |T |. If I = T ∪ {i1 } for some
+i1 ∈ S \ T , then
+X
+dS\{i} = dS\{i1 } = dS\(I\T ) .
+i∈I\T
+
+P
+Now suppose that this equivalence holds for |I ′ \T | = k−1. Then i∈I ′ \T dS\{i} ≡ dS\(I ′ \T )
+(mod gS ). Pick an element ik ∈ S \ T so that ik 6∈ I ′ and set I = I ′ ∪ {ik }. Then
+X
+X
+dS\{i} =
+dS\{i} + dS\{ik }
+i∈I ′ \T
+
+i∈I\T
+
+≡ dS\(I ′ \T ) + dS\{ik } (mod gS )
+≡ dS + dS\(I\T ) (mod gS )
+≡ dS\(I\T ) (mod gS ).
+
+The penultimate line is due to Proposition 5.2. The last line holds because gS |dS .
+P
+Proposition 5.8. Suppose S 6= ∅ and let Lm,S,T be as above. If T ⊆ J ⊂ S, i∈S\J dS\{i} ≡
+dJ (mod gS ).
+Proof. Use Lemma 5.7 and set I = S \ J.
+Proposition 5.9. Let Lm,S,T be as above with |S| = s ≥ 1 and |T | = t. Let t ≤ k < s. Then
+P
+s−t−1
+dT (mod gS ).
+|J|=k dJ ≡
+k−t
+P
+Proof. Recall that T ⊆ J ⊂ S for all J so that gJ ∈ Lm,S,T . If |J| = k, dJ ≡ i∈S\J dS\{i}
+(mod gS ), by Proposition 5.8. The terms S \ {i} are the
+ (s − 1)-element subsets of S with
+i ∈ S \ T . Notice that each dS\{i} is in exactly s−t−1
+of the terms in the summation. By
+k−t
+Proposition 5.8,
+X
+dS\{i} ≡ dT (mod gS ).
+i∈S\T
+
+Therefore the summation reduces to
+
+
+X
+s−t−1
+dT
+dJ ≡
+k−t
+
+(mod gS ).
+
+|J|=k
+
+Lemma 5.10. Let S 6= ∅, Lm,S,T ⊆ Lm . Suppose T ⊂ I ⊂ S and set |T | = t, |I| = k. We
+sum over all dJ so that |J| = k − n and T ⊂ J ⊂ I where 0 < n < k − t. In other words,
+we sum over all elements in the idempotent lattice n levels below dI that eventually connect
+to dI . This gives the identity
+
+
+
+
+X
+k−t−1
+k−t−1
+dI (mod gS ).
+dT +
+dJ ≡
+n−1
+n
+|J|=k−n
+T ⊂J⊂I
+
+11
+
+Proof. By Proposition 5.8,
+X
+
+X
+
+dJ =
+
+|J|=k−n
+T ⊂J⊂I
+
+X
+
+dS\{i} .
+
+|J|=k−n i∈S\J
+T ⊂J⊂I
+
+The inner sum splits up further into
+X
+X
+X
+dS\{i} =
+dS\{i} +
+dS\{i}
+i∈S\J
+
+i∈S\I
+
+i∈(I\J)
+
+
+and that |I \ J| = n. Further, there are k−t
+subsets J satisfying the conditions T ⊂ J ⊂ I
+n
+such that |I \ J| = n. Therefore
+
+
+X
+X X
+k−t X
+dS\{i} +
+dJ ≡
+dS\{i}
+n
+|J|=k−n
+T ⊂J⊂I
+
+|J|=k−n i∈(I\J)
+T ⊆J⊂I
+
+i∈S\I
+
+
+
+X
+k−t
+dI +
+≡
+n
+
+X
+
+dS\{i}
+
+|J|=k−n i∈(I\J)
+T ⊂J⊂I
+
+Consider this last summation. The terms are the dS\{i} such that i ∈ I \ T . Each element
+
+(k−t)(k−t−n)
+ds for s ∈ S \ {i} with i ∈ I occurs n k−t
+times. This is true as there are k−t
+subsets
+n
+J and each such subset contains k − t − n terms from I \ T . All terms occur equally often
+and we have overcounted by a factor of k − t. Notice that
+X
+dS\{i} ≡ dS\(I\T )
+i∈I\T
+
+by Lemma 5.7. Thus
+X
+
+X
+
+dS\{i} =
+
+k−t
+(k − t − n)
+n
+
+
+
+|J|=k−n i∈(I\J)
+T ⊂J⊂I
+
+k−t
+
+dS\(I\T ) .
+
+Putting these summations together,
+X
+
+|J|=k−n
+T ⊂J⊂I
+
+
+
+k−t
+dI +
+dJ ≡
+n
+
+k−t
+(k − t − n)
+n
+
+
+
+k−t
+
+dS\(I\T )
+
+!
+
+
+
+
+k−t
+k−t
+(k
+−
+t
+−
+n)
+(k − t − n)
+k−t
+− n
+≡
+dI + n
+dT
+n
+k−t
+k−t
+
+
+
+
+k−t−1
+k−t−1
+dT (mod gS ).
+dI +
+≡
+n
+n−1
+
+12
+
+The following corollary is a restatement of Lemma 5.10 when n = 1.
+Corollary 5.11. Let Lm,S,T be a sublattice as above and let |I| = k. We sum over all dJ so
+that |J| = k − 1 and T ⊂ J ⊂ I. In other words, we sum over all elements in the idempotent
+lattice in the level directly below dI that are connected to dI . We find
+X
+dJ ≡ (k − t − 1)dT + dI (mod gS ).
+|J|=k−1,T ⊂J⊂I
+
+The following theorem gives a formula for the summation of all idempotents below dI
+that is in terms of I, S, and T only.
+P
+k−t−1
+Theorem 5.12. Let Lm,S,T ⊆ Lm . Let |I| = k. Then
+(dT + dI )
+T ⊆J⊆I dJ ≡ 2
+(mod gS ).
+Proof. By Lemma 5.10,
+X
+
+dJ ≡
+
+|J|=k−n
+T ⊂J⊂I
+
+
+
+
+
+
+k−t−1
+k−t−1
+dI
+dT +
+n−1
+n
+
+(mod gS ).
+
+When J = T , we see that dJ = dT and when J = I, dJ = dI . Therefore
+X
+
+dJ ≡ dT + dI +
+
+T ⊆J⊆I
+
+k−t−1
+X
+
+X
+
+dJ
+
+(mod gS )
+
+n=1 |J|=k−n
+T ⊂J⊂I
+
+≡ dT + dI + dT
+
+
+k−t−1
+X k − t − 1
+k−t−1
++ dI
+n−1
+n
+n=1
+
+k−t−1
+X 
+n=1
+
+(mod gS ).
+
+The result follows from identities on binomial coefficients.
+X
+
+dJ ≡ 2k−t−1 dT + 2k−t−1 dI
+
+(mod gS ).
+
+T ⊆J⊆I
+
+P
+Corollary 5.13. Let Lm,S,T ⊆ Lm . Let |I| = k. We find T ⊆J⊆I dJ ≡ 2k−t−1 dT (mod gI ).
+P
+Corollary 5.14. If Lm,S,T ⊆ Lm , T ⊆J⊆S dJ ≡ 2k−t−1 dT (mod gS ).
+
+6
+
+Applications of the idempotent identities
+
+6.1
+
+Components of Z/mZ
+
+Consider the sequence a, a2 , a3 , . . . in Z/mZ. The sequence must be finite, so eventually
+ak = aℓ . We call a, a2 , . . . , ak−1 the tail and ak , . . . , aℓ the cycle corresponding to a.
+13
+
+Definition 6.1. The sequential power graph is the graph with vertex set V = Z/mZ and
+directed edges (a, b) if and only if a ≡ ci (mod m) and b ≡ ci+1 (mod m) for some c ∈ Z/mZ
+and some i ∈ N.
+This graph represents the connection between these sequences a, a2 , a3 , . . . for each a ∈
+Z/mZ. It is closely related to the power graph, which was defined in [5]. The power graph
+has been well-studied, see for example [1] and [2]. Much of the structure of this graph follows
+directly from the structure of the idempotents modulo m. We summarize the connection to
+idempotents in the below propositions from [4]. This connection will be used in Section 6.2.
+Proposition 6.2. [4, Corollary 5.17, Theorem 5.18] The connected components of the sequential power graph are composed of the roots of the idempotents in Z/mZ. There is a oneto-one correspondence between connected components and idempotents of Z/mZ. Therefore
+we can refer to a component CI as the component with idempotent dI .
+Proposition 6.3. [4, Theorem 5.21] The cycles of connected components are themselves a
+connected subgraph, and are groups under multiplication. The associated idempotent d is the
+group’s unity. Further, the elements in the cycles of component CI are exactly the elements
+in dI U where U = (Z/mZ)× .
+Let a, a2 , . . . , ak = d be the sequence of distinct powers of a ∈ Z/mZ. Observe that if a
+is a cycle element, then ak+1 = a. Whenever a is in a cycle, the above propositions imply
+that a ∈ dI U, that is, a = dI u for some u ∈ U. The tail elements cannot be determined
+using dI , but can be expressed in terms of a similar element.
+Definition 6.4. [4] Let I = {i1 , . . . , is } ⊆ R. The multiplier corresponding to set I is
+πI = pi1 · · · pis .
+Proposition 6.5. [4, Proposition 5.2] Let πI be the multiplier corresponding to set I ⊆ R.
+The elements of CI are the integers πI x, where gcd(x, gmI ) = 1.
+
+6.2
+
+An efficient algorithm for modular exponentiation
+
+First, suppose that u ∈ U = (Z/mZ)× and we wish to compute ue (mod m). We give an
+algorithm for computing ue using the structure of the idempotents from Section 3 which is
+a reformulation of the Chinese Remainder Theorem. In particular, the following theorem
+shows a connection between primitive orthogonal idempotents modulo m and the Chinese
+Remainder Theorem. This connection is known, but not widely; see [7] for a history on the
+relation between idempotents and the Chinese Remainder Theorem. Further, this theorem
+is true in general for any b ∈ Z/mZ, however we state it just for the units in Z/mZ to make
+a distinction between this and the next theorem.
+Theorem 6.6. [7] Let u ∈ U, the set of units, and let di = dR\{i} be the top-level idempotents.
+Let e ∈ N. Then
+r
+X
+ei
+e
+u ≡
+di ue (mod φ(pi )) (mod m).
+i=1
+
+14
+
+We now generalize the algorithm to compute be (mod m) for any b ∈ CI where |I| < r−1.
+We note that this algorithm does not apply when computing be (mod m) for CI where
+|I| = r − 1. That is, when the idempotent dI is a top-level idempotent. We introduce two
+theorems that are reductions of the previous theorem. We provide proofs of these theorems
+that rely on an identity from Section 5.2 and results from Section 6.1. To the best of our
+knowledge, these reductions are not used in practice.
+Theorem 6.7. Let b ∈ CI so that b = bk for some k > 1. In other words, dI b = b. Let
+T = I and S = R. Let di = dS\{i} . Then
+be ≡
+
+X
+
+di be
+
+e
+
+(mod φ(pi i ))
+
+(mod m).
+
+i∈S\T
+
+Proof. Since S = R, then gS = m. By Proposition 5.8,
+X
+dT ≡
+di (mod m).
+i∈S\T
+
+Therefore,
+be ≡ dT be ≡
+
+X
+
+di be
+
+(mod m).
+
+i∈S\T
+e
+
+Since each di contains all primes in the factorization of pmei , then di ≡ 0 (mod pj j ) for all
+i
+
+ei
+
+j 6= i and di ≡ 1 (mod pei i ) by Theorem 3.1. Thus di be ≡ di be (mod φ(pi )) (mod m) for each
+i ∈ S \ T.
+The previous theorem only holds when b is in the cycle of CI . The benefit to this previous
+theorem is it has no restrictions on the exponent e. In the following, we show that the same
+result holds when b is not in the cycle, but only when e is large enough.
+Theorem 6.8. Set S = R. Let T ⊆ S. Let b ∈ CT , that is, let b = πT x for some x
+relatively prime to gmT . Let dj = dS\{j} be the top-level idempotents, for 1 ≤ j ≤ r. Let
+e ≥ max(e1 , . . . , er ). Then
+X
+ei
+be ≡
+di be (mod φ(pi )) (mod m).
+i∈S\T
+
+Proof. Since e ≥ max(e1 , . . . , er ) and be = πTe xe , then dT |π e . Thus dT |be and so dT be ≡ be
+(mod m). The result follows by applying Theorem 6.7.
+Remark 6.9. Note that we may have e (mod φ(pei i )) = 0. In this case, b0 is considered as
+an element in di U. Since the identity of di U is di , then here b0 = di .
+Remark 6.10. We have throughout used the Euler totient function. We can, however, use
+the Carmichael totient function for a tighter calculation.
+
+15
+
+7
+
+Acknowledgements
+
+A portion of this work was performed at the Ultrascale Systems Research Center (USRC)
+at Los Alamos National Laboratory, supported by the U.S. Department of Energy contract
+DE-FC02-06ER25750. The first author was supported in part by an appointment with the
+National Science Foundation (NSF) Mathematical Sciences Graduate Internship (MSGI)
+Program sponsored by the NSF Division of Mathematical Sciences.
+
+References
+[1] Peter J. Cameron and Shamik Ghosh. The power graph of a finite group. Discrete Mathematics, 311(13):1220 – 1222, 2011. Selected Papers from the 22nd British Combinatorial
+Conference.
+[2] Ivy Chakrabarty, Shamik Ghosh, and M. K. Sen. Undirected power graphs of semigroups.
+Semigroup Forum, 78:410–426, 2009.
+[3] Edwin Hewitt and H. S. Zuckerman. The multiplicative semigroup of integers modulo
+m. Pacific J. Math., (4):1291–1308.
+[4] Kelly Isham and Laura Monroe. On structures induced by the power sequences of
+(Z/mZ, ·), February 2020, 2002.10980.
+[5] A.V. Kelarev and S. J. Quinn. Directed graphs and combinatorial properties of semigroups. Journal of Algebra, 251(1):16 – 26, 2002.
+[6] B. Peirce. Linear Associative Algebra.
+[7] S̆tefan Porubský. Idempotents, group membership and their applications. Mathematica
+Slovaca, 68(6):1231–1312, 2018.
+[8] S̆tefan Schwarz. The role of semigroups in the elementary theory of numbers. Mathematica Slovaca, (4):369–395.
+
+16
+
+

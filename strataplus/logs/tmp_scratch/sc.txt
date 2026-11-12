@@ -1,0 +1,1076 @@
+         SHORT COSETS: COUNTING THE SEMIPRIMES WITH A
+                     NONTRIVIAL INVARIANT
+
+                                        ALESSANDRO SGARBI
+Abstract. How many semiprimes N ≤ X have, for some modulus M ≥ 2, no Fermat witness modulo M ,
+and what is the shape of their count? Write G(N ) for the gcd of r − 1 over the nonzero Fermat residues
+r = aN −1 mod N of N , over all bases 0 ≤ a < N : a modulus M has no witness at N exactly when
+M | G(N ), and the count is the number of pairs of primes 2 < p < q with pq ≤ X√and G(pq) > 1. From
+the published Bourgain–Glibichuk–Konyagin bound alone the count is at most (⌊ X⌋ + 1)(Q + ⌈X γ ⌉)2 ,
+for a threshold Q that depends on γ only and comes from that bound, that is ≪γ X 1/2+2γ for every
+γ > 0. If the Bateman–Horn conjecture holds for the pairs of primes p, qj (p) = 1 + j(p − 1),   √ and a fixed
+positive proportion of those pairs have G(p qj (p)) > 1 (a density hypothesis), it is at least c X/(log X)2 .
+At j = 5 that proportion is expected to be δ5 = 31/4096 ≈ 0.00757, against 0.00771 measured on the
+45 126 family members with p < 6 · 106 (experiments/delta5_geometric.py), and it is carried by the
+single class p ≡ 7 (mod 8). The exponent 1/2 is conditional in one direction only: the upper side rests on
+a published theorem, the lower side on open conjectures.
+
+
+
+
+                                          1. Introduction
+    How many semiprimes below X have, for some modulus M ≥ 2, no Fermat witness
+modulo M , and what shape does that count take? Here a base a is a Fermat witness modulo
+M for an odd N when its residue r = aN −1 mod N is nonzero and r ̸≡ 1 (mod M ); at a
+prime N no modulus has one, since every nonzero residue is 1. Over the 138 233 258 odd
+composites N ≤ 3.1 · 108 with at least two prime factors, an exhaustive computation (the
+census of Section 3, script experiments/blind_modulus_census_c) leaves 22 composites
+at which some modulus has no witness, and 21 of those 22 are Carmichael numbers. The
+census gives the count of composites at which some modulus M ≥ 2 has no witness, that
+is of the composites with G(N ) > 1, at that one scale. The shape is a two-sided statement
+about the semiprimes: an upper end ≪γ X 1/2+2γ  √     for every γ > 0, from one published
+exponential-sum estimate, and a lower end c X/(log X)2 , from a prime-pair count for
+one family of pairs together with the density of that family at which a modulus has no
+witness.
+    Section 2 defines the vocabulary and proves what is used of it. For an odd number
+N = 2x − 1 the invariant G(N ) is the gcd of r − 1 over the nonzero Fermat residues r
+of N , at all bases, and a modulus M has no witness at N exactly when M | G(N ). The
+count is taken over the pairs of primes 2 < p < q with pq ≤ X and G(pq) > 1, so that
+each such pair carries a modulus with no witness. The second count of this article is for a
+class-level rule, taken from [18]: a base is a witness for it when its residue r is nonzero
+and r mod 4 is 3 or (N − 1) mod 4. After the census, one composite is not Carmichael:
+N = 300 979 369, with G(N ) = 2, recorded as blind_modulus_off_carmichael[L] and
+cited to the same article; no two of its nonzero residues r, r′ have r − 1 and r′ − 1 coprime
+(not_hasCoprimeAttainableOffsetPair_off_carmichael[L] ), since such a pair would
+force G(N ) = 1. The row, and the anatomy behind it, are Section 3. The markers [L]
+and [L*] record, respectively, a statement machine-checked with no sorry anywhere in its
+dependency graph in this repository’s Lean development, and one machine-checked from a
+named hypothesis written into its statement.
+
+  Date: November 11, 2026.
+                                                     1
+2                                    ALESSANDRO SGARBI
+
+    The tests are not a practical primality test: they read all N bases, at Θ(N ) exponenti-
+ations. That these tests can detect Carmichael numbers is not evidence of depth: there
+every witness is a base sharing a factor with N . With those constraints, the exponent 1/2
+is conditional in one direction only: the upper side rests on a published theorem not yet
+in Mathlib, and only the lower side on open conjectures.
+    The route is the count, then the shape, then where the count sits. Section 2 fixes the
+invariant and proves the facts about it that the rest uses. Section 3 records the census.
+Section 4 fixes the sets that are counted. Section 5 turns the size of one local image into
+an unconditional upper bound. Section 6 puts the published estimate into that bound.
+Section 7 supplies the matching lower shape, and with it the exponent. An appendix,
+Section A, carries the same estimate over to the pairs at which the class-level rule has no
+witness: a degree-eleven minorant of the Fejér kernel puts a coset element in every class
+modulo 4, and the missed semiprimes are counted. Section 8 asks which members of the
+family can carry a modulus with no witness at all, and states the quantitative form of the
+count.
+                            2. Preliminaries on the invariant
+    Every count in this article counts composites with G(N ) > 1, and all of them are read
+off one invariant of N . This section defines it and proves the facts about it that the later
+sections use: the equivalence that turns a filter into a divisibility, the divisibility of N − 1
+by it, the local picture at a prime factor, the criterion that one large local image settles,
+and the collapse that a 2-adic separation forces. The invariant and these facts are [17]’s,
+and are proved here again.
+
+    Definition 2.1. Let N = 2x − 1 ≥ 3 be odd. For a base b ∈ {0, 1, . . . , N − 1}, which is
+    read through the parameter m = b + 1 ∈ {1, . . . , N }, the Fermat residue of b is
+                   r = (m − 1)N −1 mod N ∈ {0, 1, . . . , N − 1}      (resid),
+    and the invariant is the greatest common divisor of r − 1 over the nonzero residues:
+                  {︂                                                    }︂
+    G(N ) = gcd r − 1 : r = (m − 1)N −1 mod N ̸= 0, 1 ≤ m ≤ N                 (residueGcd).
+    The base m runs over all of [1, N ], invertible modulo N or not. The residue 0 is left out
+    because it contributes the term 0 to the gcd and so constrains no modulus. A base b is a
+    witness at M when r ̸= 0 and M ∤ r − 1; the modulus M has no witness at N when no
+    base is one. The reduction modulo M of the Fermat test is written CM , and a base that
+    is a witness at M is a CM -witness. An odd composite N such that no base m ∈ [1, N ] is
+    a CM -witness — equivalently, such that M | G(N ) — is a CM -pseudoprime; a composite
+    at which some modulus M ≥ 2 has no witness is exceptional, equivalently G(N ) > 1.
+       For a prime p | N the local image at p is
+                        Sp = { bN −1 mod p : gcd(b, p) = 1 } ⊂ (0, p),
+the image of the (N − 1)-st power map on the units modulo p, read as a set of integers.
+The unit group modulo p is cyclic of order p − 1, so the image of the k-th power map on it
+has (p − 1)/ gcd(k, p − 1) elements; at k = N − 1 therefore
+                                              p−1
+(1)                            #Sp =                       .
+                                         gcd(N − 1, p − 1)
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                 3
+
+Lemma 2.2 (dvd_residueGcd_iff_forall_attainable[L] ). Let N ≥ 3 be odd. For
+every modulus M , no base is a witness at M if and only if M | G(N ). In particular G(N )
+divides r − 1 for every nonzero Fermat residue r of N .
+Proof. In the gcd defining G(N ), the base m contributes the term r − 1 when its residue
+is nonzero and the term 0 when that residue is 0. If M | G(N ) then M divides each term,
+so M | r − 1 wherever r ̸= 0, and no base is a witness. Conversely, if no base is a witness
+then each term is a multiple of M — r − 1 by hypothesis, and 0 because every modulus
+divides it — hence M divides the gcd. The last clause is the case M = G(N ).             □
+Lemma 2.3 (residueGcd_dvd_sub_one[L] ). Let N ≥ 3 be odd, and let N = de with
+d, e > 1 coprime. Then G(N ) | N − 1.
+Proof. By the Chinese remainder theorem there is E with 0 ≤ E < N , E ≡ 1 (mod d)
+and E ≡ 0 (mod e). Since d > 1 the congruence modulo d excludes E = 0, and a positive
+multiple of e is at least e ≥ 2; so 2 ≤ E ≤ N − 1. An idempotent is its own Fermat
+residue: E 2 ≡ E (mod N ) gives E k ≡ E for every k ≥ 1, so the base E has residue E
+(resid_of_idem). Its complement E ′ = N + 1 − E lies in [2, N − 1] as well, is idempotent
+modulo N , and is 0 modulo d and 1 modulo e. Both E and E ′ are nonzero residues, so
+Lemma 2.2 gives G(N ) | E − 1 and G(N ) | E ′ − 1; their sum is N − 1.                 □
+Lemma 2.4 (side_resid_pin[L] ). Let N ≥ 3 be odd, let p be a prime with N = pc and
+gcd(p, c) = 1, let u be an inverse of c modulo p, and let b be a base prime to p. Then the
+base that is b modulo p and 0 modulo c has residue
+                           cX,      X = u bN −1 mod p ∈ (0, p).
+Proof. Take w ∈ {0, . . . , N − 1} with w ≡ b (mod p) and w ≡ 0 (mod c), which exists
+because p and c are coprime. Its residue is bN −1 modulo p and 0 modulo c. Put X =
+ubN −1 mod p, so that 0 ≤ X < p; then cX is 0 modulo c, and cX ≡ cu bN −1 ≡ bN −1
+(mod p). Two integers in [0, N ) that agree modulo p and modulo c agree modulo their
+product pc = N , hence are equal, and cX < cp = N ; so the residue is cX. It is nonzero:
+were p | ubN −1 , the prime p would divide u or b, and both are units modulo p.       □
+Lemma 2.5 (dvd_prime_sub_side[L] ). In the setting of Lemma 2.4, with c > 1, let
+M | G(N ). Then M | p − X for every X ∈ u Sp : read as integers in (0, p), the whole coset
+u Sp lies in the class of p modulo M .
+Proof. The integer X has the form u bN −1 mod p for a base b prime to p, so cX is a nonzero
+residue (Lemma 2.4) and M | cX − 1 (Lemma 2.2). At the split N = p · c the invariant
+divides N − 1, so M | pc − 1 (Lemma 2.3). Subtracting, M | c (p − X). The divisibility
+M | cX − 1 makes c a unit modulo M , since a common divisor of M and c divides cX
+and cX − 1; hence M | p − X.                                                             □
+Lemma 2.6 (mul_card_powRange_le[L] ). In the setting of Lemma 2.4, with c > 1, let
+M | G(N ) and M > 0. Then
+                            M · #Sp ≤ p − 1.
+Proof. Multiplication by the unit u maps Sp bijectively onto the coset u Sp , so the two
+sets have the same number of elements. Each X ∈ u Sp satisfies 0 < X < p and X ≡ p
+(mod M ) (Lemma 2.5), so p − X is a positive multiple of M not exceeding p − 1: thus
+X = p − M k with 1 ≤ k ≤ (p − 1)/M . The integer k = (p − X)/M is determined by X,
+so distinct elements of the coset give distinct k, and #Sp ≤ (p − 1)/M . Multiplying by M
+gives the claim.                                                                        □
+   The criterion that decides G(N ) from one prime factor needs a condition on how a
+coset of a local image is spread, stated once and used in two places.
+4                                    ALESSANDRO SGARBI
+
+
+    Definition 2.7. Let L : N → N. Say that L meets the lower half if for every prime q,
+    every exponent e and every u coprime to q with L(q) ≤ (q − 1)/ gcd(e, q − 1), the coset
+    u · {be mod q} has an integer representative in [1, q/2): there is b with gcd(b, q) = 1 and
+                        (︂            )︂
+                      2 (u be ) mod q < q        (CosetMeetsLowerHalf).
+
+Lemma 2.8 (residueGcd_eq_one_of_large_image[L*] ). Let L meet the lower half. Let
+N ≥ 3 be odd, let N = pc with p prime, gcd(p, c) = 1, c > 1, and suppose #Sp ≥ L(p).
+Then G(N ) = 1.
+Proof. Suppose G(N ) > 1 and let ℓ be a prime divisor of it. By Lemma 2.3 at the split
+N = p · c the prime ℓ divides N − 1 = pc − 1, so ℓ is a unit modulo p; let ℓ′ be its inverse,
+and let u be an inverse of c modulo p, as in Lemma 2.4. The unit ℓ′ u is coprime to p, and
+#Sp ≥ L(p) is the level condition of Definition 2.7 at q = p and e = N −1 (Eq. (1)), so that
+hypothesis supplies a base b prime to p with 2Y < p, where Y = ℓ′ u bN −1 mod p ∈ (0, p).
+   Put X = u bN −1 mod p. By Lemma 2.5 the prime ℓ divides p − X, so X = p − ℓk with
+1 ≤ k ≤ (p − 1)/ℓ < p/2. Modulo p,
+                         ℓY ≡ ℓ ℓ′ u bN −1 ≡ u bN −1 ≡ X = p − ℓk,
+whence ℓ (k + Y ) ≡ 0 (mod p). Since p ∤ ℓ, this gives p | k + Y ; but 0 < k + Y <
+p/2 + p/2 = p. Contradiction.                                                    □
+Corollary 2.9 (local_image_lt_of_one_lt_residueGcd[L*] ). In the setting of
+Lemma 2.8, if G(N ) > 1 then #Sp < L(p).
+Proof. Otherwise #Sp ≥ L(p), and Lemma 2.8 gives G(N ) = 1, against the hypothesis.
+Equivalently, G(N ) > 1 forces every local image strictly below the level at its prime. □
+    The coset condition of Definition 2.7 is what a small exponential sum on the image
+delivers, and that is the form in which the published estimate is available.
+
+    Definition 2.10. Let q be prime, e ∈ N, and let H = {be mod q : gcd(b, q) = 1}, read
+    as integers in [0, q). Say that ExpSumSmall holds for (q, e) if for every a with q ∤ a
+                                    2πah 2             2πah 2      #H 2
+                          (︃ ∑︂         )︃   (︃ ∑︂         )︃   (︃      )︃
+                                cos        +       sin        <            .
+                            h∈H       q        h∈H       q           3
+
+Lemma 2.11 (cosetMeetsLowerHalf_of_expSumSmall[L*] ). Let L : N → N with L(2) ≥
+2, and suppose that ExpSumSmall holds at every odd prime q and every e with L(q) ≤
+(q − 1)/ gcd(e, q − 1). Then L meets the lower half.
+Proof. At q = 2 the level condition never holds, because (q − 1)/ gcd(e, q − 1) ≤ 1 < 2 ≤
+L(2); so let q be an odd prime, e an exponent with L(q) ≤ (q − 1)/ gcd(e, q − 1), and u a
+unit modulo q. Suppose that no element of the coset uH has a representative below q/2,
+that is q ≤ 2 ((uh) mod q) for every h ∈ H.
+   For real t put P (t) = 1 + 2 sin(2πt) − cos(4πt). With θ = 2πt and cos 2θ = 1 − 2 sin2 θ,
+                                                   (︂        )︂
+                                   P (t) = 2 sin θ 1 + sin θ ,
+which is at most
+              (︂ 0 whenever)︂sin θ ≤ 0, in particular on [1/2, 1]. Each (uh mod q)/q lies in
+[1/2, 1), so P (uh mod q)/q ≤ 0 for every h ∈ H (trig_upper_half). Summing over H,
+and writing S(a) = h∈H e2πiah/q ,
+                    ∑︁
+
+                      ∑︂ (︃ uh mod q )︃
+                 0 ≥     P                 = #H + 2 Im S(u) − Re S(2u).
+                     h∈H          q
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                    5
+
+Both frequencies u and 2u are nonzero modulo q, the prime being odd and u a unit, so
+Definition 2.10 bounds |S(u)| and |S(2u)| by #H/3. The sum of the display is therefore
+larger than #H − 2#H/3 − #H/3 = 0, while the display says that it is at most 0.
+Contradiction.                                                                      □
+   One further property of the invariant is read off a 2-adic valuation, and it is the one
+Section 8 consumes.
+Proposition 2.12 (residueGcd_eq_one_of_padicValNat_lt[L] ). Let N ≥ 3 be odd, let
+p be a prime dividing N , and suppose that N is not a power of p. If
+                                  v2 (N − 1) < v2 (p − 1),
+then G(N ) = 1.
+Proof. Write N = pk e with k = vp (N ), so that e > 1 and gcd(pk , e) = 1. Put a = v2 (p − 1):
+then 2a | p − 1 and 2a ∤ N − 1.
+     A local −1. The group (Z/pk )× is cyclic of order φ = pk−1 (p − 1), which 2a divides.
+Let g = gcd(N − 1, φ) and write φ = gL. If L were odd, then 2a , being coprime to L,
+would divide g, hence N − 1, against the hypothesis; so L is even and 2g | φ. In a cyclic
+group of order φ the element −1 is the unique element of order 2, and the image of the
+(N − 1)-st power map is the subgroup of order φ/g = L; that order being even, the image
+contains −1. There is thus a base b with bN −1 ≡ −1 (mod pk ).
+     A pair of residues summing to N . By the Chinese remainder theorem there are bases
+w, w′ ∈ {0, . . . , N − 1} whose residues are, at w, −1 modulo pk and 0 modulo e, and, at
+w′ , 1 modulo pk and 0 modulo e. Both residues are nonzero, and rw + rw′ is divisible by
+pk and by e, hence by their product N ; lying in (0, 2N ), it equals N .
+     Then G(N ) divides (rw −1)+(rw′ −1) = N −2 (Lemma 2.2) and, at the split N = pk ·e,
+also N − 1 (Lemma 2.3). Hence G(N ) | 1, which is to say G(N ) = 1.                        □
+    Of these facts, Lemma 2.6 is the one Section 5 turns into a bound on G at a prime
+factor, Lemma 2.8 and Corollary 2.9 are the criterion that Section 6 feeds the published
+estimate into, and Proposition 2.12 is the collapse that Section 8 applies to the even-j
+families.
+
+                                        3. Census
+    Over the 138 233 258 odd composites N ≤ 3.1 · 108 with at least two prime factors, the
+run in experiments/blind_modulus_census_c — census.c at the first pass, stage2.py
+at the second — narrows the candidates for a CM -pseudoprime in two passes, and it
+is the census this article starts from. The first pass needs only part of the invariant
+G(N ) of Definition 2.1: the gcd of r − 1 over the residues r = bN −1 mod N ̸= 0 at the
+bases b = 2, . . . , 71 is a multiple of G(N ), so that a value of 1 there proves G(N ) = 1
+outright, and 987 composites remain. The second pass spends three hundred further
+bases, half of them non-units, and cuts the field to 22; 21 of those 22 are Carmichael
+numbers, and a Carmichael number has at least three prime factors, so only one of the
+22, 300 979 369 = 7759 · 38791, is a semiprime: the exceptional semiprimes below 3.1 · 108
+number one.
+    Carried to 1010 (experiments/blind_modulus_census.c), the same engine finds 70
+composites with G(N ) > 1: 18 of them have an odd prime dividing G(N ), exactly four are
+not Carmichael, and for every modulus M that occurs there the first N with M | G(N )
+is a Carmichael number — 6 601 = 7 · 23 · 41 for M = 2; 9 439 201 = 61 · 271 · 571 for
+M = 3 and for M = 6; 2 508 013 = 53 · 79 · 599 for M = 4; 4 034 969 401 = 661 · 1321 · 4621
+for M = 5; 710 382 401 = 137 · 953 · 5441 for M = 8; 6 196 188 961 = 139 · 4969 · 8971
+6                                   ALESSANDRO SGARBI
+
+for M = 13 — while M = 7, 9, 12, 15 and 16 divide no G(N ) below 1010 . The list,
+and the count at 1010 , belong with the published tables of Carmichael numbers and of
+pseudoprimes [1, 8, 15, 16].
+    The only one of the 22 that is not Carmichael is the article’s running example,
+N = 300 979 369: the smallest composite with G(N ) > 1 off the Carmichael locus,
+since below 3.1 · 108 no smaller composite carries a modulus with no witness unless it
+is a Carmichael number. Lean records the row as blind_modulus_off_carmichael[L] ,
+whose statement carries the factorisation into two distinct primes, the fact that Korselt’s
+condition does not hold at N , the divisibility 2 | G(N ) and the bound G(N ) < 5; the
+arithmetic and the local algebra behind those four clauses are the companion’s [18], which
+also records the anatomy of the row: modulus 2 has no witness at it (noWitnessMod_
+two_counterexample[L] , resid_mod_two_counterexample[L] ), the base-3 residue and the
+fifth roots modulo 38791 fix the local picture (resid_counterexample_base_three[L] ,
+fifth_roots_38791[L] ), and G(N ) = 2 (residueGcd_counterexample_eq_two[L] ).
+    The census of [18] for the class-level rule — a base is a witness for it when the Fermat
+residue is nonzero and congruent to 3 or to N − 1 modulo 4 — counts 178 663 674 odd
+composites below 4 · 108 and the rule has no witness at six of them: the smallest is the
+Carmichael number 2 508 013 = 53 · 79 · 599, which by the census above is also the first N
+with 4 | G(N ), and the smallest that is not Carmichael is 36 953 929 = 2719 · 13591, with
+G(N ) = 1. The number 9 439 201 of the census above, the first with ω(N ) ≥ 2 and an
+odd prime in G(N ), is not among the six. The sets these tables count, and the shape the
+count takes as X grows, are the subject of Section 4.
+                                     4. Counting sets
+    The census counts composites at which a modulus has no witness, one at a time. To
+ask how many there are — and with what shape — one needs the two finite sets the count
+is taken over: a family of semiprimes, indexed by a prime, whose count can be taken prime
+by prime, and the global set of semiprimes below a bound at which a modulus has no
+witness at all. This section fixes both, states the growth shape against which the later
+bounds are read, and records the injection that turns every count taken on the family into
+a count in the global set.
+
+    Definition 4.1. For j, n ∈ N the second linear form of the family is
+                                     qj (n) = 1 + j(n − 1)
+    (familyQ). For j ≥ 2 and X ∈ N let the family pairs at scale X be the odd primes
+    p whose partner qj (p) is again prime and satisfies p qj (p) ≤ X (familyPairs). The
+    family-exceptional primes are those family pairs whose semiprime p qj (p) has a modulus
+    with no witness at it (familyBlind), and the family-missed primes are the same pairs
+    with the class-level rule’s filter in place of that one (familyMiss).
+     The definition unfolds to familyQ_eq[L] . The partner strictly exceeds its prime,
+p < qj (p) for j ≥ 2 and p ≥ 3 (lt_familyQ[L] ), and it is bounded by the product of the
+two parameters, qj (n) ≤ jn for j, n ≥ 1 (familyQ_le_mul[L] ): the two facts the injection
+below uses, the first for the order of the pair and the second wherever the scale of the count
+has to be compared. At j = 3 the partner is q3 (p) = 3p−2 for p ≥ 1 (familyQ_three[L] ), so
+q3 (3) = 7 (familyQ_three_seven[L] ), and the family is nonempty from X = 21 on through
+the pair (3, 7): the prime 3 lies in the family, and the family has positive cardinality at that
+scale (familyPairs_three_contains_three[L] , one_le_card_familyPairs_three[L] ).
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                    7
+
+
+ Definition 4.2. A modulus M has no witness at N exactly when M | G(N )
+ (Lemma 2.2), the invariant G(N ) being fixed in Definition 2.1 as the gcd of r − 1
+ over the nonzero Fermat residues r = bN −1 mod N at all bases b ∈ {0, . . . , N − 1}
+ [17]. Thus G(N ) > 1 is exactly the statement that N is a CM -pseudoprime for some
+ modulus M ≥ 2. The exceptional semiprimes below X are the pairs (p, q) of primes
+ with 2 < p < q, pq ≤ X and G(pq) > 1 (blindSemiprimes); the missed semiprimes
+ below X are the same pairs, counted instead when the class-level rule [18] finds no
+ witness for them (missedSemiprimes).
+                                                               √
+ Definition 4.3. Let F : N → R and C > 0. Say that F grows like X/(log X)2 with
+ constant C if for all large X
+                                    √
+                                      X
+                                C          ≤ F (X),
+                                  (log X)2
+ that is, if the inequality holds for every X ≥ max(X0 , 2) for some X0 ∈ N
+ (GrowsLikeSqrtOverLogSq).
+
+Theorem 4.4 (card_familyBlind_le_blindSemiprimes[L] ). Let j ≥ 2 and X ∈ N. The
+map p ↦→ (p, qj (p)) sends every family-exceptional prime for (j, X) to an exceptional
+semiprime below X, and it is injective on that set. Consequently the number of family-
+exceptional primes for (j, X) is at most the number of exceptional semiprimes below
+X.
+Proof. Let p be a family-exceptional prime. Unpacking the two filters, p is an odd prime,
+qj (p) is prime, p qj (p) ≤ X, and G(p qj (p)) > 1. Since p ≥ 3, the product bounds the
+partner as well: qj (p) ≤ p qj (p) ≤ X. The partner exceeds its prime, p < qj (p), because
+qj (p) − p = (j − 1)(p − 1) > 0 for j ≥ 2 and p ≥ 3. The pair (p, qj (p)) therefore satisfies
+every clause of an exceptional semiprime below X, so the assignment is a map into the
+exceptional semiprimes (familyBlind_mem_blindSemiprimes[L] ). Two family-exceptional
+primes with the same image have equal first coordinates, so the assignment is injective.
+A finite set that injects into another has at most that other’s cardinality, and the claim
+follows.                                                                                   □
+    Exchanging the filter G(p qj (p)) > 1 for that of the class-level rule leaves the argument
+unchanged: a family-missed prime has its pair among the missed semiprimes below
+X (familyMiss_mem_missedSemiprimes[L] ), and hence the family-missed count is at
+most the global missed count (card_familyMiss_le_missedSemiprimes[L] ). The global
+exceptional count is bounded in Section 5, and the global missed count in Theorem A.5.
+    The exceptional composite of the census (Section 3) is a member of the family at
+j = 5: its second prime factor is q5 (7759) = 1 + 5 · 7758 = 38791. Its first coordinate
+is a family-exceptional prime from X = 300 979 369 on, so the injection of Theorem 4.4
+counts its pair (7759, 38791) in the exceptional semiprimes below X, and by Section 3 it is
+the only one below 3.1 · 108 . The first coordinate of the member is the prime 7759 ≡ 7
+(mod 8).
+
+                                 5. One image counted
+     With the counted sets fixed in Section 4, what remains is to see how much of the count
+a single local image already forces, before any analytic input is admitted. The size of the
+image of the power map at one prime factor of N bounds the invariant G(N ) and, through
+it, the number of exceptional pairs; the step from geometry to cardinality is unconditional
+8                                  ALESSANDRO SGARBI
+
+apart from one named hypothesis on how the image is spread over the nonzero classes.
+This section states that reduction, isolates the hypothesis inside the statements that need
+it, and stops where the analytic input takes over.
+     Let N = 2x − 1 be an odd composite and let p be a prime with N = pc, p ∤ c, c > 1.
+The local image Sp fixed in Section 2 is the subgroup of (Z/p)× formed by the residues
+bN −1 mod p, read as integers in (0, p); as a set it is recorded as powImage, and by Eq. (1)
+it has (p − 1)/ gcd(N − 1, p − 1) elements. The whole section turns on that one number.
+     The side residues of N at one prime are the cosets of its local image: the base that is b
+modulo p and 0 modulo c has the residue cX with X = (c−1 bN −1 ) mod p (side_resid_
+pin[L] , Lemma 2.4). A level that meets the lower half (Definition 2.7) decides G at one
+such image: an image of order at least the level forces G(N ) = 1 (residueGcd_eq_one_of_
+large_image[L*] , Lemma 2.8), and read the other way, G(N ) > 1 forces every local image
+strictly below the level (local_image_lt_of_one_lt_residueGcd[L*] , Corollary 2.9). The
+two-image form of the same verdict (residueGcd_eq_one_of_large_images[L*] ), through
+the idempotent coefficient inequality idem_coeff_upper_half[L] and the side-minimality
+principle residueGcd_eq_one_of_coset_below[L] , is in the library and is not used in
+a proof here ([17] states the one-image form), nor are the two translations that turn a
+congruence into a divisibility, int_dvd_of_mul_mod_eq_one[L] and coprime_of_dvd_mul_
+sub_one[L] .
+     The unconditional half of the reduction is the bound on G itself.
+Theorem 5.1 (residueGcd_le_gcd_sub_one[L] ). Let N = 2x − 1 be an odd composite,
+p a prime and N = pc with p ∤ c and c > 1. Then G(N ) ≤ gcd(N − 1, p − 1).
+Proof. Write M = G(N ) and d = N − 1. The side coset pinning of Lemma 2.5 puts the
+whole coset u Sp on the class of p modulo M — the local image Sp at p being read as integers
+in (0, p), and u = c−1 mod p — and Lemma 2.6 counts it: M · #Sp ≤ p − 1. By Eq. (1) the
+image has (p−1)/ gcd(d, p−1) elements, and that factor is the local factor gcd(N −1, p−1)
+of the count of bases at which a composite passes the Fermat test [2, Thm. 1, p. 1392],
+[13]. That factor is positive, and cancelling it from M · (p − 1)/ gcd(d, p − 1) ≤ p − 1 leaves
+M ≤ gcd(d, p − 1), that is G(N ) ≤ gcd(N − 1, p − 1).                                        □
+    The citation locates the factor, not the inequality. The count is r|N gcd(N − 1, r − 1),
+                                                                      ∏︁
+
+and it does not determine G(N ): 561 and 6601 are both Carmichael, so at both every
+unit is a base at which the number passes the test and the count takes its largest value,
+φ(N ) (320 and 5280), while G(561) = 1 and G(6601) = 2. What the proof above joins to
+the local factor is the side coset: the pin confines it to one class modulo M , and the class
+count turns the factor into a bound on G(N ).
+    Two consequences are read off a semiprime N = pq. Since pq − 1 = p(q − 1) + (p − 1)
+the common divisor collapses, gcd(pq − 1, q − 1) = gcd(p − 1, q − 1) (gcd_sub_one_
+semiprime[L] ), so the bound at either prime reads G(pq) ≤ gcd(p − 1, q − 1) (residueGcd_
+semiprime_le_gcd[L] ). And a divisor M of G lies below every prime factor p of N at
+which that bound holds: from M | G and G ≤ gcd(N − 1, p − 1) ≤ p − 1 one gets M < p
+(lt_prime_of_dvd_residueGcd[L] ).
+    Small exponential sums on the image (ExpSumSmall, defined in Definition 2.10) force
+the coset hypothesis (cosetMeetsLowerHalf_of_expSumSmall[L*] , Lemma 2.11), and the
+one-image and two-image theorems take that form as well (residueGcd_eq_one_of_
+large_image_expSum[L*] , residueGcd_eq_one_of_large_images_expSum[L*] ). An im-
+age of even order meets the lower half on its own (coset_meets_lower_half_of_even[L] );
+the open part of the hypothesis is the odd orders.
+    Counting the pairs for which the image stays large gives the section’s cardinality
+statement.
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                      9
+
+Theorem 5.2 (card_blind_semiprimes_le[L*] ). Let L : N → N meet the lower half
+(Definition 2.7) and let K ≥ L(q) for every q ≤√X. Then the number of exceptional
+semiprimes below X (Definition 4.2) is at most (⌊ X⌋ + 1) K 2 .
+Proof. Associate with a pair (p, q) of odd primes the triple (g, a, b) = (gcd(p − 1, q −
+1), (p − 1)/g, (q − 1)/g). Suppose G(pq) > 1 and put x = (pq + 1)/2, so that N =
+2x−1 = pq. The local image at q is then smaller than L(q) (local_image_lt_of_one_lt_
+residueGcd[L*] , Corollary 2.9), and its order is (q−1)/ gcd(N −1, q−1) = (q−1)/g because
+gcd(N − 1, q − 1) = gcd(p − 1, q − 1) (gcd_sub_one_semiprime    √ ); hence b <
+                                                                  [L]
+                                                                                L(q) ≤ K.
+Since p < q the same bound gives a ≤ b < K, and g ≤ p ≤ ⌊ X⌋ because p ≤ pq ≤ X.
+                                                                              2
+
+The assignment is injective, the triple recovering
+                                               √ p = ga+1 and q = gb+1. The exceptional
+pairs therefore inject into a√set counted by ⌊ X⌋ + 1 values of g and K values of each of
+a and b, of size at most (⌊ X⌋ + 1)K 2 .                                               □
+
+    A two-dimensional sieve [9] would sharpen the factor K 2 of that count to K 2 /(log X)2 ,
+since what remains once g, a and b are fixed is the primality of the two forms ga + 1 and
+gb + 1. The bound above uses √ neither that primality nor a sieve, and it does not need to:
+its exponent is carried by ⌊ X⌋ + 1 alone.
+    The same machine recounts the pairs at which the companion’s class-level rule has no
+witness: under its class-level coset hypothesis — the lower half replaced by representatives
+in each class modulo 4 — the companion counts the semiprimes at which its rule has
+no witness, and here that hypothesis is supplied by the cosine construction taken up in
+Section A [18]. What remains to be fixed is the analytic input that makes the level L
+concrete, and that is the subject of Section 6.
+    The running example closes the section on lt_prime_of_dvd_residueGcd. For the
+exceptional composite of the census any modulus M with no witness at it satisfies M < 7759;
+the modulus 2 recorded in Section 3 is one such, and 2 < 7759 < 38791.
+
+                                  6. Bgk as published
+    The reduction of Section 5 left the count resting on one condition on the cosets of
+the local power-map images: a level function L for which every coset of every image
+of order at least L(q) meets the lower half modulo q. This section puts a published
+exponential-sum estimate into that condition, and carries it through to a count of the
+exceptional semiprimes conditional on that estimate alone. The estimate is not proved
+here: it enters as a named proposition, not as an axiom, and the two theorems below are
+conditional on it and name it in their statements.
+    Recall the exponential-sum condition of Definition 2.10:            for the image
+He = powImage q e of the e-power map on the units modulo q, every sum over
+He with a nontrivial frequency has squared modulus below one ninth of the image size
+squared (ExpSumSmall). The published theorem bounds such a sum by the size of the
+image times a negative power of q.
+
+ Definition 6.1. Let He be the image powImage q e of the e-power map b ↦→ be mod q
+ on the units modulo q, a subgroup of (Z/q)× of order (q − 1)/ gcd(e, q − 1), its elements
+ read as integers in [0, q). Say that BGKBound holds if for every γ > 0 there are ν > 0 and
+ C > 0 such that for every prime q, every exponent e with (q − 1)/ gcd(e, q − 1) ≥ q γ
+ and every a with q ∤ a,
+                             2πah 2                2πah 2
+                (︃ ∑︂             )︃    (︃ ∑︂          )︃     (︂          )︂2
+                        cos          +         sin         ≤ C |He | q −ν .
+                  h∈He         q          h∈He       q
+10                                ALESSANDRO SGARBI
+
+    This is the theorem of Bourgain, Glibichuk and Konyagin [6], in the form stated as
+Theorem 1.1 of [11]: for every γ > 0 there is ν(γ) > 0 such that for∑︁every prime q, every
+subgroup H ⊆ F×    q of order at least q and every a ̸≡ 0 the sum
+                                         γ
+                                                                        h∈H exp(2πiah/q) is
+bounded by a constant times |H| q . Two points about the transcription. The group
+                                      −ν
+
+F×q is cyclic, so every subgroup of it is the image of a power map b ↦→ b , of order
+                                                                                 e
+
+(q − 1)/ gcd(e, q − 1), and its members are exactly the integers collected in powImage q e;
+nothing is lost by stating the bound for power images. And the estimate is a Prop, never
+an axiom: it is published but not formalised, here or in the library the development rests
+on, which is why every result derived from it below carries [L*] and names BGKBound in its
+statement.
+    Shkredov’s version of the same bound makes the exponent explicit.
+
+  Definition 6.2. Say that ShkredovBound holds if for every δ > 0 there is C > 0 such
+  that for every prime q, every exponent e with (q − 1)/ gcd(e, q − 1) ≥ q δ and every a
+  with q ∤ a, the inequality of Definition 6.1 holds with q −δ/(27+2/δ) in place of q −ν .
+    This is Corollary 16 of [19], with the exponent ν = δ/(27 + 2/δ); its implied constant,
+and with it every threshold obtained from it below, stays ineffective. Shkredov’s form
+implies the BGK form outright: at a given γ > 0 unpack the hypothesis at δ = γ, keep its
+constant C and take ν = γ/(27 + 2/γ), which is positive because γ is; what results is the
+statement of BGKBound (bgkBound_of_shkredovBound[L*] ).
+    The passage from the bound to the coset condition is elementary, and it is where
+a size hypothesis becomes a threshold. Fix γ > 0 and let ν and C be the constants
+BGKBound supplies at it. For a prime q with (3C)1/ν < q the factor Cq −ν is below 1/3,
+so the bound puts each nontrivial sum below one third of the image size; squaring gives
+the exponential-sum condition (expSumSmall_of_bgkBound[L*] ). The only ingredient is
+that the image is nonempty, which it is: it contains the e-th power of the unit 1, so
+its cardinality is positive (one_le_card_powImage[L] ). The threshold exists and is not
+computed — the published estimate and this step are both ineffective — and no later
+statement in this article computes a numerical Q.
+    What the reduction of Section 5 consumes is a level condition rather than an order
+condition: cosetMeetsLowerHalf_of_expSumSmall asks for a level L that stays at or
+below the order of the image, uniformly in the exponent. The level fed to that reduction
+below is                                          ⎧
+                                                  ⎨⌈q γ ⌉, Q ≤ q,
+                             bgkLevel γ Q q =
+                                                  ⎩q,      Q > q.
+Below the threshold the level is q, and the choice is vacuous there: the e-power image has
+order (q − 1)/ gcd(e, q − 1) ≤ q − 1 < q, so no order reaches it. Above the threshold the
+two conditions coincide, the level being the size hypothesis of BGKBound read through the
+ceiling. What BGKBound therefore supplies is a threshold Q ≥ 3 such that at every odd
+prime q, a level at or below the order of the image forces the exponential sums to be small
+(bgkLevel_hyp[L*] ). The bound Q ≥ 3 serves one prime only: the level at 2 has to be at
+least 2 for the coset condition, while q = 2 is left out of the exponential-sum condition
+because the image there has order 1.
+Theorem 6.3 (residueGcd_eq_one_of_large_image_BGK[L*] ). Assume BGKBound. For
+every γ > 0 there is a threshold Q such that: if N = 2x − 1 with x ≥ 2, p is prime, N = pc
+with c > 1 and p coprime to c, and if p ≥ Q and the local image at p has order at least pγ ,
+then G(N ) = 1.
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                    11
+
+Proof. Take the threshold Q and the level property at γ from the step above. Since Q ≥ 3,
+the level at 2 is 2 ≥ 2, so the exponential-sum hypothesis of the reduction gives the
+coset condition for the level bgkLevel γ Q (cosetMeetsLowerHalf_of_expSumSmall[L*] ,
+Lemma 2.11). Apply the criterion of Lemma 2.8, in the exponential-sum form obtained by
+composing it with that reduction (residueGcd_eq_one_of_large_image_expSum[L*] ), at
+the prime p. That criterion asks for exactly one thing beyond its hypotheses, namely that
+the level at p be at most the order of the local image at p; the order is (p−1)/ gcd(N −1, p−1)
+with N − 1 = 2x − 2, and since p ≥ Q the level at p is the ceiling ⌈pγ ⌉, which the displayed
+hypothesis pγ ≤ (p − 1)/ gcd(2x − 2, p − 1) dominates. Hence G(N ) = 1.                      □
+   Applying the same level to every prime at once counts the exceptional semiprimes.
+Theorem 6.4 (card_blind_semiprimes_BGK[L*] ). Assume BGKBound. For every γ > 0
+there is a threshold Q such that for every X the number of exceptional semiprimes below
+X (Definition 4.2) is at most
+                                (︂ √       )︂(︂       )︂2
+                                  ⌊ X⌋ + 1 Q + ⌈X γ ⌉ .
+Proof. Take the threshold Q ≥ 3 and the level property at γ from the step above, and
+put K = Q + ⌈X γ ⌉. The level at 2 is 2, so the coset condition holds for bgkLevel γ Q.
+The
+  √ counting 2bound of Theorem 5.2 counts the exceptional semiprimes below X by
+(⌊ X⌋ + 1)K once K dominates the level at every prime q ≤ X; the pairs it counts
+are the pairs of Definition 4.2, since both are cut out by the same filter. It remains to
+compare the level with K. For q < Q the level is q and q < Q ≤ K. For Q ≤ q ≤ X the
+level is ⌈q γ ⌉, and q γ ≤ X γ because q ↦→ q γ is nondecreasing on the positive integers, so
+⌈q γ ⌉ ≤ ⌈X γ ⌉ ≤ K. The stated bound follows.                                             □
+                                                                              √
+     Read out, the estimate is ≪γ X 1/2+2γ for every γ > 0: the factor ⌊ X⌋ + 1, the
+two-prime bookkeeping of Theorem 5.2, carries the exponent 1/2, and the threshold carries
+the 2γ, because Q is fixed while ⌈X γ ⌉ ≪γ X γ . The estimate is informative only for
+γ < 1/4: at γ = 1/4 the exponent 1/2 + 2γ reaches 1, and the displayed bound is then
+no better than counting all pairs. That is the upper half of the shape the article is after,
+and it rests on one published theorem and on nothing else;√the lower half, matching it in
+the exponent, is taken up in Section 7, where the shape X/(log X)2 is measured and
+then derived conditionally on a Bateman–Horn count for the family together with one
+fixed-coset density.
+     One fixed j is what that count needs, and it is not a weakened form of the classical
+all-j count. Summed over every quotient j, the pairs with p − 1 | q − 1 belong to the circle
+of Titchmarsh’s divisor problem — Linnik [12], [7], [4]; one fixed j asks instead for the
+simultaneous primality of the two linear forms n and 1 + j(n − 1), the Bateman–Horn
+case of Section 7, and it is that case which gives the shape of Definition 4.3.
+     The census of Section 3 produced one such pair: its exceptional semiprime, found
+by the run to 3.1 · 108 (experiments/blind_semiprime_count.py), has two distinct odd
+prime factors, 7759 and 38791, and G > 1, so for every X ≥ 300 979 369 the bound above
+is a statement about that very pair.
+
+                                     7. Lower bound
+   Having seen how one published exponential-sum bound caps the count from above, we
+now supply the matching lower side: name Bateman–Horn and the fixed-coset density,
+and see what count they force.
+   Both hypotheses are about the family of Section 4, where the pairs are indexed by
+a prime and can therefore be counted prime by prime: the odd primes p whose partner
+12                                  ALESSANDRO SGARBI
+
+qj (p) = 1 + j(p − 1) is again prime with p qj (p) ≤ X (familyPairs), the family-exceptional
+primes among them (familyBlind), and the global exceptional semiprimes below X
+(blindSemiprimes). Both are stated for a fixed√j, and the shape they produce is the one
+fixed in Definition 4.3: a count that exceeds C X/(log X)2 for all large X, with C > 0
+(GrowsLikeSqrtOverLogSq). Neither hypothesis is proved. They are named, the passage
+from the linear to the family form of the Bateman–Horn count is proved, and the count
+they force is packaged at the end of the section against the upper bound of Section 6.
+     The first is the Bateman–Horn count [3] for the family.
+
+  Definition 7.1. Say that BatemanHornFamily holds for √      j ∈ N and C > 0 if the family
+  pairs of Definition 4.1 at scale X number
+                                        √         at least  C   X/(log X)2 for all large X;
+  equivalently, if that count grows like X/(log X)2 with constant C.
+    At j = 5 this is the conjecture about the pair of linear forms n and 5n − 4: a prime
+that divided both forms for every n would divide their difference, 4, so no prime obstructs
+the pair locally, and the Bateman–Horn heuristic applies with a constant C depending on
+j. The same holds for every fixed j ≥ 2; the statement is a hypothesis of the two counting
+results below and of nothing else in this article, and it is not an axiom. The linear form of
+the same count is the elementary one, taken on the integers rather than on the family: say
+that BatemanHornLinear holds for j and C > 0 if at least C Y /(log Y )2 of the integers
+n ≤ Y have n and qj (n) both     prime, for all large Y . The family form follows from the
+linear one at the scale Y ≈ X/j, and that reduction is the one step of this section that
+                              √︂
+
+is proved outright.
+    The second hypothesis is about the proportion of the family at which a modulus has
+no witness.
+  Definition 7.2. Say that FixedCosetBlindDensity holds for j and δ > 0 if at least
+  the proportion δ of the family pairs at scale X are family-exceptional, for all large X.
+    At j = 5 the proportion is predicted to be δ5 = 31/4096 ≈ 0.00757, against
+348/45 126 = 0.00771 observed on the 45 126 family members with p < 6 · 106
+(experiments/delta5_geometric.py). Where in the family that mass sits, and why
+the prediction has the value it has, is the subject of Section 8; what is used here is
+that the hypothesis speaks about composites, and that the census provides one. The
+exceptional composite of Section 3 is the j = 5 family pair with first coordinate 7759;
+from X = 300 979 369 on it is therefore counted among the family pairs at scale X, and it
+is family-exceptional because its semiprime is exceptional. So δ5 counts that pair and
+its likes, and not an empty projection (experiments/blind_semiprime_count.py, over
+X ≤ 3.1 · 108 ).
+    Exchanging the filter G(p qj (p)) > 1 for that of the class-level rule gives the companion
+hypothesis. Say that FixedCosetMissDensity holds for j and δ > 0 if at least the propor-
+tion δ of the family pairs at scale X are family-missed, that is, carry no witness of the class-
+level rule [18], for all large X. The same scan for the class-level rule, cut at q < 3·107 rather
+than at p < 6 · 106 , finds 334 pairs at which it has no witness among 45 127 family members,
+the proportion 334/45 127 = 0.00740 (experiments/family_independence_test.py).
+The hypothesis is the same shape with that filter in place of G(p qj (p)) > 1, and it enters
+one statement below and no other.
+    The linear count reaches the family by an injection at the right scale.
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                    13
+
+Theorem 7.3 (batemanHornFamily_of_linear[L*] ). Assume BatemanHornLinear holds
+for j ≥ 1 and C. Then there is C ′ > 0 such that BatemanHornFamily holds for j and C ′ .
+Proof. Unpack the linear hypothesis: its constant is positive, C > 0; it has a threshold
+Y0 ; and for every Y ≥ max(Y0 , 2)√at least C Y /(log Y )2 of the integers n ≤ Y have n
+and qj (n) prime. Take C ′ = C/(4 j), and let X ≥ jM 2 with M = max(Y0 + 3, 16); the
+family statement is one about large X, and this is the range in which the linear count is
+consumed.
+     At such an X put Y = ⌊ X/j⌋. Two facts of scale hold. First, j Y 2 ≤ X, because
+                               √︂
+                                                √       √                √
+Y 2 ≤ X/j (j_mul_sqrt_sq_le[L] ). Second, X ≤ j (Y + 1) ≤ 2 j Y , because X ≤
+j(Y + 1)2 and Y ≥ 1 (sqrt_le_mul_sqrt_div[L] ), and these are the only two places where
+the scale is moved.
+     From jY 2 ≤ X the prime pairs (n, qj (n)) with n ≤ Y inject into the family pairs at
+scale X (linear_le_familyPairs[L] ): their product satisfies n qj (n) ≤ n jn ≤ jY 2 ≤ X
+once qj (n) ≤ jn for n ≥ 1 is used (familyQ_le_mul[L] ). Since Y ≥ M ≥ Y0 + 3, the linear
+hypothesis applies at this Y , and the injection carries its count to the family: the number
+of family pairs at scale X is at least
+                                    √ C Y /(log Y ) .
+                                                   2
+
+     It remains to compare Y with X and log Y with log X. From jY 2 ≤ X, j ≥ 1 and
+Y ≥ 2, taking logarithms gives
+                     log X ≥ log(jY 2 ) = log j + 2 log Y ≥ 2 log Y,
+so 1/(log X)2 ≤ 1/(4(log Y )2 ). Combining the two comparisons,
+                 √
+             ′     X       C       √︂          1         C    Y          CY
+          C           2
+                        ≤  √    · 2   jY ·           2
+                                                       =   ·       2
+                                                                     ≤           ,
+               (log X)    4 j              4(log Y )     8 (log Y )    (log Y )2
+which the injection has already bounded by the number of family pairs at scale X. As
+C ′ > 0, this is BatemanHornFamily at j and C ′ .                                  □
+   Granting both hypotheses, the family lower bound is a lower bound for the global
+count.
+Theorem 7.4 (card_blind_semiprimes_ge[L*] ). Let j ≥ 2 and let C, δ > 0 be such
+that BatemanHornFamily holds for j and C and FixedCosetBlindDensity holds for j
+and
+√ δ. Then2 the number of exceptional semiprimes below X (Definition 4.2) grows like
+  X/(log X) with constant δC.
+Proof. Unpack the two hypotheses. The family count has a positive constant
+                                                                        √         C and a
+threshold X1 past which the family pairs at scale X number at least C X/(log X)2 ; the
+density has a positive proportion δ and a threshold X2 past which at least a proportion δ
+of the family pairs are family-exceptional. Let X ≥ max(X1 , X2 ) with X ≥ 2. Multiplying
+the first bound by δ √
+                     > 0 and applying the second, the family-exceptional primes at scale X
+number at least δC X/(log X)2 . By the injection of Theorem 4.4 (card_familyBlind_
+le_blindSemiprimes[L] ), the exceptional semiprimes below X are at least as many as
+√ family-exceptional
+the                       primes at scale X. Since δC > 0, the global count grows like
+  X/(log X) with constant δC.
+             2
+                                                                                         □
+    The same argument with the filter of the class-level rule in place of G(p qj (p)) > 1
+gives the companion statement: if BatemanHornFamily holds for j ≥ 2 and C and
+FixedCosetMissDensity for √    j and δ, then the semiprimes at which the class-level rule finds
+no witness below X grow like X/(log X)2 with constant δC (card_missed_semiprimes_
+ge[L*] ). The class-level condition that the upper count consumes — a representative in
+each class modulo 4, supplied by the published estimate through a degree-eleven minorant
+of the Fejér kernel — is proved in Section A, together with that upper count, Theorem A.5.
+14                                 ALESSANDRO SGARBI
+
+     The two halves now meet in one statement.
+Theorem 7.5 (blind_exponent_half_conditional[L*] ). Assume BGKBound holds.
+Let j ≥ 2, let C, δ > 0 be such that BatemanHornFamily holds for j and C and
+FixedCosetBlindDensity holds for j and δ, and let γ > 0. Then there is c > 0 such
+that for
+       √ all large X the number of exceptional semiprimes below X (Definition 4.2) is at
+least c X/(log X)2 , and there is Q ∈ N such that for every X that number is at most
+                               (︂ √        )︂(︂       )︂2
+                                 ⌊ X⌋ + 1 Q + ⌈X γ ⌉ .
+Proof. The lower half is Theorem 7.4 at the given data: it produces
+                                                                √      a constant, namely
+δC, for which the exceptional semiprimes below X grow like X/(log X)2 , and that is
+the first assertion. The upper half is the counting theorem of Section 6 (Theorem 6.4) at
+γ: the published
+         √         bound supplies a threshold Q such that for every X the same count is at
+most (⌊ X⌋ + 1)(Q + ⌈X γ ⌉)2 ; the pairs its estimate counts and the pairs counted here
+are the same pairs of primes with 2 < p < q, pq ≤ X and G(pq) > 1, because both are cut
+out by the same filter, so the bound applies to this count verbatim. Conjoining the two
+assertions gives the theorem as displayed.                                              □
+    Read against√ each other, the two halves are the two sides of one exponent. The
+lower shape ≫ X/(log X)2 is forced at every j ≥ 2 by the two hypotheses named in
+Theorem 7.5, and the matching upper shape ≪γ X 1/2+2γ for every γ > 0 follows from the
+published estimate of Section 6 alone; the exponent 1/2 that the pair of bounds produces is
+therefore a two-sided statement about the number of exceptional semiprimes, and the two
+sides do not rest on the same kind of input. That is the count this article is about, and at
+the scale where it can be checked it is not an empty one. The exceptional composite of the
+census is a family pair at j = 5, so the count the lower bound of Theorem 7.4 speaks about
+is already positive at X = 300 979 369: the pair (7759, 38791) is one of the exceptional
+semiprimes below that scale (experiments/blind_semiprime_count.py). Where in the
+family that mass actually sits, and whether the density hypothesis is vacuous or specific, is
+taken up in Section 8, which closes on the quantitative form of the same count; Section A
+is the other sharpening of the story.
+
+                                      8. Where mass
+   Two questions about the count of Section 7 are still open to inspection, and neither of
+them is a question about the analytic input: which family members can carry a modulus
+with no witness at all, and whether the fixed-coset density FixedCosetBlindDensity of
+Definition 7.2 is a real restriction on the family or one that every family satisfies for free.
+This section answers both by looking at the family itself, one j at a time, and closes on
+the quantitative form of the count.
+   Write a family member as N = p qj (p), with qj (p) = 1 + j(p − 1) the mate fixed in
+Definition 4.1. Two factorisations control the even-j families:
+                                     (︂     )︂
+                    N − 1 = (p − 1) 1 + jp ,        qj (p) − 1 = j (p − 1).
+For even j the factor 1 + jp is odd, so it contributes nothing to the 2-adic valuation of
+N − 1; for even j that valuation is v2 (p − 1). The factor j in the second factorisation
+contributes at least one 2 as soon as j is even, so for even j and p > 2 the two valuations
+separate,                       (︂          )︂      (︂        )︂
+                             v2 p qj (p) − 1 < v2 qj (p) − 1
+(family_even_two_adic_gap[L] ). The invariant reads such a separation as a collapse: a
+prime factor r of N with v2 (N − 1) < v2 (r − 1) forces G(N ) = 1, provided N is not a
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                    15
+
+power of r (Proposition 2.12, the criterion of [17]). A member p qj (p) is not a power of its
+larger prime, so that inequality is the criterion’s hypothesis at r = qj (p).
+Remark 8.1 (family_even_residueGcd_eq_one[L] ). Let j > 0 be even, let p > 2 be a
+prime and suppose that qj (p) is prime. Then the member N = p qj (p) has G(N ) = 1: it is
+a CM -pseudoprime for no modulus M ≥ 2. Indeed 1 + jp is odd, so v2 (N − 1) = v2 (p − 1),
+while v2 (qj (p) − 1) = v2 (j) + v2 (p − 1) ≥ 1 + v2 (p − 1); the prime qj (p) divides N to the
+first power, so N is not a power of it, and Proposition 2.12 at that prime gives G(N ) = 1.
+     The same inequality settles the companion’s class-level rule on these families. A prime
+factor r of N with v2 (N − 1) < v2 (r − 1) is also what makes that rule find a witness
+at every such composite (not_allZero_of_padicValNat_lt[L] , [18]), and that inequality
+is exactly the hypothesis, so no even-j member lies among the missed semiprimes of
+Definition 4.2 (family_even_not_allZero[L] ).
+     Nothing that sharp survives on the odd side, where the density of Section 7 is conjec-
+tured. The family j = 5 is the one it is stated for, and there G(N ) > 1 is confined to a
+single class of primes. Three facts about that family are the companion’s. If q5 (p) ≡ 1
+(mod 4) then G(N ) = 1, by the companion’s family-five one-mod-four theorem [18]. If
+instead p ≡ 3 (mod 8), the numerator of N at p is (p + 1)/4: for a split N = de into
+coprime factors d, e > 1 the numerator at d is the v with 0 ≤ v < d and d | ve + 1,
+here at d = p and e = q5 (p) ≡ −4 (mod p); and G(N ) divides every such numerator
+(residueGcd_dvd_numerator[L] , [17]). And in every case G(N ) | 2 [18].
+     Let N = p q5 (p) be a member with p ̸≡ 7 (mod 8). The prime 2 is not available, since
+q5 (2) = 6 is composite, so p is odd; and q5 (p) ≡ p (mod 4), because q5 (p) − 1 = 5(p − 1)
+while 5 ≡ 1 (mod 4). If q5 (p) ≡ 1 (mod 4), the companion’s one-mod-four theorem gives
+G(N ) = 1 outright. Otherwise q5 (p) ̸≡ 1 (mod 4), hence p ≡ 3 (mod 4), and oddness
+together with p ̸≡ 7 (mod 8) narrows this to p ≡ 3 (mod 8); writing p = 8m + 3 gives
+q5 (p) = 40m + 11 and numerator v = 2m + 1, odd. The invariant divides v, and it
+divides 2 as well; a divisor of 2 is 1 or 2, and a divisor of the odd number 2m + 1 is odd,
+so the only possibility is G(N ) = 1 (family_five_residueGcd_eq_one_of_not_seven_
+mod_eight[L] ). Both cases together say that G(N ) > 1 at j = 5 holds on one residue class
+only, and the density δ5 is accordingly carried by that class, of weight 1/4 among the
+family primes.
+Theorem 8.2 (family_five_seven_mod_eight_of_one_lt[L] ). Let p be a prime with
+q5 (p) prime and let N = p q5 (p). If G(N ) > 1 then p ≡ 7 (mod 8).
+Proof. This is the statement just proved, read backwards. For p ̸≡ 7 (mod 8) every
+member N = p q5 (p) of the j = 5 family has G(N ) = 1, so a member with G(N ) > 1 can
+only have p ≡ 7 (mod 8).                                                            □
+    The predicted proportion on that class is δ5 = 31/4096 ≈ 0.00757, the class weight
+1/4 multiplied by the proportion 31/1024 that the coset model predicts on the class
+itself: if the reduced fifth-root coset is equidistributed in [0, 3/4]3 , the condition 1/2 ≤
+x1 + x2 + x3 ≤ 5/4 cuts there a region of volume 31/128, and the parity factor is 1/8. The
+scan in experiments/delta5_geometric.py finds 0.00771 on the 45 126 family members
+with p < 6 · 106 .
+    A third j shows that the hypothesis is a genuine restriction rather than a formality.
+At j = 3 the mate is q3 (p) = 3p − 2, and every member of that family has G(N ) = 1:
+this is proved in [17] (residueGcd_eq_one_of_three_mul_sub_two[L] ), where the 3-adic
+valuation gives G(N ) < 3 and a parity argument on one atom excludes G(N ) = 2.
+Consequently there are no family-exceptional primes at j = 3 at all (familyBlind_three_
+eq_empty[L] ). The family itself is not empty: from X = 21 on it contains the pair (3, 7),
+16                                       ALESSANDRO SGARBI
+
+because q3 (3) = 7 and 3 · 7 = 21 (Definition 4.1). An empty filter over a nonempty family
+leaves no room for a positive proportion.
+Remark 8.3. Let δ > 0. Then FixedCosetBlindDensity does not hold for j = 3 and
+δ (not_fixedCosetBlindDensity_three[L] ): suppose it did; unpacking Definition 7.2,
+there is X0 such that for every X ≥ X0 the family-exceptional primes at scale X number
+at least δ times the family pairs at scale X. The scale X = max(X0 , 21) has at least one
+family pair, namely (3, 7), and no family-exceptional prime at all, the filter being empty
+at j = 3, so the two clauses would make 0 at least δ times a positive number.
+    So the density is a statement about particular families and not an automatic one: at
+j = 5 it is a conjecture about one class of primes, and at j = 3 it is false. The lower bound
+of Section 7 fixes the shape of the exceptional count but not its constant, and the constant
+together with the error term is conjectural; both can be stated.
+
+  Definition 8.4. Say that BlindCountAsymptotic holds for j ∈ N and C, δ ∈ R if there
+  is a nonnegative function o on N tending to zero such that for every X ≥ √︂ 3 the number
+  of family-exceptional primes at scale X (Definition 4.1) differs from δ C X/j/(log X)2
+                    √
+  by at most o(X) X/(log X)2 .
+     The constant is expected to be about 4 CBH (j), where CBH (j) is the Bateman–Horn
+constant of the pair √︂ of forms n and 1 + j(n − 1): reducing the family count to the
+linear one at Y ≈ X/j halves the logarithm, and a factor 4 is what the halving costs
+(experiments/cursorG_bh_constant.py). The same statement with the family-missed
+primes in place of the family-exceptional ones is MissCountAsymptotic, the asymptotic
+behind the miss density named in Section 7. Neither conjecture is proved or assumed in
+this article; both say what the two filters of Definition 4.2 would count, at the scale on
+which the shape of Theorem 7.5 holds.
+     One pair of that class is not hypothetical. The exceptional composite of the census
+(Section 3) is the j = 5 family pair with first coordinate 7759 ≡ 7 (mod 8), and its
+invariant is exactly G = 2 [18]. The class selected by Theorem 8.2 is therefore the class of
+the single non-Carmichael member of the exceptional set of Section 3, produced by the
+run to 3.1 · 108 (experiments/blind_semiprime_count.py). The density δ5 counts that
+pair and its likes, and the conjecture above is what their number is expected to be.
+
+                                              References
+ 1. W. R. Alford, Andrew Granville, and Carl Pomerance, There are infinitely many Carmichael numbers,
+    Annals of Mathematics 139 (1994), no. 3, 703–722.
+ 2. R. Baillie and Jr. S. S. Wagstaff, Lucas pseudoprimes, Math. Comp. 35 (1980), 1391–1417.
+ 3. Paul T. Bateman and Roger A. Horn, A heuristic asymptotic formula concerning the distribution of
+    prime numbers, Mathematics of Computation 16 (1962), 363–367.
+ 4. Enrico Bombieri, John B. Friedlander, and Henryk Iwaniec, Primes in arithmetic progressions to large
+    moduli, Acta Mathematica 156 (1986), 203–251, Zbl 0588.10042. Parts II and III: Math. Ann. 277
+    (1987) 361–393, Zbl 0625.10036; J. Amer. Math. Soc. 2 (1989) 215–223, Zbl 0674.10036.
+ 5. J. Bourgain, On the distribution of the residues of small multiplicative subgroups of Fp , Israel J. Math.
+    172 (2009), 61–74, Zbl 1197.11015.
+ 6. Jean Bourgain, Alexey A. Glibichuk, and Sergei V. Konyagin, Estimates for the number of sums
+    and products and for exponential sums in fields of prime order, Journal of the London Mathematical
+    Society (2) 73 (2006), no. 2, 380–398.
+ 7. Étienne Fouvry, Théorème de Brun–Titchmarsh; application au théorème de Fermat, Inventiones
+    Mathematicae 79 (1985), 383–407, Zbl 0557.10035.
+ 8. Andrew Granville and Carl Pomerance, Two contradictory conjectures concerning Carmichael numbers,
+    Mathematics of Computation 71 (2002), no. 238, 883–908.
+        SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                               17
+
+ 9. H. Halberstam and H.-E. Richert, Sieve methods, London Mathematical Society Monographs, vol. 4,
+    Academic Press, 1974.
+10. S. V. Konyagin and I. E. Shparlinski, Character sums with exponential functions and their applications,
+    Cambridge Tracts in Mathematics, vol. 136, Cambridge University Press, 1999.
+11. Emmanuel Kowalski, Exponential sums over small subgroups, revisited, 2024, arXiv:2401.04756v2.
+12. Yu. V. Linnik, The dispersion method in binary additive problems, Translations of Mathematical
+    Monographs, vol. 4, American Mathematical Society, Providence, RI, 1963, Translated from the
+    Russian (Leningrad, 1961). Zbl 0112.27402.
+13. L. Monier, Evaluation and comparison of two efficient probabilistic primality testing algorithms,
+    Theoret. Comput. Sci. 12 (1980), 97–108.
+14. Hugh L. Montgomery, Ten lectures on the interface between analytic number theory and harmonic
+    analysis, CBMS Regional Conference Series in Mathematics, vol. 84, American Mathematical Society,
+    Providence, RI, 1994, Zbl 0814.11001.
+15. Richard G. E. Pinch, The Carmichael numbers up to 1018 , arXiv:math/0604376, 2006.
+16. Carl Pomerance, John L. Selfridge, and Jr. Samuel S. Wagstaff, The pseudoprimes to 25 · 109 ,
+    Mathematics of Computation 35 (1980), no. 151, 1003–1026.
+17. Alessandro Sgarbi, A number that decides a family of tests, Companion article, in preparation (working
+    title).
+18.         , Semiprimes with a nontrivial invariant off the Carmichael numbers, Companion article, in
+    preparation (working title).
+19. Ilya D. Shkredov, Some remarks on the asymmetric sum-product phenomenon, Moscow Journal of
+    Combinatorics and Number Theory 8 (2019), no. 1, 15–41, arXiv:1705.09703.
+18                                  ALESSANDRO SGARBI
+
+                            Appendix A. Classes modulo 4
+    The class-level rule of [18] asks of a coset of a local power-map image a representative
+in each of the four classes modulo 4 — more than a representative in the lower half: the
+degree-two polynomial of Theorem 5.2 is nonpositive on a half of the circle only, so it can
+force a coset element into a half but not into a quarter, the complement of a quarter arc
+having length three quarters. A degree-eleven minorant of the Fejér kernel supplies that,
+as this appendix proves: its mean is above 11/26 of the image size, its oscillating part
+below the same fraction, and it is nonpositive off the arc, so the published estimate is read
+once, at the ratio 1/26. Exponential sums over multiplicative subgroups are the subject of
+[10], the distribution of small subgroups is bounded in [5] and [19], and the majorant and
+minorant technique by non-negative trigonometric polynomials is Chapter 1 of [14].
+    Everything turns on one scale-free condition, stated at a general ratio and read at 1/26
+below.
+ Definition A.1. Let q, e ∈ N and ρ ≥ 0, and let He be the image powImage q e of
+ the e-power map on the units modulo q, its elements read as integers in [0, q). Say that
+ ExpSumSmallR holds for q, e and ρ if for every a with q ∤ a
+                           2πah 2                 2πah 2
+                (︃ ∑︂          )︃      (︃ ∑︂          )︃     (︂    )︂2
+                       cos         +          sin         < ρ |He | .
+                  h∈He       q           h∈He       q
+    At ρ = 1/3 this is the condition of Theorem 5.2, square by square (expSumSmall_iff_
+expSumSmallR[L] ). Each of the two sums alone is below ρ |He |, the square of the other
+being nonnegative (abs_sum_cos_lt_of_expSumSmallR[L*] and abs_sum_sin_lt_of_ √
+expSumSmallR[L*] ), and any real linear combination of the two is at most α2 + β 2 ρ |He |
+(abs_linear_comb_expSum_le[L*] ), the two sums being the coordinates of a vector whose
+length the hypothesis bounds.
+    The Fejér kernel of degree    n is the⃓ normalised squared modulus of the exponential
+                                          ⃓2
+sum, fejerKernel n t = ⃓ k≤n e(kt)⃓ /(n + 1) with e(x) = exp(2πix) (fejerKernel_
+                             ⃓∑︁
+                             ⃓
+
+eq_normSq[L] ). Its cosine expansion is the expansion of that square (normSq_sum[L] ): each
+product fi fj has real part a cosine of the frequency difference, and the pairs in [0, n]2 with
+j = m+d number n+1−d (card_pair_add[L] ), so regrouping (sum_cos_of_pair_diff[L] )
+and normalising by n + 1 leaves
+                                n
+                                  2 (n + 1 − k)
+     fejerKernel n t = 1 +                                       (fejerKernel_cosine[L] ).
+                               ∑︂
+                                                  cos(2πkt)
+                              k=1     n+1
+    Degree eleven is the case that reaches a quarter. Its coefficients ck = 2(12 − k)/12
+(fejer11CosineCoeff) are positive, with absolute sum exactly 11 (fejer11_cosine_
+coeff_abs_sum[L] ), and that sum, not the largest coefficient, multiplies the error of an
+eleven-mode estimate. The sidelobe constant is the value at distance 1/8 from the centre,
+                                                          1
+                             fejer11Lambda =                      ,
+                                                    12 sin2 (π/8)
+strictly
+      √ below 15/26 (fejer11Lambda_lt_fifteen_div_twenty_six ) by sin (π/8) =
+                                                                     [L]      2
+
+(2 − 2)/4, so the constant left after subtracting it is strictly above 11/26 (fejer11_
+mean_gt_eleven_div_twenty_six[L] ).         The minorant is fejerMinorant11 t =
+fejerKernel11 (t − 1/8) − fejer11Lambda, the displacement by 1/8 chosen so that the
+region where the shifted kernel is at most the constant is the complement of one arc;
+OutsideQuarterArc t says that no representative of t modulo 1 lies in the open quarter
+arc centred at 1/8, that is 1/8 ≤ |t − 1/8 − z| for every integer z.
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                     19
+
+    Away from the centre the estimate is classical. The squared chord from 1 to exp(iθ) is
+4 sin2 (θ/2) (normSq_one_sub_exp_mul_I[L] ) and the chord is 2| sin(θ/2)| (norm_one_sub_
+exp_mul_I[L] ); summing the geometric series, whose numerator is at most 2 in modulus,
+bounds the exponential sum by 1/| sin(πt)| (geom_exp_sum_norm_le[L] ) and the kernel
+by 1/((n + 1) sin2 (πt)) (fejerKernel_le_inv_sin_sq[L] ). At n = 11 the denominator
+is 12 sin2 (πt), and on 1/8 ≤ |x| ≤ 1/2 the sine is at least sin(π/8) by monotonicity,
+so the kernel is at most fejer11Lambda there (fejerKernel_le_lambda_of_eighth[L] ).
+The kernel is unchanged by an integer translation (fejerKernel_add_int[L] ), and every
+real number is within 1/2 of an integer, so t − 1/8 has a representative in [1/8, 1/2]
+(exists_repr_outsideQuarterArc[L] ).
+Theorem A.2 (fejerMinorant11_nonpos_of_outside[L] ). Let t ∈ R lie outside the
+quarter arc. Then fejerMinorant11 t ≤ 0.
+Proof. Let k be the integer nearest t − 1/8 and put r = t − 1/8 − k. The upper
+bound |r| ≤ 1/2 is the property of the nearest integer; the lower bound 1/8 ≤ |r|
+is the hypothesis that t lies outside the arc. The sidelobe bound therefore applies at
+r, giving fejerKernel11 r ≤ fejer11Lambda. One-periodicity of the kernel identifies
+fejerKernel11 (t − 1/8) with fejerKernel11 r, and the minorant is the shifted kernel
+less the constant, so fejerMinorant11 t ≤ fejer11Lambda − fejer11Lambda = 0. □
+    This is the proposition FejerPointwiseMinorantWorks, whose proof read as an ele-
+ment of it is fejerPointwiseMinorantWorks[L] .
+    The Fourier half averages the minorant over a coset. A shifted cosine of a coset element
+is a constant times the cosine of the unshifted frequency ku plus a constant times its sine
+(cos_affine_shift[L] ); the minorant expands as the mean 1 − fejer11Lambda plus the
+eleven coefficients times shifted cosines (fejerMinorant11_eq_trig[L] ), the shift being
+the addition formula (cos_sub_eighth[L] ); and every point of [1/4, 1) lies outside the
+quarter arc, which runs from 0 to 1/4 (outsideQuarterArc_of_ge_one_fourth[L] ), and
+being outside it is invariant under integer translation (outsideQuarterArc_add_int[L] ).
+    Suppose (︂then that a coset misses the open arc at some shift δ: for every b coprime to q,
+the number (ube ) mod q /q − δ lies outside the quarter arc, and summing the pointwise
+                           )︂
+
+bound over the image makes the total of the minorants nonpositive. Expanding the mino-
+rant and applying the affine shift turns that total into the mean (1 − fejer11Lambda) |He |
+plus eleven modes, each a real linear combination of the cosine and sine sums of the image
+at the frequency ku. At 1 ≤ k ≤ 11 and q ≥ 13 the frequency ku is nonzero modulo the
+prime q, so the ratio hypothesis bounds each mode by |ck | (1/26) |He |, the coefficient vector
+of the mode having modulus 1; summing over the eleven modes and using |ck | = 11
+                                                                                    ∑︁
+
+bounds the oscillating part by (11/26)|He |. The mean is strictly larger, so the total is
+positive, against the nonpositivity of the same total: some coset element lies in the open
+arc after all (coset_meets_open_quarter_of_expSumSmall26[L*] ).
+    Turning that contact into an exact representative takes the inverse of 4 and two integer
+inequalities. Every odd prime has an inverse of 4 below q (exists_inv_four_of_odd_
+prime[L] ), so every prime q ≥ 13 has one (exists_inv_four[L] ). Multiplying the coset by
+that inverse converts the target class a into an affine condition on the shifted representative,
+the passage being the statement that for X < q and a < 4 the congruence X mod 4 = a is
+equivalent to the existence of Y with X = a+4Y and a+4Y < q (mod4_iff_scaled_lt[L] ).
+Read at the level of level functions, the affine condition is CosetMeetsQuarterInterval:
+L has that property if for every prime q ≥ 13, every exponent e with L(q) at most
+the order of the image, and every u coprime to q, some element of the coset satisfies
+4Y < q. The first conversion keeps the same base and reads the non-outside statement as
+20                                 ALESSANDRO SGARBI
+
+4 (ube ) mod q < q (coset_meets_quarter_of_expSumSmall26[L*] ); adding an integer
+ (︂            )︂
+
+to the coset element before reducing modulo q costs nothing beyond the integer translation
+of the arc (coset_meets_quarter_affine_of_expSumSmall26[L*] ).
+Theorem A.3 (coset_meets_class_of_expSumSmall26[L*] ). Assume ExpSumSmallR
+holds at the ratio 1/26. Let q ≥ 13 be prime, let e ∈ N, let u be coprime to q and let a < 4.
+Then there are b, Y ∈ N with (b, q) = 1 and
+                         (u be ) mod q = a + 4Y,          a + 4Y < q.
+Proof. Let v be an inverse of 4 modulo q, so that 4v ≡ 1 (mod q); it exists because
+q ≥ 13 is odd. Put u′ = (vu) mod q, which is coprime to q because v and u are,
+let M = (q − 1 − a)/4, the largest integer whose fourfold stays below q − a, and let
+s = (av) mod q and ϵ = (q/4 − M )/2, which lies strictly between 0 and 1; read the arc
+as centred at the shift δ = (s − ϵ)/q. Apply the open-arc contact at the unit u′ and
+the shift δ: there is b coprime to q such that Z = (u′ be ) mod q admits an integer z with
+|Z/q − δ − 1/8 − z| < 1/8. Written out, that inequality says 0 < (D + ϵ)/q < 1/4 for
+D = Z − s − zq, so D + ϵ is positive and below q/4 = M + 2ϵ. Since D is an integer, the
+left inequality gives D ≥ 0, and the right one gives D < M + ϵ < M + 1, so D ≤ M . Take
+Y = D.
+    Only the congruences remain. From 4v ≡ 1 and Z ≡ u′ be ≡ vube (mod q) one gets
+4Z ≡ ube (mod q), while Z ≡ s + Y and s ≡ av give 4(s + Y ) ≡ a + 4Y (mod q). Hence
+X = (ube ) mod q and a + 4Y are congruent modulo q. Both lie in [0, q): the first as a
+residue, the second because a + 4Y ≤ a + 4M < q by the choice of M . They are therefore
+equal, and a + 4Y < q.                                                                  □
+   The residue form of the conclusion is the same statement read modulo
+4 (fejer_affine_class_mod4[L*] ); the Fourier half is the packaged property
+FejerElevenModeFourierWorks proved by fejerElevenModeFourierWorks[L] , dis-
+played as fejer_eleven_mode_fourier[L*] ; and the two halves together prove the
+package FejerQuarterMinorantWorks as fejerQuarterMinorantWorks[L] .
+   It remains to supply the ratio 1/26, and the published estimate supplies it. Read
+BGKBound at γ > 0 for its ν > 0 and C > 0, fix a ratio ρ > 0, and take a threshold
+above (C/ρ)1/ν . Above it the factor Cq −ν that multiplies the image size is below ρ, so
+the squared bound of the estimate is below (ρ |He |)2 and the ratio holds (expSumSmallR_
+of_bgkBound[L*] ); at ρ = 1/26 that is expSumSmall26_of_bgkBound[L*] . The level that
+goes with the ratio is the size condition of the estimate read as a function of q, the level
+function bgkLevelClasses taking at γ, Q and q the value
+                                      ⎧
+                                      ⎨⌈q γ ⌉,   Q ≤ q,
+                                      ⎩q,        Q > q.
+Below the threshold that value is q, and no power image has an order that large; at
+and above it the size condition and the level coincide. The estimate therefore supplies
+a threshold Q ≥ 13 such that a level at or below the order of the image forces the ratio
+1/26 (bgkLevelClasses_hyp[L*] ).
+Theorem A.4 (cosetMeetsClassesMod4_of_expSumSmall26[L*] ). Assume that every
+prime q and every e with L(q) ≤ (q − 1)/ gcd(e, q − 1) satisfy ExpSumSmallR at the ratio
+1/26, and assume that every such pair satisfies q ≥ 13. Then every coprime power coset
+of every image of order at least L(q) meets every residue class modulo 4.
+       SHORT COSETS: COUNTING THE SEMIPRIMES WITH A NONTRIVIAL INVARIANT                   21
+
+Proof. Let q be prime, e ∈ N, u coprime to q and a < 4, with L(q) at most the order of
+the image. The second hypothesis gives q ≥ 13 and the first the exponential-sum condition
+at the ratio 1/26, so the class theorem proved above returns b and Y with (b, q) = 1 and
+(ube ) mod q = a + 4Y < q: one representative in the class a modulo 4, for every class and
+every coset.                                                                             □
+    One of the two hypotheses of that theorem is automatic for the level in play. Below its
+threshold the level is q, and the order (q −1)/ gcd(e, q −1) of a power image is at most q −1,
+so the level condition cannot hold there; it therefore forces q ≥ Q, and Q ≥ 13 gives q ≥ 13
+(bgkLevelClasses_gate[L] ). With the gate discharged, the class-level conclusion holds
+for the level bgkLevelClasses γQ under BGKBound alone (cosetMeetsClassesMod4_of_
+expSumSmall26[L*] ).
+    That condition is what the class-level rule consumes. Under it, one local image of
+order at least pγ forces the rule to find a witness for N — the detection theorem at the
+class level belongs to [18] and is quoted in one sentence rather than re-proved — which is
+not_allZero_of_large_image_BGK[L*] ; and the companion’s count of the pairs at which
+the rule has no witness, applied under the same condition with the level dominated by
+Q + ⌈X γ ⌉ at every prime up to X, is the counting theorem below.
+Theorem A.5 (card_missed_semiprimes_BGK[L*] ). Assume BGKBound. For every γ > 0
+there is a threshold Q such that for every X the number of pairs (p, q) of primes with
+2 < p < q, pq ≤ X and no witness of the class-level rule for N = pq — the missed
+semiprimes of Definition 4.2 — is at most
+                               (︂ √       )︂(︂      )︂2
+                                 ⌊ X⌋ + 1 Q + ⌈X γ ⌉ .
+Proof. Take the threshold Q ≥ 13 and the level property from the step above, and put
+K = Q + ⌈X γ ⌉. The gate is automatic at this level, so the class-level condition holds for
+bgkLevelClasses γQ. The companion’s
+                                 √        miss count under a class-level condition bounds
+the missed pairs below X by (⌊ X⌋ + 1)K 2 once K dominates the level at every prime
+q ≤ X. The dominance holds at every prime: for q < Q the level is q ≤ Q ≤ K, and
+for Q ≤ q ≤ X it is ⌈q γ ⌉ ≤ ⌈X γ ⌉ ≤ K, because q ↦→ q γ is nondecreasing on the positive
+integers. The stated bound follows.                                                      □
+    This is the class-level companion of Theorem 6.4: the same published estimate, the
+same two-prime bookkeeping, with the lower half replaced by the four classes modulo 4
+and the degree-two polynomial by the degree-eleven minorant. The ratio records what
+the construction requires: the error of the eleven modes is (11/26)|He | against a mean of
+(1 − fejer11Lambda)|He | > (11/26)|He |, and a smaller ratio needs only a larger threshold,
+which the estimate is free to grant. The gate is met where this article can check it: the
+exceptional composite of the census (Section 3) has larger prime factor 38791 ≥ 13, so the
+hypothesis q ≥ 13 that bgkLevelClasses_gate forces and the quarter-arc theorem requires
+holds at the size the article’s numbers reach (experiments/blind_semiprime_count.py,
+over X ≤ 3.1 · 108 ).
+
+
+
+
+                                   Alessandro Sgarbi
+                                  alex.sgarbi@gmail.com
+                         https://orcid.org/0009-0005-4528-964X
+

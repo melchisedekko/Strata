@@ -1,0 +1,719 @@
+arXiv:1311.3522v1 [math.NT] 14 Nov 2013
+
+Pn−1 k(n−1)
+ON THE CONGRUENCE
+≡ −1 (mod n). K-STRONG
+j=1 j
+GIUGA AND K-CARMICHAEL NUMBERS
+JOSÉ MARÍA GRAU AND ANTONIO M. OLLER-MARCÉN
+Pn−1 k(n−1)
+Abstract. In this work we consider the congruence
+≡ −1
+j=1 j
+(mod n) for each k ∈ N, thus extending Giuga’s ideas for k = 1. In particular,
+it is proved that a pair (n, k) ∈ N2 satisfies this congruence if and only if n
+is prime or a Giuga Number and λ(n) | k(n − 1). In passing, we establish
+new characterizations of Giuga numbers and we study some properties of the
+numbers n satisfying λ(n) | k(n − 1).
+
+AMS 2010 Mathematics Subject Classification 11B99, 11A99, 11A07
+Keywords: Giuga numbers, Carmichael function
+1. Introduction
+Pn−1 n−1
+In 1950, G. Giuga conjectured [7] that if an integer n satisfies j=1
+j
+≡ −1
+(mod n), then n must be a prime. Moreover, Giuga proved that n is a counterexample to his conjecture if and only if for each prime divisor p of n, p(p − 1) | (n/p − 1).
+In what follows, counterexamples to Giuga’s conjecture will be called strong Giuga
+numbers.
+Using the above characterization, Giuga proved computationally that any strong
+Giuga number has at least 1000 digits. Equipped with more computing power,
+Bedocchi [3] later raised this bound to 1700 digits. Improving their method, D.
+Borwein, J. M. Borwein, P. B. Borwein and R. Girgensohn [5] determined that any
+strong Giuga number contains at least 3459 distinct primes and so has at least
+13887 digits.
+On the other hand, Luca, Pomerance and Shparlinski [13] have established the
+following bound (which improves previous work by Tipu [14]) for the counting
+function of the strong Giuga numbers:
+1
+
+X2
+.
+|{n < X : n is a strong Giuga numbers }| ≪
+(log(X))2
+Kellner has stablished [11] that Giuga’s conjecture is equivalent to the following
+conjecture by Agoh [1].
+Conjecture 1 (Agoh, 1995). Let Bk denote the k-th Bernoulli number. Then, n
+is a prime if and only if nBn−1 ≡ −1 (mod n).
+Borwein et al. [5] introduced the following definition of Giuga numbers relajando
+la propiedad de divisibilidad of the strong Giuga numbers.
+Definition 1. A Giuga Number is a composite number n such that p | (n/p − 1)
+for every prime divisor p of n.
+Con esta definición pueden caracterizarse los strong Giuga number de la siguiente
+manera:
+1
+
+2
+
+JOSÉ MARÍA GRAU AND ANTONIO M. OLLER-MARCÉN
+
+Proposition 1. Let n be a composite integer. Then n is a strong Giuga number if
+and only if n is both a Giuga number and a Carmichael number.
+There are several equivalent definitions of Giuga numbers. Some of them are the
+following.
+Proposition 2. Let n be a composite integer. Then, the following are equivalent:
+i) n is a Giuga number.
+X1
+1
+ii) Giuga [7]:
+− ∈ N.
+p n
+p|n
+
+iii) Borwein et al. [5]:
+
+n−1
+X
+
+j φ(n) ≡ −1 (mod n), where φ is Euler’s totient
+
+j=1
+
+function.
+iv) Agoh [1]: nBφ(n) ≡ −1 (mod n), where B is a Bernoulli number.
+v) Grau and Oller [9]: n′ = an + 1 for some a ∈ N, where n′ is the arithmetic
+derivative of n.
+Up to date only thirteen Giuga numbers are known (see A007850 in the On-Line
+Encyclopedia of Integer Sequences):
+g1 := 30,
+g2 := 858,
+g3 := 1722,
+g4 := 66198,
+g5 := 2214408306,
+g6 := 24423128562,
+g7 := 432749205173838,
+g8 := 14737133470010574,
+g9 := 550843391309130318,
+g10 := 244197000982499715087866346,
+g11 := 554079914617070801288578559178,
+g12 := 1910667181420507984555759916338506,
+g13 := 420001794970774706203871150967065663240419575375163060922
+8764416142557211582098432545190323474818.
+All known Giuga numbers are even and it is known that if an odd Giuga number
+exists, it must be the product of at least 14 primes. It is not even known if there
+are infinitely many Giuga numbers.
+Variants of Giuga numbers have already been proposed by the authors [8]. In
+this work some new characterizations of Giuga numbers
+are stablished. This charPn−1
+acterizations arise from the study of the congruence j=1 j k(n−1) ≡ −1 (mod n)
+with k ∈ N. It is proved that a pair (n, k) ∈ N2 , with composite n, satisfies this
+congruence if and only if n is a Giuga number and λ(n) divides k(n − 1). This
+last property leads to a generalization of Carmichael numbers (the k-Carmichael
+numbers) which are also characterized in the square-free case.
+
+ON THE CONGRUENCE
+
+Pn−1
+
+j=1 j
+
+k(n−1)
+
+≡ −1 (mod n). K-STRONG GIUGA AND K-CARMICHAEL NUMBERS
+3
+
+2. New characterizations of Giuga numbers
+The following result establishes that in Proposition 2 iii) we can replace Euler’s
+totient function φ(n) by Carmichael’s function λ(n) or by any multiple of φ(n) or
+λ(n).
+Lemma 1. For every natural numbers A, B and N we have that:
+N
+−1
+X
+
+j Aλ(N ) ≡
+
+N
+−1
+X
+
+j Bφ(N ) (mod N ).
+
+j=1
+
+j=1
+
+Proof. Put N = 2a pr11 · · · prss with pi distinct odd primes. Choose i ∈ {1, . . . , s}.
+We have that:
+ri
+
+pi −1
+N X
+Aλ(N )
+j
+≡ ri
+j Aλ(N ) (mod pri i ).
+p
+i
+j=1
+j=1
+
+N
+−1
+X
+
+ri
+
+pi −1
+N X
+Bφ(N )
+j Bφ(N ) (mod pri i ).
+j
+≡ ri
+p
+i
+j=1
+j=1
+
+N
+−1
+X
+
+Now, since both Aλ(N ), Bφ(N ) ≥ ri , we get:
+r
+
+pi i −1
+
+X
+
+j Aλ(N ) =
+
+X
+
+j Aλ(N ) +
+
+X
+
+j Bφ(N ) +
+
+r
+
+j=1
+
+X
+
+j Aλ(N ) ≡ φ(pri i ) + 0 (mod (pri i ).
+
+X
+
+j Aλ(N ) ≡ φ(pri i ) + 0 (mod (pri i ).
+
+r
+
+1≤j≤pi i −1
+(pi ,j)=1
+
+1≤j≤pi i −1
+pi |j
+
+r
+
+pi i −1
+
+X
+
+j Bφ(N ) =
+
+r
+1≤j≤pi i −1
+(pi ,j)=1
+
+j=1
+
+r
+1≤j≤pi i −1
+pi |j
+
+Consequently:
+N
+−1
+X
+
+j Aλ(N ) ≡
+
+N
+−1
+X
+
+j Bφ(N ) (mod pri i ) for every i = 1, . . . , s.
+
+j=1
+
+j=1
+
+Clearly if N is odd the proof is complete. If n is even we have that:
+
+
+N
+−1
+X
+
+a
+
+j Aλ(N ) ≡
+
+j=1
+
+N
+−1
+X
+
+2 −1
+N X Aλ(N )
+N 
+j
+≡ a
+a
+2 j=1
+2 
+
+j Aλ(N ) ≡
+
+
+
+N 
+
+2a 
+
+X
+
+1≤j≤2a −1
+j even
+
+1≤j≤2a −1
+j even
+
+j=1
+
+X
+
+
+a
+j Aλ(N ) + 2a−1 
+ (mod 2 ).
+
+
+
+a
+j Bφ(N ) + 2a−1 
+ (mod 2 ).
+
+Now, if a = 1, 2 or 3 it can be easily verified that:
+X
+X
+j Bφ(N ) (mod 2a ).
+j Aλ(N ) ≡
+1≤j≤2a −1
+j even
+
+1≤j≤2a −1
+j even
+
+4
+
+JOSÉ MARÍA GRAU AND ANTONIO M. OLLER-MARCÉN
+
+On the other hand, if a ≥ 4 we have that φ(N ) ≥ λ(N ) ≥ a and, consequently
+j Aλ(N ) ≡ j Bφ(N ) ≡ 0 (mod 2a ) for every 1 ≤ j ≤ 2a−1 even. Thus:
+N
+−1
+X
+
+j
+
+Aλ(N )
+
+≡
+
+j Bφ(N ) (mod 2a )
+
+j=1
+
+j=1
+
+and the result follows.
+
+N
+−1
+X
+
+
+
+This lemma leads to some new characterizations of Giuga numbers. Recall that
+a composite integer n is said to be a Giuga number (among other characterizations)
+Pn−1 φ(n)
+if and only if j=1
+j
+≡ −1 (mod n).
+Proposition 3. Let n be any composite integer. Then the following are equivalent:
+i) n is a Giuga Number.
+n−1
+n−1
+X
+X
+j Kφ(n) ≡ −1 (mod n).
+j Kλ(n) ≡
+ii) For every positive integer K,
+j=1
+n−1
+X
+
+j=1
+
+iii) There exists a positive integer K such that
+
+j Kλ(n) ≡
+
+j Kφ(n) ≡ −1
+
+j=1
+
+j=1
+
+(mod n).
+
+n−1
+X
+
+The following result, which is a consequence of previous proposition, will allow
+Pn−1
+us to generalize Giuga’s ideas by considering the congruence j=1 j k(n−1) ≡ −1
+(mod n) for each positive integer k.
+Corollary 1. If an integer n is a strong Giuga number, then:
+n−1
+X
+
+j k(n−1) ≡ −1 (mod n) for every positive integer k.
+
+j=1
+
+Proof. If n is a strong Giuga number, then it is both a Carmichael and a Giuga
+number. Being a Carmichael number, we have that λ(n) | (n − 1) so if k(n−1)
+λ(n) =
+k ′ ∈ N we get:
+S :=
+
+n−1
+X
+j=1
+
+j
+
+k(n−1)
+
+=
+
+n−1
+X
+j=1
+
+j
+
+kλ(n) (n−1)
+λ(n)
+
+=
+
+n−1
+X
+
+′
+
+j k λ(n) ,
+
+j=1
+
+and, since n is a Giuga number it is enough to apply Corollary 1 and Proposition
+3 to get S ≡ −1 (mod n).
+
+3. k-Carmichael numbers
+A Carmichael number is a composite positive integer n which satisfies the congruence an−1 ≡ 1 (mod n) for every integer a coprime to n. Korselt [12] was the
+first to observe the basic properties of Carmichael numbers, the most important
+being the following characterization:
+Proposition 4 (Korselt, 1899). A composite number n is a Carmichael number if
+and only if n is square-free, and for each prime p dividing n, p − 1 divides n − 1.
+Nevertheless, Korselt did not find any example and it was Carmichael [6] who
+found the first and smallest of such numbers (561) and hence the name “Carmichael
+number” (which was introduced by Beeger [4]). In the same paper Carmichael
+presents the following characterization in terms of a reduced totient function λ.
+
+ON THE CONGRUENCE
+
+Pn−1
+
+j=1 j
+
+k(n−1)
+
+≡ −1 (mod n). K-STRONG GIUGA AND K-CARMICHAEL NUMBERS
+5
+
+Proposition 5 (Carmichael, 1912). A composite number n is a Carmichael number
+if and only if λ(n) divides (n − 1).
+Motivated by this characterization we have the following definition.
+Definition 2. Given k ∈ N we will say that n is a k-Carmichael number if λ(n)
+divides k(n − 1).
+Square-free k-Carmichael numbers admit, at least, the following characterizations.
+Proposition 6. Let n be a square-free positive composite integer and let k ∈ N.
+The following are equivalent:
+i) n is a k-Carmichael number.
+ii) For every prime divisor p of n, p − 1 divides k(n − 1).
+iii) For every integer a, akn ≡ ak (mod n).
+Proof. If n is a square-free k-Carmichael number, then λ(n) = lcm{p−1 | p divides n}
+divides k(n − 1). This proves that i) implies ii).
+Now, if p − 1 divides k(n − 1) for every prime divisor p of n and given any integer
+a, it follows that ak(n−1) ≡ 1 (mod p) for every prime divisor p of n such that p does
+not divide a. If p divides a the same congruence follows trivially and this proves
+that ii) implies iii).
+Finally, to see that iii) implies i) it is enough to consider an integer a coprime
+to n.
+
+Remark. Observe that square-free k-Carmichael numbers are Fermat pseudoprimes to base ak for every a such that gcd(a, n) = 1.
+Remark. If n is a k-Carmichael number and p2 | n, then we trivially have that p
+divides k.
+We close this section with some conjectures regarding k-Carmichael numbers.
+We consider Ck := {n : n is a k-Carmichael number }. It is clear that these sets
+satisfy that k | s ⇒ Cs ⊂ Cs . In particular the set of Carmichael numbers, C1 , is
+contained in any other Cs . Although it is not the point of this work, it could be
+interesting to study the relative asympotitc density of Ck with respect to Cs for
+every s multiple of k. In particular the density of C1 with respect to Ck
+T
+|C1 [1, n]|
+T
+.
+δk := lim
+n→∞ |Ck
+[1, n]|
+We conjecture that it exists and that it is positive and strictly smaller than 1.
+Conjecture 2. If k | t then Ck has a relative asymptotic density with respect to
+Ct . Moreover, for every k, t ∈ N
+T
+|Ck [1, n]|
+δt
+T
+lim
+= .
+n→∞ |Ct [1, n]|
+δk
+
+If this conjecture was true, three interesting questions arise:
+i) Given integers m and n such that none of them divides the other, which is
+the case: δm < δn , δm > δn or δm = δn ?
+ii) Does it exist a prime p such that δp < δp for all prime p ∈ N − {p}? Soon
+we will conjeture its existence and that p = 5.
+iii) which is the smallest composite integer c such that δc > δ5 .
+
+6
+
+JOSÉ MARÍA GRAU AND ANTONIO M. OLLER-MARCÉN
+
+As we said we conjecture the following.
+Conjecture 3. 0.18 < δ5 < δp for all prime p ∈ N − {5}.
+Of course all this could just be a computational mirage and the truth is just
+that δk = 1 for all k ∈ N but itTseems worthwhile to find it out. The values of the
+counter function Ck (n) := |Ck [1, n]| for n ∈ {106 , 107 } can be found in A231575
+and A231574 from the OEIS. The relative order of Ck (n) for different values of
+k changes when we increase n, nevertheless it seems that for every prime p and
+n > 105 :
+C5 (n) > C3 (n) > C7 (n) > Cp (n)
+.
+4. k-strong Giuga numbers
+In this section we extend Giuga’s ideas studying pairs of integers k and n such
+Pn−1
+that j=1 j k(n−1) ≡ −1 (mod n). This motivates the following definition.
+
+Definition 3. Given k ∈ N we say that a composite number n is a k-strong Giuga
+number if
+n−1
+X
+j k(n−1) ≡ −1(mod n).
+j=1
+
+We can also define the following sets:
+Gk := {n ∈ N | n is k-strong Giuga number},
+Kn := {k ∈ N | n is k-strong Giuga number}.
+Remark. With the previous notation, Giuga’s conjecture is equivalent to the statement G1 = ∅.
+A continuación tenemos el principal resultado de este trabajo con el que se
+caracteriza the k-strong Giuga numbers.
+Theorem 1. Let n be a composite integer. Then n is a k-strong Giuga number if
+and only if n is both a Giuga number and a k-Carmichael number.
+Proof. Assume that n is a Giuga number and a k-Carmichael number. Since λ(n)
+divides k(n − 1) we have that:
+n−1
+X
+j=1
+
+j k(n−1) =
+
+n−1
+X
+
+′
+
+j k λ(n) ≡ −1
+
+j=1
+
+due to Corollary 1.
+Pn−1
+Conversely, assume that n is a k-strong Giuga number; i.e., j=1 j k(n−1) ≡ −1
+(mod n). As a consequence (see [15, Theorem 2.3]) we have that p − 1 divides
+k (n/p − 1), that p divides n/p − 1 for every p, prime divisor of n and, moreover,
+that n is square-free. Since n is square-free, λ(n) = lcm{p−1 | p prime dividing n}.
+Thus, λ(n) divides k(n − 1) and n is a k-Carmichael number. To get that n is also
+a Giuga number, due to Proposition 1, it is enough to apply Proposition 2 with
+
+B = 1 and A = k(n−1)
+λ(n) .
+
+ON THE CONGRUENCE
+
+Pn−1
+
+j=1 j
+
+k(n−1)
+
+≡ −1 (mod n). K-STRONG GIUGA AND K-CARMICHAEL NUMBERS
+7
+
+In the particular case of k = 1, we have the characterization that was given in
+proposition 1 of the strong Giuga numbers.
+Taking into account now that the condition λ(n) divides k(n − 1) is equivalent
+λ(n)
+divides k, given any positive integer n, Theorem 1 gives a complete
+to gcd(λ(n),n−1)
+description of the set Kn as stated in the following corollary.
+Corollary 2. Let n be any composite positive integer. Then:
+
+Kn =
+
+o
+(n
+λ(n)
+t · gcd(λ(n),n−1)
+| t∈N ,
+∅,
+
+if n is a Giuga number;
+otherwise.
+
+Remark. Note that Kn = N if and only if n is a prime or a strong Giuga number.
+Since it is easy to see that n ∈ Gk if and only if k ∈ Kn we also have the following
+result.
+Corollary 3. Gk is nonempty if and only if λ(n) divides k(n − 1) for some Giuga
+number n.
+Using this last result we can find values of k such that Gk is nonempty. To do
+λ(n)
+for every known Giuga number. Thus, we
+so, we evaluate k(n) := gcd(λ(n),n−1)
+will have thirteen values of k (recall the introduction) for which Gtk is known to be
+nonempty for any t:
+k(g1 ) =4;
+k(g2 ) =60;
+k(g3 ) =120;
+k(g4 ) =2320;
+k(g5 ) =1552848;
+k(g6 ) =10080;
+k(g7 ) =139714902540;
+k(g8 ) =93294624780;
+k(g9 ) =228657996794220;
+k(g10 ) =4756736241732916394976;
+k(g11 ) =20024071474861042488900;
+k(g12 ) =2176937111336664570375832140;
+k(g13 ) =15366743578393906356665002406454800354974137359272
+445859047945613961394951904884493965220.
+For these values and t = 1 one gets:
+
+8
+
+JOSÉ MARÍA GRAU AND ANTONIO M. OLLER-MARCÉN
+
+Gk(g1 ) = {g1 , . . . };
+Gk(g2 ) = {g1 , g2 , . . . };
+Gk(g3 ) = {g1 , g2 , g3 , . . . };
+Gk(g4 ) = {g1 , g4 , . . . };
+Gk(g5 ) = {g1 , g5 , . . . };
+Gk(g6 ) = {g1 , g2 , g6 , . . . };
+Gk(g7 ) = {g1 , g7 , . . . };
+Gk(g8 ) = {g1 , g2 , g8 , . . . };
+Gk(g9 ) = {g1 , g2 , g9 , . . . };
+Gk(g10 ) = {g1 , g10 , . . . };
+Gk(g11 ) = {g1 , g11 , . . . };
+Gk(g12 ) = {g1 , g2 , g12 , . . . };
+Gk(g13 ) = {g1 , g2 , g13 , . . . }.
+5. Reflecting about Giuga’s conjecture
+In recent work by W. D. Banks, C. W. Nevans, and C. Pomerance [2], the
+following bounds were given:
+Theorem 2. For any fixed ε > 0, β = 0.3322408 and all sufficiently large X, we
+have
+| {n < X : n ∈ C1 } |≥ X β−ε (G. Harman [10])
+| {n < X : n ∈ C1 \G1 } |≥ X β−ε
+The authors of the aforementioned paper consider the above bounds to be “consistent” with Giuga’s conjecture. We believe, however, that the similar consideration could be made with respect to conjectures that are actually false, such as G4 = ∅
+or G1552848 = ∅. The authors of the present paper, in view of the generalization
+presented here, are convinced that Giuga’s conjecture is not based on any sound
+logical-mathematical consideration and that its strength rests only on the extreme
+rarity of Giuga numbers, combined with the null asymptotic density of Carmichael
+numbers. In fact, if we may be forgiven the joke, we might conjecture -without any
+fear of our conjecture being refuted in many years- that G2 = G3 = G5 = ∅ or, to
+be even more daring, that Gp = ∅ for all prime p. Of course, Giuga’s conjecture
+has the honour of being the strongest of all of these conjectures. In fact, in virtue
+of Corollary 1, should it be refuted, all the others would fall with it.
+References
+[1] Takashi Agoh. On Giuga’s conjecture. Manuscripta Math., 87(4):501–510, 1995.
+[2] William D. Banks, C. Wesley Nevans, and Carl Pomerance. A remark on Giuga’s conjecture
+and Lehmer’s totient problem. Albanian J. Math., 3(2):81–85, 2009.
+[3] Edmondo Bedocchi. Note on a conjecture about prime numbers. Riv. Mat. Univ. Parma (4),
+11:229–236, 1985.
+[4] N. G. W. H. Beeger. On composite numbers n for which an−1 ≡ (mod n) for every a prime
+to n. Scripta Math., 16:133–135, 1950.
+
+ON THE CONGRUENCE
+
+Pn−1
+
+j=1 j
+
+k(n−1)
+
+≡ −1 (mod n). K-STRONG GIUGA AND K-CARMICHAEL NUMBERS
+9
+
+[5] D. Borwein, J. M. Borwein, P. B. Borwein, and R. Girgensohn. Giuga’s conjecture on primality. Amer. Math. Monthly, 103(1):40–50, 1996.
+[6] R. D. Carmichael. On Composite Numbers P Which Satisfy the Fermat Congruence aP −1 ≡
+1 mod P . Amer. Math. Monthly, 19(2):22–27, 1912.
+[7] Giuseppe Giuga. Su una presumibile proprietá caratteristica dei numeri primi. Ist. Lombardo
+Sci. Lett. Rend. Cl. Sci. Mat. Nat. (3), 14(83):511–528, 1950.
+[8] José Marı́a Grau, Florian Luca and Antonio M. Oller-Marcén. On a variant of Giuga numbers.
+Acta Math. Sinica, 28(4):653–660, 2011.
+[9] José Marı́a Grau and Antonio M. Oller-Marcén. Giuga numbers and the arithmetic derivative.
+Journal of integer sequences, 15(4):article 12.4.1, 2012.
+[10] Glyn Harman. On the number of Carmichael numbers up to x. Bull. London Math. Soc.,
+37(5):641–650, 2005.
+[11] Bernd C. Kellner. The equivalence of giuga’s and agoh’s conjectures. arXiv:math/0409259v1
+[math.NT].
+[12] Alwin R. Korselt. Problème chinois. L’intermédiaire des mathématiciens, 6:142–143.
+[13] Florian Luca, Carl Pomerance, and Igor Shparlinski. On Giuga numbers. Int. J. Mod. Math.,
+4(1):13–18, 2009.
+[14] Vicentiu Tipu. A note on Giuga’s conjecture. Canad. Math. Bull., 50(1):158–160, 2007.
+[15] Erick Wong. Computations on Normal Families of Primes. M.Sc. Thesis. Simon Fraser University, 1997.
+Departamento de Matemáticas, Universidad de Oviedo, Avda.
+33007 Oviedo, Spain
+E-mail address: grau@uniovi.es
+
+Calvo Sotelo s/n,
+
+Centro Universitario de la Defensa, Ctra. Huesca s/n, 50090 Zaragoza, Spain
+E-mail address: oller@unizar.es
+
+

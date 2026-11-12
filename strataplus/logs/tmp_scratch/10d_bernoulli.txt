@@ -1,0 +1,807 @@
+
+\section{The Bernoulli--Demjanenko Identification}
+\label{sec:bernoulli}
+
+The previous section left the members as bits: one coefficient, one bit at each
+residue, a product firing where an odd number of its members fire, and the pair
+law as the only law those bits obey in general. This section does one thing, and
+it is not a theorem about the criterion. It names the same bits twice --- once by
+the parity of a dilated residue, once by a character sum --- and the naming is
+the content: the bits are the rows of a matrix the literature already has, and
+their character sums are the Bernoulli numbers that carry the relative class
+number. Nothing here is discovered.
+
+The same expression is studied for its own sake in
+\cite{Companion-complex-formula}, where the formula is the subject and the
+question is what it computes; here the formula is already in hand, in the form
+the previous section gave it, and the question is where it sits. What the
+section establishes is a claim of location and not of discovery: that each
+member of the family of \S\ref{sec:face-member} is a row of the matrix
+associated with Demjanenko and studied since
+\cite{Tsumura1996Demjanenko,FolzZimmer1987Demjanenko,Schwarz1993Demjanenko}, and
+that the character sum of the member with coefficient $1$ is the first
+generalised Bernoulli number $B_{1,\xi}$ \cite{Washington1997Cyclotomic}, with an
+explicit constant in front of it. The two identities are \S\ref{sec:identity}
+and \S\ref{sec:rows}; both are theorems in the strict sense, with no hypothesis
+beyond their statements and with the marker $\lv$ alone.
+
+The identities determine the objects rather than resembling them, and they are
+used: from the two
+ identities, one transfer lemma, the pair law and finite certificates come three
+ statements about what products of members can settle: that the pair law is not the only law
+(\S\ref{sec:twenty-nine}), the half-units law on a composite with a unitary split
+(\S\ref{sec:half-units}), and the law that needs no unit coefficient at all
+(\S\ref{sec:semiprime}); between them sits the finite criterion that decides a
+single case (\S\ref{sec:certificates}). Two kinds of sentence appear below, and
+the section keeps them apart. A theorem carries a marker and the Lean name of the
+declaration that proves it. A \emph{reading} is the paper's interpretation of a
+theorem --- the division by $N$, the name $B_{1,f}$ for the quotient, the
+identification of $(-1)^{h}$ with the odd character modulo $4$, the span sentence
+of \S\ref{sec:rows} --- and each is marked as a reading in the sentence that
+makes it, because nothing in the module introduces a Bernoulli number or a
+matrix. Every measured figure in \S\ref{sec:certificates} carries its script and
+its range, and none of them carries a marker.
+
+\subsection{The character sum of a member}
+\label{sec:identity}
+
+Throughout this subsection $h \ge 0$, $N = 2h+1$, $K$ is a field with $2 \ne 0$,
+and $f : \N \to K$ satisfies
+\[
+  f(0) = 0, \qquad
+  f(N-a) = -f(a) \ \ (0 < a < N), \qquad
+  f(2a) = f(2)\,f(a) \ \ (2a < N).
+\]
+The member with coefficient $1$ has a sign at every residue
+(Definition~\ref{def:fires} of \S\ref{sec:face-member}); write $s(r)$ for it, the
+value of $\lean{resSign}$ at $x = h+1$ and coefficient $1$. So $s(r) \in \{\pm
+1\}$, the member fires at $r$ exactly when $s(r) \ne s(0)$ ($\lv$
+\lean{resFire}), and its character sum is $\sum_{r<N} s(r)\,f(r)$ when $f$ is a
+character.
+
+The sign is the product of two factors, one reading the parity of the half-angle
+$V_{1}(r)$ of \S\ref{sec:face-member} and one comparing it with $N/2$, and at
+coefficient $1$ both are explicit, because $h+1$ is the representative of
+$2^{-1}$ modulo $N$: twice it is $N+1$. On an odd residue $r = 2k-1$ with
+$1 \le k \le h$ the half-angle is $k$, and the sign is $(-1)^{k}$ ($\lv$
+\lean{resSign\_one\_odd}). On an even residue $r = 2k$ the half-angle is
+$h+1+k$, except at $k = h$, where $r = N-1$ and the half-angle is $0$. At the
+exceptional residue the two factors are $+1$ and $+1$, so the sign is
+$1 = (-1)^{2h}$; at every other even residue the factors are $(-1)^{h+1+k}$ and
+$-1$, so the sign is $(-1)^{h+k}$. In every case, then, the sign is
+$(-1)^{h+k}$ ($\lv$ \lean{resSign\_one\_even}); at $k = 0$ this is
+$s(0) = (-1)^{h}$.
+
+Two consequences of the hypotheses are used at every step below. From
+$f(2a) = f(2)f(a)$, the even values are $f(2k) = f(2)f(k)$ for $k \le h$. From
+$f(N-a) = -f(a)$ read at $a = 2(j+1)$, together with $f(2(j+1)) = f(2)f(j+1)$,
+the odd value at $2h+1-2(j+1)$ is $-f(2)f(j+1)$ for $j < h$; read at $a = j+1$,
+the value at $2h-j$ is $-f(j+1)$.
+The three forms say one thing: $f$ is odd about $N/2$ and multiplicative at $2$.
+
+One combinatorial fact remains, and it is the only manipulation of ranges in the
+proof. A sum over $[0,2h]$ splits into its even and its odd indices ($\lv$
+\lean{sum\_range\_even\_odd}); it also splits at $h$, with the upper half read
+backwards as $2h-j$ ($\lv$ \lean{sum\_range\_split\_half}); and the odd indices,
+read backwards, are $2h+1-2(j+1)$ ($\lv$ \lean{sum\_range\_odd\_reflect}). Each
+is a regrouping of a finite sum, and together they let every sum below be
+computed twice and the two values compared.
+
+Put $S_{1} = \sum_{k \le h} f(k)$, $P = \sum_{k \le h} k\,f(k)$, $R =
+\sum_{k \le h} (-1)^{k} f(k)$, $A = \sum_{a<N} a\,f(a)$ and $\mathrm{Mon} =
+\sum_{r<N} s(r)\,f(r)$. Four relations hold ($\lv$ \lean{monster\_core}, in the
+order written):
+\begin{gather*}
+  \mathrm{Mon} = 2(-1)^{h} f(2)\,R, \qquad 2R = 2\,f(2)\,S_{1}, \\
+  A = 2P - N S_{1}, \qquad A = 4\,f(2)\,P - N f(2)\,S_{1}.
+\end{gather*}
+The first is the two sign formulas applied to a split of $\mathrm{Mon}$ by
+parity, with the odd part read backwards. The even part contributes
+$(-1)^{h} f(2)\,(-1)^{k} f(k)$ at the index $k$; the odd part, at the residue
+$2h+1-2(j+1)$, contributes $(-1)^{h} f(2)\,(-1)^{j+1} f(j+1)$, and summing it
+against $j < h$ reproduces $R$ once the term $k = 0$ is dropped by $f(0) = 0$.
+The total is twice $(-1)^{h}f(2)R$, as claimed.
+
+The second relation computes the alternating sum $T = \sum_{i<N} (-1)^{i}
+f(i)$ twice. Split at $h$ and reflect the upper half: at $j < h$ its term is
+$(-1)^{j+1} f(j+1)$, so $T = R + R$. Split by parity and reflect the odd part:
+the even part contributes $f(2)f(k)$ at $k \le h$ and the odd part contributes
+$f(2)f(j+1)$ at $j < h$, so $T = f(2)S_{1} + f(2)S_{1}$. The two computations of
+one sum agree, and the factor $2$ is then divided out in $K$.
+
+The third and the fourth relation compute the weighted sum $A$ in the same two
+ways. Split at $h$: the upper half contributes $(2h-j)(-f(j+1)) = -
+\bigl(N-(j+1)\bigr)f(j+1)$ at $j$, so $A = P - N S_{1} + P$. Split by parity: the
+even part is $2f(2)P$ and the odd part is $2f(2)P - Nf(2)S_{1}$, so
+$A = 4f(2)P - Nf(2)S_{1}$. These are the last two relations.
+
+The identity is now one linear combination of the four.
+
+\begin{theorem}[The character sum of the member $1$]
+\label{thm:monster-bernoulli}
+\lv{} \lean{monster\_bernoulli}
+Let $h \ge 0$, let $K$ be a field with $2 \ne 0$, and let $f : \N \to K$ satisfy
+$f(0) = 0$, $f(N-a) = -f(a)$ for $0 < a < N$ and $f(2a) = f(2)f(a)$ for $2a < N$,
+where $N = 2h+1$. Then
+\[
+  N \sum_{r<N} s(r)\,f(r)
+  \;=\;
+  2(-1)^{h}\, f(2)\,\bigl(1 - 2f(2)\bigr) \sum_{a<N} a\,f(a).
+\]
+\end{theorem}
+
+\begin{proof}
+From the second relation, $R = f(2)S_{1}$, since $2 \ne 0$ in $K$. Substituting
+into the first gives
+\[
+  \mathrm{Mon} = 2(-1)^{h} f(2)^{2} S_{1}.
+\]
+Multiply the third relation by $2f(2)$ and subtract the fourth:
+\[
+  2f(2)\,A - A \;=\; \bigl(4f(2)P - 2Nf(2)S_{1}\bigr)
+  - \bigl(4f(2)P - Nf(2)S_{1}\bigr) \;=\; -N f(2) S_{1},
+\]
+that is $\bigl(1 - 2f(2)\bigr)A = N f(2) S_{1}$. Multiplying this by
+$2(-1)^{h}f(2)$ and substituting the value of $\mathrm{Mon}$ gives
+\[
+  N\,\mathrm{Mon} \;=\; 2(-1)^{h} f(2)^{2} \cdot N S_{1}
+  \;=\; 2(-1)^{h} f(2)\,\bigl(1 - 2f(2)\bigr) A,
+\]
+which is the display.
+
+In the Lean the same elimination is written as one linear combination of the
+four relations, with coefficients $2N$, $2N(-1)^{h}f(2)$, $8(-1)^{h}f(2)^{2}$
+and $-4(-1)^{h}f(2)$, whose value is twice the difference of the two sides of
+the display; the factor $2$ is cancelled because $2 \ne 0$ ($\lv$
+\lean{monster\_bernoulli}).
+\end{proof}
+
+The theorem has the following reading. Divide by
+$N$. The quotient $\frac{1}{N}\sum_{a<N} a\,f(a)$ is the first generalised
+Bernoulli number attached to $f$, written $B_{1,f}$; for a Dirichlet character
+$\xi$ modulo $N$ it is $\sum_{a=1}^{N-1} a\,\xi(a)/N$, the value whose $2$-adic
+valuation the analytic class number formula reads
+\cite{Washington1997Cyclotomic}. And $(-1)^{h}$ is the odd character modulo $4$
+at $N$, since $N = 2h+1 \equiv 1 \pmod 4$ exactly when $h$ is even. So the
+display reads
+\begin{equation}
+\label{eq:bernoulli}
+  \sum_{r<N} s(r)\,f(r)
+  \;=\;
+  2\,\chi_{4}(N)\, f(2)\,\bigl(1 - 2f(2)\bigr)\, B_{1,f}.
+\end{equation}
+Both moves are readings and not theorems: Lean keeps $N$ on the left of the
+identity, and the module introduces neither a Bernoulli number nor a character
+modulo $4$. What the theorem says is exact; the reading adds nothing to it but
+names, and the names are what make the character sum of a member of 2009
+recognisable as a classical object.
+
+The case that matters is the one in which $f$ is an odd Dirichlet character, and
+it is a corollary of the display rather than a second theorem. Let $\psi$ be an
+odd character modulo $N = 2h+1$ with values in $K$ and $h \ge 1$. Then $f(a) =
+\psi(a \bmod N)$ has $f(0) = 0$; it is odd, $f(N-a) = \psi(-a) = -\psi(a)$,
+because $\psi(-1) = -1$ is what oddness says; and it is multiplicative at $2$,
+$f(2a) = \psi(2)\psi(a)$. The three hypotheses hold, so the display gives
+\[
+  N \sum_{r<N} s(r)\,\psi(r)
+  \;=\;
+  2(-1)^{h}\,\psi(2)\,\bigl(1 - 2\psi(2)\bigr) \sum_{a<N} a\,\psi(a)
+\]
+($\lv$ \lean{monster\_bernoulli\_dirichlet}), which is the same identity with
+$\psi$ in place of $f$.
+
+Two readings close the subsection, and both are the paper's. First, in
+$\mathbb{C}$ the prefactor does not vanish: $\lvert\psi(2)\rvert = 1$ because $2$
+is a unit modulo the odd $N$, so $\lvert 2\psi(2)\rvert = 2$ and
+$\lvert 1 - 2\psi(2)\rvert \ge 1$. Hence the identity \emph{determines}
+$B_{1,\psi}$ from the character sum of the member, and that sentence is the
+section's title in one line. Second, and in the same breath: the identity holds
+for every $f$ with the three properties, and every odd character is such an $f$,
+but it does not say that every such $f$ is a character. The general statement is
+the theorem, and the character is its most important instance.
+
+\subsection{The rows of the Demjanenko matrix}
+\label{sec:rows}
+
+A member is a parity before it is a comparison, and the parity is the one the
+half-angle already carries. For $x \ge 2$, $c \in \Z$ and $r \in \Z$, with $w =
+xcr \bmod N$ taken in $[0,N)$,
+\begin{equation}
+\label{eq:member-parity}
+  \operatorname{fire}_{c}(r)
+  \;=\;
+  \bigl[\, xcr \bmod N \ \text{is odd} \,\bigr]
+\end{equation}
+($\lv$ \lean{resFire\_iff\_parity}).
+
+The proof is a case analysis on the two branches of the half-angle. Write $V =
+V_{c}(r) = x(1+cr) \bmod N$, so that $V = (x+w) \bmod N$ and $V_{c}(0) = x$. The
+sign is the product of the parity factor $(-1)^{[V \text{ odd}]}$ and the
+half-comparison $(-1)^{[V > N/2]}$; at $r = 0$ the second factor is $-1$, because
+$x = (N+1)/2 > N/2$. If $x+w < N$ then $V = x+w$ also lies above $N/2$, so the
+second factor is $-1$ at both residues and the two signs differ exactly when the
+parities of $x+w$ and $x$ differ, that is exactly when $w$ is odd. If $x+w \ge N$
+then $V = x+w-N \le (N-1)/2$, so the second factor changes between the two
+residues while the parity of $V$ is the parity of $x+w$ shifted by the odd $N$;
+the two signs differ exactly when the parities of $V$ and $x$ agree, which is
+again exactly when $w$ is odd. In both branches the member fires at the residues
+where its half-angle parity changes.
+
+Demjanenko's function is the indicator of the upper half, $w \mapsto [w > N/2]$,
+and on least residues it is a parity as well: for odd $n$ and $0 \le w < n$,
+\[
+  n < 2w \quad\Longleftrightarrow\quad (2w \bmod n) \ \text{is odd}
+\]
+($\lv$ \lean{demjanenko\_iff\_parity}). If $2w < n$ the residue is the even
+number $2w$ and both sides fail; if $2w \ge n$ the residue is $2w-n$, which is
+odd because $2w \ne n$, and both sides hold.
+
+Composing the two parities gives the row identity.
+
+\begin{theorem}[Every member is a Demjanenko dilate]
+\label{thm:demjanenko-rows}
+\lv{} \lean{resFire\_eq\_demjanenko}
+Let $x \ge 2$, $N = 2x-1$, and $c, r \in \Z$. Then
+\begin{equation}
+\label{eq:row}
+  \operatorname{fire}_{c}(r)
+  \;=\;
+  \bigl[\, N < 2\,(x^{2} c\, r \bmod N) \,\bigr].
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Put $w' = x^{2}cr \bmod N$, a representative in $[0,N)$, and $w = xcr \bmod N$.
+Since $2x^{2} = x + xN$, reduction modulo $N$ gives $2x^{2}cr \equiv xcr \pmod
+N$, hence $2w' \equiv w \pmod N$. Both $2w' \bmod N$ and $w$ are least residues
+modulo $N$, so they are equal. By \eqref{eq:member-parity} the member fires
+exactly when $2w' \bmod N$ is odd, and by Demjanenko's parity that is exactly
+when $N < 2w'$.
+\end{proof}
+
+The theorem has a reading, and the reading is the identification. The member $c$
+is row $x^{2}c$ of the matrix $\Delta$ with entries $[N < 2(au \bmod N)]$, read
+modulo $2$. Since $2x \equiv 1 \pmod N$ we have $4x^{2} \equiv 1$, so $x^{2}
+\equiv 4^{-1}$ and row $a$ is the member $4a$, the map $c \mapsto 4c$ being a
+bijection of the coefficient classes modulo $N$. A product of members is the
+exclusive or of its members ($\lv$ \lean{parityOn\_listFire},
+\lean{card\_listFire\_zmod}), and the rows of $\Delta$ are exactly the members;
+hence the $\mathbb{F}_{2}$-span of the products of members is the row space of
+$\Delta$ modulo $2$. That sentence is a reading and not a theorem: Lean proves
+\eqref{eq:row} pointwise at $c$, and the span follows from it in one line, but
+no declaration in the module states the span.
+
+The matrix is not ours, and the section says so where the matrix is first named.
+In \cite{Tsumura1996Demjanenko}, Definition~1.1 at $l = 2$ is the parity matrix
+of least residues of products, which is $\Delta$ read modulo $2$; the
+$2$-divisibility of the relative class number is read off that matrix in
+\cite{FolzZimmer1987Demjanenko} and \cite{Schwarz1993Demjanenko}. What is proved
+here is the bridge and not the matrix: that the member of 2009 with coefficient
+$c$ is the row $x^{2}c$, with the exact row index and the exact dilation, and
+that its character sum is the Bernoulli number of \eqref{eq:bernoulli}.
+
+The same member reads a second classical object, and the second reading is a
+theorem about the same four sums. The sum of $f$ against the upper-half
+indicator is
+\[
+  \sum_{r<N} s(r)\,f(r)
+  \;=\;
+  -2(-1)^{h} f(2)^{2} \sum_{u<N} \bigl[\, u > N/2 \,\bigr] f(u)
+\]
+($\lv$ \lean{monster\_demjanenko}). The proof uses the first two relations of
+\lean{monster\_core}. The upper-half sum is $-S_{1}$: on the range $k \le h$ its
+terms are zero, and on the upper half, read backwards as $2h-j$, the term at
+$j < h$ is $-f(j+1)$, so the sum is $-\sum_{j<h} f(j+1) = -S_{1}$ once the term
+$k = 0$ is dropped. Substituting $R = f(2)S_{1}$ into the first relation gives
+the display. So on odd characters the member and Demjanenko's function have
+character sums that differ by the unit $-2(-1)^{h}f(2)^{2}$, which is the form
+in which the identification is used in the literature.
+
+\subsection{The pair law is not the only law}
+\label{sec:twenty-nine}
+
+The pair law is the one law that products obey in general: at a pair $r$, $N-r$
+the fires of a product differ exactly by the members not annihilated at $r$
+(Theorem~\ref{thm:face-member-pair}, $\lean{resFire\_pair}$, and its sum over a
+list, $\lv$ \lean{listFire\_pair}; \S\ref{sec:face-products}). Read on a list
+that realises a rung, it says that at every residue $r$ with $0 < r < N$ the
+ number of coefficients not killed by $r$ has the parity of the exclusive or of the
+ two target values,
+ \[
+   \sum_{c \in cs} \bigl[\, N \nmid cr \,\bigr] \;=\; T_{M}(r) \oplus T_{M}(N-r)
+   \qquad \text{in } \Z/2\Z,
+ \]
+ which is even exactly when the target is symmetric at $r$, and it is what makes a
+ rung $M \ge 4$ unreadable off the class $N \equiv 2 \pmod
+M$ (Theorem~\ref{thm:face-products-four}, $\lv$
+\lean{not\_listRealises\_of\_four\_le}).
+
+On the surviving class the pair law obstructs nothing, and the reason is a
+symmetry of the target. If $N \equiv 2 \pmod M$ then for $0 < r < N$ the two
+residues $r$ and $N-r$ are both nonzero and $N-r \equiv 2-r \pmod M$, so $N-r
+\equiv 1 \pmod M$ exactly when $r \equiv 1 \pmod M$; hence
+\[
+  T_{M}(N-r) = T_{M}(r) \qquad (0 < r < N)
+\]
+($\lv$ \lean{target\_pair\_of\_two\_mod}). A realisation equates the two sides of
+the pair law with two equal targets, so the displayed sum vanishes for every
+ list that realises a rung on that class, and the pair law can never be the reason
+ a $C_{M}$ fails there.
+
+At the prime $N = 29$ with $M = 9$ the pair law allows a realisation and none
+exists; in the census of \S\ref{sec:certificates} this is the first such pair of
+a prime and a modulus.
+
+\begin{example}[$N = 29$, and $C_{9}$]
+\label{ex:twenty-nine}
+At $x = 15$ the candidate is $N(15) = 29$ ($\lv$ \lean{N\_fifteen}), and $29 =
+3\cdot 9 + 2$, so $N \equiv 2 \pmod 9$ ($\lv$
+\lean{N\_fifteen\_mod\_nine}). The certificate is the list of eight residues
+\[
+  \lean{lam29} = (2,\ 14,\ 19,\ 20,\ 21,\ 23,\ 24,\ 25),
+\]
+and its two properties are finite: every member fires at an even number of them
+($\lv$ \lean{parityOn\_lam29\_resFire}), and the target fires at an odd number
+($\lv$ \lean{parityOn\_lam29\_target}).
+\end{example}
+
+The certificate is read by one function. For a finite list $L$ of residues and a
+Boolean $g$ on $\Z$, let $\lean{parityOn}(L,g)$ be the parity of the number of
+$r \in L$ with $g(r)$ true, the fold of the exclusive or over $L$ from false.
+Four properties make it a tool. It depends only on the values of $g$ on $L$
+($\lv$ \lean{parityOn\_congr}); the constant false has parity false ($\lv$
+\lean{parityOn\_false}); it is additive over the exclusive or ($\lv$
+\lean{parityOn\_xor}); and the parity of a product on $L$ is the exclusive or of
+the parities of its members ($\lv$ \lean{parityOn\_listFire}). A member depends
+on its coefficient only modulo $N$ ($\lv$ \lean{resFire\_emod}), so the first
+property reduces a statement about all $c \in \Z$ to the $N$ coefficient
+classes.
+
+No product realises $C_{9}$ at $N = 29$: the predicate
+$\lean{ListRealises}\ 9\ 15\ cs$ fails for every list of coefficients $cs$
+($\lv$ \lean{not\_listRealises\_nine\_29}). The proof is the certificate. If a list
+realised the target on $[0,N)$, then on the eight residues its fire parity would
+equal the parity of $T_{9}$, which is true; but the parity of a product is the
+exclusive or of the parities of its members, each of which is false, so the
+parity of the product is false, a contradiction.
+
+The instance shows two things. The pair law, which holds at every $N$, is not
+the only law products obey: at $N = 29$ there is a second. And the second law is
+not local to $29$: by \S\ref{sec:identity} the character sums of the
+members are Bernoulli numbers, so in the reading of \eqref{eq:bernoulli} a law
+that constrains the parity of a product on a set of units is a statement about
+the $2$-adic valuation of $B_{1,\xi}$. That statement is the half-units law of
+\S\ref{sec:half-units}; the measured form of the link at $29$ is quoted in
+\S\ref{sec:certificates} with its script.
+
+\subsection{The half-units law}
+\label{sec:half-units}
+
+The second law lives on the units of the lower half. For odd $n$ let
+\[
+  U(n) \;=\; \{\, u : 1 \le u \le n/2,\ \gcd(u,n) = 1 \,\}
+  \qquad (\lean{halfUnits}),
+\]
+the \emph{half units}, and write $\#U(n)$ for its cardinal. For $a$ coprime to
+$n$, Gauss's count is
+\[
+  \operatorname{flip}(n,a)
+  \;=\;
+  \#\{\, u \in U(n) : n/2 < au \bmod n \,\}
+  \qquad (\lean{flipCount}),
+\]
+and the fold back into the lower half is
+\[
+  \operatorname{fold}(n,a,u)
+  \;=\;
+  \min\bigl(au \bmod n,\ n - au \bmod n\bigr)
+  \qquad (\lean{gaussFold}).
+\]
+
+Gauss's lemma holds for the units of $\Z/n\Z$ at any odd $n \ge 3$, not only at
+a prime:
+\begin{equation}
+\label{eq:gauss}
+  a^{\#U(n)} \;=\; (-1)^{\operatorname{flip}(n,a)}
+  \qquad \text{in } \Z/n\Z
+\end{equation}
+for every $a$ coprime to $n$ ($\lv$ \lean{gauss\_transfer}). The proof is the
+classical one, and it is given because the identification is only as good as the
+lemma that makes it non-trivial.
+
+The fold is again a unit: the residue of a product of two numbers coprime to $n$
+is coprime to $n$ ($\lv$ \lean{coprime\_mul\_mod}), so the fold of a half unit
+lies in $U(n)$ ($\lv$ \lean{gaussFold\_mem}). The fold is injective on $U(n)$: if
+two half units fold to the same number, their images in $\Z/n\Z$ are congruent up
+to sign, so $u \equiv \pm v$ modulo $n$, and two half units congruent up to sign
+are equal ($\lv$ \lean{gaussFold\_injOn}, $\lv$
+\lean{eq\_of\_cast\_eq\_or\_neg}). Hence $u \mapsto \operatorname{fold}(n,a,u)$
+is a permutation of $U(n)$.
+
+Compare the products of the two sides. On one hand $\prod_{u \in U}(au) =
+a^{\#U}\prod_{u \in U} u$. On the other, in $\Z/n\Z$ each $au$ is
+$\varepsilon_{u}\operatorname{fold}(n,a,u)$ with $\varepsilon_{u} = \pm 1$ ($\lv$
+\lean{gaussFold\_cast}), so $\prod_{u \in U}(au) =
+(-1)^{\operatorname{flip}}\prod_{u \in U}\operatorname{fold}(n,a,u) =
+(-1)^{\operatorname{flip}}\prod_{u \in U} u$, the last equality because the fold
+permutes $U(n)$. The product $\prod_{u \in U} u$ is a unit of $\Z/n\Z$ and
+cancels, which is \eqref{eq:gauss}.
+
+Half the totient counts the half units. The units of $\Z/n\Z$ in $[1,n]$ split
+into $U(n)$ and its image under $u \mapsto n-u$, an injection onto the units
+above $n/2$; both halves are non-empty because $n$ is odd and $n \ge 3$, and the
+number of units is $\varphi(n)$. So
+\[
+  \#U(n) \;=\; \varphi(n)/2
+\]
+($\lv$ \lean{card\_halfUnits\_mul\_two}); the section writes half the totient
+for $\#U(n)$ from here on.
+
+On a unitary split the exponent can be halved. If $n = de$ with $d, e \ge 3$
+coprime and $a$ coprime to $n$, then
+\[
+  a^{\varphi(n)/2} \equiv 1 \pmod n
+\]
+($\lv$ \lean{pow\_half\_totient}). The totient is multiplicative on coprime
+factors, $\varphi(n) = \varphi(d)\varphi(e)$, and both factors are even, so
+$\varphi(n)/2 = \varphi(d)\bigl(\varphi(e)/2\bigr) =
+\varphi(e)\bigl(\varphi(d)/2\bigr)$. Euler's theorem at $d$, raised to the power
+$\varphi(e)/2$, gives $a^{\varphi(n)/2} \equiv 1 \pmod d$; at $e$, raised to
+$\varphi(d)/2$, it gives the same congruence modulo $e$. The two moduli are
+coprime, so the congruence holds modulo $n$.
+
+On the same split the Gauss count is even. With $n = de$ as above, $n$ odd and
+$a$ coprime to $n$,
+\[
+  \operatorname{flip}(n,a) \ \text{is even}
+\]
+($\lv$ \lean{flipCount\_even}). By \eqref{eq:gauss} and half the totient,
+$a^{\varphi(n)/2} = (-1)^{\operatorname{flip}}$ in $\Z/n\Z$; by the halved
+exponent the left side is $1$; so $(-1)^{\operatorname{flip}} = 1$ in $\Z/n\Z$.
+Since $-1 \ne 1$ in $\Z/n\Z$ for $n \ge 3$, the count cannot be odd.
+
+Now the law.
+
+\begin{theorem}[The half-units law]
+\label{thm:half-units}
+\lv{} \lean{even\_card\_halfUnits\_resFire}
+Let $x \ge 2$ and suppose $N = de$ with $d, e \ge 3$ coprime. Let $c \in \Z$ be
+coprime to $N$. Then the member $c$ fires at an even number of the half units:
+\[
+  \#\{\, u \in U(N) : \operatorname{fire}_{c}(u) \,\}
+  \;\equiv\; 0 \pmod 2 .
+\]
+\end{theorem}
+
+\begin{proof}
+Reduce $c$ to its least residue $c' = c \bmod N \in [0,N)$, which is still
+coprime to $N$ ($\lv$ \lean{resFire\_toNat}). On a natural residue the member is a
+comparison in the upper half, $\operatorname{fire}_{c'}(u) = [N/2 < (x^{2}c'u
+\bmod N)]$ ($\lv$ \lean{resFire\_nat}), which is \eqref{eq:row} read on $\N$. So
+the filtered set is exactly the flip set of $a = x^{2}c'$, and the number of
+fires is $\operatorname{flip}(N, x^{2}c')$.
+
+The factor $x^{2}c'$ is coprime to $N$: the factor $x$ is ($\lv$
+\lean{coprime\_x\_N}), the factor $c'$ is by hypothesis, and a product of two
+numbers coprime to $N$ is coprime to $N$. Applying the evenness of the count with
+the split $d, e$ gives the display.
+\end{proof}
+
+Two consequences follow, and both are stated inline because both are read off the
+display. First, the parity of the number of fires of a product on a finite set of
+natural numbers is the sum of the parities of its members: if every member fires
+at an even number of $U(N)$, every product does ($\lv$
+\lean{even\_card\_listFire}), which is the parity of a filter by an exclusive or
+($\lv$ \lean{even\_card\_filter\_xor}). Second, on a split
+with unit coefficients no product realises $C_{N-2}$ ($\lv$
+\lean{not\_listRealises\_N\_sub\_two}). Suppose a list of coefficients coprime to
+$N$ realised it. On $U(N)$ the fire set of the product equals the fire set of the
+target; each member fires at an even number of $U(N)$ by the display, so the
+product does; the target $[u \ne 0 \wedge u \not\equiv 1 \pmod{N-2}]$ on $U(N)$ is
+$U(N)$ with $1$ removed, because $u \equiv 1 \pmod{N-2}$ with $0 < u < N$ has the
+two solutions $1$ and $N-1$ and only $1$ lies in the lower half; and $\#U(N) =
+\varphi(N)/2 = \varphi(d)\varphi(e)/2$ is even, since both factors of the totient
+are even, so the target fires $\#U(N)-1$ times, an odd number. Even equals odd.
+
+The hypothesis of that consequence is a split, and when $N$ has two distinct
+prime factors the split exists: $d = p^{v_{p}(N)}$ and $e = N/d$ are coprime, and
+each is at least $3$ because each contains an odd prime ($\lv$
+\lean{exists\_split\_of\_two\_primes}). In that form the statement names a
+hypothesis a reader can check ($\lv$
+\lean{not\_listRealises\_N\_sub\_two\_of\_primes}). This is the form the
+certificates of the next subsection do not have, and the reason they are needed.
+
+The law is composite-only, and the reason is the transfer. On a prime $N$ the
+identity \eqref{eq:gauss} is Euler's criterion: $a^{(N-1)/2} =
+(-1)^{\operatorname{flip}(N,a)}$ is $-1$ exactly for a non-residue, so odd counts
+occur and the count is the Legendre symbol, which is not an obstruction. On a
+split the Carmichael exponent halves, the count is forced even, and every unit
+coefficient obeys the law. The observation is the module's, stated in its header
+rather than as a theorem, and it is why the law belongs here rather than in the
+previous section: the previous section could state the pair law for every $N$,
+and this one states a law that exists only because $N$ is composite.
+
+\subsection{Certificates, and two prime instances}
+\label{sec:certificates}
+
+The half-units law and its corollary need a composite, and the interesting
+instances of the section are primes; on a prime there is no split, so the laws say
+nothing and single cases have to be decided by a finite check. The check is the certificate of
+\S\ref{sec:twenty-nine} in general form. Let $L$ be a finite list of natural
+numbers below $N$. If every coefficient $c < N$ fires at an even number of
+residues of $L$ and the target $C_{M}$ fires at an odd number of them, then no
+product of members, of any length and with any coefficients, realises $C_{M}$
+($\lv$ \lean{not\_listRealises\_of\_natCert}). The parity of a product on $L$ is
+the exclusive or of the parities of its members ($\lv$
+\lean{parityN\_listFire}), so it is false; a realisation would make it the
+target's, which is true.
+
+Three reductions turn both conditions into finite arithmetic in $\N$. The member
+on natural numbers is a parity ($\lv$ \lean{resFire\_natParity}), a coefficient
+acts as its least residue ($\lv$ \lean{resFire\_toNat}), and the target on a
+natural residue is the condition $r \ne 0 \wedge r \bmod M \ne 1$ ($\lv$
+\lean{target\_natCast}). The parity of the member $c$ on $L$ is the function
+$\lean{natParity}(x,c,L)$, and the parity of a Boolean on a list of naturals is
+$\lean{parityN}(L,g)$, with the same three properties as $\lean{parityOn}$: it
+depends only on the values on $L$ ($\lv$ \lean{parityN\_congr}), it is additive
+over the exclusive or ($\lv$ \lean{parityN\_xor}), and the parity of a product is
+the exclusive or of the member parities ($\lv$ \lean{parityN\_listFire}).
+
+The converse is a check as well, and it is used once: a list of natural
+coefficients whose fires exclusive-or to the target at every residue below $N$
+realises $C_{M}$ ($\lv$ \lean{listRealises\_of\_nat}). So on a prime the
+realisability of a rung is a finite question in two directions, and both
+directions are decided by the same arithmetic.
+
+\begin{example}[$N = 47$ and $N = 163$]
+\label{ex:one-sixty-three}
+At $x = 24$ the candidate is $N = 47$, and the rung $C_{5}$ \emph{is} realised:
+the sixteen coefficients
+\[
+  1,\ 4,\ 6,\ 8,\ 10,\ 11,\ 12,\ 14,\ 15,\ 16,\ 17,\ 18,\ 19,\ 20,\ 22,\ 24
+\]
+have fires that exclusive-or to $T_{5}$ at every residue below $47$ ($\lv$
+\lean{listRealises\_5\_47}); here $h^{-}(\mathbb{Q}(\zeta_{47})) = 695$, which is
+odd. At $x = 82$ the candidate is
+$N = 163$, and the rung $C_{23}$ is \emph{not} realised: $163 \equiv 2 \pmod{23}$,
+so the pair law allows it, and the certificate is the list of $54$ residues
+$\lean{lam163}$, on which every coefficient below $163$ fires an even number of
+times and the target $C_{23}$ an odd number ($\lv$
+\lean{not\_listRealises\_23\_163}).
+
+The two instances differ in arithmetic and not in the pair law, and neither is
+covered by Theorem~\ref{thm:half-units}: both $47$ and $163$ are prime, so neither
+has a unitary split, and the certificate is the only route.
+\end{example}
+
+A third instance is used once and is not an example of the book. At $x = 8$ the
+candidate is $N = 15$, and the rung $C_{13}$ is not realised by any product, with
+any coefficient ($\lv$ \lean{not\_listRealises\_13\_15}). It is the smallest
+instance of the semiprime law of \S\ref{sec:semiprime}, and the place where the
+certificate method and the class computation meet.
+
+The measured link between the second law and the relative class number is
+quoted, not proved, and each figure carries its script and its range. The script
+\texttt{experiments/\allowbreak q6\_\allowbreak bernoulli.py}, whose output is
+\texttt{experiments/\allowbreak results/\allowbreak q6\_\allowbreak
+bernoulli.txt}, records five checks.
+
+(A) The identity of \eqref{eq:bernoulli} was checked on $4105$ odd characters
+modulo the primes below $300$, with largest error $2.3\cdot10^{-11}$.
+
+(B) The ideal criterion against the brute-force span, for the primes below $300$
+and $M \in \{3,\dots,11\}$, gave $0$ mismatches.
+
+(C) For the primes $N \equiv 3 \pmod 4$ below $1000$, the existence of a full
+$2$-divisible cyclotomic component agreed with $h^{-}\bigl(\mathbb{Q}(\zeta_{N})\bigr)$
+being even in every case, $0$ mismatches; the column records
+$v_{2}\bigl(h^{-}(\mathbb{Q}(\zeta_{163}))\bigr) = 2$.
+
+(D) For $N < 1500$ and $4 \le M < 60$ with $N \equiv 2 \pmod M$, the pairs on
+which $C_{M}$ is not realised although the pair law allows it involve $21$
+primes, and every one of them has $h^{-}$ even; the first is $N = 29$ with $M \in
+\{9, 27\}$, where the same column records
+$v_{2}\bigl(h^{-}(\mathbb{Q}(\zeta_{29}))\bigr) = 3$.
+
+(E) On the side $N \equiv 3 \pmod 4$ of the same range, the criterion that a
+target is realised exactly when its polynomial vanishes on every component on
+which the member span vanishes completely agreed with the brute-force answer in
+$213$ cases, with $0$ mismatches.
+
+These figures are the script's output, not theorems, and the exact criterion behind the certificates is a measured pattern
+of the script and not a statement of this paper. The same holds for the
+realisation scan \texttt{experiments/\allowbreak q6\_\allowbreak
+product\_span.py}: to $N < 200$ it records $C_{9}$ realised at $N = 11$ and at
+$N = 47$, and not realised at $N = 29$, which is the certificate's answer at the
+last of the three.
+
+\subsection{Every coefficient on a semiprime}
+\label{sec:semiprime}
+
+The two statements of \S\ref{sec:half-units} ask something of the list: the
+half-units law asks the coefficients to be units, and its corollary asks for a
+split. On a semiprime neither restriction is needed, and the reason is that the
+coefficient classes are exhausted by four kinds and the pair law counts them.
+
+Throughout, $x \ge 2$, $p \ne q$ are primes, $N = pq$ and $S = U(N)$; both
+primes are odd. A coefficient falls into one of four classes modulo $N$: it is a
+unit, or $p \mid c$ with $q \nmid c$, or $q \mid c$ with $p \nmid c$, or $N \mid
+c$. The middle two read the residue modulo one factor only, the first class is
+covered by Theorem~\ref{thm:half-units}, and the last fires nowhere.
+
+Class constancy says that on the class $p \mid c$ with $q \nmid c$ the parity does
+not depend on the cofactor. For $c_{1}$ with $q \nmid c_{1}$ the member
+$p c_{1}$ reads $u$ modulo $q$,
+\[
+  \operatorname{fire}_{p c_{1}}(u)
+  \;=\;
+  \bigl[\, x c_{1} u \bmod q \ \text{is odd} \,\bigr]
+\]
+($\lv$ \lean{resFire\_class}), and the parity of its fires on $S$ depends on
+$c_{1}$ in no way at all:
+\[
+  \#\{\, u \in S : \operatorname{fire}_{p c_{1}}(u) \,\}
+  \;\equiv\;
+  \#\{\, u \in S : q/2 < u \bmod q \,\} \pmod 2
+\]
+($\lv$ \lean{even\_card\_class\_iff}). The proof is an involution of $S$ that
+flips both sides at once.
+
+Because $p$ and $q$ are coprime there is a unit $e$ with $e \equiv -1 \pmod p$,
+$e \equiv 1 \pmod q$ and $0 \le e < N$ ($\lv$ \lean{exists\_crt\_unit}); it
+satisfies $e^{2} \equiv 1$ ($\lv$ \lean{crt\_unit\_sq}) and $\gcd(e,N) = 1$
+($\lv$ \lean{crt\_unit\_coprime}). The fold $u \mapsto \operatorname{fold}(N,e,u)$
+is an involution of $S$ ($\lv$ \lean{crt\_fold\_invol}) without fixed points
+($\lv$ \lean{crt\_fold\_ne}): a fixed point would give $u \equiv eu$, so
+$(e-1)u \equiv 0$ with $u$ a unit, hence $e \equiv 1 \pmod N$, which contradicts
+$e \equiv -1 \pmod p$ at $p \ge 3$. Modulo $q$ the fold either fixes the residue
+or sends it to $q - (u \bmod q)$ ($\lv$ \lean{crt\_fold\_mod\_q}); the two
+alternatives are decided by whether a sum of two residues below $q$ is a multiple
+of $q$, in which case it is exactly $q$ ($\lv$ \lean{add\_eq\_of\_dvd\_add}), and
+by the complement formula $m(q-b) \equiv -mb \pmod q$ ($\lv$
+\lean{mul\_sub\_mod}).
+
+Now form the Boolean $G(u) = \operatorname{fire}_{p c_{1}}(u) \oplus [q/2 < u
+\bmod q]$. It is invariant under the fold: the first factor reads $u \bmod q$
+through an odd multiple, so it flips exactly when $u \bmod q$ is sent to its
+complement, and the second factor flips at the same time. A fixed-point-free
+involution of a finite set has an even cardinality ($\lv$
+\lean{even\_card\_of\_invol}), so $\#\{u \in S : G(u)\}$ is even; the parity of a
+filter by an exclusive or ($\lv$ \lean{even\_card\_filter\_xor}) turns that
+evenness into the equivalence of the two parities, which is the display.
+
+For an arbitrary coefficient the member's parity on $S$ is a linear functional of
+two counts. Put $\beta_{c}(r) = [N \nmid cr]$ and
+\[
+  U_{q} = \#\{\, u \in S : u \bmod q > q/2 \,\}, \qquad
+  U_{p} = \#\{\, u \in S : u \bmod p > p/2 \,\}.
+\]
+Then
+\begin{equation}
+\label{eq:class-parity}
+  \#\{\, u \in S : \operatorname{fire}_{c}(u) \,\}
+  \;\equiv\;
+  \bigl(\beta_{c}(1) + \beta_{c}(q)\bigr) U_{q}
+  + \bigl(\beta_{c}(1) + \beta_{c}(p)\bigr) U_{p}
+  \pmod 2
+\end{equation}
+($\lv$ \lean{card\_member\_zmod}).
+
+The proof is the case analysis on the class of the least residue $c'$ of $c$. If
+both primes divide $c'$ then $c' = 0$ and nothing fires, while $\beta_{c}(1)$,
+$\beta_{c}(p)$ and $\beta_{c}(q)$ all vanish and the right side is $0$. If $p
+\mid c'$ exactly, write $c' = p c_{1}$ with $q \nmid c_{1}$; then $\beta_{c}(1) =
+1$, because $N \mid p c_{1}$ would give $q \mid c_{1}$; $\beta_{c}(q) = 0$,
+because $c'q = Nc_{1}$; and $\beta_{c}(p) = 1$, because $N \mid p^{2}c_{1}$ would
+again give $q \mid c_{1}$. The right side is $U_{q}$, and the left side is $U_{q}$
+by class constancy. The class $q \mid c'$ exactly is symmetric, with $U_{p}$ in
+place of $U_{q}$. If $c'$ is a unit then all three invariants are $1$, the right
+side is $2U_{q} + 2U_{p} = 0$ in $\Z/2\Z$, and the left side is $0$ by
+Theorem~\ref{thm:half-units}.
+
+The class formula is used only through sums, and the sums live in $\Z/2\Z$,
+where $1+1 = 0$. Three identities make the passage. The parity of a filter by an
+exclusive or is the sum of the two parities in $\Z/2\Z$ ($\lv$
+\lean{card\_filter\_xor\_zmod}); an exclusive-or fold read in $\Z/2\Z$ is the sum
+of its values ($\lv$ \lean{foldr\_xor\_zmod}); and two natural numbers with the
+same parity are equal in $\Z/2\Z$ ($\lv$ \lean{natCast\_zmod\_two\_eq}). From the
+first two, the parity of a product of members on a finite set is the sum of the
+parities of its members ($\lv$ \lean{card\_listFire\_zmod}); and the resulting sum
+is linear, so the coefficient of $U_{q}$ is the sum of the $\beta(1)$ plus the sum
+of the $\beta(q)$ over the list, and likewise for $U_{p}$ ($\lv$
+\lean{sum\_map\_lin}).
+
+Now the semiprime law.
+
+\begin{theorem}[No product realises $C_{N-2}$ on a semiprime]
+\label{thm:semiprime-nsubtwo}
+\lv{} \lean{not\_listRealises\_N\_sub\_two\_semiprime}
+Let $x \ge 2$, let $p \ne q$ be primes, put $N = pq$, and let $cs$ be any finite
+list of coefficients. Then $cs$ does not realise $C_{N-2}$ at $x$:
+\[
+  \lnot\, \lean{ListRealises}\ (N-2)\ x\ cs .
+\]
+\end{theorem}
+
+\begin{proof}
+Assume a list $cs$ realises the target.
+
+The pair law at $r$, summed over the list, gives for every $0 < r < N$
+\[
+  \sum_{c \in cs} \bigl[\, N \nmid cr \,\bigr] \;=\; 0
+  \qquad \text{in } \Z/2\Z .
+\]
+Indeed \lean{listFire\_pair} of \S\ref{sec:face-products} writes the exclusive or
+of the product's fires at $r$ and at $N-r$ as the exclusive or over the list of
+$[N \nmid cr]$; a realisation makes the two fires equal to $T_{N-2}(r)$ and
+$T_{N-2}(N-r)$, which are equal because $N \equiv 2 \pmod{N-2}$ with $N-2 \ge 3$
+($\lv$ \lean{target\_pair\_of\_two\_mod}); an exclusive or of equal Booleans is
+false, and $\lv$ \lean{foldr\_xor\_zmod} reads the fold as a sum.
+
+Read the relation at $r = 1$, $r = q$ and $r = p$. Since $N = pq$, a coefficient
+ is a unit exactly when $p \nmid c$ and $q \nmid c$; the condition $N \nmid c$ holds
+ for the units and for the $p$-only and $q$-only coefficients alike, $N \mid cq$ is
+ $p \mid c$, and $N \mid cp$ is $q \mid c$. So with $n_{u}$, $n_{p}$ and $n_{q}$
+ the numbers of unit, $p$-only and $q$-only coefficients in the list, the three
+ relations read
+ \[
+   n_{u} + n_{p} + n_{q} = 0, \qquad n_{u} + n_{q} = 0, \qquad n_{u} + n_{p} = 0
+   \qquad \text{in } \Z/2\Z ,
+ \]
+ and hence $n_{u} = n_{p} = n_{q} = 0$: a realising list has an even number of
+ coefficients in each class.
+
+The product's parity on $S$ is the sum of the member parities ($\lv$
+\lean{card\_listFire\_zmod}); substituting \eqref{eq:class-parity} for each member
+and summing gives, by $\lv$ \lean{sum\_map\_lin},
+\[
+  \#\{\, u \in S : \operatorname{Fire}_{cs}(u) \,\}
+  \;\equiv\;
+  \Bigl(\sum_{c} \beta_{c}(1) + \sum_{c} \beta_{c}(q)\Bigr) U_{q}
+  + \Bigl(\sum_{c} \beta_{c}(1) + \sum_{c} \beta_{c}(p)\Bigr) U_{p} .
+\]
+The sum of the $\beta_{c}(1)$ is $n_{u} + n_{p} + n_{q}$, the sum of the $\beta_{c}(q)$ is $n_{u}
++ n_{q}$ and the sum of the $\beta_{c}(p)$ is $n_{u} + n_{p}$, so all three
+vanish and the product fires at an even number of half units.
+
+The target fires at an odd number. On $S$ the target $[u \ne 0 \wedge u
+\not\equiv 1 \pmod{N-2}]$ is $S$ without $1$, because $u \equiv 1 \pmod{N-2}$ with
+$0 < u < N$ has the two solutions $1$ and $N-1$ and only $1$ lies in the lower
+half. The cardinality $\#S = \varphi(N)/2 = \varphi(p)\varphi(q)/2$ is even by
+half the totient and the multiplicativity of $\varphi$ on the coprime factors, so
+the target fires $\#S - 1$ times, which is odd in $\Z/2\Z$.
+
+The product and the target have the same fire set on $S$ by the realisation, so
+an even number equals an odd number: $1 = 0$ in $\Z/2\Z$, which is absurd.
+\end{proof}
+
+Theorem~\ref{thm:semiprime-nsubtwo} is the strongest of the three laws, and it is
+the only place in the book where the pair law is used as a counting device rather
+than stated as a symmetry. In \S\ref{sec:face-products} the law rules products out
+by a mismatch of the pair patterns; here it counts how many coefficients of each
+class a realising list would have to carry, and the count is zero of each. What it
+rests on is the hypothesis: the argument uses the two factors of $N$, and it says
+nothing about $C_{M}$ for $M \ne N-2$ or about a composite with more than two
+prime factors.
+
+\medskip
+
+What the section has shown, in one sentence, is that the member of the family of
+2009 with coefficient $c$ is row $x^{2}c$ of the Demjanenko matrix read modulo
+$2$, and that the character sum of the member $1$ is
+$2\chi_{4}(N)f(2)\bigl(1-2f(2)\bigr)B_{1,f}$; and that from those two readings
+Gauss's transfer, the pair law and finite certificates come three laws about what
+ products of members can settle:
+the pair law is not the only law, the half-units law holds on a split for unit
+coefficients, and on a semiprime every coefficient obeys the law for $C_{N-2}$.
+
+The matrix, the
+$2$-divisibility of the relative class number, the Bernoulli numbers and the
+half-sum method are all in the literature and are cited where they are first
+used; the claim is the bridge, and the bridge is elementary, since \eqref{eq:row}
+is three lines of arithmetic on $2x = N+1$. No figure of
+\S\ref{sec:certificates} is a theorem, and the exact criterion behind the
+certificates is a measured pattern of the script rather than a statement of this
+paper. Nothing here bears on the cost of the criterion or on the problem of the
+two sections that follow. The face of 2009 is, by these identities, classical
+mathematics.

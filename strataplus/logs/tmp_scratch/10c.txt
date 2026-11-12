@@ -1,0 +1,984 @@
+
+\section{The Face on the Roots of Unity}
+\label{sec:face}
+
+The previous section left the expression of 2009 as a function of one point of the
+unit circle, $(-\zeta)^{A(x,m)}$, folded by the outer power $^{N/2}$, which makes its value a sign. This section does the reading without folding anything down. At rung $M$
+the reading of a residue is the $\mu_M$-valued \emph{face}
+\[
+  W_{M}(r) \;=\; \exp\Bigl(\frac{2\pi i\,(r-1)}{M}\Bigr),
+\]
+a continuous function of the same point, and the question the Part has been asking
+--- which moduli see $N$ --- becomes the question of which $M$ make the face equal
+$1$ at every nonzero residue. The same expression is studied for its own sake in
+\cite{Companion-complex-formula}; the reading below asks what it settles.
+
+The section settles two things and bounds a third. The face of the invariant is an identity: the moduli with
+trivial face are exactly the divisors of $G(N)$, so the reduction of Part~V is a
+statement about an annihilator on the circle (\S\ref{sec:face-invariant}).
+Read at $M = 4$, the same identity says what the criterion of 2009 was reading and
+where the two fibres the criterion names sit among the four (\S\ref{sec:face-fibres}). What is
+bounded is the other direction, from a formula back to a modulus: one member of the
+coefficient family reads exactly one bit (\S\ref{sec:face-member}), products of
+members settle a congruence class of $N$ and nothing more (\S\ref{sec:face-products}),
+and the $2$-adic tower's fire vector leaves exactly the parity of the residue
+undetermined
+(\S\ref{sec:face-tower}). The section therefore says what the complex presentation
+of 2009 was reading and what no product of its members can settle; it claims
+neither to have found a faster filter nor to have identified a new invariant.
+
+\subsection{The face of a rung}
+\label{sec:face-rung}
+
+Throughout $x \ge 2$, $N = N(x) = 2x-1$, and $1 \le m \le N$ is a base of the
+window of Definition~\ref{def:rung-filter} of \S\ref{sec:definitions}, with Fermat
+residue $\Res{x}{m}$ (Definition~\ref{def:residue}). The modulus of a rung is a
+natural number $M$, and the residue is an integer, so the face is defined on
+$\Z$ and not on a range; the theorems that read it as the value of a filter carry
+the range hypotheses explicitly.
+
+\begin{definition}[The face of a rung]
+\label{def:face}
+For $M \in \N$ and $r \in \Z$ the \emph{face of the rung $M$} at the residue $r$ is
+\[
+  W_{M}(r) \;=\; \exp\Bigl(\frac{2\pi i\,(r-1)}{M}\Bigr)
+  \qquad (\lean{Wface}).
+\]
+At $M = 0$ the quotient is read as $0$, so the face is $1$ there; every statement
+below that uses the congruence it encodes carries $M \ne 0$.
+\end{definition}
+
+The face is the congruence $r \equiv 1 \pmod M$ written in another coordinate, and
+the identity is exact.
+
+\begin{enumerate}\itemsep2pt
+\item $W_{M}(r) = 1$ if and only if $M \mid (r-1)$, for $M \ne 0$
+  ($\lv$ \lean{Wface\_eq\_one\_iff}).
+\item $W_{M}(r) = W_{M}(s)$ if and only if $M \mid (r-s)$, for $M \ne 0$
+  ($\lv$ \lean{Wface\_eq\_Wface\_iff}); in particular the face of a residue depends
+  on the residue modulo $M$ and on nothing else.
+\item $W_{M}(r) = W_{M}(s)\cdot W_{M}(r-s+1)$ ($\lv$ \lean{Wface\_mul}), since the
+  exponents $(s-1) + (r-s)$ add to $r-1$.
+\end{enumerate}
+
+The second item is what makes the face a function of the class, and the third is
+what makes it multiplicative in the argument. Together they give the pairing law of
+Part~II on the circle: for complementary residues $e$ and $N+1-e$ the two faces
+multiply to a constant,
+\[
+  W_{M}(e)\cdot W_{M}(N+1-e) \;=\; W_{M}(N)
+  \qquad (\lv\ \lean{Wface\_pairing}),
+\]
+because $(e-1) + (N-e) = N-1$. Read on a complementary pair of idempotents --- the
+complement of an idempotent is again one (\lean{idem\_compl},
+\S\ref{sec:pairing}) --- the product is $W_{M}(N)$, independent of which idempotent
+was chosen ($\lv$ \lean{Wface\_idem\_pairing}). The arithmetic pairing of
+\S\ref{sec:pairing} and this product are the same law: what the sum $e + e' = N+1$
+does to the filtered value, the product of the faces does to the reading.
+
+Three analytic facts about the face are used later and are collected here once.
+The face is an exponential of a real multiple of $i$, so its real and imaginary
+parts are the cosine and the sine of the angle ($\lv$ \lean{Wface\_re},
+$\lv$ \lean{Wface\_im}), and it is a unit vector for every $M$ and every $r$
+($\lv$ \lean{Wface\_norm\_one}); the exponential form
+$\exp\bigl(2\pi i (r-1)/M\bigr)$ is the definition read with real argument
+($\lv$ \lean{Wface\_eq\_exp\_ofReal}). Two consequences of unit modulus are the
+ones the section actually spends. The real part never exceeds $1$
+($\lv$ \lean{Wface\_re\_le\_one}), by the triangle inequality or by $\cos \le 1$;
+and a face whose real part \emph{is} $1$ is $1$ ($\lv$
+\lean{Wface\_eq\_one\_of\_re\_one}), because a unit vector with vanishing imaginary
+part is real and positive. That equality case is what turns a sum of faces into a
+criterion in \S\ref{sec:face-invariant}, and it is the only place where analysis,
+rather than arithmetic, is used in the section.
+
+\subsection{Where the expression of 2009 sits}
+\label{sec:face-base}
+
+The base of the previous section's expression is a point of order $N$, and the
+order is the first thing the face can see. Since $-\zeta = \exp(2\pi i\,x/N)$
+(Lemma~\ref{lem:zeta_base} of \S\ref{sec:origin}) and $x$ is coprime to
+$N = 2x-1$ ($\lv$ \lean{coprime\_x\_N}) --- a common divisor of $x$ and $2x-1$
+divides $1$ --- the base is a primitive $N$-th root of unity ($\lv$
+\lean{neg\_zeta\_isPrimitiveRoot}). Its order is odd, and a primitive root of odd
+order never reaches $-1$: $(-1)$ has order $2$, which divides no odd number, so
+$(-\zeta)^{k} \ne -1$ for every integer $k$
+($\lv$ \lean{isPrimitiveRoot\_pow\_ne\_neg\_one\_of\_odd}, $\lv$
+\lean{neg\_zeta\_pow\_ne\_neg\_one}).
+
+So the $\pm 1$ the expression reports is not the base's. It is the fold's:
+multiplying the angle of an $N$-th root by $N/2$ lands in $\{\pm1\}$ and produces
+$(-1)^{k}$,
+\[
+  \exp\Bigl(\frac{2\pi i\,k}{N}\cdot\frac{N}{2}\Bigr) \;=\; (-1)^{k}
+  \qquad (\lv\ \lean{Nth\_root\_half\_fold}),
+\]
+whose square is $1$ ($\lv$ \lean{Nth\_root\_half\_fold\_sq}). This is the sharpening
+of \S\ref{sec:origin-four} that the face makes visible: the outer power is where
+torsion of order two is manufactured, the base cannot supply it, and the two
+factors of the modulus $4$ --- the fold and the parity of the filtered value ---
+are one bookkeeping fact about a primitive root of odd order and one arithmetic
+fact about the coefficient. On a complementary pair of residues summing to $N$ the
+manufacture is visible in the sign itself: with both residues nonzero, the two
+values $\sigma$ are opposite ($\lv$ \lean{monsterSign\_neg\_of\_sum\_eq\_N}), which
+is the pair law of \S\ref{sec:pairing} at the two-valued face.
+
+The prefactor of the expression is of the same kind, and it is worth one sentence
+because the notebook treated it as decoration. It is a quadratic character:
+$\operatorname{sgn}(x) = -(-1)^{(N-1)/2}$ for every odd $N$ ($\lv$
+\lean{sgn\_eq\_neg\_pow\_N\_sub\_one}), which at an odd prime is the negated
+Legendre symbol of $-1$, and in general the negated Jacobi symbol ($\lv$
+\lean{sgn\_eq\_neg\_jacobiSym}). Nothing in the expression is an independent
+geometric choice.
+
+Which orders the base itself can reach is a divisibility. If a power of a primitive
+$N$-th root is primitive of order $M$, then $M \mid N$ ($\lv$
+\lean{isPrimitiveRoot\_pow\_dvd\_order}); applied to the base of 2009 this reads
+$M \mid N$ ($\lv$ \lean{neg\_zeta\_pow\_primitive\_dvd}), and conversely no power of
+it is primitive of order $M$ when $M \nmid N$ ($\lv$
+\lean{not\_isPrimitiveRoot\_neg\_zeta\_pow\_of\_not\_dvd}). So some power of the
+base is a primitive $M$-th root exactly when $M \mid N$ ($\lv$
+\lean{exists\_neg\_zeta\_pow\_primitive\_iff}). Every $2^{j}$ and every prime $p$
+not dividing $N$ --- $3$ among them, unless $3 \mid N$ --- is outside that set, so a
+reading of the residue valued in $\mu_M$ for such an $M$ cannot be got from a power
+of the base alone: it would have to change the generator of the root of unity, not
+only its exponent. The family of \S\ref{sec:face-member} changes the exponent alone,
+and what it reads is the sign the outer fold produces, which is why its values lie
+in $\mu_2$ and not in $\mu_M$ for an $M \nmid N$.
+
+Two readings that the complex presentation invites are closed by one fact about
+additive homomorphisms, and the fact is the reason the section can say what the
+formula was reading rather than what it might have been. For odd $N$ there is no
+nontrivial additive homomorphism $\Z/N \to \Z/2^{j}$ ($\lv$ \lean{no\_add\_hom\_odd}),
+and more generally none when the two moduli are coprime ($\lv$
+\lean{no\_add\_hom\_coprime}), nor when both are odd and coprime ($\lv$
+\lean{no\_add\_hom\_odd\_odd}); the shape the section uses is the composite
+statement that covers all the $2$-power rungs at once ($\lv$
+\lean{no\_add\_hom\_odd\_of\_coprime}). The argument is the order of the image: the
+image of $1$ has order dividing $N$ and dividing $M$, hence dividing
+$\gcd(N,M) = 1$, so it vanishes. Consequently the branch of the value $\sigma$ of
+\eqref{eq:value} --- whether the argument lies below or above $N$, the second
+factor of the expression --- cannot be produced by reading the low bits of a
+canonical representative through a group homomorphism. It is forced by the choice
+of representative, and the book records it as a branch because it is one.
+
+\begin{definition}[Two faces that are also homomorphisms]
+\label{def:linear}
+For $a \in \Z/(N)$ the \emph{additive character} of the rung $N$ is
+\[
+  \psi_{a}(y) \;=\; W_{N}\bigl(a\,y + 1\bigr)
+  \qquad (\lean{addChar}),
+\]
+the face at the representative of the class $a y$, plus one; and a homomorphism
+$f : \Z/(N) \to \Z/(M)$
+\emph{realises} the rung $M$ at $x$ when
+\[
+  f\bigl(\Res{x}{m}\bigr) \ne 0
+  \quad\Longleftrightarrow\quad
+  \text{$m$ is a $C_{M}$-witness}
+  \qquad (\lean{LinearFaceRealises}),
+\]
+for every base $1 \le m \le N$ of the window. Both are readings of the residue by
+a group homomorphism, and they are the only two the section considers.
+\end{definition}
+
+An additive character is a face, and a filter read by one is a filter read
+linearly. The projection onto characters does not diagonalise the Fermat map: if
+$\psi_{a}(y^{N-1}) = c\,\psi_{a}(y)$ for all $y$ and some constant $c$, then $a = 0$
+($\lv$ \lean{no\_additive\_eigencharacter}). The proof is two evaluations. At
+$y = 0$ the eigenvalue is $1$, because $\psi_a(0) = 1$ whatever $a$ is. At
+$y = -1$ the power $y^{N-1}$ is $1$ --- the exponent is even, so the sign is
+irrelevant --- and the eigenvector equation forces $\psi_a(1) = \psi_a(-1)$, that
+is, it forces the classes $a$ and $-a$ to coincide, which is $2a = 0$; and $2$ is a
+unit modulo the odd $N$, since $2x = N+1$ is $1$ mod $N$. Hence $a = 0$. There is
+no Fourier-type shortcut to the residues of the power map, and the negative is a
+theorem rather than a remark.
+
+That the branch and the fold are bookkeeping, and not discontinuities, is also a
+theorem. Every real function on a finite set of complex points extends to a
+continuous function of the plane ($\lv$ \lean{continuous\_interpolation}), and
+composing that extension with the point $(-\zeta)^{A(x,m)}$ gives a continuous $F$
+with $\operatorname{monsterC}(x,m) = F\bigl((-\zeta)^{A(x,m)}\bigr)$ for every base
+($\lv$ \lean{monster\_branchless}). The expression of \S\ref{sec:origin} is
+therefore a continuous function of its own base point, on which the two-valued
+output is imposed by the fold. It is a projection of the circle onto a sign.
+
+Unlike \S\ref{sec:counts}, \S\ref{sec:pw} and \S\ref{sec:pw-conditional}, every
+result of this section is machine-checked
+with no hypothesis and with the axiom footprint of the rest of the book: there
+is no conditional marker in it, and no open statement. The section ends on a
+refuted formulation (\S\ref{sec:face-tower}).
+
+\subsection{The invariant on the circle}
+\label{sec:face-invariant}
+
+The face is not a second invariant. It is the invariant of Part~V read
+analytically: the same number $G(N)$, in the coordinate in which ``$M$ sees $N$''
+becomes ``the face is not $1$''. The identity that says so composes the bridge
+between the arithmetic filter and the complex reading with
+Theorem~\ref{thm:reduction} of \S\ref{sec:invariant}.
+
+The bridge first. For $M \ne 0$, a base is a $C_M$-witness if and only if it lies
+in the window, its residue is nonzero, and its face is not $1$ ($\lv$
+\lean{isWitnessMod\_iff\_Wface}); in symbols,
+\begin{align*}
+  \text{$m$ is a $C_{M}$-witness}
+  \;&\Longleftrightarrow\;
+  1 \le m \;\wedge\; m \le N \;\wedge\; \Res{x}{m} \ne 0\\
+  &\;\wedge\; W_{M}\bigl(\Res{x}{m}\bigr) \ne 1 .
+\end{align*}
+That is Definition~\ref{def:rung-filter} with the congruence $r \not\equiv 1
+\pmod M$ rewritten through the first item of \S\ref{sec:face-rung}. Negating it
+turns ``no base is a witness'' into ``every base with nonzero residue has trivial
+face'' ($\lv$ \lean{forall\_Wface\_one\_iff\_noWitnessMod}), and the second
+statement of \S\ref{sec:invariant} is the same statement about $M$ and $G(N)$.
+
+\begin{theorem}[The face of the invariant]
+\label{thm:face-invariant}
+\lv{} \lean{dvd\_residueGcd\_iff\_forall\_Wface}
+Let $x \ge 2$, let $M \ge 1$, and write $G(N) = \lean{residueGcd}\,x$ for the
+invariant at the canonical exponent (Definition~\ref{def:exponent-invariant} of
+\S\ref{sec:exponent}). Then
+\[
+  M \mid G(N)
+  \quad\Longleftrightarrow\quad
+  W_{M}\bigl(\Res{x}{m}\bigr) = 1
+  \ \text{ for every base } 1 \le m \le N \text{ with } \Res{x}{m} \ne 0 .
+\]
+\end{theorem}
+
+\begin{proof}
+The proof composes two equivalences, and the only hypothesis is $M \ne 0$.
+
+First, the bridge: ``no base of the window is a $C_M$-witness'' and ``every base
+with nonzero residue has face $1$'' are the same statement, by $\lv$
+\lean{forall\_Wface\_one\_iff\_noWitnessMod}, whose proof is the negation of
+$\lv$ \lean{isWitnessMod\_iff\_Wface} read at the two sides of the definition of
+the witness.
+
+Second, the invariant: ``no base of the window is a $C_M$-witness'' is
+$M \mid G(N)$, which is Theorem~\ref{thm:reduction} of \S\ref{sec:invariant}: the
+invariant is a gcd of the terms of the window, so a number divides it exactly when
+it divides every term, and a term vanishes exactly at a non-witness.
+
+Composing the two, in the direction that starts from the divisibility, gives the
+display. The composition is where the face enters and the gcd leaves; nothing else
+is used.
+\end{proof}
+
+The statement is an identity between a divisibility and a family of values of one
+function, and it has three readings that the section uses.
+
+The first is that $G(N)$ is the largest modulus with trivial face, and that it has
+one for every composite: at $M = G$ every nonzero residue has face $1$ ($\lv$
+\lean{forall\_Wface\_residueGcd\_one}, which needs $G \ne 0$, that is, $N$
+composite). So the divisors of the invariant are exactly the moduli the filter
+cannot see, which is Part~V's theorem with the modulus named as a value rather than
+as a divisor.
+
+The second is a change of coordinates, not an algorithm, and it is worth the
+sentence because the complex presentation of 2009 invites the opposite reading.
+The equivalence quantifies over the bases of the window, one modular
+exponentiation each, exactly as the arithmetic filter does; the modulus became
+smaller in the theorems of \S\ref{sec:schedule}, and the work did not, which is
+that section's cost paragraph. Reading the filter on the circle changes what is
+computed at each base --- a root of unity instead of a remainder --- and changes
+nothing about how many bases there are. No sentence of this section bears on the
+cost of a filter, and none claims a usable test.
+
+The third reading is the one the examples make concrete. At the counterexample of
+\S\ref{sec:refutation} the invariant is $4$ ($\lv$
+\lean{residueGcd\_xc\_eq\_four}, \S\ref{sec:korselt}), so every nonzero residue of
+$2508013$ has face $1$ at $M = 1$, $M = 2$ and $M = 4$: the absence of a witness
+there is the triviality of a character, and nothing is detected because the face is
+nothing but $1$. At $1729 = 7\cdot 13\cdot 19$ the invariant is
+$1$, so the face at $M = 4$ need not be $1$ at every nonzero residue, and it is not:
+at the base $m = 20$ the residue is $456$, which is $0$ modulo $4$, so the face is
+$W_{4}(456) = -i$ and the criterion of 2009 fires there. The two numbers are
+both Korselt numbers and the face behaves in opposite ways at them: what the face
+records is $G$, and $G$ is not Carmichaelness.
+
+Read at $M = N$, the face needs no invariant: the criterion becomes the
+classical one.
+
+\begin{theorem}[The face at $M = N$ is the classical criterion]
+\label{thm:face-lossless}
+\lv{} \lean{prime\_iff\_forall\_Wface\_one}
+For $x \ge 2$, the candidate $N$ is prime if and only if
+\[
+  W_{N}\bigl(\Res{x}{m}\bigr) = 1
+  \quad\text{for every } 2 \le m \le N .
+\]
+\end{theorem}
+
+\begin{proof}
+The classical criterion of \S\ref{sec:prime-direction} says that $N$ is prime if
+and only if $\Res{x}{m} = 1$ for every base $2 \le m \le N$
+(Theorem~\ref{thm:prime-iff-resid-one}). It remains to replace the equality of
+residues by the equality of faces, under the quantifier, in both directions.
+
+At $M = N$ the replacement is exact. The residue is a representative in $[0,N)$,
+and $1 < N$, so the congruence $r \equiv 1 \pmod N$ has exactly one solution in
+range, namely $r = 1$: $W_{N}\bigl(\Res{x}{m}\bigr) = 1$ if and only if
+$\Res{x}{m} = 1$ ($\lv$ \lean{Wface\_N\_eq\_one\_iff\_resid\_one}). The two
+inequalities on the residue are the range facts of
+Definition~\ref{def:residue}; the value $1$ of the face is the first item of
+\S\ref{sec:face-rung} at $M = N$.
+
+Transporting the equivalence through the quantifier gives the display. The range
+$2 \le m \le N$ is not changed, and it need not be: at $m = 1$ the residue is $0$,
+which is not $1$, and no face argument is needed to exclude that base.
+\end{proof}
+
+The theorem says that the complex presentation of the criterion, at the modulus $N$
+itself, is the criterion without loss --- and this is the contrast the section
+exists to make. The expression of \S\ref{sec:origin} reads the same residues
+through a two-valued face and loses everything but a parity; the face at $M = N$ is
+injective on residues and loses nothing. One modulus, two readings of very
+different strength.
+
+The universal quantifier of the display can be compressed to a single equation,
+and the compression is the equality case of \S\ref{sec:face-rung}. The bases
+$2 \le m \le N$ give $N-1$ faces, each of unit modulus with real part at most
+$1$; their real parts sum to $N-1$ exactly when each face is $1$, and a face with
+real part $1$ is $1$. Hence $N$ is prime if and only if the sum of the faces over the window
+equals $N-1$,
+\[
+  \sum_{m=2}^{N} W_{N}\bigl(\Res{x}{m}\bigr) \;=\; N-1
+  \qquad (\lv\ \lean{prime\_iff\_Wface\_sum}).
+\]
+The scalar form is not used again, and it is stated because it is the shape in
+which the criterion can be compared with a character sum; the sum is over the
+window, not over the group, and no cancellation is claimed.
+
+Each arithmetic criterion of Parts V and VI has its face, and the section collects
+them in one paragraph rather than in five displays, because each is the previous
+theorem with a different modulus and the same bridge. For a modulus that does not
+divide $N(N-1)$ the prime direction holds with the face at $M$ ($\lv$
+\lean{prime\_iff\_forall\_Wface\_of\_not\_dvd}), the complex form of the criterion
+of \S\ref{sec:korselt}; at the closed modulus $N+1$ it holds verbatim ($\lv$
+\lean{prime\_iff\_forall\_Wface\_succ}); at the least non-divisor of $N(N-1)$ it
+holds with $M$ replaced by that value ($\lv$
+\lean{prime\_iff\_forall\_Wface\_minNonDivisor}), which is the face of the least
+safe modulus of \S\ref{sec:least-safe}; and at the schedule
+$M(N) = \lfloor\sqrt N\rfloor + 1$ of Definition~\ref{def:sqrt-schedule} of
+\S\ref{sec:schedule} it holds with $M$ replaced by the schedule ($\lv$
+\lean{prime\_iff\_forall\_Wface\_sqrtSched}), with the scalar companion of that
+schedule summing the faces at $M(N)$ instead of the faces at $N$ ($\lv$
+\lean{prime\_iff\_Wface\_sqrtSched\_sum}). What the face adds to those criteria is
+not a new test: it is the statement that all of them are the same statement, read
+at different moduli.
+
+\subsection{The four fibres}
+\label{sec:face-fibres}
+
+The modulus $4$ is the one the notebook chose, and on the circle its face is a
+function taking exactly the four values of $\mu_4$, indexed by the classes of the
+residue modulo $4$. The values are attained:
+\[
+  W_{4}(r) = 1 \iff r \equiv 1 \pmod 4, \qquad
+  W_{4}(2) = i, \qquad
+  W_{4}(3) = -1,
+\]
+and every face at $M = 4$ is one of $1$, $i$, $-1$, $-i$ ($\lv$
+\lean{Wface\_four\_eq\_one\_iff}, $\lv$ \lean{Wface\_four\_two\_eq\_I}, $\lv$
+\lean{Wface\_four\_three}, $\lv$ \lean{Wface\_four\_eq\_mu4}). The expression of
+2009 reports a two-valued shadow of this four-valued function: the value
+$\sigma(x,m)$ of \eqref{eq:value} is $\pm 1$ at every base ($\lv$
+\lean{monsterSign\_eq\_pm\_one}), and its sign is the parity of a single integer
+($\lv$ \lean{monsterSign\_eq\_bit}).
+
+The 2009 witness condition, read on the residue, is a disjunction of two classes:
+$r \ne 0$ and $r$ congruent to $3$ or to $N-1$ modulo $4$ ($\lv$ \lean{W2009},
+Theorem~\ref{thm:witness-mod-four} of \S\ref{sec:residue}). That is two of the four
+fibres of the face, and the display names them.
+
+\begin{theorem}[The 2009 predicate is two of the four fibres]
+\label{thm:face-fibres}
+\lv{} \lean{isWitness\_iff\_Wface\_four}
+Let $x \ge 2$ and let $m$ be a base with $1 \le m \le N$. Then $m$ is a witness of
+the criterion of 2009 if and only if
+\[
+  \Res{x}{m} \ne 0
+  \quad\text{and}\quad
+  W_{4}\bigl(\Res{x}{m}\bigr) \in \bigl\{W_{4}(3),\, W_{4}(N-1)\bigr\}.
+\]
+\end{theorem}
+
+\begin{proof}
+Start from the residue form of the predicate: $m$ is a witness exactly when
+$\Res{x}{m} \ne 0$ and the residue is $3$ or $N-1$ modulo $4$
+(Theorem~\ref{thm:witness-mod-four}). It remains to read the two congruences as
+equalities of faces.
+
+At $M = 4$ the second item of \S\ref{sec:face-rung} says that two faces agree
+exactly when the residues are congruent modulo $4$ ($\lv$
+\lean{Wface\_eq\_Wface\_iff}). So $r \equiv 3 \pmod 4$ is $W_{4}(r) = W_{4}(3)$,
+and $r \equiv N-1 \pmod 4$ is $W_{4}(r) = W_{4}(N-1)$.
+
+Substituting the two equivalences into the disjunction, in both directions, gives
+the display. Nothing else is used: the range hypotheses are those of the residue
+form, and the arithmetic of the substitution is the translation of a congruence
+into an equality of classes.
+\end{proof}
+
+The two right-hand values are the fibres, and which classes they are depends on
+$N$. The first is fixed: $W_{4}(3) = -1$, the class $3$. The second is
+$W_{4}(N-1)$, which is $-i$ when $N \equiv 1 \pmod 4$ and $i$ when $N \equiv 3
+\pmod 4$. So the pair of fibres the notebook names is $\{3, 0\}$ in the first class
+and $\{3, 2\}$ in the second, while the face's own non-triviality does not depend on
+the class of $N$ at all. That discrepancy is a theorem and not an observation: the
+condition $W_{4}(r) \ne 1$ is strictly coarser than the 2009 predicate, since there
+is always a residue whose face fires and which is not a 2009 witness ($\lv$
+\lean{Wface\_four\_ne\_one\_not\_iff\_witness\_mod\_four}), and when $N \equiv 1
+\pmod 4$ the class $2$ is such a residue ($\lv$
+\lean{Wface\_four\_fires\_on\_class\_two\_not\_witness}).
+
+Two numbers show the difference, and the first of them is the book's running
+example at this modulus of the face. At $1729$, which is $1$ modulo $4$, the
+nonzero residues are
+\[
+  1,\ 456,\ 533,\ 742,\ 988,\ 1197,\ 1274,
+\]
+of classes $1, 0, 1, 2, 0, 1, 2$ modulo $4$: the face takes the values $1$, $-i$
+and $i$ there, the fibre $-1$ is empty, and the two 2009 fibres are the classes
+$3$ and $0$. The criterion fires at the base $m = 20$, whose residue is $456$ and
+whose class is $0$. At $1105 = 5\cdot 13\cdot 17$, also $1$ modulo $4$, the
+nonzero residues are
+\[
+  1,\ 170,\ 221,\ 391,\ 715,\ 885,\ 936,
+\]
+of classes $1, 2, 1, 3, 3, 1, 0$: all four values of the face occur, the 2009
+fibres are $391$, $715$ and $936$, and the class-$2$ residue $170$ --- the
+idempotent that is $1$ modulo $13$ and $0$ modulo $5$ and $17$, attained at the
+base $171$ --- fires
+under the face and is not a witness of 2009. So on the same class of $N$ the
+criterion names two fibres out of four, and the two it omits are not empty.
+
+The pairing of Part~II reads on the four fibres as a table, and the table is the
+complete one. For odd $n$ and nonzero residues $r + r' = n+1$, the 2009 predicate
+holds at $r$ exactly when it holds at $r'$ precisely if $r \equiv r' \pmod 4$, and
+both hold exactly in the two cases $r \equiv r' \equiv 3$ with $n \equiv 1$ and
+$r \equiv r' \equiv 2$ with $n \equiv 3$ modulo $4$ ($\lv$
+\lean{w2009\_complementary\_pair}). On attainable residues summing to $N+1$ the
+same table says that the criterion fires on both, on neither, or on exactly one,
+according to the two classes modulo $4$ ($\lv$
+\lean{witness\_complementary\_pair}). This is where the two fibres and the pairing
+law of \S\ref{sec:pairing} meet, and it is the arithmetic behind the observation
+that the absence of a witness for the criterion is a condition modulo four.
+
+\subsection{One member, one bit}
+\label{sec:face-member}
+
+The family of 2009 is a one-parameter family of readings, and the section now asks
+what one of its members can settle. The answer is one bit, and the road to it is
+the pairing law of Part~II in the coordinate of the half-angle.
+
+\begin{definition}[The members of the family]
+\label{def:member}
+For $x \ge 2$, a coefficient $c \in \Z$ and a base $m$, the \emph{inner exponent}
+of the member $c$ is
+\[
+  A_{c}(x,m) \;=\; \bigl(1 + c\,\mathrm{term}(x,m)\bigr) \bmod 2N
+  \qquad (\lean{coeffExp}),
+\]
+its \emph{argument} is the reduction of $2x\,A_c$ modulo the working modulus $2N$,
+\[
+  s_{c}(x,m) \;=\; 2x\,A_{c}(x,m) \bmod 2N
+  \qquad (\lean{coeffArg}),
+\]
+and its \emph{value} is the branch map of \eqref{eq:value} applied to that argument,
+\[
+  \sigma_{c}(x,m) \;=\;
+  \begin{cases} \phantom{-}1, & s_{c}(x,m) \equiv 0 \pmod 4,\\ -1, & \text{otherwise},\end{cases}
+  \;\cdot\;
+  \begin{cases} \phantom{-}1, & s_{c}(x,m) \le N,\\ -1, & s_{c}(x,m) > N,\end{cases}
+  \qquad (\lean{coeffSign}).
+\]
+The member \emph{fires} at the base $m$ when its value differs from its value at
+$m = 1$, where the residue is $0$ --- the base every filter of the book treats as a
+non-witness:
+\[
+  \text{the member $c$ fires at $m$}
+  \quad:\Longleftrightarrow\quad
+  \sigma_{c}(x,m) \ne \sigma_{c}(x,1)
+  \qquad (\lean{CoeffFires}).
+\]
+\end{definition}
+
+At $c = \operatorname{sgn}(x)$ the member is the expression of \S\ref{sec:origin},
+with the exponent and the value of \eqref{eq:inner-exponent} and \eqref{eq:value};
+the family is the expression with the coefficient set free. Two reductions make it
+readable. The value depends on the base only through the residue, and the argument
+has a closed form in the residue:
+\[
+  s_{c}(x,m) \;=\; 2\Bigl(\bigl(x\,(1 + c\,\Res{x}{m})\bigr) \bmod N\Bigr)
+  \qquad (\lv\ \lean{coeffArg\_eq}),
+\]
+because the term agrees with the residue modulo $N$
+(Corollary~\ref{cor:term-residue} of \S\ref{sec:definitions}) and doubling turns a
+congruence modulo $N$ into one modulo $2N$. The inner factor of that display is the
+\emph{half-angle}
+\[
+  V_{c}(r) \;=\; \bigl(x\,(1 + c\,r)\bigr) \bmod N ,
+\]
+a representative in $[0,N)$, and $x$ is the inverse of $2$ modulo $N$, since
+$2x = N+1 \equiv 1$. So a member reads the reduced integer $V_c(r)$ and reports the
+sign of the doubled argument $2V_c(r)$.
+
+\begin{definition}[The member on a residue]
+\label{def:fires}
+For $x \ge 2$, $c \in \Z$ and $r \in \Z$, the \emph{sign} of the member $c$ at the
+residue $r$ is the branch map of \eqref{eq:value} applied to the argument
+$2V_{c}(r)$,
+\[
+  \operatorname{sgnV}_{N}\bigl(2V_{c}(r)\bigr) \;=\;
+  \begin{cases} \phantom{-}1, & 2V_{c}(r) \equiv 0 \pmod 4,\\ -1, & \text{otherwise},\end{cases}
+  \;\cdot\;
+  \begin{cases} \phantom{-}1, & 2V_{c}(r) \le N,\\ -1, & 2V_{c}(r) > N,\end{cases}
+  \qquad (\lean{resSign}),
+\]
+written $\lean{sgnV}$ as a function of the pair $(N,V)$; and the member
+\emph{fires} at $r$ when that sign differs from its value at $r = 0$,
+\[
+  \operatorname{fire}_{c}(r) \;=\; \bigl[\,\operatorname{sgnV}_{N}(2V_{c}(r))
+  \ne \operatorname{sgnV}_{N}(2V_{c}(0))\,\bigr]
+  \qquad (\lean{resFire}).
+\]
+\end{definition}
+
+The two descriptions agree: the value at a base is the sign at its residue ($\lv$
+\lean{coeffSign\_eq\_resSign}) and the member fires at a base exactly when it fires
+at the base's residue ($\lv$ \lean{coeffFires\_iff\_resFire}). The sign is
+$\pm1$ ($\lv$ \lean{coeffSign\_eq\_one\_or}, $\lv$ \lean{resSign\_eq\_one\_or}),
+and it depends on the products $c\,r$ and not on the two factors separately: if
+$c\,r \equiv c'\,r' \pmod N$ the two signs agree ($\lv$
+\lean{resSign\_congr}). That last fact is what lets a product of members be read
+through the classes of its coefficients, and \S\ref{sec:face-products} reads it that
+way.
+
+The pairing law for one member is the section's fourth display.
+
+\begin{theorem}[A member fires on one half of a pair]
+\label{thm:face-member-pair}
+\lv{} \lean{resFire\_pair}
+Let $x \ge 2$, let $c \in \Z$ and let $r \in \Z$. Then the member $c$ fires at
+exactly one of $r$ and $N-r$ if and only if $N \nmid c\,r$; in the notation of
+Definition~\ref{def:fires},
+\[
+  \operatorname{fire}_{c}(r) \oplus \operatorname{fire}_{c}(N-r)
+  \;=\; \bigl[\,N \nmid c\,r\,\bigr].
+\]
+\end{theorem}
+
+\begin{proof}
+Write $V_{1} = V_{c}(r)$ and $V_{2} = V_{c}(N-r)$, both representatives in
+$[0,N)$.
+
+The two half-angles sum to the inverse of two. Expanding the definition,
+\[
+  V_{1} + V_{2} \;\equiv\; x\bigl(2 + cN\bigr) \;\equiv\; 2x \;\equiv\; 1
+  \pmod N ,
+\]
+because $cN$ vanishes modulo $N$; and $0 \le V_{1} + V_{2} < 2N$, so the sum is
+$1$ or $N+1$ and nothing else.
+
+On those two possibilities the branch map behaves in one way. A direct check on the
+two cases and on the two comparisons with $N$ gives: exactly one of the two signs
+differs from the reference value at $V = x$ if and only if $V_{1} \ne x$. The
+reference is the sign at $r = 0$, whose half-angle is $V_{c}(0) = x$; at the
+exceptional value $V_{1} = x$ the sum forces $V_{2} = x$ as well, since
+$1 - x \equiv x \pmod N$ when $2x \equiv 1$, so both signs equal the reference and
+neither member fires.
+
+The exception is exactly the vanishing of the product. Since $x$ is a unit modulo
+$N$ --- twice it is $1$ --- the divisibility $N \mid x\,(1 + c\,r) - x = x\,c\,r$
+is the divisibility $N \mid c\,r$; so $V_{1} = x$ if and only if $N \mid c\,r$. The
+dichotomy of the previous paragraph therefore reads: the two fires differ exactly
+when $N \nmid c\,r$, which is the display.
+\end{proof}
+
+Two corollaries are drawn at once and used below without further comment. The sign
+of the member either flips between the two halves of a pair or is the reference on
+both ($\lv$ \lean{coeffSign\_pair}), which is the same dichotomy in the language of
+\S\ref{sec:face-base}; and no member fires on both halves ($\lv$
+\lean{not\_coeffFires\_pair}), the case $N \mid c\,r$ of the display. Together they
+give the obstruction that the rest of the section runs on ($\lv$
+\lean{not\_coeff\_realises\_of\_pair}): if two attainable residues summing to $N$
+are both witnesses of a filter, then no coefficient realises that filter on the
+window, because a realisation would have to fire on both. In symbols,
+\[
+  \forall c \in \Z,\quad
+  \lnot\,\bigl(\forall k,\ 1 \le k \le N:\
+  \text{$c$ fires at $k$} \iff k \in W\bigr).
+\]
+The hypothesis is that $W$ holds at two bases whose residues sum to $N$; the
+conclusion is that the family has no member for $W$, whatever $c$ is.
+
+The obstruction is tight in both directions, and this is what fixes the size of
+what a member can settle. At one end, a member does realise the one-bit filter:
+with $c = -2$ the half-angle is $V(r) = x - r \bmod N$, the sign differs from the
+reference exactly when $r$ is a nonzero even residue, and therefore the member
+ $-2$ realises the
+filter $C_{2}$ at every $x$ ($\lv$ \lean{coeff\_realises\_witnessMod\_two}). At the
+other end, $c = 0$ gives a constant value and realises $C_{1}$, which has no
+witnesses ($\lv$ \lean{coeff\_realises\_witnessMod\_one}). Between the two there is
+nothing, and the reason is that the obstruction is met at infinitely many
+candidates. For every $M \ge 3$ and every bound $n$ there is $x > n$ with $N(x)$
+composite such that no coefficient $c$ realises the rung $M$ at $x$ ($\lv$
+\lean{infinite\_not\_coeff\_realises\_witnessMod\_of\_three\_le}): the family of
+ 2009 realises, pointwise and at arbitrarily large candidates, no filter beyond one
+ bit.
+The proof splits on the arithmetic of $M$, and each branch supplies a pair of
+witnesses summing to $N$ at candidates that are arbitrarily large.
+
+If $M$ has an odd prime factor $p$, take $N = p\,q$ with $q \equiv 1 \pmod{2^{p}}$
+prime, which Dirichlet's theorem for the progression $1$ modulo $2^{p}$ supplies
+above any bound. The local image at $q$ contains $-1$: the exponent $N-1 = 2x-2$
+shares a large enough power of two with $q-1$ --- $2^{p} \mid q-1$ while
+$2^{p} \nmid p-1$ --- for the local power map at $q$ to reach $-1$ ($\lv$
+\lean{two\_mul\_gcd\_dvd\_of\_two\_pow}, $\lv$
+\lean{exists\_pow\_eq\_neg\_one\_mod\_prime}, \S\ref{sec:local}). So there is an
+attainable pair with residues congruent to $0$ modulo $p$ and to $-1$ and $1$
+modulo $q$ ($\lv$ \lean{exists\_attainable\_pair\_of\_local\_neg\_one}). Both
+members of the pair are $0$ modulo the prime $p \mid M$, so neither is $1$ modulo
+$M$, and both
+are $C_{M}$-witnesses ($\lv$ \lean{not\_coeff\_realises\_witnessMod\_of\_two\_pow}).
+
+If $M$ has no odd prime factor, then $4 \mid M$, and $N = 3q$ with $q \equiv 1
+\pmod{12}$ prime gives the pair $\{2q+1,\, q-1\}$ of attainable residues, which are
+$3$ and $0$ modulo $4$: two $C_{4}$-witnesses, hence two $C_{M}$-witnesses,
+summing to $N$ ($\lv$ \lean{not\_coeff\_realises\_witnessMod\_of\_four\_dvd}).
+
+Either way the obstruction applies, and Dirichlet supplies the candidates above
+every bound. The two forms that keep the hypothesis on $M$ are the same argument
+stated for a fixed $M$ with an odd factor ($\lv$
+\lean{infinite\_not\_coeff\_realises\_witnessMod}) and for $4 \mid M$ ($\lv$
+\lean{infinite\_not\_coeff\_realises\_witnessMod\_of\_four\_dvd}). The statement is
+about one member at a time, and \S\ref{sec:face-products} asks whether a product of
+members does better.
+
+The same machinery gives the concrete instance at the book's running example, and
+it is worth one clause because it shows the obstruction at a number rather than at
+a family. At $N = 35$ the schedule of \S\ref{sec:schedule} is
+$\lfloor\sqrt{35}\rfloor + 1 = 6$ ($\lv$ \lean{sqrtSched\_thirtyfive}), and the bases
+$m = 8$ and $m = 15$ are $C_{6}$-witnesses whose residues sum to $35$; so no
+coefficient realises that schedule at $35$ ($\lv$
+\lean{not\_coeff\_realises\_sqrtSched\_thirtyfive}), which is the pair obstruction
+read on a schedule rather than on a fixed modulus ($\lv$
+\lean{not\_coeff\_realises\_schedule\_of\_pair}).
+
+The next rung up needs the arithmetic of the classes modulo three, and it is stated
+as three readings of one reduced value. The member $c = 2$ fires exactly on the odd
+residues ($\lv$ \lean{resFire\_two}), at the bases of the window as at the
+residues ($\lv$ \lean{coeffFires\_two\_iff\_resid\_odd}); at a candidate $N = 6h+5$ the member
+$c = 2h+1 = (N-2)/3$ fires exactly when the residue is nonzero and
+$\lfloor r/3\rfloor$ is even ($\lv$ \lean{resFire\_third}, $\lv$
+\lean{coeffFires\_third\_iff}); and at a candidate $N = 6h+3$ the member $c = 2N/3$
+fires exactly on the class $r \equiv 1 \pmod 3$ ($\lv$ \lean{resFire\_twoThirds}).
+The three reductions are linear on each class of $r$ modulo $3$, which is why they
+can be read off a single remainder ($\lv$ \lean{emod\_eq\_of\_eq\_mul\_add}); and
+the negation law $\operatorname{fire}_{-c}(r) = \operatorname{fire}_{c}(N-r)$
+($\lv$ \lean{resFire\_neg\_coeff}) is the pair law of
+Theorem~\ref{thm:face-member-pair} in the coefficient. The rung $C_{3}$ itself is
+the condition $r \ne 0$ and $r \not\equiv 1 \pmod 3$ ($\lv$
+\lean{isWitnessMod\_three\_iff}).
+
+At $341 = 11\cdot 31$, which is $2$ modulo $3$, the two members $c = 2$ and
+$c = (341-2)/3 = 113$ read that rung exactly: their product fires at a base
+precisely when the base is a $C_{3}$-witness, so the pair reads the rung at every
+residue ($\lv$ \lean{listRealises\_three\_of\_two\_mod\_three}). This is the book's running
+example used once, and it is the positive side of the dichotomy of
+\S\ref{sec:face-products}: at a candidate that is $2$ modulo $3$ a product of two
+members is enough.
+
+\subsection{What Products of Members Settle}
+\label{sec:face-products}
+
+A product of members is a product of signs, and the section asks what such a
+product can read on the residues. The definitions are the natural ones, and the
+answer is a congruence class of $N$.
+
+\begin{definition}[Products of members]
+\label{def:product}
+For $x \ge 2$, a finite list $cs$ of coefficients and a residue $r \in \Z$, the
+\emph{sign} of the product is the product of the signs of its members,
+\[
+  \Sigma_{cs}(r) \;=\; \prod_{c \in cs} \operatorname{sgnV}_{N}\bigl(2V_{c}(r)\bigr)
+  \qquad (\lean{listSign}),
+\]
+and the product \emph{fires} at $r$ when that sign differs from its value at
+$r = 0$,
+\[
+  \operatorname{Fire}_{cs}(r) \;=\;
+  \Bigl[\,\Sigma_{cs}(r) \ne \Sigma_{cs}(0)\,\Bigr]
+  \qquad (\lean{listFire});
+\]
+so a product fires exactly when an odd number of its members do ($\lv$
+\lean{listFire\_iff\_listSign}), and its sign is $\pm1$ ($\lv$
+\lean{listSign\_eq\_one\_or}). The \emph{target} of a rung $M$ at a residue $r$ is
+the $C_{M}$ witness condition on the residue,
+\[
+  T_{M}(r) \;=\; \bigl[\,r \ne 0 \ \wedge\ r \not\equiv 1 \pmod M\,\bigr]
+  \qquad (\lean{target}),
+\]
+and the product \emph{realises} the rung on the residues when its fires agree with
+the target on the whole range,
+\[
+  \forall r \in \Z,\ 0 \le r < N:\quad \operatorname{Fire}_{cs}(r) = T_{M}(r)
+  \qquad (\lean{ListRealises}),
+\]
+or on the attainable residues only when they agree at the bases of the window,
+\[
+  \forall m,\ 1 \le m \le N:\quad
+  \operatorname{Fire}_{cs}\bigl(\Res{x}{m}\bigr) = T_{M}\bigl(\Res{x}{m}\bigr)
+  \qquad (\lean{ListRealisesAtt}).
+\]
+\end{definition}
+
+The pair law survives the passage to products, and it is the tool the section uses.
+The parity of the two fires of a product at $r$ and $N-r$ counts the members whose
+product with $r$ is not annihilated:
+\[
+  \operatorname{Fire}_{cs}(r) \oplus \operatorname{Fire}_{cs}(N-r)
+  \;=\; \bigoplus_{c \in cs} \bigl[\,N \nmid c\,r\,\bigr]
+  \qquad (\lv\ \lean{listFire\_pair}),
+\]
+which is Theorem~\ref{thm:face-member-pair} summed over the list. On a unit
+residue that count does not depend on the residue at all ($\lv$
+\lean{foldr\_dvd\_unit}), because divisibility by $N$ of $c\,r$ is divisibility of
+$c$ when $r$ is a unit. Hence two units with different pair patterns rule out every
+product of members, of any length and with any coefficients ($\lv$
+\lean{not\_listRealises\_of\_pair\_mismatch}): a realisation would equate the two
+patterns, since both are functions of the coefficients alone.
+
+The pair obstruction now gives a dichotomy, and the section states it as one
+display.
+
+\begin{theorem}[No product reads a rung at four and above, off one class]
+\label{thm:face-products-four}
+\lv{} \lean{not\_listRealises\_of\_four\_le}
+Let $x \ge 3$, let $M \ge 4$, and suppose $M \nmid (N-2)$, that is $N \not\equiv 2
+\pmod M$. Then no list of coefficients realises the rung $M$ at $x$ on the
+residues:
+\[
+  \lnot\,\lean{ListRealises}\ M\ x\ cs
+  \quad\text{for every list } cs .
+\]
+\end{theorem}
+
+\begin{proof}
+The proof splits on the class of $N$ modulo $M$ and produces, in each case, two
+units whose pair patterns differ.
+
+If $M \nmid (N-3)$, the units $1$ and $2$ already differ. The residue $1$ is a
+non-target --- it is $1$ modulo $M$ --- while $N-1$ is a target, because
+$M \nmid (N-2)$ is the hypothesis read at $N-1$; and the residue $2$ is a target,
+since $2 \not\equiv 1 \pmod M$ for $M \ge 4$, while $N-2$ is a target because
+$M \nmid (N-3)$. So the pattern of the pair $(1, N-1)$ is $0 \oplus 1 = 1$ and that
+of $(2, N-2)$ is $1 \oplus 1 = 0$, and the mismatch rules out every list ($\lv$
+\lean{not\_listRealises\_of\_not\_dvd}).
+
+If $M \mid (N-3)$, the units $1$ and $4$ do the same work. The unit $4$ is coprime
+to the odd $N$, and $1 < 4 < N$ because $x \ge 3$. The residue $1$ is again a
+non-target and $N-1$ a target, so the pair $(1, N-1)$ has pattern $1$; and $4$ is a
+target because $4 \not\equiv 1 \pmod M$, while $N-4$ is a target because
+$M \mid (N-3)$ but $M \nmid (N-5)$ --- otherwise $M$ would divide $2$, which $M \ge
+4$ excludes. So the pair $(4, N-4)$ has pattern $0$, and the mismatch again rules
+out every list.
+
+In both cases the patterns are computed at units, so by $\lv$
+\lean{foldr\_dvd\_unit} they do not depend on which unit represents the pair, and
+the obstruction of the previous paragraph applies to an arbitrary list.
+\end{proof}
+
+The hypothesis is not an extra assumption: it is the negation of
+$N \equiv 2 \pmod M$, which is the one class the theorem leaves open, and the
+theorem says nothing about what happens there. What it does say is that for every
+modulus from four up the congruence class of $N$ modulo $M$ decides whether a
+product can read $M$ at all, and that only one class survives; whether a product
+realises a rung at $M \ge 4$ inside that class is not a question this section
+answers.
+
+The class where products do read a rung is $M = 3$, and there the dichotomy is
+complete --- the section's positive result. At a
+candidate $N \equiv 1 \pmod 3$ no product realises the rung ($\lv$
+\lean{not\_listRealises\_three\_of\_one\_mod\_three}); at $N \equiv 2 \pmod 3$ the
+two members $2$ and $(N-2)/3$ realise it ($\lv$
+\lean{listRealises\_three\_of\_two\_mod\_three}); at $N \equiv 0 \pmod 3$ the three
+members $1$, $N-1$ and $2N/3$ realise it ($\lv$
+\lean{listRealises\_three\_of\_zero\_mod\_three}), the first two giving $[r \ne 0]$
+by the pair law and the third reading $r \equiv 1 \pmod 3$. So a product of members
+realises $C_{3}$ on every residue exactly when $N \not\equiv 1 \pmod 3$ ($\lv$
+\lean{exists\_listRealises\_three\_iff}), and a realisation on the residues is a
+realisation at the bases of the window ($\lv$ \lean{listRealises\_witnessMod}).
+
+This is the crux of the section's second half, and it refutes the blanket claim in
+one line. A product does realise a rung above two: at $N = 15$, which is $0$ modulo
+$3$, the product of the members $1$ and $4$ fires exactly at the $C_{3}$-witnesses
+($\lv$ \lean{product\_realises\_witnessMod\_three\_fifteen}, $\lv$
+ \lean{not\_coeff\_realises\_of\_pair}), while no single member does. So ``no product of members reads $M$ for $M \ge 3$'' is false as stated, and
+what survives is the class condition of Theorem~\ref{thm:face-products-four}. The
+two-member statements are worth recording because they show
+that the product structure is not a formal trick: a product of two members fires
+exactly when exactly one factor does ($\lv$ \lean{productFires\_iff\_xor}), where
+the product sign and the product fire are the two-member cases of
+Definition~\ref{def:product} ($\lean{productSign}$, $\lean{ProductFires}$); a
+product can fire on both halves of a pair when both factors do ($\lv$
+\lean{productFires\_pair\_of\_both}), so the pair obstruction does not extend to
+products by itself; and a product whose two factors both flip their sign is
+invariant on the pair ($\lv$ \lean{productSign\_invariant\_of\_both\_flip}). The
+positive instances are the family of those: the pair $(2, (N-2)/3)$ realises
+$C_{3}$ at every $N \equiv 2 \pmod 3$ ($\lv$
+\lean{product\_realises\_witnessMod\_three\_of\_two\_mod\_three}), with the
+instances $35$ and $65$ ($\lv$
+\lean{product\_realises\_witnessMod\_three\_two\_mod\_thirtyfive}, $\lv$
+\lean{product\_realises\_witnessMod\_three\_two\_mod\_sixtyfive}).
+
+On the attainable residues alone the obstruction is sharper, and the section uses
+it to close the last class. Two attainable complementary pairs that are annihilated
+by the same coefficients but have different pair patterns rule out every product on
+the attainable residues, without any hypothesis on the rest of the range ($\lv$
+\lean{not\_listRealisesAtt\_of\_pairs}); and equal annihilators give equal pair
+counts ($\lv$ \lean{foldr\_dvd\_congr}), which is what makes the obstruction a
+comparison of integers in $\Z/(N)$. The smallest instance is $85 = 5\cdot 17$, a
+candidate that is $1$ modulo $3$: the side pairs $(30, 55)$ and $(35, 50)$ ---
+residues divisible by $5$, and attainable because $-1$ is in the local image at
+$17$ --- have patterns $1$ and $0$, so no product realises $C_{3}$ there, even on
+the attainable residues ($\lv$ \lean{not\_listRealisesAtt\_three\_85}). So the
+dichotomy of $C_{3}$ holds on the residues in the strong form, on the attainable
+set in the weak form, and the two forms agree at $85$.
+
+The product span is a module over the units, and that is the last structural remark
+of the subsection. Multiplying the coefficient by a unit of the residue multiplies
+the residue instead, $\operatorname{fire}_{c\,h}(r) = \operatorname{fire}_{c}(h\,r)$
+($\lv$ \lean{resFire\_mul\_coeff}), and the same identity holds for a whole list
+($\lv$ \lean{listFire\_mul\_coeff}). So the products of members are closed under
+multiplication of the coefficients by the attainable units, and the question of what
+they realise is a question about a submodule of the functions on the attainable set
+and not about a set of coefficients.
+
+A linear face is not a way out either, and the section closes the subsection
+with that negative because it is what Definition~\ref{def:linear} was for. For
+every $M \ge 2$ and every bound $B$ there is a composite $N > B$ at which $C_M$
+\emph{has a witness} --- $M \nmid G(N)$
+--- and yet no additive homomorphism realises it ($\lv$
+\lean{not\_linear\_face\_realises}). The construction takes $N = q^{2}$ with $q >
+M+B$ prime: then $N$ and $M$ are coprime, so every additive homomorphism
+$\Z/(N) \to \Z/(M)$ vanishes and cannot be a target at all, while
+$G(q^{2}) = q$ (Theorem~\ref{thm:prime-power-value} of \S\ref{sec:local}) is not
+divisible by $M$. The failure of linearity is therefore not tied to the absence of a
+witness:
+it happens at composites where the invariant is as small as it can be, and it is a
+property of the class of readings and not of the number.
+
+\subsection{The tower, and the bit it does not determine}
+\label{sec:face-tower}
+
+The $2$-adic tower of \S\ref{sec:ladder} stacks the moduli $2^{j}$, and the section
+ends on it because it is the one place where the comparison of many bits can be
+asked exactly and answered negatively. A rung of the tower has a coefficient, an
+exponent, an argument and a sign, all of them the constructions of
+\S\ref{sec:ladder} at the rung's own modulus
+($\lean{towerCoeff}$, $\lean{towerExp}$, $\lean{towerArg}$, $\lean{towerSign}$), and
+the sign at $j = 2$ is the expression of \S\ref{sec:origin}
+($\lv$ \lean{towerSign\_two\_eq\_monsterSign}). What the tower compares is the sign
+with its own reference value, the value at the residue $1$.
+
+\begin{definition}[The tower's fire vector]
+\label{def:tower}
+For $x \ge 2$ and $j \ge 2$ the \emph{rung-$j$ reference} is the sign of the rung at
+the residue $1$,
+\[
+  \operatorname{ref}_{j} \;=\; \operatorname{towerSign}(x,j,m)
+  \quad\text{at any base } m \text{ with } \Res{x}{m} = 1
+  \qquad (\lean{towerRef}),
+\]
+and the rung \emph{fires} at the base $m$ when the sign there differs from it,
+\[
+  \operatorname{TowerFires}(x,j,m)
+  \quad:\Longleftrightarrow\quad
+  \operatorname{towerSign}(x,j,m) \ne \operatorname{ref}_{j}
+  \qquad (\lean{TowerFires}).
+\]
+The \emph{fire vector} at $m$ over the rungs $2, \dots, J$ is the tuple of these
+comparisons; it is a function of the base, and the section asks what it determines.
+\end{definition}
+
+The tower is a rewriting of the $2$-power criteria, and the rewriting is exact in
+the direction that matters for a filter. The rung $2^{j}$ holds exactly when the
+rung $2^{j-1}$ holds or the rung $j$ fires at a nonzero residue ($\lv$
+\lean{isWitnessMod\_pow\_or\_towerFires}), which stacks into the flat statement that
+$C_{2^{J}}$ holds exactly when $C_{2}$ holds or some rung of the vector fires
+($\lv$ \lean{isWitnessMod\_two\_pow\_iff\_towerFires}), and into the collapse that
+reads the same fact on the residue: a nonzero residue is $1$ modulo $2^{J}$ exactly
+when it is odd and no rung up to $J$ fires ($\lv$
+\lean{resid\_one\_mod\_two\_pow\_iff\_towerRefs}). So the tower's fires describe the
+witness classes of every $2$-power rung at once, and the vector is the natural
+object of the subsection.
+
+It does not determine the residue.
+
+\begin{theorem}[The fire vector does not determine the residue]
+\label{thm:face-tower-vector}
+\lv{} \lean{exists\_same\_towerFires\_ne\_mod\_two\_pow}
+There are $x \ge 2$, $J \ge 2$ and bases $m, m'$ of the window with
+\[
+  \operatorname{TowerFires}(x,j,m) \iff \operatorname{TowerFires}(x,j,m')
+  \quad\text{for every } 2 \le j \le J ,
+\]
+and yet $\Res{x}{m} \not\equiv \Res{x}{m'} \pmod{2^{J}}$.
+\end{theorem}
+
+\begin{proof}
+The witness is explicit: $x = 18$, that is $N = 35$; $J = 4$; $m = 2$ and $m' = 4$.
+
+The residues are $1$ and $4$. They differ modulo $2^{4} = 16$, so the two bases are
+separated at the last rung of the vector.
+
+Neither base fires at any rung of the vector. For $j \in \{2,3,4\}$ the sign of the
+rung equals the reference value at both bases, which is a finite check over the
+three rungs and the two bases; hence the two fire vectors are equal, and both are
+the all-zero vector.
+
+Equal vectors and distinct residues give the display. The two bases are separated
+by parity, and that is the correction of the next paragraph.
+\end{proof}
+
+The negative is not the end of the subsection, because the pair the theorem produces
+is separated by one bit the vector does not contain. At $N = 35$ the residues are
+$1$ and $4$: one is odd and one is even ($\lv$
+\lean{q8\_counterexample\_separated\_by\_parity}), and parity is a rung the tower
+does not have. Adding it repairs the statement, and the repair is a theorem.
+
+The mechanism is the doubling identity of the half-angle. For a representative
+$0 \le r < N$ the doubled half-angle is
+\[
+  2\bigl((x\,r) \bmod N\bigr) \;=\; r + N\,(r \bmod 2)
+  \qquad (\lv\ \lean{two\_mul\_half\_emod}),
+\]
+whose parity is the parity of $r$; iterating it along the powers of $x$ gives the
+congruence $x^{i}\bigl((x\,r) \bmod N\bigr) \equiv x^{i+1} r \pmod N$ ($\lv$
+\lean{pow\_mul\_half\_emod}). From the identity one reads a lift: two residues whose
+iterated half-angles have equal parities at every step agree modulo $2^{J}$ ($\lv$
+\lean{emod\_two\_pow\_eq\_of\_half\_parities}). The rung-$j$ fire reads the parity of
+the previous half-angle up to a flip that depends on $x$ and $j$ alone
+($\lv$ \lean{towerFires\_iff\_bit}, whose flip is the sign of the negated half
+coefficient, $\lv$ \lean{neg\_halfCoeff\_emod}), so equal fire vectors on the rungs
+$2, \dots, J$ together with equal parity force the residues to agree modulo $2^{J}$
+($\lv$ \lean{resid\_emod\_two\_pow\_eq\_of\_towerFires}).
+
+So the fire vector plus one parity bit is lossless on the low $J$ bits of the
+residue, and the vector alone is not. That is the last statement of the section,
+and it is a statement about what a comparison of members can settle rather than
+about what a modulus can see: the tower reads the residue's bits through signs, and
+the signs are one bit short.
+
+\medskip
+
+What the section has shown, in one sentence, is that the invariant is a trivial
+character --- the moduli that see $N$ are exactly the $M$ at which the face is not
+$1$ --- that the criterion of 2009 is two of the four fibres of the face at
+$M = 4$, and that the family of 2009 decides by divisibility and by a class: one
+member reads one bit, a product of members reads a rung only when $N$ lies in the
+one class the rung allows, and the tower's signs are one bit short of the low bits
+of the residue.

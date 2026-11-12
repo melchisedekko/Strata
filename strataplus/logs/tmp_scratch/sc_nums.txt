@@ -1,0 +1,487 @@
+
+########## 00_abstract.tex ##########
+8:How many semiprimes $N \le X$ have, for some modulus $M \ge 2$, no Fermat witness modulo $M$, and
+10:Write $G(N)$ for the gcd of $r - 1$ over the nonzero Fermat residues $r = a^{N-1} \bmod N$ of $N$, over
+11:all bases $0 \le a < N$: a modulus $M$ has
+12:no witness at $N$ exactly when $M \mid G(N)$, and the count is the number of pairs of primes $2 < p < q$ with
+13:$pq \le X$ and $G(pq) > 1$. From the published Bourgain--Glibichuk--Konyagin bound alone the count
+14:is at most $(\lfloor \sqrt X \rfloor + 1)(Q + \lceil X^{\gamma} \rceil)^2$, for a threshold $Q$ that
+16:$\ll_{\gamma} X^{1/2 + 2\gamma}$ for every $\gamma > 0$. If the Bateman--Horn conjecture holds for the pairs of primes $p$, $q_j(p) = 1 + j(p - 1)$, and a fixed
+17:positive proportion of those pairs have $G(p\,q_j(p)) > 1$ (a density hypothesis), it is at least
+18:$c \sqrt{X}/(\log X)^2$. At $j = 5$ that proportion is expected to be $\delta_5 = 31/4096 \approx 0.00757$, against
+19:$0.00771$ measured on the $45\,126$ family members with $p < 6 \cdot 10^{6}$
+20:(\texttt{experiments/\allowbreak delta5\_geometric.py}), and it is carried by the single class
+21:$p \equiv 7 \pmod 8$. The exponent $1/2$ is conditional in one direction only: the upper side rests on a
+
+########## 01_intro.tex ##########
+16:How many semiprimes below $X$ have, for some modulus $M \ge 2$, no Fermat witness modulo $M$, and
+18:when its residue $r = a^{N-1} \bmod N$ is nonzero and $r \not\equiv 1 \pmod M$; at a prime $N$ no
+19:modulus has one, since every nonzero residue is $1$.
+20:Over the $138\,233\,258$ odd composites $N \le 3.1 \cdot 10^{8}$ with at least two prime factors,
+22:\texttt{experiments/\allowbreak blind\_modulus\_census\_c}) leaves $22$ composites at which some
+24:$21$ of those $22$ are Carmichael numbers. The census gives the count of composites at which some modulus $M \ge 2$ has no witness, that is
+25:of the composites with $G(N) > 1$, at that one scale. The shape
+26:is a two-sided statement about the semiprimes: an upper end $\ll_{\gamma} X^{1/2 + 2\gamma}$ for
+27:every $\gamma > 0$, from one published exponential-sum estimate, and a lower end
+28:$c \sqrt{X}/(\log X)^2$, from a prime-pair count for one family of pairs together with the density
+31:\Cref{sec:short-cosets-preliminaries} defines the vocabulary and proves what is used of it. For an odd number $N = 2x - 1$ the invariant $G(N)$ is the gcd of $r - 1$ over the nonzero Fermat
+33:The count is taken over the pairs of primes $2 < p < q$ with $pq \le X$ and $G(pq) > 1$, so that each such
+36:its residue $r$ is nonzero and $r \bmod 4$ is $3$ or $(N-1) \bmod 4$. After the
+37:census, one composite is not Carmichael: $N = 300\,979\,369$, with $G(N) = 2$, recorded as
+39:residues $r$, $r'$ have $r - 1$ and $r' - 1$ coprime (\lean{not\_hasCoprimeAttainableOffsetPair\_off\_carmichael}\lv), since
+40:such a pair would force $G(N) = 1$. The row, and the anatomy
+47:depth: there every witness is a base sharing a factor with $N$. With those constraints, the exponent $1/2$ is conditional in one direction
+60:An appendix, \cref{sec:short-cosets-classes-mod4}, carries the same estimate over to the pairs at which the
+62:class modulo $4$, and the missed semiprimes are counted.
+
+########## 02_census.tex ##########
+17:Over the $138\,233\,258$ odd composites $N \le 3.1\cdot10^{8}$ with at least two prime factors, the
+19:\texttt{stage2.py} at the second --- narrows the candidates for a $C_M$-pseudoprime in two passes, and it is
+22:of $r-1$ over the residues $r = b^{N-1} \bmod N \ne 0$ at the bases $b = 2, \dots, 71$ is a multiple of
+23:$G(N)$, so that a value of $1$ there proves $G(N) = 1$ outright, and $987$ composites remain. The
+24:second pass spends three hundred further bases, half of them non-units, and cuts the field to $22$;
+25:$21$ of those $22$ are Carmichael numbers, and a Carmichael number has at least three prime factors,
+26:so only one of the $22$, $300\,979\,369 = 7759 \cdot 38791$, is a semiprime: the exceptional
+27:semiprimes below $3.1\cdot10^{8}$ number one.
+29:Carried to $10^{10}$ (\texttt{experiments/blind\_modulus\_census.c}), the same engine finds $70$
+30:composites with $G(N) > 1$: $18$ of them have an odd prime dividing $G(N)$, exactly four are not
+32:Carmichael number --- $6\,601 = 7 \cdot 23 \cdot 41$ for $M = 2$; $9\,439\,201 = 61 \cdot 271 \cdot 571$
+33:for $M = 3$ and for $M = 6$; $2\,508\,013 = 53 \cdot 79 \cdot 599$ for $M = 4$;
+34:$4\,034\,969\,401 = 661 \cdot 1321 \cdot 4621$ for $M = 5$; $710\,382\,401 = 137 \cdot 953 \cdot 5441$
+35:for $M = 8$; $6\,196\,188\,961 = 139 \cdot 4969 \cdot 8971$ for $M = 13$ --- while $M = 7$, $9$, $12$,
+36:$15$ and $16$ divide no $G(N)$ below $10^{10}$. The list, and the count at $10^{10}$, belong with the
+37:published tables of Carmichael numbers and of pseudoprimes \cite{AGP1994,GranvillePomerance2002,Pinch2006,PSW1980}.
+39:The only one of the $22$ that is not Carmichael is the article's running example, $N = 300\,979\,369$: the
+40:smallest composite with $G(N) > 1$ off the Carmichael locus, since below $3.1\cdot10^{8}$ no smaller
+43:primes, the fact that Korselt's condition does not hold at $N$, the divisibility $2 \mid G(N)$ and the bound
+44:$G(N) < 5$; the arithmetic and the local algebra behind those four clauses are the companion's
+45:\cite{Companion-blind-semiprimes}, which also records the anatomy of the row: modulus $2$ has no witness at
+46:it (\lean{noWitnessMod\_two\_counterexample}\lv, \lean{resid\_mod\_two\_counterexample}\lv), the base-$3$
+47:residue and the fifth roots modulo $38791$ fix the local picture
+48:(\lean{resid\_counterexample\_base\_three}\lv, \lean{fifth\_roots\_38791}\lv), and $G(N) = 2$
+52:residue is nonzero and congruent to $3$ or to $N - 1$ modulo $4$ --- counts $178\,663\,674$ odd composites below
+53:$4 \cdot 10^{8}$ and the rule has no witness at six of them: the smallest is the Carmichael number
+54:$2\,508\,013 = 53 \cdot 79 \cdot 599$, which by the census above is also the first $N$ with
+55:$4 \mid G(N)$, and the smallest that is not Carmichael is $36\,953\,929 = 2719 \cdot 13591$, with
+56:$G(N) = 1$. The number $9\,439\,201$ of the census above, the first with $\omega(N) \ge 2$ and an odd prime in $G(N)$,
+
+########## 02a_preliminaries.tex ##########
+22:Every count in this article counts composites with $G(N) > 1$, and all of them are read off one invariant of $N$. This section defines it and proves the facts about it that the later sections use: the equivalence that turns a filter into a divisibility, the divisibility of $N-1$ by it, the local picture at a prime factor, the criterion that one large local image settles, and the collapse that a $2$-adic separation forces. The invariant and these facts are \cite{Companion-residue-gcd}'s, and are proved here again.
+25:Let $N = 2x - 1 \ge 3$ be odd. For a base $b \in \{0, 1, \dots, N-1\}$, which is read through the parameter $m = b + 1 \in \{1, \dots, N\}$, the \emph{Fermat residue} of $b$ is
+27:  r \;=\; (m - 1)^{N-1} \bmod N \in \{0, 1, \dots, N-1\} \qquad (\lean{resid}),
+29:and the \emph{invariant} is the greatest common divisor of $r - 1$ over the nonzero residues:
+31:  G(N) \;=\; \gcd\bigl\{\, r - 1 \;:\; r = (m-1)^{N-1} \bmod N \ne 0,\ 1 \le m \le N \,\bigr\}
+34:The base $m$ runs over all of $[1,N]$, invertible modulo $N$ or not. The residue $0$ is left out because it contributes the term $0$ to the gcd and so constrains no modulus. A base $b$ is a \emph{witness at} $M$ when $r \ne 0$ and $M \nmid r - 1$; the modulus $M$ \emph{has no witness at} $N$ when no base is one. The reduction modulo $M$ of the Fermat test is written $C_M$, and a base that is a witness at $M$ is a \emph{$C_M$-witness}. An odd composite $N$ such that no base $m \in [1,N]$ is a $C_M$-witness --- equivalently, such that $M \mid G(N)$ --- is a \emph{$C_M$-pseudoprime}; a composite at which some modulus $M \ge 2$ has no witness is \emph{exceptional}, equivalently $G(N) > 1$.
+39:  S_p \;=\; \{\, b^{N-1} \bmod p \;:\; \gcd(b,p) = 1 \,\} \;\subset\; (0,p),
+41:the image of the $(N-1)$-st power map on the units modulo $p$, read as a set of integers. The unit group modulo $p$ is cyclic of order $p-1$, so the image of the $k$-th power map on it has $(p-1)/\gcd(k,p-1)$ elements; at $k = N-1$ therefore
+43:  \#S_p \;=\; \frac{p-1}{\gcd(N-1,\,p-1)} .
+47:Let $N \ge 3$ be odd. For every modulus $M$, no base is a witness at $M$ if and only if $M \mid G(N)$. In particular $G(N)$ divides $r - 1$ for every nonzero Fermat residue $r$ of $N$.
+51:In the gcd defining $G(N)$, the base $m$ contributes the term $r - 1$ when its residue is nonzero and the term $0$ when that residue is $0$. If $M \mid G(N)$ then $M$ divides each term, so $M \mid r - 1$ wherever $r \ne 0$, and no base is a witness. Conversely, if no base is a witness then each term is a multiple of $M$ --- $r - 1$ by hypothesis, and $0$ because every modulus divides it --- hence $M$ divides the gcd. The last clause is the case $M = G(N)$.
+55:Let $N \ge 3$ be odd, and let $N = de$ with $d, e > 1$ coprime. Then $G(N) \mid N - 1$.
+59:By the Chinese remainder theorem there is $E$ with $0 \le E < N$, $E \equiv 1 \pmod d$ and $E \equiv 0 \pmod e$. Since $d > 1$ the congruence modulo $d$ excludes $E = 0$, and a positive multiple of $e$ is at least $e \ge 2$; so $2 \le E \le N-1$. An idempotent is its own Fermat residue: $E^2 \equiv E \pmod N$ gives $E^{k} \equiv E$ for every $k \ge 1$, so the base $E$ has residue $E$ (\lean{resid\_of\_idem}). Its complement $E' = N + 1 - E$ lies in $[2, N-1]$ as well, is idempotent modulo $N$, and is $0$ modulo $d$ and $1$ modulo $e$. Both $E$ and $E'$ are nonzero residues, so \cref{lem:short-cosets-dvd-iff-attainable} gives $G(N) \mid E - 1$ and $G(N) \mid E' - 1$; their sum is $N - 1$.
+63:Let $N \ge 3$ be odd, let $p$ be a prime with $N = pc$ and $\gcd(p,c) = 1$, let $u$ be an inverse of $c$ modulo $p$, and let $b$ be a base prime to $p$. Then the base that is $b$ modulo $p$ and $0$ modulo $c$ has residue
+65:  cX, \qquad X = u\,b^{N-1} \bmod p \in (0,p).
+70:Take $w \in \{0, \dots, N-1\}$ with $w \equiv b \pmod p$ and $w \equiv 0 \pmod c$, which exists because $p$ and $c$ are coprime. Its residue is $b^{N-1}$ modulo $p$ and $0$ modulo $c$. Put $X = ub^{N-1} \bmod p$, so that $0 \le X < p$; then $cX$ is $0$ modulo $c$, and $cX \equiv cu\,b^{N-1} \equiv b^{N-1} \pmod p$. Two integers in $[0,N)$ that agree modulo $p$ and modulo $c$ agree modulo their product $pc = N$, hence are equal, and $cX < cp = N$; so the residue is $cX$. It is nonzero: were $p \mid ub^{N-1}$, the prime $p$ would divide $u$ or $b$, and both are units modulo $p$.
+74:In the setting of \cref{lem:short-cosets-pin}, with $c > 1$, let $M \mid G(N)$. Then $M \mid p - X$ for every $X \in u\,S_p$: read as integers in $(0,p)$, the whole coset $u\,S_p$ lies in the class of $p$ modulo $M$.
+78:The integer $X$ has the form $u\,b^{N-1} \bmod p$ for a base $b$ prime to $p$, so $cX$ is a nonzero residue (\cref{lem:short-cosets-pin}) and $M \mid cX - 1$ (\cref{lem:short-cosets-dvd-iff-attainable}). At the split $N = p \cdot c$ the invariant divides $N - 1$, so $M \mid pc - 1$ (\cref{lem:short-cosets-dvd-N-sub-one}). Subtracting, $M \mid c\,(p - X)$. The divisibility $M \mid cX - 1$ makes $c$ a unit modulo $M$, since a common divisor of $M$ and $c$ divides $cX$ and $cX - 1$; hence $M \mid p - X$.
+82:In the setting of \cref{lem:short-cosets-pin}, with $c > 1$, let $M \mid G(N)$ and $M > 0$. Then
+84:  M \cdot \#S_p \;\le\; p - 1 .
+90:same number of elements. Each $X \in u\,S_p$ satisfies $0 < X < p$ and $X \equiv p \pmod M$
+91:(\cref{lem:short-cosets-class}), so $p - X$ is a positive multiple of $M$ not exceeding $p - 1$: thus
+92:$X = p - Mk$ with $1 \le k \le (p-1)/M$. The integer $k = (p-X)/M$ is determined by $X$, so distinct
+93:elements of the coset give distinct $k$, and $\#S_p \le (p-1)/M$. Multiplying by $M$ gives the claim.
+99:Let $L : \N \to \N$. Say that $L$ \emph{meets the lower half} if for every prime $q$, every exponent $e$ and every $u$ coprime to $q$ with $L(q) \le (q-1)/\gcd(e,q-1)$, the coset $u \cdot \{b^{e} \bmod q\}$ has an integer representative in $[1, q/2)$: there is $b$ with $\gcd(b,q) = 1$ and
+101:  2\,\bigl((u\,b^{e}) \bmod q\bigr) < q \qquad (\lean{CosetMeetsLowerHalf}).
+106:Let $L$ meet the lower half. Let $N \ge 3$ be odd, let $N = pc$ with $p$ prime, $\gcd(p,c) = 1$, $c > 1$, and suppose $\#S_p \ge L(p)$. Then $G(N) = 1$.
+110:Suppose $G(N) > 1$ and let $\ell$ be a prime divisor of it. By \cref{lem:short-cosets-dvd-N-sub-one} at the split $N = p \cdot c$ the prime $\ell$ divides $N - 1 = pc - 1$, so $\ell$ is a unit modulo $p$; let $\ell'$ be its inverse, and let $u$ be an inverse of $c$ modulo $p$, as in \cref{lem:short-cosets-pin}. The unit $\ell' u$ is coprime to $p$, and $\#S_p \ge L(p)$ is the level condition of \cref{def:short-cosets-lower-half} at $q = p$ and $e = N-1$ (\cref{eq:short-cosets-order}), so that hypothesis supplies a base $b$ prime to $p$ with $2Y < p$, where $Y = \ell' u\, b^{N-1} \bmod p \in (0,p)$.
+112:Put $X = u\,b^{N-1} \bmod p$. By \cref{lem:short-cosets-class} the prime $\ell$ divides $p - X$, so $X = p - \ell k$ with $1 \le k \le (p-1)/\ell < p/2$. Modulo $p$,
+114:  \ell Y \;\equiv\; \ell\,\ell'\, u\, b^{N-1} \;\equiv\; u\, b^{N-1} \;\equiv\; X \;=\; p - \ell k ,
+116:whence $\ell\,(k + Y) \equiv 0 \pmod p$. Since $p \nmid \ell$, this gives $p \mid k + Y$; but $0 < k + Y < p/2 + p/2 = p$. Contradiction.
+120:In the setting of \cref{lem:short-cosets-large-image}, if $G(N) > 1$ then $\#S_p < L(p)$.
+124:Otherwise $\#S_p \ge L(p)$, and \cref{lem:short-cosets-large-image} gives $G(N) = 1$, against the
+125:hypothesis. Equivalently, $G(N) > 1$ forces every local image strictly below the level at its prime.
+131:Let $q$ be prime, $e \in \N$, and let $H = \{b^{e} \bmod q : \gcd(b,q) = 1\}$, read as integers in $[0,q)$. Say that $\lean{ExpSumSmall}$ \emph{holds} for $(q,e)$ if for every $a$ with $q \nmid a$
+133:  \Bigl(\sum_{h \in H} \cos \frac{2\pi a h}{q}\Bigr)^{2}
+134:  + \Bigl(\sum_{h \in H} \sin \frac{2\pi a h}{q}\Bigr)^{2}
+135:  < \Bigl(\frac{\#H}{3}\Bigr)^{2}.
+140:Let $L : \N \to \N$ with $L(2) \ge 2$, and suppose that $\lean{ExpSumSmall}$ holds at every odd prime $q$ and every $e$ with $L(q) \le (q-1)/\gcd(e,q-1)$. Then $L$ meets the lower half.
+144:At $q = 2$ the level condition never holds, because $(q-1)/\gcd(e,q-1) \le 1 < 2 \le L(2)$; so let $q$ be an odd prime, $e$ an exponent with $L(q) \le (q-1)/\gcd(e,q-1)$, and $u$ a unit modulo $q$. Suppose that no element of the coset $uH$ has a representative below $q/2$, that is $q \le 2\,((uh) \bmod q)$ for every $h \in H$.
+146:For real $t$ put $P(t) = 1 + 2\sin(2\pi t) - \cos(4\pi t)$. With $\theta = 2\pi t$ and $\cos 2\theta = 1 - 2\sin^{2}\theta$,
+148:  P(t) \;=\; 2\sin\theta\,\bigl(1 + \sin\theta\bigr),
+150:which is at most $0$ whenever $\sin\theta \le 0$, in particular on $[1/2, 1]$. Each $(uh \bmod q)/q$ lies in $[1/2,1)$, so $P\bigl((uh \bmod q)/q\bigr) \le 0$ for every $h \in H$ (\lean{trig\_upper\_half}). Summing over $H$, and writing $S(a) = \sum_{h \in H} e^{2\pi i a h/q}$,
+152:  0 \;\ge\; \sum_{h \in H} P\Bigl(\frac{uh \bmod q}{q}\Bigr) \;=\; \#H + 2\,\mathrm{Im}\,S(u) - \mathrm{Re}\,S(2u).
+154:Both frequencies $u$ and $2u$ are nonzero modulo $q$, the prime being odd and $u$ a unit, so
+155:\cref{def:short-cosets-exp-sum-small} bounds $|S(u)|$ and $|S(2u)|$ by $\#H/3$. The sum of the display is
+156:therefore larger than $\#H - 2\#H/3 - \#H/3 = 0$, while the display says that it is at most $0$.
+160:One further property of the invariant is read off a $2$-adic valuation, and it is the one
+164:Let $N \ge 3$ be odd, let $p$ be a prime dividing $N$, and suppose that $N$ is not a power of $p$. If
+166:  v_2(N - 1) \;<\; v_2(p - 1),
+168:then $G(N) = 1$.
+172:Write $N = p^{k} e$ with $k = v_p(N)$, so that $e > 1$ and $\gcd(p^{k}, e) = 1$. Put $a = v_2(p-1)$: then $2^{a} \mid p - 1$ and $2^{a} \nmid N - 1$.
+174:\emph{A local $-1$.} The group $(\Z/p^{k})^{\times}$ is cyclic of order $\varphi = p^{k-1}(p-1)$, which $2^{a}$ divides. Let $g = \gcd(N-1,\varphi)$ and write $\varphi = gL$. If $L$ were odd, then $2^{a}$, being coprime to $L$, would divide $g$, hence $N - 1$, against the hypothesis; so $L$ is even and $2g \mid \varphi$. In a cyclic group of order $\varphi$ the element $-1$ is the unique element of order $2$, and the image of the $(N-1)$-st power map is the subgroup of order $\varphi/g = L$; that order being even, the image contains $-1$. There is thus a base $b$ with $b^{N-1} \equiv -1 \pmod{p^{k}}$.
+176:\emph{A pair of residues summing to $N$.} By the Chinese remainder theorem there are bases $w, w' \in \{0,\dots,N-1\}$ whose residues are, at $w$, $-1$ modulo $p^{k}$ and $0$ modulo $e$, and, at $w'$, $1$ modulo $p^{k}$ and $0$ modulo $e$. Both residues are nonzero, and $r_w + r_{w'}$ is divisible by $p^{k}$ and by $e$, hence by their product $N$; lying in $(0,2N)$, it equals $N$.
+178:Then $G(N)$ divides $(r_w - 1) + (r_{w'} - 1) = N - 2$ (\cref{lem:short-cosets-dvd-iff-attainable}) and, at the split $N = p^{k} \cdot e$, also $N - 1$ (\cref{lem:short-cosets-dvd-N-sub-one}). Hence $G(N) \mid 1$, which is to say $G(N) = 1$.
+
+########## 03_counting-sets.tex ##########
+24:\[ q_j(n) = 1 + j(n-1) \]
+25:(\lean{familyQ}). For $j \ge 2$ and $X \in \N$ let the \emph{family pairs} at scale $X$ be the odd primes $p$
+33:$j \ge 2$ and $p \ge 3$ (\lean{lt\_familyQ}\lv), and it is bounded by the product of the two parameters,
+34:$q_j(n) \le j n$ for $j, n \ge 1$ (\lean{familyQ\_le\_mul}\lv): the two facts the injection below uses, the
+36:$j = 3$ the partner is $q_3(p) = 3p - 2$ for $p \ge 1$ (\lean{familyQ\_three}\lv), so $q_3(3) = 7$
+37:(\lean{familyQ\_three\_seven}\lv), and the family is nonempty from $X = 21$ on through the pair $(3,7)$: the
+38:prime $3$ lies in the family, and the family has positive cardinality at that scale
+43:the invariant $G(N)$ being fixed in \cref{def:short-cosets-invariant} as the gcd of $r - 1$ over the
+44:nonzero Fermat residues $r = b^{N-1} \bmod N$ at all bases $b \in \{0, \dots, N-1\}$
+45:\cite{Companion-residue-gcd}. Thus $G(N) > 1$ is exactly the statement that $N$ is a $C_M$-pseudoprime for some
+46:modulus $M \ge 2$. The \emph{exceptional semiprimes below $X$} are the pairs $(p,q)$ of primes with $2 < p < q$,
+47:$p q \le X$ and $G(p q) > 1$ (\lean{blindSemiprimes}); the \emph{missed semiprimes below $X$} are the same
+53:Let $F : \N \to \mathbb{R}$ and $C > 0$. Say that $F$ \emph{grows like} $\sqrt X/(\log X)^2$ with constant $C$
+55:\[ C\,\frac{\sqrt X}{(\log X)^2} \;\le\; F(X), \]
+56:that is, if the inequality holds for every $X \ge \max(X_0,2)$ for some $X_0 \in \N$ (\lean{GrowsLikeSqrtOverLogSq}).
+60:Let $j \ge 2$ and $X \in \N$. The map $p \mapsto (p, q_j(p))$ sends every family-exceptional prime for $(j,X)$ to an
+67:$p\,q_j(p) \le X$, and $G(p\,q_j(p)) > 1$. Since $p \ge 3$, the product bounds the partner as well:
+69:$q_j(p) - p = (j-1)(p-1) > 0$ for $j \ge 2$ and $p \ge 3$. The pair $(p, q_j(p))$ therefore satisfies every
+76:Exchanging the filter $G(p\,q_j(p)) > 1$ for that of the class-level rule leaves the argument unchanged: a family-missed prime has its
+84:$j = 5$: its second prime factor is $q_5(7759) = 1 + 5 \cdot 7758 = 38791$. Its first coordinate is a
+85:family-exceptional prime from $X = 300\,979\,369$ on, so the injection of
+86:\cref{thm:short-cosets-family-injects} counts its pair $(7759, 38791)$ in the exceptional semiprimes below
+87:$X$, and by \cref{sec:short-cosets-census} it is the only one below $3.1 \cdot 10^{8}$. The first coordinate
+88:of the member is the prime $7759 \equiv 7 \pmod 8$.
+
+########## 04_one-image-counted.tex ##########
+25:Let $N = 2x-1$ be an odd composite and let $p$ be a prime with $N = pc$, $p \nmid c$, $c > 1$. The local
+27:the residues $b^{N-1} \bmod p$, read as integers in $(0,p)$; as a set it is recorded as \lean{powImage}, and
+28:by \cref{eq:short-cosets-order} it has $(p-1)/\gcd(N-1,p-1)$ elements. The whole section turns on that one
+32:and $0$ modulo $c$ has the residue $cX$ with $X = (c^{-1} b^{N-1}) \bmod p$
+35:forces $G(N) = 1$ (\lean{residueGcd\_eq\_one\_of\_large\_image}\lvCond,
+36:\cref{lem:short-cosets-large-image}), and read the other way, $G(N) > 1$ forces every local image strictly
+48:Let $N = 2x-1$ be an odd composite, $p$ a prime and $N = pc$ with $p \nmid c$ and $c > 1$. Then
+49:$G(N) \le \gcd(N-1, p-1)$.
+53:Write $M = G(N)$ and $d = N-1$. The side coset pinning of \cref{lem:short-cosets-class} puts the whole
+55:$(0,p)$, and $u = c^{-1} \bmod p$ --- and \cref{lem:short-cosets-coset-count} counts it: $M \cdot \#S_p \le
+56:p - 1$. By \cref{eq:short-cosets-order} the image has $(p-1)/\gcd(d,p-1)$ elements, and that factor is the
+57:local factor $\gcd(N-1,p-1)$ of the count of bases at which a composite passes the Fermat test
+58:\cite[Thm.~1, p.~1392]{BaillieWagstaff1980}, \cite{Monier1980}. That factor is
+59:positive, and cancelling it from $M \cdot (p-1)/\gcd(d,p-1) \le p-1$ leaves $M \le \gcd(d,p-1)$, that is
+60:$G(N) \le \gcd(N-1,p-1)$.
+63:The citation locates the factor, not the inequality. The count is $\prod_{r \mid N} \gcd(N-1, r-1)$, and it
+64:does not determine $G(N)$: $561$ and $6601$ are both Carmichael, so at both every unit is a base at which
+65:the number passes the test and the count takes its largest value, $\varphi(N)$ ($320$ and $5280$), while
+66:$G(561) = 1$ and $G(6601) = 2$. What the proof above joins to the local factor is the side coset: the pin
+69:Two consequences are read off a semiprime $N = pq$. Since $pq - 1 = p(q-1) + (p-1)$ the common divisor
+70:collapses, $\gcd(pq-1, q-1) = \gcd(p-1, q-1)$ (\lean{gcd\_sub\_one\_semiprime}\lv), so the bound at either
+71:prime reads $G(pq) \le \gcd(p-1,q-1)$ (\lean{residueGcd\_semiprime\_le\_gcd}\lv). And a divisor $M$ of
+72:$G$ lies below every prime factor $p$ of $N$ at which that bound holds: from $M \mid G$ and $G \le \gcd(N-1,p-1) \le p-1$ one gets
+89:(\cref{def:short-cosets-blind-semiprimes}) is at most $(\lfloor \sqrt X \rfloor + 1)\,K^2$.
+94:$(g,a,b) = (\gcd(p-1,q-1),\ (p-1)/g,\ (q-1)/g)$. Suppose $G(pq) > 1$ and put $x = (pq+1)/2$, so that
+95:$N = 2x-1 = pq$. The local image at $q$ is then smaller than $L(q)$
+97:order is $(q-1)/\gcd(N-1,q-1) = (q-1)/g$
+98:because $\gcd(N-1,q-1) = \gcd(p-1,q-1)$ (\lean{gcd\_sub\_one\_semiprime}\lv); hence $b < L(q) \le K$.
+100:$p^2 \le pq \le X$. The assignment is injective, the triple recovering $p = ga + 1$ and $q = gb + 1$. The
+101:exceptional pairs therefore inject into a set counted by $\lfloor\sqrt X\rfloor + 1$ values of $g$ and $K$ values
+102:of each of $a$ and $b$, of size at most $(\lfloor\sqrt X\rfloor + 1)K^2$.
+105:A two-dimensional sieve \cite{HalberstamRichert1974} would sharpen the factor $K^2$ of that count to
+106:$K^2/(\log X)^2$, since what remains once $g$, $a$ and $b$ are fixed is the primality of the two forms
+107:$ga + 1$ and $gb + 1$. The bound above uses neither that primality nor a sieve, and it does not need to:
+108:its exponent is carried by $\lfloor\sqrt X\rfloor + 1$ alone.
+111:class-level coset hypothesis --- the lower half replaced by representatives in each class modulo $4$ --- the
+113:\cref{sec:short-cosets-classes-mod4} \cite{Companion-blind-semiprimes}. What remains to be fixed is the
+118:of the census any modulus $M$ with no witness at it satisfies $M < 7759$; the modulus $2$ recorded in
+119:\cref{sec:short-cosets-census} is one such, and $2 < 7759 < 38791$.
+
+########## 05_bgk-as-published.tex ##########
+32:$q$, a subgroup of $(\Z/q)^{\times}$ of order $(q-1)/\gcd(e,q-1)$, its elements read as integers in $[0,q)$.
+33:Say that \lean{BGKBound} \emph{holds} if for every $\gamma > 0$ there are $\nu > 0$ and $C > 0$ such that for
+34:every prime $q$, every exponent $e$ with $(q-1)/\gcd(e,q-1) \ge q^{\gamma}$ and every $a$ with $q \nmid a$,
+36:  \Bigl(\sum_{h \in H_e} \cos \frac{2\pi a h}{q}\Bigr)^{2}
+37:  \;+\; \Bigl(\sum_{h \in H_e} \sin \frac{2\pi a h}{q}\Bigr)^{2}
+38:  \;\le\; \bigl(C\,|H_e|\,q^{-\nu}\bigr)^{2}.
+42:This is the theorem of Bourgain, Glibichuk and Konyagin \cite{BGK2006}, in the form stated as Theorem 1.1 of
+43:\cite{Kowalski2024SmallSubgroups}: for every $\gamma > 0$ there is $\nu(\gamma) > 0$ such that for every prime
+44:$q$, every subgroup $H \subseteq \mathbb{F}_q^{\times}$ of order at least $q^{\gamma}$ and every $a \not\equiv 0$
+45:the sum $\sum_{h \in H} \exp(2\pi i a h/q)$ is bounded by a constant times $|H|\,q^{-\nu}$. Two points about the
+47:$b \mapsto b^{e}$, of order $(q-1)/\gcd(e,q-1)$, and its members are exactly the integers collected in
+55:Say that \lean{ShkredovBound} \emph{holds} if for every $\delta > 0$ there is $C > 0$ such that for every prime
+56:$q$, every exponent $e$ with $(q-1)/\gcd(e,q-1) \ge q^{\delta}$ and every $a$ with $q \nmid a$, the inequality
+57:of \cref{def:short-cosets-bgk-bound} holds with $q^{-\delta/(27 + 2/\delta)}$ in place of $q^{-\nu}$.
+60:This is Corollary 16 of \cite{Shkredov2019}, with the exponent $\nu = \delta/(27 + 2/\delta)$; its implied
+62:BGK form outright: at a given $\gamma > 0$ unpack the hypothesis at $\delta = \gamma$, keep its constant $C$
+63:and take $\nu = \gamma/(27 + 2/\gamma)$, which is positive because $\gamma$ is; what results is the statement
+67:threshold. Fix $\gamma > 0$ and let $\nu$ and $C$ be the constants \lean{BGKBound} supplies at it. For a prime
+68:$q$ with $(3C)^{1/\nu} < q$ the factor $Cq^{-\nu}$ is below $1/3$, so the bound puts each nontrivial sum below
+71:contains the $e$-th power of the unit $1$, so its cardinality is positive
+83:$(q-1)/\gcd(e,q-1) \le q-1 < q$, so no order reaches it. Above the threshold the two conditions coincide, the
+85:supplies is a threshold $Q \ge 3$ such that at every odd prime $q$, a level at or below the order of the image
+86:forces the exponential sums to be small (\lean{bgkLevel\_hyp}\lvCond). The bound $Q \ge 3$ serves one prime
+87:only: the level at $2$ has to be at least $2$ for the coset condition, while $q = 2$ is left out of the
+88:exponential-sum condition because the image there has order $1$.
+91:Assume \lean{BGKBound}. For every $\gamma > 0$ there is a threshold $Q$ such that: if $N = 2x - 1$ with
+92:$x \ge 2$, $p$ is prime, $N = pc$ with $c > 1$ and $p$ coprime to $c$, and if $p \ge Q$ and the local image at
+93:$p$ has order at least $p^{\gamma}$, then $G(N) = 1$.
+97:Take the threshold $Q$ and the level property at $\gamma$ from the step above. Since $Q \ge 3$, the level at
+98:$2$ is $2 \ge 2$, so the exponential-sum hypothesis of the reduction gives the coset condition for the level
+103:$p$ be at most the order of the local image at $p$; the order is $(p-1)/\gcd(N-1,p-1)$ with
+104:$N - 1 = 2x - 2$, and since $p \ge Q$ the level at $p$ is the ceiling $\lceil p^{\gamma} \rceil$, which the
+105:displayed hypothesis $p^{\gamma} \le (p-1)/\gcd(2x-2,p-1)$ dominates. Hence $G(N) = 1$.
+111:Assume \lean{BGKBound}. For every $\gamma > 0$ there is a threshold $Q$ such that for every $X$ the number of
+114:  \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\bigl(Q + \lceil X^{\gamma} \rceil\bigr)^{2}.
+119:Take the threshold $Q \ge 3$ and the level property at $\gamma$ from the step above, and put
+120:$K = Q + \lceil X^{\gamma} \rceil$. The level at $2$ is $2$, so the coset condition holds for
+122:semiprimes below $X$ by $(\lfloor \sqrt X \rfloor + 1)K^{2}$ once $K$ dominates the level at every prime
+130:Read out, the estimate is $\ll_\gamma X^{1/2 + 2\gamma}$ for every $\gamma > 0$: the factor
+131:$\lfloor \sqrt X \rfloor + 1$, the two-prime bookkeeping of \cref{thm:short-cosets-blind-count}, carries the
+132:exponent $1/2$, and the threshold carries the $2\gamma$, because $Q$ is fixed while
+133:$\lceil X^{\gamma} \rceil \ll_\gamma X^{\gamma}$. The estimate is informative only for $\gamma < 1/4$: at
+134:$\gamma = 1/4$ the exponent $1/2 + 2\gamma$ reaches $1$, and the displayed bound is then no better than
+137:\cref{sec:short-cosets-lower-bound}, where the shape $\sqrt X/(\log X)^{2}$ is measured and then derived
+141:Summed over every quotient $j$, the pairs with $p - 1 \mid q - 1$ belong to the circle of Titchmarsh's
+142:divisor problem --- Linnik \cite{Linnik1963}, \cite{Fouvry1985}, \cite{BFI1986}; one fixed $j$ asks
+143:instead for the simultaneous primality of the two linear forms $n$ and $1 + j(n-1)$, the Bateman--Horn
+147:The census of \cref{sec:short-cosets-census} produced one such pair: its exceptional semiprime, found by the run to $3.1 \cdot 10^{8}$ (\texttt{experiments/blind\_semiprime\_count.py}), has two distinct odd prime factors, $7759$ and $38791$, and $G > 1$, so for every $X \ge 300\,979\,369$ the bound above is a statement about that very pair.
+
+########## 06_lower-bound.tex ##########
+23:a prime and can therefore be counted prime by prime: the odd primes $p$ whose partner $q_j(p) = 1 + j(p-1)$
+27:exceeds $C\sqrt X/(\log X)^2$ for all large $X$, with $C > 0$
+32:The first is the Bateman--Horn count \cite{BatemanHorn1962} for the family.
+35:Say that \lean{BatemanHornFamily} \emph{holds} for $j \in \N$ and $C > 0$ if the family pairs of
+36:\cref{def:short-cosets-family-q} at scale $X$ number at least $C\,\sqrt X/(\log X)^2$ for all large $X$;
+37:equivalently, if that count grows like $\sqrt X/(\log X)^2$ with constant $C$.
+40:At $j = 5$ this is the conjecture about the pair of linear forms $n$ and $5n - 4$: a prime that divided both
+41:forms for every $n$ would divide their difference, $4$, so no prime obstructs the pair locally, and the
+43:$j \ge 2$; the statement is a hypothesis of the two counting results below and of nothing else in this
+45:integers rather than on the family: say that \lean{BatemanHornLinear} \emph{holds} for $j$ and $C > 0$ if at
+46:least $C\,Y/(\log Y)^2$ of the integers $n \le Y$ have $n$ and $q_j(n)$ both prime, for all large $Y$. The
+53:Say that \lean{FixedCosetBlindDensity} \emph{holds} for $j$ and $\delta > 0$ if at least the proportion
+57:At $j = 5$ the proportion is predicted to be $\delta_5 = 31/4096 \approx 0.00757$, against $348/45\,126 = 0.00771$
+58:observed on the $45\,126$ family members with $p < 6\cdot10^{6}$
+59:(\texttt{experiments/\allowbreak delta5\_geometric.py}). Where in the family that mass sits, and why the prediction has
+62:\cref{sec:short-cosets-census} is the $j = 5$ family pair with first coordinate $7759$; from
+63:$X = 300\,979\,369$ on it is therefore counted among the family pairs at scale $X$, and it is family-exceptional
+64:because its semiprime is exceptional. So $\delta_5$ counts that pair and its likes, and not an empty projection
+65:(\texttt{experiments/blind\_semiprime\_count.py}, over $X \le 3.1 \cdot 10^{8}$).
+67:Exchanging the filter $G(p\,q_j(p)) > 1$ for that of the class-level rule gives the companion hypothesis. Say that
+68:\lean{FixedCosetMissDensity} \emph{holds} for $j$ and $\delta > 0$ if at least the proportion $\delta$ of the
+70:\cite{Companion-blind-semiprimes}, for all large $X$. The same scan for the class-level rule, cut at $q < 3\cdot10^{7}$ rather than at $p < 6\cdot10^{6}$, finds $334$ pairs at which it has no witness among $45\,127$ family members, the proportion
+71:$334/45\,127 = 0.00740$ (\texttt{experiments/family\_independence\_test.py}). The hypothesis is the same
+72:shape with that filter in place of $G(p\,q_j(p)) > 1$, and it enters one statement below and no other.
+77:Assume \lean{BatemanHornLinear} holds for $j \ge 1$ and $C$. Then there is $C' > 0$ such that
+82:Unpack the linear hypothesis: its constant is positive, $C > 0$; it has a threshold $Y_0$; and for every
+83:$Y \ge \max(Y_0, 2)$ at least $C\,Y/(\log Y)^2$ of the integers $n \le Y$ have $n$ and $q_j(n)$ prime. Take
+84:$C' = C/(4\sqrt j)$, and let $X \ge jM^2$ with $M = \max(Y_0 + 3, 16)$; the family statement is one about
+87:At such an $X$ put $Y = \lfloor \sqrt{X/j} \rfloor$. Two facts of scale hold. First, $j\,Y^2 \le X$, because
+88:$Y^2 \le X/j$ (\lean{j\_mul\_sqrt\_sq\_le}\lv). Second, $\sqrt X \le \sqrt j\,(Y + 1) \le 2\sqrt j\,Y$,
+89:because $X \le j(Y+1)^2$ and $Y \ge 1$ (\lean{sqrt\_le\_mul\_sqrt\_div}\lv), and these are the only two
+92:From $j Y^2 \le X$ the prime pairs $(n, q_j(n))$ with $n \le Y$ inject into the family pairs at scale $X$
+93:(\lean{linear\_le\_familyPairs}\lv): their product satisfies $n\,q_j(n) \le n\,j n \le jY^2 \le X$ once
+94:$q_j(n) \le j n$ for $n \ge 1$ is used (\lean{familyQ\_le\_mul}\lv). Since $Y \ge M \ge Y_0 + 3$, the linear
+96:pairs at scale $X$ is at least $C\,Y/(\log Y)^2$.
+98:It remains to compare $Y$ with $\sqrt X$ and $\log Y$ with $\log X$. From $j Y^2 \le X$, $j \ge 1$ and
+99:$Y \ge 2$, taking logarithms gives
+100:\[ \log X \;\ge\; \log(j Y^2) \;=\; \log j + 2\log Y \;\ge\; 2\log Y, \]
+101:so $1/(\log X)^2 \le 1/(4(\log Y)^2)$. Combining the two comparisons,
+103:  C'\,\frac{\sqrt X}{(\log X)^2}
+104:  \;\le\; \frac{C}{4\sqrt j}\cdot 2\sqrt j\,Y \cdot \frac{1}{4(\log Y)^2}
+105:  \;=\; \frac{C}{8}\cdot\frac{Y}{(\log Y)^2}
+106:  \;\le\; \frac{C\,Y}{(\log Y)^2},
+108:which the injection has already bounded by the number of family pairs at scale $X$. As $C' > 0$, this is
+115:Let $j \ge 2$ and let $C, \delta > 0$ be such that \lean{BatemanHornFamily} holds for $j$ and $C$ and
+117:(\cref{def:short-cosets-blind-semiprimes}) grows like $\sqrt X/(\log X)^2$ with constant $\delta C$.
+121:Unpack the two hypotheses. The family count has a positive constant $C$ and a threshold $X_1$ past which
+122:the family pairs at scale $X$ number at least $C\sqrt X/(\log X)^2$; the density has a positive proportion
+123:$\delta$ and a threshold $X_2$ past which at least a proportion $\delta$ of the family pairs are
+124:family-exceptional. Let $X \ge \max(X_1, X_2)$ with $X \ge 2$. Multiplying the first bound by $\delta > 0$ and
+126:$\delta C\sqrt X/(\log X)^2$. By the injection of \cref{thm:short-cosets-family-injects}
+128:the family-exceptional primes at scale $X$. Since $\delta C > 0$, the global count grows like
+129:$\sqrt X/(\log X)^2$ with constant $\delta C$.
+132:The same argument with the filter of the class-level rule in place of $G(p\,q_j(p)) > 1$ gives the companion statement: if
+133:\lean{BatemanHornFamily} holds for $j \ge 2$ and $C$ and \lean{FixedCosetMissDensity} for $j$ and $\delta$,
+134:then the semiprimes at which the class-level rule finds no witness below $X$ grow like $\sqrt X/(\log X)^2$ with constant
+135:$\delta C$ (\lean{card\_missed\_semiprimes\_ge}\lvCond). The class-level condition that the upper count consumes --- a representative in each class modulo $4$, supplied by the published estimate through a degree-eleven minorant of the Fejér kernel --- is proved in \cref{sec:short-cosets-classes-mod4}, together with that upper count, \cref{thm:short-cosets-missed-count-bgk}.
+140:Assume \lean{BGKBound} holds. Let $j \ge 2$, let $C, \delta > 0$ be such that \lean{BatemanHornFamily} holds
+141:for $j$ and $C$ and \lean{FixedCosetBlindDensity} holds for $j$ and $\delta$, and let $\gamma > 0$. Then
+142:there is $c > 0$ such that for all large $X$ the number of exceptional semiprimes below $X$
+143:(\cref{def:short-cosets-blind-semiprimes}) is at least $c\sqrt X/(\log X)^2$, and there is $Q \in \N$ such
+145:\[ \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\bigl(Q + \lceil X^{\gamma} \rceil\bigr)^2. \]
+150:namely $\delta C$, for which the exceptional semiprimes below $X$ grow like $\sqrt X/(\log X)^2$, and that is the
+154:$(\lfloor \sqrt X \rfloor + 1)(Q + \lceil X^{\gamma} \rceil)^2$; the pairs its estimate counts and the pairs
+155:counted here are the same pairs of primes with $2 < p < q$, $pq \le X$ and $G(pq) > 1$, because both are cut
+161:$\gg \sqrt X/(\log X)^2$ is forced at every $j \ge 2$ by the two hypotheses named in
+162:\cref{thm:short-cosets-exponent-half}, and the matching upper shape $\ll_\gamma X^{1/2+2\gamma}$ for every
+163:$\gamma > 0$ follows from the published estimate of \cref{sec:short-cosets-bgk-as-published} alone; the
+164:exponent $1/2$ that the pair of bounds produces is therefore a two-sided statement about the number of
+167:census is a family pair at $j = 5$, so the
+169:$X = 300\,979\,369$: the pair $(7759, 38791)$ is one of the exceptional semiprimes below that scale
+173:\cref{sec:short-cosets-classes-mod4} is the other sharpening of the story.
+
+########## 08_where-mass.tex ##########
+26:Write a family member as $N = p\,q_j(p)$, with $q_j(p) = 1 + j(p-1)$ the mate fixed in
+29:  N - 1 = (p - 1)\bigl(1 + jp\bigr), \qquad q_j(p) - 1 = j\,(p - 1).
+31:For even $j$ the factor $1 + jp$ is odd, so it contributes nothing to the $2$-adic valuation
+32:of $N - 1$; for even $j$ that valuation is $v_2(p - 1)$. The factor $j$ in the second factorisation contributes at least
+33:one $2$ as soon as $j$ is even, so for even $j$ and $p > 2$ the two valuations separate,
+35:  v_2\bigl(p\,q_j(p) - 1\bigr) \;<\; v_2\bigl(q_j(p) - 1\bigr)
+38:a separation as a collapse: a prime factor $r$ of $N$ with $v_2(N - 1) < v_2(r - 1)$ forces $G(N) = 1$, provided $N$
+44:Let $j > 0$ be even, let $p > 2$ be a prime and suppose that $q_j(p)$ is prime. Then the member
+45:$N = p\,q_j(p)$ has $G(N) = 1$: it is a $C_M$-pseudoprime for no modulus $M \ge 2$. Indeed $1 + jp$ is odd,
+46:so $v_2(N - 1) = v_2(p - 1)$, while $v_2(q_j(p) - 1) = v_2(j) + v_2(p - 1) \ge 1 + v_2(p - 1)$; the prime
+48:\cref{prop:short-cosets-two-adic} at that prime gives $G(N) = 1$.
+52:$v_2(N - 1) < v_2(r - 1)$ is also what makes that rule find a witness at every such composite
+57:conjectured. The family $j = 5$ is the one it is stated for, and there $G(N) > 1$ is confined to a single
+58:class of primes. Three facts about that family are the companion's. If $q_5(p) \equiv 1 \pmod 4$ then
+59:$G(N) = 1$, by the companion's family-five one-mod-four theorem \cite{Companion-blind-semiprimes}. If instead
+60:$p \equiv 3 \pmod 8$, the numerator of $N$ at $p$ is $(p+1)/4$: for a split $N = de$ into coprime
+61:factors $d, e > 1$ the numerator at $d$ is the $v$ with $0 \le v < d$ and $d \mid ve + 1$, here at $d = p$
+62:and $e = q_5(p) \equiv -4 \pmod p$; and $G(N)$ divides every such numerator (\lean{residueGcd\_dvd\_numerator}\lv, \cite{Companion-residue-gcd}). And in every case $G(N) \mid 2$
+65:Let $N = p\,q_5(p)$ be a member with $p \not\equiv 7 \pmod 8$. The prime $2$ is not available, since
+66:$q_5(2) = 6$ is composite, so $p$ is odd; and $q_5(p) \equiv p \pmod 4$, because $q_5(p) - 1 = 5(p-1)$ while
+67:$5 \equiv 1 \pmod 4$. If $q_5(p) \equiv 1 \pmod 4$, the companion's one-mod-four theorem gives $G(N) = 1$ outright. Otherwise
+68:$q_5(p) \not\equiv 1 \pmod 4$, hence $p \equiv 3 \pmod 4$, and oddness together with
+69:$p \not\equiv 7 \pmod 8$ narrows this to $p \equiv 3 \pmod 8$; writing $p = 8m + 3$ gives
+70:$q_5(p) = 40m + 11$ and numerator $v = 2m + 1$, odd. The invariant divides $v$, and it divides $2$ as well;
+71:a divisor of $2$ is $1$ or $2$, and a divisor of the odd number $2m + 1$ is odd, so the only possibility is
+72:$G(N) = 1$ (\lean{family\_five\_residueGcd\_eq\_one\_of\_not\_seven\_mod\_eight}\lv). Both cases together say
+73:that $G(N) > 1$ at $j = 5$ holds on one residue class only, and the density $\delta_5$ is accordingly carried
+74:by that class, of weight $1/4$ among the family primes.
+77:Let $p$ be a prime with $q_5(p)$ prime and let $N = p\,q_5(p)$. If $G(N) > 1$ then $p \equiv 7 \pmod 8$.
+81:This is the statement just proved, read backwards. For $p \not\equiv 7 \pmod 8$ every member
+82:$N = p\,q_5(p)$ of the $j = 5$ family has $G(N) = 1$, so a member with $G(N) > 1$ can only have
+83:$p \equiv 7 \pmod 8$.
+86:The predicted proportion on that class is $\delta_5 = 31/4096 \approx 0.00757$, the class weight $1/4$
+87:multiplied by the proportion $31/1024$ that the coset model predicts on the class itself: if the reduced
+88:fifth-root coset is equidistributed in $[0,3/4]^3$, the condition $1/2 \le x_1 + x_2 + x_3 \le 5/4$ cuts there a region of
+89:volume $31/128$, and the parity factor is $1/8$. The scan in
+90:\texttt{experiments/delta5\_geometric.py} finds $0.00771$ on the $45\,126$ family members with
+91:$p < 6 \cdot 10^{6}$.
+93:A third $j$ shows that the hypothesis is a genuine restriction rather than a formality. At $j = 3$ the mate
+94:is $q_3(p) = 3p - 2$, and every member of that family has $G(N) = 1$: this is proved in
+95:\cite{Companion-residue-gcd} (\lean{residueGcd\_eq\_one\_of\_three\_mul\_sub\_two}\lv), where the $3$-adic
+96:valuation gives $G(N) < 3$ and a parity argument on one atom excludes $G(N) = 2$. Consequently there are no family-exceptional primes at $j = 3$ at all
+97:(\lean{familyBlind\_three\_eq\_empty}\lv). The family itself is not empty: from $X = 21$ on it contains the
+98:pair $(3,7)$, because $q_3(3) = 7$ and $3 \cdot 7 = 21$ (\cref{def:short-cosets-family-q}). An empty filter
+102:Let $\delta > 0$. Then \lean{FixedCosetBlindDensity} does not hold for $j = 3$ and $\delta$
+103:(\lean{not\_fixedCosetBlindDensity\_three}\lv): suppose it did; unpacking \cref{def:short-cosets-blind-density}, there is $X_0$ such that for every $X \ge X_0$ the family-exceptional primes at scale $X$ number at least $\delta$ times the family pairs at scale $X$. The scale $X = \max(X_0, 21)$ has at least one family pair, namely $(3,7)$, and no family-exceptional prime at all, the filter being empty at $j = 3$, so the two clauses would make $0$ at least $\delta$ times a positive number.
+106:So the density is a statement about particular families and not an automatic one: at $j = 5$ it is a
+107:conjecture about one class of primes, and at $j = 3$ it is false. The lower bound of
+113:nonnegative function $o$ on $\N$ tending to zero such that for every $X \ge 3$ the number of family-exceptional
+114:primes at scale $X$ (\cref{def:short-cosets-family-q}) differs from $\delta\,C\,\sqrt{X/j}/(\log X)^2$ by at
+115:most $o(X)\,\sqrt X/(\log X)^2$.
+118:The constant is expected to be about $4\,C_{\mathrm{BH}}(j)$, where $C_{\mathrm{BH}}(j)$ is the
+119:Bateman--Horn constant of the pair of forms $n$ and $1 + j(n-1)$: reducing the family count to the linear one
+120:at $Y \approx \sqrt{X/j}$ halves the logarithm, and a factor $4$ is what the halving costs
+128:(\cref{sec:short-cosets-census}) is the $j = 5$ family pair with first coordinate $7759 \equiv 7 \pmod 8$,
+129:and its invariant is exactly $G = 2$ \cite{Companion-blind-semiprimes}. The class selected by
+132:run to $3.1 \cdot 10^{8}$ (\texttt{experiments/blind\_semiprime\_count.py}). The density $\delta_5$ counts
+
+########## app_classes_mod4.tex ##########
+13:\section{Classes modulo 4}
+14:\label{sec:short-cosets-classes-mod4}
+16:The class-level rule of \cite{Companion-blind-semiprimes} asks of a coset of a local power-map image a representative in each of the four classes modulo $4$ --- more than a representative in the lower half: the degree-two polynomial of \cref{thm:short-cosets-blind-count} is nonpositive on a half of the circle only, so it can force a coset element into a half but not into a quarter, the complement of a quarter arc having length three quarters. A degree-eleven minorant of the
+17:Fejér kernel supplies that, as this appendix proves: its mean is above $11/26$ of the image size, its
+19:read once, at the ratio $1/26$. Exponential sums over multiplicative subgroups are the subject of
+20:\cite{KonyaginShparlinski1999}, the distribution of small subgroups is bounded in
+21:\cite{Bourgain2009Subgroups} and \cite{Shkredov2019}, and the majorant and minorant technique by
+22:non-negative trigonometric polynomials is Chapter~1 of \cite{Montgomery1994}.
+24:Everything turns on one scale-free condition, stated at a general ratio and read at $1/26$ below.
+27:Let $q, e \in \N$ and $\rho \ge 0$, and let $H_e$ be the image \lean{powImage q e} of the $e$-power map on
+28:the units modulo $q$, its elements read as integers in $[0,q)$. Say that \lean{ExpSumSmallR} \emph{holds}
+31:  \Bigl(\sum_{h \in H_e} \cos \frac{2\pi a h}{q}\Bigr)^{2}
+32:  \;+\; \Bigl(\sum_{h \in H_e} \sin \frac{2\pi a h}{q}\Bigr)^{2}
+33:  \;<\; \bigl(\rho\,|H_e|\bigr)^{2}.
+37:At $\rho = 1/3$ this is the condition of \cref{thm:short-cosets-blind-count}, square by square
+41:$\sqrt{\alpha^{2} + \beta^{2}}\,\rho\,|H_e|$ (\lean{abs\_linear\_comb\_expSum\_le}\lvCond), the two sums
+45:$\lean{fejerKernel n t} = \bigl|\sum_{k \le n} e(kt)\bigr|^{2}/(n+1)$ with $e(x) = \exp(2\pi i x)$
+47:(\lean{normSq\_sum}\lv): each product $f_i \overline{f_j}$ has real part a cosine of the frequency difference, and the pairs in $[0,n]^{2}$ with $j = m + d$ number $n + 1 - d$ (\lean{card\_pair\_add}\lv), so regrouping
+48:(\lean{sum\_cos\_of\_pair\_diff}\lv) and normalising by $n + 1$ leaves
+50:  \lean{fejerKernel n t} \;=\; 1 + \sum_{k=1}^{n} \frac{2\,(n+1-k)}{n+1} \cos(2\pi k t)
+54:Degree eleven is the case that reaches a quarter. Its coefficients $c_k = 2(12-k)/12$
+55:(\lean{fejer11CosineCoeff}) are positive, with absolute sum exactly $11$
+56:(\lean{fejer11\_cosine\_coeff\_abs\_sum}\lv), and that sum, not the largest coefficient, multiplies the
+57:error of an eleven-mode estimate. The sidelobe constant is the value at distance $1/8$ from the centre,
+59:  \lean{fejer11Lambda} \;=\; \frac{1}{12\,\sin^{2}(\pi/8)} ,
+61:strictly below $15/26$ (\lean{fejer11Lambda\_lt\_fifteen\_div\_twenty\_six}\lv) by
+62:$\sin^{2}(\pi/8) = (2 - \sqrt2)/4$, so the constant left after subtracting it is strictly above $11/26$
+63:(\lean{fejer11\_mean\_gt\_eleven\_div\_twenty\_six}\lv). The minorant is
+64:$\lean{fejerMinorant11 t} = \lean{fejerKernel} 11\,(t - 1/8) - \lean{fejer11Lambda}$, the displacement by
+65:$1/8$ chosen so that the region where the shifted kernel is at most the constant is the complement of one
+66:arc; $\lean{OutsideQuarterArc t}$ says that no representative of $t$ modulo $1$ lies in the open quarter arc
+67:centred at $1/8$, that is $1/8 \le |t - 1/8 - z|$ for every integer $z$.
+69:Away from the centre the estimate is classical. The squared chord from $1$ to $\exp(i\theta)$ is
+70:$4\sin^{2}(\theta/2)$ (\lean{normSq\_one\_sub\_exp\_mul\_I}\lv) and the chord is $2|\sin(\theta/2)|$
+71:(\lean{norm\_one\_sub\_exp\_mul\_I}\lv); summing the geometric series, whose numerator is at most $2$ in
+72:modulus, bounds the exponential sum by $1/|\sin(\pi t)|$ (\lean{geom\_exp\_sum\_norm\_le}\lv) and the kernel
+73:by $1/((n+1)\sin^{2}(\pi t))$ (\lean{fejerKernel\_le\_inv\_sin\_sq}\lv). At $n = 11$ the denominator is
+74:$12 \sin^{2}(\pi t)$, and on $1/8 \le |x| \le 1/2$ the sine is at least $\sin(\pi/8)$ by monotonicity, so
+75:the kernel is at most $\lean{fejer11Lambda}$ there (\lean{fejerKernel\_le\_lambda\_of\_eighth}\lv). The
+77:within $1/2$ of an integer, so $t - 1/8$ has a representative in $[1/8, 1/2]$
+80:\begin{theorem}[\lean{fejerMinorant11\_nonpos\_of\_outside}\lv]\label{thm:short-cosets-minorant-nonpos}
+81:Let $t \in \mathbb{R}$ lie outside the quarter arc. Then $\lean{fejerMinorant11 t} \le 0$.
+85:Let $k$ be the integer nearest $t - 1/8$ and put $r = t - 1/8 - k$. The upper bound $|r| \le 1/2$ is the
+86:property of the nearest integer; the lower bound $1/8 \le |r|$ is the hypothesis that $t$ lies outside the
+87:arc. The sidelobe bound therefore applies at $r$, giving $\lean{fejerKernel} 11\,r \le \lean{fejer11Lambda}$.
+88:One-periodicity of the kernel identifies $\lean{fejerKernel} 11\,(t - 1/8)$ with
+89:$\lean{fejerKernel} 11\,r$, and the minorant is the shifted kernel less the constant, so
+90:$\lean{fejerMinorant11 t} \le \lean{fejer11Lambda} - \lean{fejer11Lambda} = 0$.
+98:minorant expands as the mean $1 - \lean{fejer11Lambda}$ plus the eleven coefficients times shifted cosines
+99:(\lean{fejerMinorant11\_eq\_trig}\lv), the shift being the addition formula (\lean{cos\_sub\_eighth}\lv); and
+100:every point of $[1/4, 1)$ lies outside the quarter arc, which runs from $0$ to $1/4$
+107:affine shift turns that total into the mean $(1 - \lean{fejer11Lambda})\,|H_e|$ plus eleven modes, each a
+108:real linear combination of the cosine and sine sums of the image at the frequency $ku$. At $1 \le k \le 11$
+109:and $q \ge 13$ the frequency $ku$ is nonzero modulo the prime $q$, so the ratio hypothesis bounds each mode
+110:by $|c_k|\,(1/26)\,|H_e|$, the coefficient vector of the mode having modulus $1$; summing over the eleven
+111:modes and using $\sum |c_k| = 11$ bounds the oscillating part by $(11/26)|H_e|$. The mean is strictly
+113:the open arc after all (\lean{coset\_meets\_open\_quarter\_of\_expSumSmall26}\lvCond).
+115:Turning that contact into an exact representative takes the inverse of $4$ and two integer inequalities.
+116:Every odd prime has an inverse of $4$ below $q$ (\lean{exists\_inv\_four\_of\_odd\_prime}\lv), so every
+117:prime $q \ge 13$ has one (\lean{exists\_inv\_four}\lv). Multiplying the coset by that inverse converts the
+119:that for $X < q$ and $a < 4$ the congruence $X \bmod 4 = a$ is equivalent to the existence of $Y$ with
+120:$X = a + 4Y$ and $a + 4Y < q$ (\lean{mod4\_iff\_scaled\_lt}\lv). Read at the level of level functions, the
+121:affine condition is \lean{CosetMeetsQuarterInterval}: $L$ has that property if for every prime $q \ge 13$,
+123:of the coset satisfies $4Y < q$. The first conversion keeps the same base and reads the non-outside
+124:statement as $4\,\bigl((u b^{e}) \bmod q\bigr) < q$
+125:(\lean{coset\_meets\_quarter\_of\_expSumSmall26}\lvCond); adding an integer to the coset element before
+127:(\lean{coset\_meets\_quarter\_affine\_of\_expSumSmall26}\lvCond).
+129:\begin{theorem}[\lean{coset\_meets\_class\_of\_expSumSmall26}\lvCond]\label{thm:short-cosets-class-mod4}
+130:Assume \lean{ExpSumSmallR} holds at the ratio $1/26$. Let $q \ge 13$ be prime, let $e \in \N$, let $u$ be
+131:coprime to $q$ and let $a < 4$. Then there are $b, Y \in \N$ with $(b,q) = 1$ and
+133:  (u\,b^{e}) \bmod q \;=\; a + 4Y, \qquad a + 4Y < q .
+138:Let $v$ be an inverse of $4$ modulo $q$, so that $4v \equiv 1 \pmod q$; it exists because $q \ge 13$ is odd.
+139:Put $u' = (vu) \bmod q$, which is coprime to $q$ because $v$ and $u$ are, let $M = (q - 1 - a)/4$, the
+141:$\epsilon = (q/4 - M)/2$, which lies strictly between $0$ and $1$; read the arc as centred at the shift
+144:$|Z/q - \delta - 1/8 - z| < 1/8$. Written out, that inequality says $0 < (D + \epsilon)/q < 1/4$ for
+145:$D = Z - s - zq$, so $D + \epsilon$ is positive and below $q/4 = M + 2\epsilon$. Since $D$ is an integer,
+146:the left inequality gives $D \ge 0$, and the right one gives $D < M + \epsilon < M + 1$, so $D \le M$. Take
+149:Only the congruences remain. From $4v \equiv 1$ and $Z \equiv u' b^{e} \equiv vub^{e} \pmod q$ one gets
+150:$4Z \equiv ub^{e} \pmod q$, while $Z \equiv s + Y$ and $s \equiv av$ give
+151:$4(s + Y) \equiv a + 4Y \pmod q$. Hence $X = (ub^{e}) \bmod q$ and $a + 4Y$ are congruent modulo $q$. Both
+152:lie in $[0,q)$: the first as a residue, the second because $a + 4Y \le a + 4M < q$ by the choice of $M$.
+153:They are therefore equal, and $a + 4Y < q$.
+156:The residue form of the conclusion is the same statement read modulo $4$
+157:(\lean{fejer\_affine\_class\_mod4}\lvCond); the Fourier half is the packaged property
+162:It remains to supply the ratio $1/26$, and the published estimate supplies it. Read \lean{BGKBound} at
+163:$\gamma > 0$ for its $\nu > 0$ and $C > 0$, fix a ratio $\rho > 0$, and take a threshold above
+164:$(C/\rho)^{1/\nu}$. Above it the factor $Cq^{-\nu}$ that multiplies the image size is below $\rho$, so the
+165:squared bound of the estimate is below $(\rho\,|H_e|)^{2}$ and the ratio holds
+166:(\lean{expSumSmallR\_of\_bgkBound}\lvCond); at $\rho = 1/26$ that is
+167:\lean{expSumSmall26\_of\_bgkBound}\lvCond. The level that goes with the ratio is the size condition of the
+174:condition and the level coincide. The estimate therefore supplies a threshold $Q \ge 13$ such that a level
+175:at or below the order of the image forces the ratio $1/26$ (\lean{bgkLevelClasses\_hyp}\lvCond).
+177:\begin{theorem}[\lean{cosetMeetsClassesMod4\_of\_expSumSmall26}\lvCond]\label{thm:short-cosets-classes-mod4}
+178:Assume that every prime $q$ and every $e$ with $L(q) \le (q-1)/\gcd(e,q-1)$ satisfy \lean{ExpSumSmallR} at
+179:the ratio $1/26$, and assume that every such pair satisfies $q \ge 13$. Then every coprime power coset of
+180:every image of order at least $L(q)$ meets every residue class modulo $4$.
+184:Let $q$ be prime, $e \in \N$, $u$ coprime to $q$ and $a < 4$, with $L(q)$ at most the order of the image.
+185:The second hypothesis gives $q \ge 13$ and the first the exponential-sum condition at the ratio $1/26$, so
+186:the class theorem proved above returns $b$ and $Y$ with $(b,q) = 1$ and $(ub^{e}) \bmod q = a + 4Y < q$:
+187:one representative in the class $a$ modulo $4$, for every class and every coset.
+191:is $q$, and the order $(q-1)/\gcd(e,q-1)$ of a power image is at most $q - 1$, so the level condition cannot
+192:hold there; it therefore forces $q \ge Q$, and $Q \ge 13$ gives $q \ge 13$
+195:(\lean{cosetMeetsClassesMod4\_of\_expSumSmall26}\lvCond).
+205:Assume \lean{BGKBound}. For every $\gamma > 0$ there is a threshold $Q$ such that for every $X$ the number of
+206:pairs $(p,q)$ of primes with $2 < p < q$, $pq \le X$ and no witness of the class-level rule for $N = pq$
+209:  \bigl(\lfloor \sqrt X \rfloor + 1\bigr)\bigl(Q + \lceil X^{\gamma} \rceil\bigr)^{2}.
+214:Take the threshold $Q \ge 13$ and the level property from the step above, and put
+217:missed pairs below $X$ by $(\lfloor \sqrt X \rfloor + 1) K^{2}$ once $K$ dominates the level at every prime
+224:the same two-prime bookkeeping, with the lower half replaced by the four classes modulo $4$ and the
+226:error of the eleven modes is $(11/26)|H_e|$ against a mean of
+227:$(1 - \lean{fejer11Lambda})|H_e| > (11/26)|H_e|$, and a smaller ratio needs only a larger threshold, which
+228:the estimate is free to grant. The gate is met where this article can check it: the exceptional composite of the census (\cref{sec:short-cosets-census}) has larger prime factor $38791 \ge 13$, so the hypothesis $q \ge 13$ that \lean{bgkLevelClasses\_gate} forces and the quarter-arc theorem requires holds at the size the article's numbers reach (\texttt{experiments/blind\_semiprime\_count.py}, over $X \le 3.1 \cdot 10^{8}$).

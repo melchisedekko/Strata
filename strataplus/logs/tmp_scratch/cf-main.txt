@@ -1,0 +1,2564 @@
+ A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT
+
+                                        ALESSANDRO SGARBI
+Abstract. Fermat’s little theorem gives the oldest test of primality. In 2009 the author wrote down,
+beside an elementary criterion for primality of that kind, an expression in a root of unity meant to return
+a sign ±1 at each base and to tell the primes from the composites: a primitive N -th root of unity, raised
+to an exponent read off a residue and folded once. For odd N = 2x − 1, a base m and ζ = exp(iπ/N ) it
+reads C ∗ (x, m) = (−1)x (−ζ)A(x,m)        , with A(x, m) = 1 + (−1)x (m + N − 1)N −1 mod 2N . We show
+                          (︁         )︁N/2                   (︁                        )︁
+
+what it computes. It equals f (x, m) − 1, where f (x, m) ∈ {0, 2} is the value of that criterion at the base
+m [10], so it is a Fermat test, and
+                                 (︁ it reads the)︁ Fermat residue r = (m − 1)
+                                                                              N −1
+                                                                                   mod N through what we
+call its µM face, WM (r) = exp 2πi(r − 1)/M , the congruence r ≡ 1 (mod M ) written on the unit circle,
+at the scale M = 4. Replacing the factor (−1)x in front of the inner term by a coefficient c gives a family
+of members; every member signals exactly where xcr mod N is odd, a parity dilate of the residue, hence is
+a row, read modulo 2, of Demjanenko’s matrix (the matrix of the indicators [ab mod N > N/2], classical
+in the study of relative class numbers), and the member of coefficient 1, summed against an odd character
+ψ, is 2χ4 (N )ψ(2)(1 − 2ψ(2)) B1,ψ . We prove laws that fence in what products of members can determine,
+and what the face cannot be. The objects are classical; what the article adds is the identification, which is
+elementary and machine-checked. The criterion is not a usable primality test.
+
+
+
+
+                                                1. Introduction
+   Fermat’s little theorem gives the oldest test of primality: if N is prime, then aN −1 ≡ 1
+(mod N ) for every a coprime to N . In 2009 the author wrote down, in a pocket diary, an
+expression in a root of unity meant to return a sign ±1 at each base and so to tell the
+primes from the composites, together with an elementary criterion for primality that is
+studied in [10]. This article is about the expression: a root of unity doing the work of
+a congruence. For an odd candidate N = 2x − 1 ≥ 3, a base m with 1 ≤ m ≤ N , and
+ζ = exp(iπ/N ), the expression is
+                      (︂            )︂N/2                    (︂                                )︂
+C ∗ (x, m) = (−1)x (−ζ)A(x,m)               ,      A(x, m) = 1 + (−1)x (m + N − 1)N −1 mod 2N,
+with principal branches throughout. Its base −ζ = exp(2πix/N ) is a primitive N -th root
+of unity, and N is odd, so no power of the base is −1: the sign that the expression is asked
+to produce is manufactured by the outer exponent N/2, and by nothing else (Section 2).
+What that sign is worth is a question of arithmetic, and this article answers it with classical
+objects: a face valued in the M -th roots of unity, the rows of Demjanenko’s matrix [8],
+and a character sum that is a generalised Bernoulli number.
+    The arithmetic is that of the criterion of [10], recalled once. For a base m let r(x, m) =
+(m − 1)N −1 mod N be the Fermat residue. The criterion computes an intermediate integer
+E(x, m) from that residue (Section 2), reports f (x, m) = E(x, m) mod 4, which is 0 or 2,
+and asserts that N is prime exactly when f (x, m) = 0 at every base; a base is a witness,
+f (x, m) = 2, exactly when its Fermat residue is nonzero and congruent to 3 or to N − 1
+modulo 4. The first finding of Section 2 is that the complex number is that value shifted
+by one,
+                    C ∗ (x, m) = f (x, m) − 1       (x ≥ 2, 1 ≤ m ≤ N ),
+so the expression is an integer sign and a function of the Fermat residue and of nothing
+else, and its prime direction is Fermat’s little theorem.
+  Date: November 11, 2026.
+                                                       1
+2                                   ALESSANDRO SGARBI
+
+    The expression is not a modern reconstruction, and its history is told here because
+the thesis is about what it is. It stands in a pocket diary of 2009, with its signs ±, its
+nested exponents and a request for an answer ±1; the pages carry the expression and a
+table, not a theorem. Two readings of the base have been current, 1 − ζ and −ζ, and the
+second is forced, not only visually: with base −ζ the reconstruction recorded with the
+development reproduces the diary’s own table of primes, all 999 candidates between 2 and
+1000, and calls the Carmichael number 561 [3] and the base-2 pseudoprime 645 = 3 · 5 · 43
+composite; on the 1 − ζ reading the test “the value is the same at every base” agrees
+with primality at only 49 of the 199 candidates between 2 and 200, and that reading, not
+being a sign, cannot have generated a table of ±1s. The prefactor (−1)x was in the source
+and was dropped in transcription; putting it back is what makes the expression literally
+f (x, m) − 1. The reading with base 1 − ζ is retired as an object: its one load-bearing fact,
+that the chord 1 − ζ has length 1 only at p = 3, is proved in Section 4, and it says why
+that reading was never a sign.
+    Two concessions are made here, once. The criterion that the expression encodes is not
+a usable primality test: it needs O(N ) modular exponentiations, and it is false, composite
+numbers passing it [10]; nothing in this article is offered as a test. And resistance to
+Carmichael numbers is not evidence of depth, because any test that reads the non-units
+has it; the diary’s table shows only that the expression is a Fermat test, which Section 2
+proves, and which is not evidence of depth.
+    What, then, does a filter built from a root of unity compute? The sign is the coarsest
+reading   of a richer)︂ object. For a modulus M the µM face of a residue is WM (r) =
+exp 2πi(r − 1)/M ; it equals 1 exactly when r ≡ 1 (mod M ), so it is that congruence
+    (︂
+
+itself written on the unit circle. At M = N it turns the classical statement that N is prime
+exactly when every base has Fermat residue 1 into a single equation for a sum of roots of
+unity, and the moduli at which it is trivial on every attained residue are the divisors of one
+number G(N ), the gcd of r − 1 over the nonzero Fermat residues r of N [11] (Section 3).
+The rule of 2009 reads the face at M = 4, and two facts put it there: the prefactor (−1)x is
+−χ4 (N ), the character modulo 4 read at the candidate, and the witness rule is a two-point
+subset of µ4 , strictly finer than the set where the face misses 1 (Section 4). The numbers
+a reader reaches for first, 46657 = 13 · 37 · 97, 1729 = 7 · 13 · 19 and 1105 = 5 · 13 · 17, are
+Carmichael, congruent to 1 modulo 4, and passed by the Fermat test at every base coprime
+to them [7]; at each of them the witness classes are {3, 0} modulo 4, while the face misses
+1 on the class 2 as well, a difference of definitions and not of depth. Finally the expression
+belongs to a family: replacing the factor (−1)x in front of the inner term by a coefficient c
+gives, for every c, an expression we call a member, and every member signals a witness
+exactly where a reduced product xcr mod N is odd. We call such a function a parity dilate
+of the residue, and the member is row x2 c of Demjanenko’s matrix read modulo 2 — the
+matrix of the indicators [ab mod N > N/2], whose rows modulo 2 govern the 2-divisibility
+of the relative class number [4, 9]. One member carries one bit (Section 5).
+    The answer is the identification of Section 6. Summed against an odd Dirichlet character
+ψ modulo N , the member of coefficient 1, whose value at a residue r is a sign σ1 (r) = ±1,
+gives
+                                     (︂         )︂
+           σ1 (r) ψ(r) = 2χ4 (N ) ψ(2) 1 − 2ψ(2) B1,ψ = −2χ4 (N ) ψ(2)2
+      ∑︂                                                                     ∑︂
+                                                                                     ψ(u),
+     r<N                                                                   N/2<u<N
+
+where B1,ψ = N −1 a<N a ψ(a) is the generalised Bernoulli number of order one; the
+                     ∑︁
+
+second form is the same sum read on the first row of Demjanenko’s matrix. At even x
+that member is the expression of 2009 itself, and at odd x the expression is its reflection
+r ↦→ −r, whose sum is the negative. Nothing in the framework is ours: the matrix is
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         3
+
+Demjanenko’s, its rank is Folz and Zimmer’s [4], the blocks of its decomposition are the
+numbers B1,χ by Tsumura’s theorem [12], and the half-sum formula for B1,ψ that the two
+displays together return is classical [2]. What the article contributes is the elementary
+bridge from the expression of 2009 to these objects, which shows that the expression is
+not an invariant of N beyond the classical ones but a reading of a known one; the reading
+of what products of members can determine as a linear question over F2 , with the laws
+that fence it in; and the machine-checked form of all of it.
+    The article is organised as follows. Section 2 reduces the expression to the criterion’s
+value, Section 3 replaces its sign by the face, and Section 4 explains the scale 4. Section 5
+puts the expression into the family of members and reads each member as a row of
+Demjanenko’s matrix, and Section 6 evaluates the character sum. The second half asks
+what products of members can determine: Section 7 states the law on complementary
+residues and the dichotomy at M = 3, Section 8 the law on the lower half of the unit
+group and its closure on semiprimes, with finite certificates where both laws are silent, and
+Section 9 what the face cannot be, closing with the questions left open. The engine of the
+character-sum identity is proved in Section A. Every formal statement carries its status,
+and every one of them is [L] : proved end to end in the Lean 4 library against Mathlib,
+with no hypothesis left unproved. The results recalled from the companion articles are
+proved in the same library and cited where they are used. What is not formalised is said
+to be so where it occurs: the classical facts credited to their authors, the relative class
+numbers of Section 8, which are measured, and one remark on the branch in Section 9.
+
+                        2. The base, the fold, and the sign
+    The expression that Section 1 records is a filter built from a root of unity, so the first
+step in reading it is cyclotomic rather than arithmetic. Fix the candidate N = 2x − 1
+with x ≥ 2, so that N ≥ 3 is odd, and take the base ζ = (−1)1/N on the principal branch.
+Everything below is computed in the group generated by ζ and in the integers modulo
+2N = 4x − 2. Two questions are asked: where the ±1 of the expression comes from, and
+what the complex number is a function of. The answers are that the base never takes the
+value −1 — the outer fold takes care of that — and that the expression is a function of
+the Fermat residue the arithmetic criterion reads, and of nothing else.
+
+2.1. The base. For a base m with 1 ≤ m ≤ N , let
+                               r(x, m) = (m − 1)N −1 mod N
+be the Fermat residue. The criterion’s coefficient is 2(−1)x (x − 1) modulo 2N ; write κ(x)
+for its half, so that κ(x) = x − 1 for even x and κ(x) = x for odd x (the half-coefficient,
+written c(x) in [10]; here c is kept for the coefficient of a member), and
+                              U (x, m) = κ(x) r(x, m) mod N
+for the argument. With the inner term t(x, m) = (m + N − 1)N −1 mod 2N , the criterion’s
+intermediate value is
+                                  (︂                                           )︂
+             E(x, m) = 3 − 4x + (4x − 3 + 2(−1)x (x − 1) t(x, m)) mod 2N
+(E), and its value is f (x, m) = E(x, m) mod 4. The intermediate value depends on the base
+only through the argument: E(x, m) = 0 when U (x, m) = 0 and E(x, m) = 2(U (x, m)−N )
+otherwise [L] (E_eq_U), so f (x, m) is 0 or 2 [L] (f_eq_zero_or_two), and it is 0 exactly
+when U (x, m) is 0 or odd [L] (f_eq_zero_iff). The criterion asserts that N is prime
+exactly when f (x, m) = 0 at every base, and the assertion is false: composite N pass it
+[10]. All of this is proved in [10] and recalled once here because the computations below
+4                                  ALESSANDRO SGARBI
+
+are about these objects and no others; only the prime direction of the assertion, which is
+Fermat’s little theorem [5, Thm. 72], is used.
+    On the principal branch the base
+                                   (︂ ζ = (−1)
+                                                   1/N
+                                                        (zeta) is exp(iπ/N ) [L] (zeta_eq): the
+principal value of (−1)1/N is exp N1 log(−1) , and log(−1) = iπ. Negation is a rotation
+                                                )︂
+
+by π, so
+                                  π(N + 1)
+                               (︃            )︃
+                                                       [L]
+                      −ζ = exp              i              (neg_zeta_eq),
+                                      N
+and −ζ is a 2N -th root of unity. It is in fact a primitive N -th one.
+Theorem 2.1 (neg_zeta_isPrimitiveRoot). [L] For every x ≥ 2, the number −ζ is a
+primitive N -th root of unity.
+Proof. The standard root ω = e2πi/N is primitive of order N , since N ̸= 0. Its x-th power
+is again primitive of order N as soon as x and N are coprime, and they are: a common
+divisor of x and 2x − 1 divides 2x and 2x − 1, hence their difference 1 [L] (coprime_x_N).
+Finally ω x = e2πix/N = eiπ(N +1)/N = −ζ, by the identity above.                        □
+    The order being odd is the point. A primitive root of odd order never passes through
+−1: if ζ k = −1 then squaring gives ζ 2k = 1, so N | 2k, and since N is odd N and 2 are
+coprime, whence N | k and ζ k = 1, which contradicts 1 ̸= −1 [L] (isPrimitiveRoot_pow_
+ne_neg_one_of_odd). Specialised to the base of the expression, this reads (−ζ)k ̸= −1
+for every k ≥ 0 [L] (neg_zeta_pow_ne_neg_one). The base, then, is not a source of the
+sign that the source pages read off.
+2.2. The fold. The sign can only come from the outer power, and it appears there for a
+reason that does not involve N at all: raising a root of unity to the power N/2 multiplies
+its angle by N/2, and an angle of the shape 2πk/N becomes kπ. Thus
+                          2πik N
+                       (︃         )︃
+                   exp        ·      = (−1)k     (Nth_root_half_fold)
+                           N    2
+for every integer k, for any N ̸= 0; squaring the identity gives 1 [L] (Nth_root_half_
+fold_sq). The oddness of N is exactly what separates the two halves of the argument:
+the base has odd order and cannot reach −1, while the fold has order 2 whatever N is.
+Torsion 2 in this expression is the fold, and nothing else — which is why the notebook’s
+answer is a sign rather than a phase, and why the branch computation below has to be
+done rather than read off.
+     One further fact about orders is needed later. The order of a power of a primitive
+root divides the order of the root [L] (isPrimitiveRoot_pow_dvd_order); applied to −ζ,
+whose order is N , it says that a power of −ζ can be primitive of order M only if M | N
+[L]
+    (neg_zeta_pow_primitive_dvd), and its contrapositive says that for M ∤ N no power
+of −ζ is primitive of order M [L] (not_isPrimitiveRoot_neg_zeta_pow_of_not_dvd).
+The converse also holds: if M | N , write N = dM with d ̸= 0, and the d-th power of a
+primitive N -th root of unity is primitive of order N/d = M . Together the two directions
+are a dichotomy — some power of −ζ is primitive of order M exactly when M | N [L]
+(exists_neg_zeta_pow_primitive_iff). Consequently, for every modulus that does not
+divide N — every power of 2 among them, and 3 whenever 3 ∤ N — a version of the
+expression valued in the M -th roots of unity would have to change the generator and not
+only the exponent, whereas for M | N the base already carries the order.
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                            5
+
+2.3. The integer the expression is worth. Since −ζ is a 2N -th root of unity, the
+inner exponent counts modulo 2N and may be reduced before the power is taken; the
+reduction is not an approximation. With t(x, m) the inner term defined above, which is
+the criterion’s term (term), put
+                   (︂                        )︂
+       A(x, m) = 1 + (−1)x t(x, m) mod 2N,                       s(x, m) = 2x A(x, m) mod 2N
+(monsterExp and monsterArg; note 2x = N + 1). Both are integer remainders on division
+by 2N , so 0 ≤ s(x, m) < 2N [L] (monsterArg_nonneg, monsterArg_lt). The value of
+the expression is then read off from s by two binary choices (monsterSign): the parity
+factor, which is +1 when s ≡ 0 (mod 4) and −1 otherwise, and the branch factor, which
+is +1 when s ≤ N and −1 when s > N ; the value σ(x, m) is their product, the first being
+(−1)s/2 and the second the correction for a principal argument that has been pushed past
+π. In complex terms the expression is
+                                        (︂               )︂N/2
+                          C(x, m) = (−ζ)A(x,m)                     (monsterC),
+with principal branches throughout, and the expression as the source writes it carries the
+prefactor
+                    C ∗ (x, m) = (−1)x C(x, m)    (monsterFullC).
+    Two reductions justify these formulas. The inner one is free: A is an integer, so the
+inner power is an integer power of −ζ and no branch is chosen. The angle of −ζ is
+π(N + 1)/N , so the angle of (−ζ)A is π(N + 1)A/N ; since (N + 1)A = s + 2N q for some
+integer q, that angle is πs/N + 2πq, and the exponential discards the whole turns:
+                                    π s(x, m)
+                                   (︃                  )︃
+                                                     [L]
+                (−ζ)A(x,m) = exp              i          (monsterInner_eq).
+                                        N
+The outer one is where the branch is chosen. Since s = 2x A is twice an integer and the
+reduction modulo the even number 2N preserves divisibility by 2, write s = 2u. If s ≤ N
+then the angle πs/N lies in [0, π] and is the principal argument of the inner power; the
+outer exponent N/2 multiplies it to πu, and the value is (−1)u . If s > N then the principal
+argument is π(s − 2N )/N , which lies in (−π, 0); the outer power multiplies it to π(u − N ),
+and since N is odd the value is (−1)u−N = −(−1)u . The two cases are exactly the two
+factors of σ: the parity of u, which is s modulo 4, and the branch condition s ≤ N . Hence
+                                                       [L]
+                        C(x, m) = σ(x, m)                    (monsterC_eq_sign),
+and the complex expression has become an integer.
+
+2.4. The argument is the criterion’s residue. The first finding is that s is not a new
+invariant: it is the criterion’s own residue, seen through the fold.
+Theorem 2.2 (monsterArg_eq). [L] For every x ≥ 2 and every base m,
+                                                  (︂                     )︂
+                             s(x, m) = 2 (x − U (x, m)) mod N ,
+the remainder on the right being taken in {0, 1, . . . , N − 1}.
+Proof. Put v = (x − U ) mod N , where U = U (x, m), so that 0 ≤ v < N .
+    (i) A divisibility. The number N divides x(−1)x + κ(x): for even x the sum is
+x + (x − 1) = N , and for odd x it is −x + x = 0.
+    (ii) The term is the residue. The inner term t is congruent to r(x, m) modulo N ,
+because it is computed modulo 2N , a multiple of N ; and U ≡ κ(x)r(x, m) modulo N by
+definition.
+6                                   ALESSANDRO SGARBI
+
+    (iii) The congruence for U . Hence  N divides −U
+                                                  )︂ − x(−1) t. Indeed that
+                                                            x
+                                                                         (︂ number is
+the sum of κ(x)r(x, m) − U , of − x(−1) + κ(x) r(x, m), and of x(−1) r(x, m) − t ,
+                                   (︂                                              )︂
+                                          x                            x
+
+each of which is divisible by N by (i) and (ii).
+  (︂(iv) Reducing
+               )︂  the exponent. Reducing A and then multiplying by 2x gives s ≡
+             x
+2x 1 + (−1) t (mod 2N ).
+    (v) The difference. One has 2x 1 + (−1)x t − 2v = 2 −U − x(−1)x t + 2 (x − U ) − v .
+                                    (︂          )︂         (︂              )︂   (︂            )︂
+
+The first summand is twice a multiple of N by (iii), and the second is twice the excess of
+x − U over its remainder modulo N , hence also twice a multiple of N . The difference is
+therefore a multiple of 2N , that is, s ≡ 2v (mod 2N ).
+    (vi) Two reductions agree. Both s and 2v lie in [0, 2N ): the first because it is an integer
+remainder modulo 2N , the second because 0 ≤ v < N . Two numbers in that interval that
+are congruent modulo 2N are equal, so s = 2v.                                                 □
+    Two consequences are used below. The argument is even [L] (monsterArg_even), as
+twice an integer; and the wrap of x − U by N — a change that no parity of U can reveal
+— is exactly what the branch condition s ≤ N detects.
+2.5. The expression is f minus one. The second finding turns the sign into the
+criterion’s value.
+Theorem 2.3 (monster_bridge). [L] For every x ≥ 2 and every base m,
+                                                 (︂             )︂
+                               σ(x, m) = (−1)x f (x, m) − 1 .
+Proof. By Theorem 2.2 we have s = 2v with v = (x − U ) mod N , and v is either x − U ,
+when U ≤ x, or x − U + N , when U > x. In terms of v the parity factor is +1 when v
+is even and −1 otherwise, and the branch factor is +1 when v < x and −1 otherwise. If
+U = 0 then v = x: the branch factor is −1, and f (x, m) = 0, so both sides are (−1)x · (−1).
+If U ̸= 0 then f (x, m) = 2 for even U and f (x, m) = 0 for odd U .
+    Suppose first that v = x − U , so v < x and the branch factor is +1. The parity of v is
+then the parity of x − U . For x even and U even, v is even and f (x, m) = 2, so σ = +1
+and (−1)x (f (x, m) − 1) = +1; for x even and U odd, v is odd and f (x, m) = 0, so σ = −1
+and (−1)x (f (x, m) − 1) = −1. The two cases with x odd are the negations of these, since
+(−1)x enters both sides as the same global sign.
+    Suppose now that v = x − U + N , so v ≥ x and the branch factor is −1. Adding the
+odd number N flips the parity of v, so the parity factor flips as well, and the two flips
+cancel: σ takes the value computed in the unwrapped case for the same parities of x and
+U . In both cases, then, σ = (−1)x (f (x, m) − 1).                                       □
+    The bracket on its own, without the source’s prefactor, is therefore (−1)x (f (x, m) − 1)
+[L]
+    (monsterC_bridge); putting the prefactor back squares it away.
+Theorem 2.4 (monsterFull_eq). [L] For every x ≥ 2 and every base m,
+                                  C ∗ (x, m) = f (x, m) − 1.
+Proof. By Theorem 2.3 the bracket is C = (−1)x (f (x, m) − 1). Multiplying by (−1)x gives
+(−1)2x (f (x, m) − 1), and (−1)x is ±1 with square 1.                                  □
+    So the expression the source evaluates is literally f (x, m) − 1, an integer in {−1, +1}:
+the sign the pages read off is the criterion’s value shifted by one, read before the reduction
+modulo 4, which does not retain the sign. From here on the argument is arithmetic about
+residues.
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         7
+
+2.6. The prime direction. At a prime candidate the criterion returns f (x, m) = 0 at
+every base, which is its prime direction in [10]. By Theorem 2.4 the expression is then
+−1 at every base [L] (monsterFull_const_of_prime), and in particular it takes the same
+value at any two bases [L] (monsterFull_prime_const) — the constancy that the source
+reads off as primality.
+    More is true: the expression cannot see anything but the Fermat residue. If two bases
+have the same residue modulo N , their inner terms are congruent modulo N , and the
+criterion absorbs the difference, the criterion’s value depending on the inner term only
+modulo N — the absorption lemma E_eq_of_term_eq of [10]. The two values of f (x, m)
+therefore agree, and so do the two values of C ∗ [L] (monsterFull_depends_on_fermat).
+This is the precise sense in which the expression is a Fermat test, and it holds at every
+candidate, prime or composite.
+    At a prime candidate the residue is 1 at every base of the range: for 2 ≤ m ≤ N the
+number m − 1 lies in [1, N − 1], so it is a unit modulo the prime N , and its (N − 1)-st
+power is 1 by Fermat’s little theorem. Two bases with the same residue give the same
+value, so
+               C ∗ (x, m) = C ∗ (x, N )  (monsterFull_prime_eq_fermat)
+for 2 ≤ m ≤ N [L] . Unwound, the prime direction of the source reduces to Fermat’s little
+theorem.
+
+2.7. The source’s sign. One ingredient of the source pages is a sign, and this subsection
+proves what dropping it does. The pages write the inner exponent as 1 ± (m + N − 1)N −1 ,
+the sign alternating with x as the factor (−1)x of A; dropping that sign — fixing it to
++1 — gives the variant with A+ = (1 + t) mod 2N , with s+ = 2x A+ mod 2N , and with
+σ + defined from s+ exactly as σ is defined from s (monsterExpPlus, monsterArgPlus,
+monsterSignPlus).
+    When x is even the sign being dropped is already +1, and the two variants are the
+same function: the exponents agree [L] (monsterExpPlus_eq_of_even) and therefore
+so do the values [L] (monsterSignPlus_eq_of_even). When x is odd the sign is −1,
+and dropping it is an involution of the reduced argument. The two arguments sum to
+2 modulo 2N : each is congruent to 2x(1 ± t), and their sum is 4x ≡ 2 (mod 4x − 2)
+[L]
+    (monsterArgPlus_add_monsterArg). Since s+ is the remainder in [0, 2N ), it is (2 −
+s) mod 2N [L] (monsterArgPlus_eq_sub).
+    On the region s ∈ {0, 2} ∪ [N + 2, 2N ) the involution negates the value. For s = 0 the
+image is 2, and for s = 2 it is 0; in both cases the branch factor is +1 on both sides, while
+the parity factor changes, since exactly one of 0 and 2 is divisible by 4. For s ≥ N + 2
+the image is 2N + 2 − s, which is positive and at most N : the branch factor changes
+from −1 to +1, while the first factor is unchanged because 2N + 2 − s ≡ s (mod 4) —
+indeed 2N + 2 = 4x ≡ 0 (mod 4), and s is even. Hence σ + = −σ on that region [L]
+(monsterSignPlus_eq_neg_of_arg). Since a global negation cannot change whether a
+function is constant, on any set of bases whose arguments stay in the region the variant
+has the same constant/non-constant verdict as the original.
+    The case the negation law leaves open is the middle band 4 ≤ s ≤ N + 1, and the
+vanishing of the residue lands in it: if the Fermat residue is 0 then U = 0, so s = 2x = N +1,
+and 2 − (N + 1) ≡ N + 1 (mod 2N ); the involution fixes the argument, and the two values
+agree rather than oppose [L] (monsterSignPlus_eq_of_resid_zero). The distinction
+matters: the negation law is about arguments away from the middle band, and the
+vanishing of the residue gives the top of that band, s = N + 1.
+    Finally the prime direction survives the change. At a prime candidate and 2 ≤ m ≤ N :
+if x is even the variants coincide and both are −1; if x is odd the residue is 1, so
+8                                  ALESSANDRO SGARBI
+
+U = κ(x) = x, s = 0, the negation law applies, and σ + = −σ = −1 [L] (monsterSignPlus_
+of_prime). So at a prime candidate both variants are constant on 2 ≤ m ≤ N , and on
+any set of bases whose arguments avoid the middle band the two variants have the same
+constant/non-constant verdict. Whether the arguments a composite attains avoid the
+band is not proved here.
+    The section’s statement thus has two readings. With its prefactor, the 2009 expression
+is f (x, m) − 1; without it, it is f (x, m) − 1 up to the global sign (−1)x ; and in either
+reading it is a function of the residue U (x, m) that the criterion runs on. What that
+residue is read through is the subject of Section 3.
+                                        3. The face
+    Section 2 reduced the expression of 2009 to a sign, and traced the sign to the outer
+fold: the base is a primitive N -th root of unity, of odd order, and it never reaches −1. A
+sign is the coarsest reading a root of unity admits — it records only whether the point has
+arrived at the wrong end of the diameter. This section puts the filter itself on the page.
+For a modulus M and an integer r the µM face is a point of the unit circle,
+                                                  2πi (r − 1)
+                                               (︃             )︃
+                                 WM (r) = exp                   ,
+                                                      M
+and the arithmetic filter is what is left when the face fails to be 1: the witness predicate is
+the face missing one. Two things follow, and they are the section’s content. At M = N
+the face is faithful on residues, and the classical characterisation acquires a complex form
+and then a single scalar equation. For varying M the face is trivial exactly on the divisors
+of one number G(N ), the invariant of [11].
+3.1. The face, and the congruence it reads. For a modulus M ≥ 1 and       (︂ an integer)︂ r let
+WM (r) be the exponential displayed above (Wface). Its M -th power is exp 2πi(r −1) = 1,
+so every value of the face lies in µM ; and independently of the modulus every value of
+it lies on the unit circle, ∥WM (r)∥ = 1 for all M and r [L] (Wface_norm_one). At the
+smallest modulus it degenerates to a sign: W2 (r) = exp(πi(r − 1)) = (−1)r−1 . The sign
+of Section 2 is thus the coarsest member of a family indexed by the modulus, and the
+question this section answers is what the family looks like at the other members.
+Theorem 3.1 (Wface_eq_one_iff). [L] Let M ̸= 0 and r ∈ Z. Then WM (r) = 1 if and
+only if M divides r − 1.
+Proof. The exponential takes the value 1 exactly at the integral multiples of 2πi: exp z = 1
+if and only if z = 2πin for some n ∈ Z. Since
+                                            (︂ M ̸= 0, M is )︂ a nonzero complex number,
+and 2πi is nonzero as well. The equation exp 2πi(r − 1)/M = 1 is therefore equivalent to
+                                   2πi (r − 1)
+                                               = 2πi n
+                                        M
+for some integer n. Multiplying by M and cancelling 2πi gives r − 1 = M n, which is the
+divisibility M | (r − 1). Conversely, if r − 1 = M n then the exponent is 2πin, and its
+exponential is 1.                                                                    □
+   So the face is not an approximation to the congruence r ≡ 1 (mod M ): it is that
+congruence written on the unit circle, with no many-to-one collapse. The modulus enters
+only through r − 1, and the exponent is periodic in r with period M , so the face depends
+on r only modulo M .
+                A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                        9
+
+3.2. The witness predicate is the face missing one. For a modulus M , the rung-M
+filter CM calls a base m a witness when
+                1 ≤ m ≤ N (x),      r(x, m) ̸= 0,       r(x, m) ̸≡ 1   (mod M )
+(IsWitnessMod); this is the idealised rung-M filter of [10]. The complex reading of that
+predicate is exact.
+    For M ̸= 0, a base m is a CM -witness if and only if 1 ≤ m ≤ N (x), the Fermat
+residue is nonzero, and WM (r(x, m)) ̸= 1 [L] (isWitnessMod_iff_Wface). The proof is
+a translation of the three arithmetic conditions: the only one that needs work is the
+last, and there the congruence r(x, m) ̸≡ 1 (mod M ) is the negation of the divisibility
+M | (r(x, m) − 1), which by Theorem 3.1 is the negation of WM (r(x, m)) = 1.
+    Counting witnesses is therefore the same as reading the face on the residues that
+the bases attain. Quantified over all bases, the dictionary reads: there is no rung-M
+witness if and only if every base m ∈ [1, N (x)] whose Fermat residue is nonzero has
+WM (r(x, m)) = 1 [L] (forall_Wface_one_iff_noWitnessMod). Each direction is the
+corresponding direction of the witness dictionary: a nonzero residue whose face misses 1
+would be a witness, and a witness is required to have a face different from 1.
+
+3.3. The faithful rung. At M = N the modulus is as large as the candidate, and the
+face separates residues instead of merging them. Let x ≥ 2, so that N = 2x − 1 ≥ 3, and
+let m be any base. Then
+           (︂       )︂
+     WN (x) r(x, m) = 1 ⇐⇒ r(x, m) = 1              (Wface_N_eq_one_iff_resid_one),
+
+a machine-checked equivalence [L] . By Theorem 3.1 with M = N ̸= 0, the left-hand side
+says N | (r(x, m) − 1), that is r(x, m) ≡ 1 (mod N ). The Fermat residue is a remainder
+modulo N , so 0 ≤ r(x, m) < N ; reducing both sides of the congruence modulo N therefore
+returns r(x, m) and 1 unchanged, and equality of the two remainders is r(x, m) = 1. For
+the converse, if the residue is 1 then the exponent is 0 and the face is 1. No residue class
+is collapsed onto another: as r runs over {0, 1, . . . , N − 1} the point WN (r) runs over the
+N -th roots of unity, so on residues the face is a bijection onto µN , and what Theorem 3.1
+adds is that the fibre over 1 is the single residue 1.
+    The classical characterisation of primality, recalled in [10] and not to be confused
+with the criterion of Section 2, which is false — N prime if and only if every m ∈ [2, N ]
+has Fermat residue 1 (prime_iff_forall_resid_one), the statement that Z/N is a field
+exactly when every nonzero element is a unit — can now be carried onto the unit circle by
+a map that is faithful on residues:
+                N (x) prime ⇐⇒ ∀m, 2 ≤ m ≤ N (x), WN (x) r(x, m) = 1,
+                                                                 (︂      )︂
+
+
+a machine-checked equivalence [L] (prime_iff_forall_Wface_one). The proof is the
+substitution of the faithfulness above into the classical statement, in both directions: at
+M = N the face equals 1 exactly where the residue does. The range is [2, N ] here rather
+than [1, N ] because the base m = 1 has residue 0, whose face is exp(−2πi/N ) ̸= 1, and
+which the classical characterisation excludes.
+
+3.4. One scalar in place of the quantifier. The quantifier of the faithful criterion
+can be removed. Write θ = 2π(r − 1)/M for the angle of the face, so that the face is the
+exponential of iθ with a real argument [L] (Wface_eq_exp_ofReal). Its real part is cos θ
+[L]
+    (Wface_re), its imaginary part is sin θ [L] (Wface_im), and consequently
+                             ∥WM (r)∥ = 1,          (WM (r))re ≤ 1
+10                                  ALESSANDRO SGARBI
+
+for all M and r [L] (Wface_norm_one, Wface_re_le_one): every face is a unit vector, and
+no face reaches beyond the real value 1. The equality case is what makes a sum into a
+criterion. If the real part of a face is exactly 1, then cos θ = 1, so sin2 θ = 1 − cos2 θ = 0
+and sin θ = 0; comparing real and imaginary parts with those of 1 gives WM (r) = 1 [L]
+(Wface_eq_one_of_re_one). A unit vector can touch the value 1 only by being 1.
+Theorem 3.2 (prime_iff_Wface_sum). [L] For every x ≥ 2,
+                                          N (x)
+                   N (x) is prime ⇐⇒
+                                          ∑︂           (︂         )︂
+                                                  WN (x) r(x, m) = N (x) − 1.
+                                          m=2
+
+Proof. The index set [2, N (x)] has N (x) − 1 elements, and N (x) ≥ 3.
+    If N (x) is prime, the faithful criterion gives WN (x) (r(x, m)) = 1 at every m ∈ [2, N (x)];
+the sum of N (x) − 1 ones is N (x) − 1.
+    Conversely, suppose the sum equals N (x) − 1, and take real parts. Each summand has
+real part at most 1, and there are N (x) − 1 of them, so the sum of the real parts is at
+most N (x) − 1, with equality exactly when every summand has real part 1. Equality does
+hold, the real part of the right-hand side being N (x) − 1; hence (WN (x) (r(x, m)))re = 1
+for every m ∈ [2, N (x)]. By the equality case each of those faces is 1, and the faithful
+criterion then gives that N (x) is prime.                                                     □
+
+    The universal quantifier has become an extreme value. The left-hand side is a sum of
+N -th roots of unity along the Fermat map m ↦→ r(x, m), taken at the faithful modulus,
+and the right-hand side is the largest real value such a sum of N − 1 unit vectors can
+attain. A statement about every base has become one equation about a sum over the
+bases.
+
+3.5. Varying the modulus, and the schedule. The modulus of the face need not be
+the candidate. For every nonzero modulus M that does not divide N (x)(N (x) − 1), the
+criterion read through the rung-M filter CM has a complex form, obtained by composing
+the criterion with the witness dictionary of Section 3.2; the arithmetic statements are
+those of [11], and none of them is proved again here. Write
+                         S(x) = { m : 1 ≤ m ≤ N (x), r(x, m) ̸= 0 }
+for the set of bases with nonzero Fermat residue — the set the criteria quantify over,
+a vanishing residue being the case the filter is not asked to act on. For M ̸= 0 with
+M ∤ N (x)(N (x) − 1), and for every x ≥ 2,
+
+                     N (x) prime ⇐⇒ ∀m ∈ S(x), WM r(x, m) = 1,
+                                                             (︂        )︂
+
+
+a machine-checked equivalence [L] (prime_iff_forall_Wface_of_not_dvd), whose arith-
+metic companion is prime_iff_no_witnessMod_of_not_dvd in [11]. Two choices of
+modulus are singled out by closed forms. With M = N (x) + 1, which is nonzero and
+exceeds N (x) and so divides neither N (x) nor N (x) − 1,
+
+                   N (x) prime ⇐⇒ ∀m ∈ S(x), WN (x)+1 r(x, m) = 1,
+                                                                  (︂        )︂
+
+
+again a machine-checked equivalence at that modulus [L] (prime_iff_forall_Wface_
+succ). The third closed form is M the least integer ≥ 2 that does not divide N (x)(N (x)−1),
+the least non-divisor of the product, and at that modulus the criterion takes the same
+form, with WM in place of WN (x)+1 [L] (prime_iff_forall_Wface_minNonDivisor), the
+hypothesis 1 ≤ N (x)(N (x) − 1) being automatic for x ≥ 2.
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                          11
+                                                                        √
+    The last modulus considered here is the schedule M (N ) = ⌊ N ⌋ + 1 of [11], a modulus
+fixed in advance by the size of N alone, and it carries the same face. Then
+                  N (x) prime ⇐⇒ ∀m ∈ S(x), WM (N (x)) r(x, m) = 1
+                                                              (︂            )︂
+
+
+  (prime_iff_forall_Wface_sqrtSched), and the quantifier over S(x) compresses once
+[L]
+
+more, exactly as at the faithful rung:
+                   N (x) prime ⇐⇒
+                                        ∑︂              (︂         )︂
+                                                WM (N (x)) r(x, m) = |S(x)|,
+                                       m∈S(x)
+
+a machine-checked equivalence    [L]
+                                     (prime_iff_Wface_sqrtSched_sum).
+    The compression is the argument of Theorem 3.2 with the faithful modulus replaced
+by the schedule and the index set by S(x). If N (x) is prime, the quantified form makes
+every summand 1 and the sum is the cardinality of S(x). Conversely, if the sum equals
+|S(x)|, taking real parts turns it into a sum of |S(x)| terms, each at most 1, equal to their
+number; every term has real part 1, hence is 1 by the equality case, and the quantified
+form at the schedule modulus gives primality. Two things change: the index set is S(x),
+the bases with nonzero residue, in√place of 2 ≤ m ≤ N , and the faces live in µM (N ) instead
+of µN , with M (N ) growing like N .
+3.6. The largest modulus with trivial face. At a composite candidate some modulus
+sees a nontrivial face, and the moduli that see nothing are the divisors of one number. Let
+G(N ) be the gcd of the offsets r(x, m) − 1 over the bases with nonzero Fermat residue, as
+in [11]; its closed form and its bounds are that document’s, and only its defining property
+is used here.
+Theorem 3.3 (dvd_residueGcd_iff_forall_Wface). [L] For every x and every modulus
+M ̸= 0,
+                                                                                 (︂   )︂
+       M | G(N (x)) ⇐⇒ ∀m, 1 ≤ m ≤ N (x), r(x, m) ̸= 0 ⇒ WM r(x, m) = 1.
+Proof. By the arithmetic characterisation of G(N ) in [11], a modulus M divides G(N (x))
+if and only if it admits no rung-M witness (noWitnessMod_iff_dvd_residueGcd). By
+the witness dictionary of Section 3.2 — which requires M ̸= 0, and only for that — the
+absence of rung-M witnesses is the triviality of the face on every base with nonzero Fermat
+residue. Composing the two equivalences gives the claim.                                 □
+
+ Definition 3.4. Let M ̸= 0 and let N be an odd composite. The number N is a
+ CM -pseudoprime when no base m ∈ [1, N ] is a CM -witness. By Theorem 3.3 this is the
+ condition M | G(N ).
+    The theorem says that the trivialising moduli are exactly the divisors of G(N ); when
+G(N ) ̸= 0, G(N ) is itself one of them, and G(N ) is the largest. The first half is worth
+stating on its own, since it is the statement at the top of the divisibility order. If N (x) is
+composite, then G(N (x)) is nonzero — this is the composite case of [11] — so N (x) is a
+CG(N (x)) -pseudoprime, and therefore
+                                                    for every m ∈ S(x),
+                                (︂       )︂
+                       WG(N (x)) r(x, m) = 1
+a machine-checked statement [L] (forall_Wface_residueGcd_one). At the largest trivi-
+alising modulus the face is identically 1; at every nonzero modulus that does not divide
+G(N ) it misses 1 somewhere. At a prime candidate G(N ) = 0, every modulus divides it,
+and there is no modulus at which the face misses 1: the rung-M filter finds no witness at
+any M (prime_no_witnessMod), so by the dictionary the face is trivial at every nonzero
+modulus, which is the reading of the vanishing of G(N ) on primes in [11].
+12                                 ALESSANDRO SGARBI
+
+    For each modulus M there is a face WM on the residues the bases attain, valued in µM
+and trivial exactly on the residue class 1; the family is faithful at M = N , where it gives
+the classical
+           √ characterisation a complex form and a single scalar equation; √   the schedule
+modulus ⌊ N ⌋ + 1 carries the same characterisation with a modulus of size N ; and the
+whole family is trivial exactly on the divisors of G(N ). Which member of the family the
+rule of 2009 itself reads is a question about that rule and not about the circle, and it is
+the subject of Section 4.
+                                 4. Why modulo four
+    Section 3 turned the sign of the expression into a face WM (r) = exp 2πi(r − 1)/M ,
+                                                                            (︂             )︂
+
+faithful at M = N and trivial exactly on the divisors of G(N ), and left one question about
+the rule of 2009 itself: which member of that family the rule reads. The answer is M = 4.
+Two facts put the bit there, and a third explains why the other reading of the base could
+not have carried it. The prefactor (−1)x of the source is the character modulo 4 evaluated
+at the candidate, so the formula already reads N modulo 4. The witness rule is a union of
+two fibres of the µ4 face, and not the set where the face misses 1, so the rule is a condition
+modulo 4 and a strictly finer one than the triviality of the face. And the chord 1 − ζ, the
+reading of the base that the source did not use, has length 1 at exactly one value of the
+parameter, so a value built from it is not a sign.
+4.1. The prefactor is the character modulo four. The expression of 2009 carries
+the prefactor (−1)x in front of the fold, and Section 2 keeps it: with the prefactor the
+expression is f (x, m) − 1, and without it, f (x, m) − 1 up to the global sign (−1)x . The
+prefactor is not an independent quantity of the base: since N (x) = 2x − 1, it is a function
+of the candidate, and the first fact of the section is that it is a function of the candidate
+modulo 4 alone.
+    For every x ≥ 1,
+                                  (−1)x = −(−1)(N (x)−1)/2
+a machine-checked identity [L] (sgn_eq_neg_pow_N_sub_one). It is the arithmetic of N =
+2x − 1: N − 1 = 2(x − 1), the division by 2 is exact for x ≥ 1, and (−1)x = (−1) · (−1)x−1 .
+    The exponent (N −1)/2 is where the modulus 4 enters. For odd n the power (−1)(n−1)/2
+is the nontrivial character modulo 4: it is +1 when n ≡ 1 and −1 when n ≡ 3 (mod 4),
+which is χ4 (n). In the language of the Jacobi symbol the same function is J(−1 | n), the
+symbol of −1 at n [5, Thm. 82].
+Theorem 4.1 (sgn_eq_neg_jacobiSym). [L] For every x ≥ 1,
+                                 (−1)x = −J(−1 | N (x)).
+Proof. The candidate N (x) = 2x − 1 is odd, and the Jacobi symbol of −1 at an odd
+modulus n is (−1)(n−1)/2 (jacobiSym.at_neg_one). For odd n that power is χ4 (n), the
+nontrivial character of (Z/4Z)× read at the class of n. Hence J(−1 | N (x)) = χ4 (N (x)),
+and the identity above turns this into (−1)x = −(−1)(N (x)−1)/2 = −J(−1 | N (x)).     □
+   So the sign the pages read off is the value at the candidate of one fixed character
+modulo 4, taken with the opposite sign. At a prime candidate it is −χ−1 (N ), minus the
+quadratic character of −1; at every odd candidate, prime or not, it is −χ4 (N ), because the
+two characters agree on odd arguments. No property of the base entered this computation:
+the prefactor is arithmetic in the candidate, and the arithmetic it does is a reading of N
+modulo 4.
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                        13
+
+4.2. The face at modulus four. At M = 4 the face of Section 3 becomes a map on four
+classes. Since x ≥ 2 gives an odd N ≥ 3, the candidate is 1 or 3 modulo 4, and every
+condition the rule states is a condition on one of those classes.
+    The triviality of the face is the class 1. By Theorem 3.1 at M = 4, which is nonzero,
+W4 (r) = 1 if and only if 4 | (r − 1), that is if and only if r ≡ 1 (mod 4) [L] (Wface_
+four_eq_one_iff). The other three classes are the other three fourth roots of unity:
+W4 (2) = exp(πi/2) = i [L] (Wface_four_two_eq_I) and W4 (3) = exp(πi) = −1 [L]
+(Wface_four_three), so that
+                                    W4 (r) ∈ { 1, i, −1, −i }
+for every r ∈ Z [L] (Wface_four_eq_mu4). For that, write r − 1 = 4q + k with 0 ≤ k ≤ 3;
+periodicity of the exponential gives W4 (r) = exp(2πik/4), and the four values of k give
+the four roots in the order 1, i, −1, −i.
+    The codomain is the difference from the sign of Section 2. There the value σ(x, m) was
+a product of two binary choices, the parity of s modulo 4 and the branch condition s ≤ N ,
+and a product of two elements of {1, −1} lies in {1, −1}: the expression is {±1}-valued
+[L]
+    (monsterSign_eq_pm_one). At the same residue the face is µ4 -valued, and at class 2
+it takes the value i. The sign is one bit of the face; the face is not the sign.
+    Two algebraic properties of the face are used below and in Section 9. It is multiplicative
+in the residue:
+                             WM (a) = WM (b) WM (a − b + 1)
+for every M and all integers a, b [L] (Wface_mul), the exponents adding because (b − 1) +
+(a − b) = a − 1. And it separates residues exactly as the congruence does: for M ̸= 0,
+(1)                          WM (a) = WM (b) ⇐⇒ M | (a − b),
+a machine-checked equivalence [L] (Wface_eq_Wface_iff). For the proof, an exponential
+never vanishes, so WM (b) ̸= 0; the multiplicativity above turns WM (a) = WM (b) into
+WM (a − b + 1) = 1 after cancellation of WM (b), and Theorem 3.1 reads that as M |
+(a − b + 1 − 1) = a − b. At M = 4 the equivalence says that the face is injective on the
+four classes, which is what allows a congruence modulo 4 to be written as an equality of
+face values.
+4.3. The rule is a union of two fibres. The arithmetic form of the rule is the one [10]
+proves and Section 1 recalls: a base m is a witness exactly when its Fermat residue is
+nonzero and lies in one of the two witness classes W = {3, N − 1} modulo 4. Written on
+a residue, with no base in sight, the condition is a definition.
+
+ Definition 4.2 (W2009). For n, r ∈ Z, the 2009 condition W 2009(n, r) holds if and
+ only if r ̸= 0 and r is congruent to 3 or to n − 1 modulo 4.
+   The two classes of the definition are two values of the face.
+Theorem 4.3 (isWitness_iff_Wface_four). [L] Let x ≥ 2, let 1 ≤ m ≤ N (x), and put
+r = r(x, m). Then m is a 2009 witness if and only if
+                       and        W4 (r) = W4 (3) or W4 (r) = W4 N (x) − 1 .
+                             (︂                                 (︂         )︂)︂
+              r ̸= 0
+Proof. By the arithmetic form of the rule (witness_iff_resid_mod_four), m is a witness
+if and only if r ̸= 0 and r ≡ 3 or r ≡ N (x) − 1 (mod 4). Two applications of Eq. (1)
+at M = 4 rewrite the two congruences as equalities of face values: r ≡ 3 (mod 4) is
+W4 (r) = W4 (3), and r ≡ N (x) − 1 (mod 4) is W4 (r) = W4 (N (x) − 1). Replacing each
+class by the value it names leaves the same condition, with the two classes replaced by the
+two values.                                                                              □
+14                                   ALESSANDRO SGARBI
+
+    One of the two values is a constant of the circle, W4 (3) = −1; the other depends on
+the candidate, because N (x) − 1 is 0 modulo 4 when N (x) ≡ 1 and 2 when N (x) ≡ 3.
+So the witness condition on the face reads: the residue is nonzero, and its face is one of
+two of the four points of µ4 , namely −1 and the point that names the class of N − 1.
+When N (x) ≡ 1 (mod 4) the pair is {−1, −i}, and when N (x) ≡ 3 (mod 4) it is {−1, i};
+in either case two of the four points are witnesses and the other two, 1 and the remaining
+point, are not. The rule reads the residue through the face, and what it reads there is
+membership in a two-point subset of µ4 .
+
+4.4. Strictly coarser than the rule. That subset is not the set where the face misses
+1. The latter has three points, one for each class other than 1, and the rule takes two of
+them; the difference is a residue class, and it is never empty.
+Theorem 4.4 (Wface_four_ne_one_not_iff_witness_mod_four). [L] For every x ≥ 2
+there is an r ∈ Z with W4 (r) ̸= 1 and with neither r ≡ 3 nor r ≡ N (x) − 1 (mod 4).
+Proof. The candidate N (x) is odd, so it is 1 or 3 modulo 4. If N (x) ≡ 1, take r = 2: then
+W4 (2) = i ̸= 1, while the two witness classes are {3, 0}, and 2 is neither. If N (x) ≡ 3, take
+r = 0: then W4 (0) = −i ̸= 1, while the witness classes are {3, 2}, and 0 is neither.        □
+   The condition W4 (r) ̸= 1 is therefore strictly coarser than the condition of the rule:
+every witness is a point where the face misses 1, and there is always a class where the face
+misses 1 and the rule does not fire. The face and the rule are therefore different maps
+on the classes modulo 4. A face that existed only to express these two classes would be
+the two-point subset of the previous subsection; W4 is a different map, and its triviality
+condition is not the rule.
+   The class in question when N ≡ 1 (mod 4) is class 2, and it is the class named by the
+running examples of the article. Each of
+             46657 = 13 · 37 · 97,      1729 = 7 · 13 · 19,      1105 = 5 · 13 · 17
+is 1 modulo 4, so at each of them the witness classes are {3, 0}, while W4 (2) = i ̸= 1:
+the face fires on class 2 and the rule has no witness class there [L] (Wface_four_fires_
+on_class_two_not_witness). The theorem is about the class, not about the residues
+these three numbers happen to attain: what it shows is that the two conditions differ as
+maps on the classes modulo 4, and that one of the three classes on which the face fires is
+invisible to the rule.
+
+4.5. The rule on complementary residues. A rule that reads residues modulo 4 has a
+mod-4 answer on every pair whose sum is fixed, and the pair r + r′ = N + 1 is the one the
+arithmetic of the criterion uses. On that pair the 2009 condition is a statement about the
+two classes alone.
+    For odd n and nonzero r, r′ with r + r′ = n + 1,
+                (︂                                    )︂
+                     W 2009(n, r) ⇐⇒ W 2009(n, r′ )        ⇐⇒ r ≡ r′   (mod 4),
+a machine-checked equivalence [L] (w2009_complementary_pair). The same declaration
+proves a second statement: the two conditions hold together exactly when the common
+class is 3 and n ≡ 1, or the common class is 2 and n ≡ 3 (mod 4). The two clauses are the
+two halves of one case analysis. Since n is 1 or 3 modulo 4, and since r′ = n + 1 − r the
+class of r′ is determined by the class of r: modulo 4, r′ ≡ 2 − r when n ≡ 1 and r′ ≡ −r
+when n ≡ 3. Running over the four classes of r in the first case gives r′ ≡ 2, 1, 0, 3 for
+r ≡ 0, 1, 2, 3; the witness classes are {3, 0}, so the two conditions agree exactly on the
+classes 1 and 3, which are the classes fixed by r ↦→ 2 − r, and both fire only at r ≡ 3,
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         15
+
+where r′ ≡ 3 as well. The second case is the same computation with r ↦→ −r and the
+witness classes {3, 2}; the agreement is on 0 and 2, and both fire only at 2.
+    Read on the residues the bases attain, the same table is a statement about witnesses.
+Let x ≥ 2, let m, m′ ∈ [1, N (x)] have nonzero residues, and suppose r(x, m) + r(x, m′ ) =
+N (x) + 1. Then the two bases are either both witnesses or both non-witnesses exactly
+when the two residues agree modulo 4 [L] (witness_complementary_pair). The proof
+is the translation of the witness predicate into the residue rule of Definition 4.2 at both
+bases, followed by the first clause above with n = N (x), which is odd.
+    This is a statement about the rule, and it is the last one the section needs from that
+side: what happens to a product of two members of the family is a different question,
+about the face rather than about the rule, and it belongs to Section 7.
+4.6. The chord, and the integer three. The third fact is cyclotomic, and it concerns
+the base the source did not use. For p ≥ 2 write
+                                               (︂    )︂
+                                      ζp = exp iπ/p ,
+a primitive 2p-th root of unity. At p = N (x) this is the base ζ of Section 2, so the chord
+1 − ζp at p = N (x) is exactly the base 1 − ζ of the reading that Section 1 retires.
+   Its length is elementary: for p ≥ 1,
+                                                       π
+                                                     (︃ )︃
+                                   ∥1 − ζp ∥ = 2 sin       ,
+                                                       2p
+a machine-checked identity [L] (norm_one_sub_zeta). With φ = π/p the chord 1 − eiφ
+has real part 1 − cos φ and imaginary part − sin φ, so its squared modulus is (1 −
+cos φ)2 + sin2 φ = 2 − 2 cos φ; the double-angle formula gives 2 − 2 cos φ = 4 sin2 (φ/2), and
+sin(φ/2) ≥ 0 because φ/2 = π/(2p) ∈ (0, π/2]. The modulus is the nonnegative square
+root of the squared modulus, which is 2 sin(π/(2p)).
+    One value of p makes that length 1: for every p ≥ 2,
+                                         π
+                                       (︃ )︃
+                                 2 sin       = 1 ⇐⇒ p = 3,
+                                         2p
+a machine-checked equivalence [L] (two_sin_eq_one_iff). Put θ = π/(2p); then θ ∈
+(0, π/4], which lies in [−π/2, π/2], the interval on which the sine is injective. The equation
+says sin θ = 1/2 = sin(π/6), so injectivity gives θ = π/6, that is 2p = 6 and p = 3.
+Conversely p = 3 gives θ = π/6, and the sine is 1/2.
+Theorem 4.5 (norm_one_sub_zeta_eq_one_iff). [L] For every p ≥ 2,
+                                 ∥1 − ζp ∥ = 1 ⇐⇒ p = 3.
+Proof. The chord identity replaces the left-hand side by 2 sin(π/(2p)), and the uniqueness
+of the sine value replaces the resulting equation by p = 3. Both steps hold for every
+p ≥ 2.                                                                                  □
+     The chord has length 1 at one integer, and that is the reason the reading with base
+1 − ζ was never a sign. A power (1 − ζp )k with k ≥ 1 has modulus ∥1 − ζp ∥k , so a value built
+from the chord can be ±1 only if the chord has length 1; for p ̸= 3 the length 2 sin(π/(2p))
+is not 1, and every power of the chord lies off the unit circle, at modulus 2k sink (π/(2p)).
+The reading is excluded at every other p by the modulus alone, before any arithmetic of
+the criterion is asked. At p = 3 the exclusion fails, and the chord is 1 − eiπ/3 = e−iπ/3 , a
+primitive sixth root of unity: on the circle, but not a sign. The torsion 2 of the expression
+still has to come from the fold of Section 2.
+     The value depends on the convention. With the primitive p-th root exp(2πi/p) in place
+of ζp the chord would have length 1 at p = 6. The expression of 2009 uses exp(iπ/p), the
+16                                     ALESSANDRO SGARBI
+
+2p-th root, as in the base ζ = exp(iπ/N ) of Section 2, and it is that reading which singles
+out 3.
+
+4.7. One scale. The section has placed the bit at the scale 4 from two directions, and
+closed a third. The prefactor of the formula is −χ4 (N ), a character modulo 4 evaluated
+at the candidate; the witness rule is a two-point subset of µ4 , strictly finer than the set
+where the face misses 1; and the retired base 1 − ζ has length 1 at p = 3 and at no other
+p, so the reading built on it is not a sign and the sign of the expression comes from −ζ
+and the fold alone. The χ4 of the first fact is not a new object in the article: it is the
+character that appears in the identification of Section 6, where the members of the family
+are summed against a Dirichlet character and the sum is named.
+    What the section has not done is read the expression itself as one member of the family.
+The rule of 2009 is fixed — one coefficient, one filter, the two-point subset of µ4 above —
+and the members, and the bit each of them carries, are the subject of Section 5.
+
+                                  5. One member, one bit
+    Section 4 put the source’s bit at the 2-adic scale: the prefactor is a character modulo
+four, the rule is a two-point subset of µ4 , and the retired reading of the base was a chord
+of length 1 only at p = 3. This section reads the expression itself as one member of a
+family. The base of Section 2 stays as it is, and the number in front of the inner exponent
+becomes a parameter c ∈ Z, so that the expression of 2009 is the member of coefficient
+(−1)x . Each member turns out to fire exactly when a reduced product is odd — a parity
+dilate — and that parity is a row of Demjanenko’s matrix read modulo 2. A member is a
+{±1}-valued function of the base, so at each base it reports one bit, whether it fires, and
+a product of members reports the sum modulo 2 of their bits; this is the sense of “one bit”
+throughout the article. A member realises CM when it fires exactly at the CM -witnesses.
+The family then carries one bit per member: c = −2 realises C2 (Theorem 5.3) and c = 0
+realises C1 , while no single coefficient realises any CM with M ≥ 3 on a tail of N . The
+2-adic ladder at the end of the section is, in the same sense, a ladder of single bits.
+
+5.1. The coefficient family. Let x ≥ 2, N = 2x − 1 and ζ = exp(iπ/N ), and let
+t(x, m) = (m + N − 1)N −1 mod 2N be the inner term of Section 2. For a coefficient c ∈ Z
+the member of coefficient c has inner exponent
+                             (︂               )︂
+                     ec (m) = 1 + c t(x, m) mod 2N           (coeffExp),
+argument
+                       ac (m) = 2x ec (m) mod 2N           (coeffArg),
+and value
+       σc (m) = +1 if 4 | ac (m), −1 otherwise +1 if ac (m) ≤ N, −1 otherwise ,
+                (︂                                  )︂(︂                           )︂
+
+
+the parity factor and the branch factor of Section 2 (coeffSign). These are the formulas
+of Section 2 with the factor (−1)x replaced by c: at c = (−1)x they are A(x, m), s(x, m)
+and σ(x, m), so the expression of 2009 is the member of coefficient (−1)x . For every c the
+                                            ]︂N/2
+number σc (m) is the value of (−ζ)ec (m)      : the branch computation of Section 2 used
+                                  [︂
+
+only that the argument is even and lies in [0, 2N ), and ac (m) has both properties because
+ec (m) is an integer. The member fires at m when its value differs from its value at m = 1
+(CoeffFires) — the base whose Fermat residue is 0, the reference non-witness of every
+filter CM .
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                        17
+
+   The argument has a closed form. With r = r(x, m),
+                                            (︂               )︂
+                              ac (m) = 2 (x(1 + cr)) mod N ,
+
+a machine-checked identity [L] (coeffArg_eq). Its proof is that of Theorem 2.2 without
+the coefficient step: t(x, m) ≡ r (mod N ), so that x(1 + c t(x, m)) ≡ x(1 + cr) (mod N );
+doubling carries a congruence modulo N into one modulo 2N , and both sides of the
+claimed identity are remainders in [0, 2N ), so that two numbers of that interval congruent
+modulo 2N coincide. Two readings of the closed form are used throughout. The number
+                                       (︂          )︂
+                                  Vc = x(1 + cr) mod N
+
+is the member’s reduced value: since 2x ≡ 1 (mod N ), the factor x is the inverse of 2, and
+Vc is half of 1 + cr modulo N . And the coefficient enters only through c r modulo N , so the
+members are indexed by the classes of c modulo N , with c1 ≡ c2 (mod N ) giving the same
+member. Finally the value is always a sign: σc (m) ∈ {1, −1} [L] (coeffSign_eq_one_or),
+a product of two factors each of which is 1 or −1.
+
+
+5.2. The member is a function of the residue. Because of the closed form a member
+can be written without a base. For c, r ∈ Z put Vc (r) = (x(1 + cr)) mod N , let
+
+       σc (r) = +1 if 4 | 2Vc (r), −1 otherwise +1 if 2Vc (r) ≤ N, −1 otherwise
+                (︂                               )︂(︂                                )︂
+
+
+be the branch sign at the residue r (resSign), and say that c fires at r when σc (r) ̸= σc (0)
+(resFire). These are the member’s two definitions read at r instead of at m: by the closed
+form σc (m) = σc (r(x, m)), and since r(x, 1) = 0, the member fires at m exactly when c
+fires at r(x, m). A member is therefore a function Z → {1, −1} of period N , and firing is
+a predicate on residues whose reference point is 0. That is the form in which the filters
+CM of Section 3 read a base, and the form in which the family can be compared with a
+classical matrix.
+
+
+5.3. The member is a parity dilate.
+
+Theorem 5.1 (resFire_iff_parity). [L] Let x ≥ 2 and c, r ∈ Z. Then c fires at r if
+and only if the least residue of xcr modulo N is odd.
+
+Proof. Put w = (xcr) mod N , so that 0 ≤ w < N , and V = Vc (r). Then x(1+cr) = x+xcr,
+so V = (x + w) mod N by the definition of w, while the reference value is Vc (0) = x. There
+are two cases.
+    If x + w < N then V = x + w, and both arguments 2(x + w) and 2x = N + 1 exceed
+N ; the branch factors are therefore both −1, and the signs differ exactly when the parity
+factors do, that is exactly when 2(x + w) ̸≡ 2x (mod 4), which is to say when w is odd.
+    If x + w ≥ N then V = x + w − N , and 2V ≤ 2x − 2 = N − 1 < N , so the branch
+factors differ; the argument 2V = 2x + 2(w − N ) differs from 2x modulo 4 by 2(w − N ),
+and N is odd, so the parity factors differ exactly when w is even. The two factors therefore
+change together for even w, and exactly one of them changes for odd w; the signs differ
+exactly in the second case.
+    In both cases the signs differ exactly when w is odd, and w is the least residue of xcr
+modulo N .                                                                                □
+18                                 ALESSANDRO SGARBI
+
+5.4. The member is a row of Demjanenko’s matrix. Demjanenko’s function of a
+residue is the indicator of the upper half of the range. It is a parity in disguise: for odd n
+and 0 ≤ w < n,
+                              n < 2w ⇐⇒ (2w mod n) is odd,
+a machine-checked equivalence [L] (demjanenko_iff_parity). If 2w < n then n < 2w
+fails and the reduced value 2w is even. If 2w ≥ n then 2w > n, because n is odd and 2w is
+not; the reduced value is 2w − n, which is odd, and n < 2w holds. Both sides are therefore
+true in the second case and false in the first.
+Theorem 5.2 (resFire_eq_demjanenko). [L] Let x ≥ 2 and c, r ∈ Z. Then c fires at r
+if and only if             (︂             )︂
+                              x2 c r mod N > N/2.
+Proof. Put w = (x2 cr) mod N , so that 0 ≤ w < N . The candidate N = 2x − 1 is odd,
+so the parity lemma applies to n = N and to w: the inequality N < 2w is equivalent
+to (2w mod N ) being odd. Now 2x ≡ 1 (mod N ), whence 2x2 ≡ x (mod N ) after
+multiplying by x; therefore 2w ≡ 2x2 cr ≡ xcr (mod N ), and the least residue of 2w
+modulo N is the least residue of xcr modulo N . By Theorem 5.1 the member fires exactly
+when that residue is odd, which is exactly when N < 2w, that is when w > N/2.        □
+     The theorem identifies each member with a row of a classical matrix. Write
+                                        [︂                    ]︂
+                              Da (u) = (au mod N ) > N/2
+for the row of index a of the Demjanenko matrix of order N , read as a function of the
+residue u and written with entries in {0, 1}. By the parity lemma, Da (u) is the parity
+of the least residue of 2au modulo N . The classical matrix is Demjanenko’s [8]; in the
+formulation of Tsumura [12, Definition 1.1] its entries at the prime 2 are the signs (−1)R−1
+of least residues R of products, so up to the indexing of rows and columns, and up to the
+encoding ±1 ↔ {0, 1}, which is what “read modulo 2” means throughout this article, the
+rows Da are its rows, and for prime N the classical matrix is a block of size (N − 1)/2
+of them. Its determinant carries the relative class number (Hazama [6], Folz–Zimmer [4],
+Tsumura [12]). What Theorem 5.2 proves is the content of the identification: the fire
+of a member, defined on the circle through the branch of Section 2, is the half-interval
+indicator of a row. By the theorem the member of coefficient c is the row of index a = x2 c.
+The correspondence is a bijection: 2x ≡ 1 gives 4x2 ≡ 1 (mod N ), so multiplication by
+x2 is a unit of Z/N with inverse a ↦→ 4a, and row a is the member of coefficient 4a. The
+members of the family are therefore the rows of the matrix, in the other order of indices,
+and the same object is being read in two languages: a coefficient c on the circle, an index
+x2 c in the matrix.
+5.5. The bit that is realised. One filter of one bit is realised by one member.
+Theorem 5.3 (coeff_realises_witnessMod_two). [L] Let x ≥ 2. For every base k with
+1 ≤ k ≤ N , the member of coefficient −2 fires at k if and only if k is a C2 -witness.
+Proof. Let r = r(x, k), so that 0 ≤ r < N , and put V = V−2 (r). Since x(1 − 2r) =
+x − 2xr ≡ x − r (mod N ), the reduced value is
+                   V = x − r for r ≤ x,        V = x − r + N for r > x.
+The reference value is V−2 (0) = x; the reference argument 2x = N + 1 exceeds N , and
+2x ≡ 0 (mod 4) exactly when x is even, so the reference sign is −(−1)x .
+   If 0 < r < x then V = x − r and 0 < 2V ≤ 2x − 2 < N : the branch factor is +1
+against −1 at the reference, and the parity factor is (−1)x−r against (−1)x . The parity
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                        19
+
+factors differ exactly when r is odd, so with the branch factor already differing the signs
+differ exactly when r is even.
+    If r = x then V = 0: both factors are +1, the sign is +1, and it differs from −(−1)x
+exactly when x is even, that is when r is even.
+    If x < r < N then V = x − r + N > x and 2V > 2x > N : the branch factor is −1, as
+at the reference, and the parity factor is (−1)x−r+N against (−1)x . Since N is odd, those
+differ exactly when r is even.
+    If r = 0 then V = x: the argument equals the reference argument and the two signs
+agree, so the member does not fire.
+    In the three cases with r ̸= 0 the member fires exactly when r is even, and at r = 0,
+which is even, it does not fire. A C2 -witness is a base with nonzero Fermat residue not
+congruent to 1 modulo 2, that is, with nonzero even residue; so the member of coefficient
+−2 fires exactly at the C2 -witnesses.                                                   □
+
+    The dual coefficient reads the opposite parity. For c = 2 the reduced value is V =
+(x + r) mod N , and the same comparison of factors gives that the member of coefficient 2
+fires exactly at the odd residues [L] (coeffFires_two_iff_resid_odd). The coefficient
+c = 0 gives the empty filter: V = x for every residue, so the sign is constant, no member
+fires, and C1 has no witness at all, because every residue is congruent to 1 modulo 1 [L]
+(coeff_realises_witnessMod_one). Thus C1 and C2 — the two filters of at most one
+bit — are realised pointwise at every N , by the coefficients 0 and −2.
+
+5.6. No single coefficient beyond one bit. A pair of residues summing to N obstructs
+every member. The reduced values of such a pair sum to 1 modulo N , and the two branch
+signs then point in opposite directions — with exactly one exception, in which both signs
+equal the sign at m = 1.
+    For x ≥ 2, c ∈ Z and two bases m, m′ with r(x, m) + r(x, m′ ) = N ,
+                     σc (m′ ) = −σc (m) or σc (m) = σc (m′ ) = σc (1),
+a machine-checked disjunction [L] (coeffSign_pair). For the proof, let V, V ′ be the two
+reduced values. Their sum is
+                    (︂                         )︂
+        V + V ′ ≡ x 2 + c(r(x, m) + r(x, m′ )) = x(2 + cN ) ≡ 2x ≡ 1       (mod N ),
+
+so V +V ′ is 1 or N +1, both summands lying in [0, N ). If V +V ′ = 1 then {V, V ′ } = {0, 1}:
+the argument 0 has sign +1, the argument 2 has branch factor +1 and parity factor −1,
+and the two signs are opposite. If V + V ′ = N + 1 and V = x, then V ′ = 2x − x = x
+and both arguments equal the reference argument 2x, so both signs equal σc (1); this is
+the case c r(x, m) ≡ 0 (mod N ). Otherwise V ̸= x, and one of V, V ′ lies below x and the
+other above it. Say V < x < V ′ : then 2V ≤ N − 1 and 2V ′ ≥ 2N + 2 − 2V > N , so the
+branch factors differ, while 2V ′ − 2V = 2N + 2 − 4V ≡ 2N + 2 ≡ 0 (mod 4) because N is
+odd, so the parity factors agree. One factor differs and the other does not, and the signs
+are opposite.
+    Two consequences follow, each by the same case distinction on signs. No member fires
+at both halves of such a pair [L] (not_coeffFires_pair): if it did, then either the two
+signs are opposite, in which case one of them equals the reference sign σc (1) ∈ {1, −1} and
+that base does not fire, or both signs equal the reference, in which case neither base fires.
+And a filter that contains such a pair of bases cannot be realised by one coefficient [L]
+(not_coeff_realises_of_pair): a member realising the filter would fire at both bases,
+which is impossible. This is the pair obstruction; the impossibility results of the section
+are proved from it.
+20                                     ALESSANDRO SGARBI
+
+    The obstruction applies once a pair of CM -witnesses summing to N is produced. Two
+families of candidates supply such pairs, one for each kind of prime factor that M can
+have. Let N = pq with p, q distinct primes, let p | M , and suppose that there is an
+exponent a with 2a | q − 1 and 2a ∤ p − 1. Then no coefficient realises CM at this N [L]
+(not_coeff_realises_witnessMod_of_two_pow). The hypothesis is what makes a local
+square root of −1 available: it gives 2 gcd(N − 1, q − 1) | q − 1, hence a b with bN −1 ≡ −1
+(mod q) [L] (exists_pow_eq_neg_one_mod_prime). The pair lemma of [11] [L] (exists_
+attainable_pair_of_local_neg_one), applied with the two primes interchanged, then
+gives bases w, w′ in [1, N ] whose residues satisfy
+     r(x, w) ≡ r(x, w′ ) ≡ 0    (mod p),   r(x, w) ≡ −1 (mod q),     r(x, w′ ) ≡ 1   (mod q),
+and their sum is N . Both residues vanish modulo p, and p | M : a residue congruent to 0
+modulo p cannot be congruent to 1 modulo M , which would force it to be 1 modulo p.
+Both bases are therefore CM -witnesses summing to N , and the pair obstruction applies.
+    The 2-adic kind of factor is met at N = 3q. Let q ≡ 1 (mod 12) be prime, N = 3q, and
+suppose that 4 | M . Then no coefficient realises CM at this N [L] (not_coeff_realises_
+witnessMod_of_four_dvd). The same pair lemma now gives two bases in [1, N ] whose
+residues vanish modulo 3, are −1 and 1 modulo q, and sum to N ; the only integers below
+3q with those residues are q − 1 and 2q + 1. Since q ≡ 1 (mod 4), the first is 0 modulo 4
+and the second is 3 modulo 4; a number congruent to 1 modulo M would be congruent to
+1 modulo 4, so neither residue is congruent to 1 modulo M . Both bases are CM -witnesses
+summing to N , and the pair obstruction applies again.
+    Both constructions can be repeated with N as large as one likes, because there are
+primes in the two progressions 1 mod 2p and 1 mod 12 beyond any bound: this is the
+case 1 mod k of Dirichlet’s theorem [5, Thm. 15], which has an elementary proof through
+cyclotomic polynomials (Nat.exists_prime_gt_modEq_one). Hence the bad candidates
+are unbounded in the odd-factor case [L] (infinite_not_coeff_realises_witnessMod)
+and in the 2-adic case [L] (infinite_not_coeff_realises_witnessMod_of_four_dvd).
+Combining the two cases settles the pointwise reading of the coefficient family for every
+modulus above 2.
+Theorem 5.4 (infinite_not_coeff_realises_witnessMod_of_three_le). [L] Let
+M ≥ 3 and let n be a natural number. Then there is an x > n such that N (x) is not
+prime and no coefficient c ∈ Z satisfies
+     ∀k, 1 ≤ k ≤ N (x) :       the member of coefficient c fires at k ⇐⇒ k is a CM -witness.
+Proof. If M has an odd prime divisor p, take a prime q ≡ 1 (mod 2p ) with q > n + p,
+which Dirichlet’s theorem provides, and put N = pq and x = (N + 1)/2. Then x > n
+and N is composite. Moreover 2p | q − 1, while 2p ∤ p − 1 because 2p > p − 1 > 0, so the
+odd-factor obstruction applies: no coefficient realises CM at this N .
+    If M has no odd prime divisor, then M is a power of two, and M ≥ 3 forces 4 | M .
+Take a prime q ≡ 1 (mod 12) with q > n + 5, and put N = 3q and x = (N + 1)/2. Then
+x > n and N is composite, and the 2-adic obstruction applies: no coefficient realises CM
+at this N .
+    In either case an x > n with N (x) composite has been found at which every coefficient
+fails to realise CM .                                                                   □
+   So no choice of a single coefficient, and no schedule c(N ) for the coefficient, realises
+any filter CM with M ≥ 3 on a tail of N : the failure recurs above every bound. What the
+family realises at every N is exactly C1 and C2 , the two filters of at most one bit. The
+obstruction is to single coefficients, and the products of members are a different question,
+taken up at the end of the section and in Section 7.
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                           21
+
+    A concrete instance of the obstruction, at the
+                                               √ schedule modulus of Section 3, needs no
+Dirichlet theorem. At N = 35 the schedule ⌊ N ⌋ + 1 is 6 [L] (sqrtSched_thirtyfive),
+and the bases m = 8 and m = 15 have residues 14 and 21. Those sum to 35 and are
+2 and 3 modulo 6, so both are C6 -witnesses, and no coefficient realises C6 at N = 35
+[L]
+    (not_coeff_realises_sqrtSched_thirtyfive), through the wrapper not_coeff_
+realises_schedule_of_pair of the pair obstruction.
+
+5.7. The ladder of powers of two. The filters C2J form a ladder, and every rung of it
+is one bit. Its rungs are indexed by j ≥ 2. The rung-j member is the member of coefficient
+(−1)x (N − κ(x))j−2 , where κ(x) is the half coefficient of Section 2, with the same branch
+map as before; at j = 2 the power is the zeroth, the coefficient is (−1)x , and the rung is
+the expression of 2009 itself [L] (towerSign_two_eq_monsterSign). Its argument reads
+the (j − 1)-st binary digit of the residue:
+                                                                  [L]
+                      (︂                                )︂
+           aj (m) = 2 (x + (−κ(x))j−1 r(x, m)) mod N                    (towerArg_eq),
+
+and, since −κ(x) ≡ ±x (mod N ) and 2x ≡ 1, the multiplier (−κ(x))j−1 is ±2−(j−1)
+modulo N : the rung divides the residue by 2j−1 and reads the next bit. The value is the
+prefactor times that bit [L] (tower_bridge):
+      τj (m) = −(−1)x · +1 if (−κ(x))j−1 r(x, m) mod N is even, −1 otherwise ,
+                           (︂        (︂                      )︂                          )︂
+
+
+and the reference value is the same expression with r(x, m) replaced by 1, the value at a
+base of residue 1, which no filter calls a witness (towerRef). The rung fires at m when
+τj (m) differs from that reference value (TowerFires). Two specialisations connect the
+ladder with what came before: at j = 2 the rung is the sign of Section 2, and the parity
+form of that sign is the rung-2 instance of the bridge [L] (monsterSign_eq_bit),
+      σ(x, m) = −(−1)x · +1 if (−κ(x))r(x, m) mod N is even, −1 otherwise ,
+                                (︂        (︂                 )︂                          )︂
+
+
+so that the sign of 2009 is itself a single parity bit of the residue, multiplied by the fixed
+sign −(−1)x .
+    The rungs stack. For x ≥ 2, 1 ≤ m ≤ N and j ≥ 2, the base m is a C2j -witness if
+and only if it is a C2j−1 -witness or its residue is nonzero and the rung j fires at m [L]
+(isWitnessMod_pow_or_towerFires). The proof is the rung pair realisation [L] (tower_
+pair_realises_C), which reads C2j as: the residue is nonzero, and either it is not 1
+modulo 2j−1 or the rung-j value differs from the reference. The first disjunct is C2j−1 , the
+second is the fire.
+Theorem 5.5 (isWitnessMod_two_pow_iff_towerFires). [L] Let x ≥ 2, 1 ≤ m ≤ N
+and J ≥ 2. Then m is a C2J -witness if and only if it is a C2 -witness, or there is a rung j
+with 2 ≤ j ≤ J, with r(x, m) ̸= 0, at which the rung fires at m.
+Proof. Induction on J ≥ 2. For J = 2 the stacking law at j = 2 reads C4 as C2 , or a
+nonzero residue with a fire at rung 2; that is the claim, the range of the existential being
+the single index 2.
+    For the step, assume the claim for J and apply the stacking law at j = J + 1: the base
+is a C2J+1 -witness exactly when it is a C2J -witness or has a nonzero residue and fires at
+rung J + 1. In the first case the induction hypothesis replaces C2J by C2 or a fire at a
+rung j ≤ J; in the second there is a fire at rung J + 1 with a nonzero residue. Together
+these are C2 or a fire at a rung j with 2 ≤ j ≤ J + 1, and each of those cases conversely
+gives C2J+1 , through the induction hypothesis or through the stacking law. This closes the
+step and the induction.                                                                   □
+22                                 ALESSANDRO SGARBI
+
+    The ladder collapses in the same way at the level of congruences. If the residue is
+nonzero, then it is 1 modulo 2J exactly when it is odd and no rung j with 2 ≤ j ≤ J fires
+at m [L] (resid_one_mod_two_pow_iff_towerRefs). For the proof, negate the ladder
+display: with a nonzero residue the base fails to be a C2J -witness exactly when it is not a
+C2 -witness and no rung in the range fires, and not being a C2 -witness is being 1 modulo 2,
+that is oddness.
+    So the ladder C2J is the disjunction of the bottom filter C2 with J −1 single comparisons,
+one per rung, and r ≡ 1 (mod 2J ) is the statement that the bottom bit is 1 and no rung
+above it fires. Stacking rungs adds one bit at a time, and no rung reads more than one:
+the family carries one bit per member however many rungs are taken.
+
+5.8. Products of members. Two members can be multiplied, and the product is a new
+function of the residue rather than another member of the family. For coefficients c1 , c2
+and a base m the product sign is σc1 (m) σc2 (m) (productSign), and the product fires at
+m when that sign differs from its value at m = 1 (ProductFires). The pair obstruction
+of Section 5.6 says nothing about it: it obstructs one coefficient, not a product of two.
+     Two proved instances measure the difference. At N = 35 the product of the members
+of coefficients 2 and ⌊35/3⌋ = 11 fires exactly at the C3 -witnesses [L] (product_realises_
+witnessMod_three_two_mod_thirtyfive), and at N = 65 the product of the members of
+coefficients 2 and ⌊65/3⌋ = 21 does the same [L] (product_realises_witnessMod_three_
+two_mod_sixtyfive). Each statement is a conjunction of N decidable comparisons of
+residues, one for each base k in [1, N ], and each is verified base by base. So a product of
+two members can realise a filter with M = 3, which no single coefficient realises at every
+N , and the reach of products is a question about products. Its laws are the subject of
+Section 7.
+     Each member of the family is a parity dilate of the residue, hence a row of Demjanenko’s
+matrix modulo 2; each carries one bit; the two filters of at most one bit are realised, by
+c = 0 and c = −2; nothing with M ≥ 3 is realised by a single coefficient on a tail; and the
+2-adic ladder stacks the bits one rung at a time. The family is indexed, and the object it
+computes can now be summed. What the sum of a member against a Dirichlet character
+is, is the subject of Section 6.
+
+
+                                 6. The identification
+    Section 5 placed the expression of 2009 inside a family indexed by a coefficient, and
+read every member of it: each member is a parity dilate of the residue, hence a row
+of Demjanenko’s matrix modulo 2, and each carries one bit. What it did not do is
+evaluate a member. This section sums one of them, the member of coefficient 1, against a
+Dirichlet character, and the value is a classical number rather than a new one: the sum
+is a generalised Bernoulli number, and the same sum read in Demjanenko’s half-index
+language is a character sum of the first row of the matrix. The two theorems below are
+the two languages of one computation. The summation that carries them is proved once,
+in Section A; here each display is reduced to that engine, and the engine is not repeated.
+
+6.1. The member of coefficient one. Let h ≥ 1 and N = 2h + 1, so that N = 2x − 1
+with x = h + 1 is a candidate of Section 2. Of the family of Section 5 this section needs
+the member whose coefficient is 1. Its reduced value at a residue r ∈ Z is
+                                         (︂        )︂
+                                V1 (r) = x(1 + r) mod N,
+                A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                           23
+
+the half of 1 + r modulo N , the factor x being the inverse of 2. Put u = V1 (r): then
+r ≡ 2u − 1 (mod N ), and u ↦→ 2u − 1 is a bijection of Z/N Z with itself. The sign of the
+member at r is the member sign of Section 5 at c = 1,
+
+      σ1 (r) = +1 if 4 | 2V1 (r), −1 otherwise +1 if 2V1 (r) ≤ N, −1 otherwise ,
+                 (︂                                )︂(︂                                  )︂
+
+
+and in terms of u both factors are decisions about u alone: the first is +1 exactly when u
+is even, since 4 | 2u says exactly that, and the second is +1 exactly when u < N/2, the
+equality 2u = N being impossible for odd N . With brackets denoting the indicator, as in
+Section 5,
+                 σ1 (r) = 1 − 2 [ u odd ] 1 − 2 [ u > N/2 ] ,
+                             (︂           )︂(︂               )︂
+                                                                       u = V1 (r).
+At even x this member is the expression of 2009 itself. At odd x the expression is the
+member of coefficient −1, and since V−1 (r) = V1 (−r) its sign at r is σ1 (−r); against an
+odd character its sum is therefore the negative of the sum computed below.
+    The second factor is the matrix in embryo. The function 1 − 2 [ u > N/2 ] is +1 below
+the midpoint of the range [0, N ) and −1 above it, and the indicator [ u > N/2 ] is the first
+row of Demjanenko’s matrix of order N . The member of coefficient 1 is a product of a
+parity with that cut, and summing it against a character sums such a product.
+    Both theorems below concern a function on the residues 0, 1, . . . , N − 1 with values in
+a field K, subject to three conditions:
+   f (0) = 0,         f (N − a) = −f (a) (0 < a < N ),       f (2a) = f (2) f (a) (2a < N ).
+An odd Dirichlet character modulo N , extended by 0 where the class is not a unit, is such a
+function: it vanishes at 0; it has f (N − a) = −f (a) because N − a ≡ −a and ψ(−1) = −1
+is the oddness; and f (2a) = f (2)f (a) is multiplicativity read on representatives below
+N . These are the hypotheses the engine consumes, which is why the engine is stated for
+functions and the identification below for characters.
+
+6.2. The sum against an odd character.
+Theorem 6.1 (monster_bernoulli_dirichlet). [L] Let h ≥ 1 and N = 2h + 1 ≥ 3, let
+K be a field in which 2 ̸= 0, and let ψ be an odd Dirichlet character modulo N with values
+in K. Then
+                                                  (︂          )︂ ∑︂
+                         σ1 (r) ψ(r) = 2(−1)h ψ(2) 1 − 2ψ(2)
+                    ∑︂
+                 N                                                  a ψ(a).
+                       r<N                                           a<N
+
+Over C, where N is invertible, the same identity reads
+        ∑︂                                (︂          )︂                     1 ∑︂
+              σ1 (r) ψ(r) = 2χ4 (N ) ψ(2) 1 − 2ψ(2) B1,ψ ,          B1,ψ =         a ψ(a).
+        r<N                                                                  N a<N
+
+Proof. Write f (a) = ψ(a) for 0 ≤ a < N . The function f has the three properties
+of the preceding paragraph: f (0) = 0; f (N − a) = ψ(−a) = ψ(−1)ψ(a) = −f (a) for
+0 < a < N ; and f (2a) = ψ(2a) = ψ(2)ψ(a) = f (2)f (a) when 2a < N . The engine
+(monster_bernoulli, proved in Section A) applied to this f gives the first display. For
+the second, N = 2h + 1 makes
+                                  (−1)h = (−1)(N −1)/2 = χ4 (N ),
+the nontrivial character modulo four read at the candidate, which is the character of the
+prefactor in Section 4; and over C the integer N ≥ 3 is invertible, so dividing the first
+display by N and writing B1,ψ for N −1 a<N a ψ(a) gives the second.
+                                       ∑︁
+                                                                                       □
+24                                        ALESSANDRO SGARBI
+
+   The number B1,ψ is the generalised Bernoulli number of order one attached to ψ [13,
+Ch. 4]. With B1 (t) = t − 12 the Bernoulli polynomial of degree one,
+                                           a            1 ∑︂           1 ∑︂
+                      ∑︂              (︃       )︃
+                            ψ(a) B1                 =         a ψ(a) −       ψ(a),
+                      a<N                  N            N a<N          2 a<N
+and the second term vanishes because a nonprincipal character sums to 0 over a complete
+residue system; an odd character is not principal, so the normalisation above is the standard
+one.
+    What the display says is then visible in the shape of the display. The right-hand side
+is B1,ψ multiplied by an explicit factor, and that factor involves the character only at the
+argument 2 and the candidate only through the class of the candidate modulo 4. The
+member’s own arithmetic — its coefficient, the halving of V1 , the parity dilate of Section 5
+— has left the answer, and what remains is the character. Since ψ(2) is a root of unity and
+χ4 (N ) = ±1, the factor 2χ4 (N )ψ(2)(1 − 2ψ(2)) is nonzero over C: the identity determines
+the character sum of the member as soon as B1,ψ is known, and determines B1,ψ from that
+sum. It does so for every odd character at once.
+    Read on the fire set, the same identity is a statement about one bit. Let F1 (r) ∈ {0, 1}
+be 1 when the member of coefficient 1 fires at r and 0 otherwise, in the sense of Section 5.
+The two values σ1 (r) and σ1 (0) are each ±1, so they differ exactly when their quotient is
+−1, and
+                                  σ1 (r) = σ1 (0) (−1)F1 (r) .
+So the left-hand side is σ1 (0) times the character sum of (−1)F1 = 1 − 2F1 , and since the
+character sums to 0 over the residues, it is −2σ1 (0) times the character sum of the set
+where the member fires. The bit of Section 5, weighted by ψ, carries the Bernoulli number.
+
+6.3. The same sum in Demjanenko’s language. The second form of the computation
+does not need a character. It needs only the three conditions on f , and its right-hand side
+is a sum over the upper half of the range — the row of the matrix.
+Theorem 6.2 (monster_demjanenko). [L] Let h ≥ 1 and N = 2h + 1, let K be a field in
+which 2 ̸= 0, and let f : N → K satisfy f (0) = 0, f (N − a) = −f (a) for 0 < a < N , and
+f (2a) = f (2)f (a) for 2a < N . Then
+                             σ1 (r) f (r) = −2(−1)h f (2)2
+                       ∑︂                                                ∑︂
+                                                                                f (u).
+                       r<N                                            N/2<u<N
+
+Proof. Write
+                                                               (−1)k f (k),
+                    ∑︂                                    ∑︂                             ∑︂
+               M=         σ1 (r) f (r),             R=                          S=             f (k)
+                    r<N                                   k≤h                            k≤h
+
+for the member sum, the alternating lower half-sum and the lower half-sum. The engine
+(monster_core, Section A) gives, among its four relations,
+                            M = 2(−1)h f (2) R,                   2R = 2f (2) S.
+The second gives R = f (2)S after cancelling the factor 2, which is nonzero in K; hence
+M = 2(−1)h f (2)2 S.
+   It remains to read S as the upper half-sum. The splitting (sum_range_split_half)
+writes the full sum as the lower half plus the reflected upper half,
+                                  ∑︂                        ∑︂
+                                          f (u) = S +             f (2h − j).
+                                  u<N                       j<h
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         25
+
+For 0 ≤ j < h the index 2h − j = N − (j + 1) lies in [1, N − 1], so the anti-symmetry gives
+f (2h − j) = −f (j + 1), and the reflected sum is − 1≤k≤h f (k) = −S because f (0) = 0.
+                                                     ∑︁
+
+The indices of the reflected sum are the upper half of the range, so
+                               ∑︂                 ∑︂
+                                      f (u) =            f (u) = −S,
+                            N/2<u<N             h<u≤2h
+
+and substituting −S for the upper half-sum on the right of the claim turns it into
+2(−1)h f (2)2 S, which is M .                                                   □
+    The matrix of order N has entries Da (u) = [ au mod N > N/2 ] read as functions of
+the residue u (Section 5), so its first row is D1 (u) = [ u > N/2 ] and the right-hand side of
+the theorem is the pairing of f with that row:
+                                 ∑︂               ∑︂
+                                        f (u) =         D1 (u) f (u).
+                              N/2<u<N             u<N
+
+The theorem therefore says that the member’s sum against f is −2χ4 (N )f (2)2 times the
+pairing of f with the first row. The matrix is Demjanenko’s; its determinant is tied to the
+relative class number h− [12], and Folz and Zimmer determine its rank [4]. The factor is
+explicit, and for f = ψ it is a sign, the square of a root of unity, and the single factor 2:
+the character sum of the member and the character sum of the first row differ by it, and
+by nothing else.
+    With f = ψ over C the two theorems have the same left-hand side, so eliminating the
+common left-hand side gives
+                                          ψ(2)      ∑︂
+                              B1,ψ = −                    ψ(u),
+                                       1 − 2ψ(2) N/2<u<N
+an explicit multiple of the character sum of the first row. Since the upper(︂ half-sum
+                                                                                     )︂ is
+minus the lower one, this is the classical half-sum formula 0<a<N/2 ψ(a) = ψ(2) − 2 B1,ψ
+                                                           ∑︁
+
+(see [2]). That the blocks of the matrix’s decomposition are the numbers B1,χ is Tsumura’s
+theorem [12]: the two languages were known to name one object. Given the Demjanenko
+form, the Bernoulli form of Theorem 6.1 is therefore equivalent to that classical formula,
+and the proof given here (Section A) is an elementary, machine-checked proof of it and
+not a new identity. What the pair of displays adds is the bridge to the object of 2009 —
+the member of coefficient 1 is a row of the matrix read as a sign, and its character sums
+are the numbers the matrix carries.
+6.4. What is identified. For every odd character ψ modulo N , the character sum of
+the member of coefficient 1 is the generalised Bernoulli number B1,ψ times a factor read
+from ψ at 2 and from N modulo 4; equivalently, it is the character sum of the first row of
+Demjanenko’s matrix times the factor −2χ4 (N )ψ(2)2 . Neither the matrix nor the Bernoulli
+numbers are introduced here: the matrix is Demjanenko’s and its rank Folz–Zimmer’s,
+the half-sum formula is classical [2], and the block decomposition is Tsumura’s. The
+identification is an elementary bridge: the expression is not an invariant of N beyond the
+classical ones, but a reading of a known one, and what it reads is a row of a classical
+matrix summed against a character.
+    The identification is one member deep. It evaluates the member of coefficient 1, and
+with it the expression of 2009 at every x, against every function of the three conditions;
+it says nothing about the other members, nor about products of members, which is the
+question the second half of the article asks. One member carries one bit (Section 5), so
+which filters a product of members realises is a question about the span of finitely many
+rows, and the laws that fence it in begin with the pair law of Section 7.
+26                                  ALESSANDRO SGARBI
+
+                                     7. The pair law
+    Section 6 evaluated one member: summed against an odd character, the member of
+coefficient 1 returns a generalised Bernoulli number, and read against a row of Demjanenko’s
+matrix the same sum is the character sum of that row. That answers what a member
+computes. That does not answer what a product of members can determine, and this is
+the question the second half of the article asks. At each residue a member reports one bit
+(Section 5), and a product of members reports the sum modulo 2 of their bits; read as
+{0, 1}-vectors indexed by the residues, the fire functions of products are the F2 -span of
+the rows of Demjanenko’s matrix (Theorem 5.2), and whether a product realises CM is
+whether the target vector of CM , the indicator of its witness condition (targetM , displayed
+in Section 7.4), lies in that span. The question is asked in two forms. A product realises
+CM on every residue when it agrees with the target at every residue of [0, N ): this is the
+uniform form, a statement about the span and the target alone, and it is the form of most
+results below. A product realises CM on the attainable residues when it agrees with the
+target at the residues that bases actually attain (Section 7.7). The second form is the one
+the criterion reads, and it is weaker: at a prime candidate the only attainable residues
+are 0 and 1, where no target of modulus M ≥ 2 fires, so the empty product realises every
+such CM there, and the question has content only at composite N .
+    The first answer is a fence, and it comes from the reflection r ↦→ N − r, the involution
+every residue of N carries. Two pairings are involved, and they are not the same pairing.
+On the µM face of Section 3 the natural pair is e + e′ = N + 1, the pair of complementary
+idempotents, and on it the product of the two faces is one fixed value. On a member — a
+{±1}-valued function of the residue — the natural pair is r + r′ = N , and on it the two
+fires are complementary up to a single bit. From the second pairing three consequences
+follow: for x ≥ 3 no product of members realises CM for M ≥ 4 unless N ≡ 2 (mod M );
+for C3 the law is a complete dichotomy, realised by two members when N ≡ 2 (mod 3)
+and by three when N ≡ 0; and on the residues a base actually attains, four bases at
+N = 85 are enough to settle the question.
+
+7.1. The pairing on the face. Let M ≥ 1 and let WM (r) = exp 2πi(r − 1)/M be the
+                                                                    (︂              )︂
+
+face of Section 3. For all e, n ∈ Z,
+                               WM (e) WM (n + 1 − e) = WM (n)
+[L]
+   (Wface_pairing). The proof is the (︂ addition formula
+                                                     )︂ for the exponential and nothing
+else: the exponents add, (e − 1) + (n + 1 − e) − 1 = n − 1, and the sum of the two
+exponentials is the exponential of the summed exponent.
+    The identity says that the product of the faces of a complementary pair does not
+depend on the pair at all: every pair with a given sum multiplies to the face at that sum.
+With n = N the pairing is e + e′ = N + 1, which is the pairing of Section 4: it is the form
+the arithmetic of the criterion takes on the idempotent pairs, and there the product is
+WM (N ), the face at the candidate itself. Since WM (N ) = 1 exactly when M | (N − 1)
+(Theorem 3.1), the pair multiplies to 1 on the candidates with N ≡ 1 (mod M ) and to a
+nontrivial point otherwise.
+    The idempotents modulo N are closed under the reflection. Let M ≥ 1 and x ≥ 1 be
+natural numbers and let e ∈ Z satisfy e2 ≡ e (mod N (x)). Then
+      WM (e) WM N + 1 − e = WM (N ) and
+               (︂         )︂
+                                               (N + 1 − e)2 ≡ N + 1 − e      (mod N (x))
+[L]
+   (Wface_idem_pairing). The second conjunct is a computation: modulo N the com-
+plement is 1 − e, whose square is 1 − 2e + e2 ≡ 1 − 2e + e = 1 − e. The first is the face
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                            27
+
+pairing at n = N . So the faces of an idempotent and of its complement multiply to the
+face at the candidate, whichever idempotent of the pair is chosen.
+7.2. Two residues, one pair. Everything in the rest of the section is read on residues,
+in the sense of(︂Section 5.)︂ Recall from there that a member of coefficient c ∈ Z has reduced
+value Vc (r) = x(1 + cr) mod N at a residue r ∈ Z, that its sign is the product of a parity
+factor and a branch factor at the argument 2Vc (r), and that it fires at r when that sign
+differs from its value at r = 0 (resSign, resFire). What the pair law needs is that the
+sign is a function of the reduced value alone. For n, V ∈ Z put
+  sgnV (n, V ) = +1 if (2V ) mod 4 = 0, −1 otherwise +1 if 2V ≤ n, −1 otherwise ,
+                 (︂                                        )︂(︂                           )︂
+
+
+the function sgnV: the branch map of Section 2 read on a reduced        value
+                                                                           )︂ V ∈ [0, n). The
+two definitions coincide: the sign of the member at r is sgnV N, Vc (r) , and its reference
+                                                               (︂
+
+value is sgnV (N, x), because Vc (0) = x.
+    Two reductions are used below without further comment.      The )︂sign of the member at a
+base m depends only on the Fermat residue, σc (m) = σc r(x, m) , and the member fires
+                                                           (︂
+
+at m exactly when it fires at that residue [L] (coeffSign_eq_resSign, coeffFires_iff_
+resFire); the first is the closed form of Section 5 and the second adds r(x, 1) = 0. And
+the sign depends on the coefficient and the residue only through the product: if cr ≡ c′ r′
+(mod N ) then σc (r) = σc′ (r′ ) [L] (resSign_congr), since the two reduced values coincide.
+In particular every member sign is 1 or −1 [L] (resSign_eq_one_or), each factor of the
+definition being one of the two.
+7.3. The pair law for a member.
+Theorem 7.1 (resFire_pair). [L] Let x ≥ 2, let c, r ∈ Z, and write N = N (x). Then the
+member of coefficient c fires at exactly one of r and N − r if and only if N ∤ cr; equivalently
+                             firec (r) ⊕ firec (N − r) = [ N ∤ cr ],
+where ⊕ is addition modulo 2 and the bracket is the indicator.
+Proof. Put V = Vc (r) and V ′ = Vc (N −r), so that 0 ≤ V, V ′ < N . Write x(1+cr) = N q+V
+and x(1 + c(N − r)) = N q ′ + V ′ for the two quotients. Subtracting the identity 2x = N + 1
+from the sum of the two equations gives
+                                               (︂                 )︂
+                             V + V ′ − 1 = N 1 + xc − q − q ′ .
+So V + V ′ ≡ 1 (mod N ), and since 0 ≤ V + V ′ ≤ 2N − 2 while N ≥ 3, the sum is 1 or
+N + 1.
+    Two facts, and the theorem is their combination. First, V = x exactly when N | cr.
+For x(1 + cr) − x = xcr, and x is a unit modulo N with inverse 2: divisibility of cr by N
+is divisibility of V − x by N , and V and x both lie in [0, N ).
+    Second, exactly one of the two signs differs from the reference sign exactly when V ̸= x.
+The reference sign is sgnV (N, x) = −(−1)x : the argument 2x = N + 1 exceeds N , so its
+branch factor is −1, and its parity factor is (−1)x . If V + V ′ = 1 then {V, V ′ } = {0, 1},
+whose signs are +1 and −1; exactly one of the two differs from −(−1)x , and V ̸= x because
+x ≥ 2. If V + V ′ = N + 1 then V ′ = 2x − V has the parity of V , so the parity factors of
+the two signs agree. The branch factor is +1 at a reduced value below x and −1 from x
+upwards. So if V < x then the branch factor of V differs from the reference branch factor
+while that of V ′ = 2x − V > x agrees with it, and if V > x the two roles are exchanged;
+in either case exactly one branch factor differs, and because the two parity factors agree,
+either both differ from the reference parity factor or neither does. Either way exactly one
+28                                   ALESSANDRO SGARBI
+
+of the two signs differs from the reference. If V = x then V ′ = x, and both signs equal the
+reference.
+    Combining the two facts: the two fires are complementary, that is their sum modulo 2
+is 1, exactly when V ̸= x, that is exactly when N does not divide cr.                     □
+    The law is exact, and its two outcomes are worth naming separately. When N ∤ cr
+the pair carries exactly one fire, whichever of the two residues it is; when N | cr the pair
+carries none or both, and the pair law is silent. The coefficient c = 0 is the extreme case:
+no member fires anywhere, and N | 0 · r. At the other end, if r is a unit modulo N then
+N | cr exactly when N | c, so on units the bit of the law does not depend on the residue
+at all; this is what makes the obstruction below a statement about coefficients.
+7.4. Products of members. A finite product of members is again a function of the
+residue, and its fire is the sum modulo 2 of the fires of its factors. For a list cs of coefficients
+and a residue r let
+                                             ⨁︂
+                         listFire(cs, r) =          firec (r)   (listFire),
+                                             c∈cs
+the fold of the member fires, and let
+                                               ∏︂
+                          listSign(cs, r) =          σc (r)     (listSign)
+                                              c∈cs
+
+be the product of the member signs. The product sign is 1 or −1 [L] (listSign_eq_
+one_or), and the product fires exactly when that sign differs from its value at r = 0 [L]
+(listFire_iff_listSign): both statements are inductions on the list, and in each the
+induction step multiplies two numbers that are 1 or −1. The algebra of the product is
+therefore the algebra of a sign, and the pair law transfers to it one factor at a time.
+   For x ≥ 2, a list cs and r ∈ Z,
+                                                                    ⨁︂
+                      listFire(cs, r) ⊕ listFire(cs, N − r) =            [ N ∤ cr ]
+                                                                    c∈cs
+[L]
+    (listFire_pair), by induction on the list with Theorem 7.1 at the step. The product’s
+fires on a pair are therefore complementary exactly when an odd number of the coefficients
+c satisfy N ∤ cr. On a unit r the count does not depend on the residue: N | cr ⇐⇒ N | c
+for a unit r, so the fold over [ N ∤ cr ] is the fold over [ N ∤ c ] [L] (foldr_dvd_unit).
+     The filter CM is read on a residue by the same dictionary as its witness predicate
+(Section 3): for M ≥ 1 put
+                   targetM (r) = [ r ̸= 0 and r mod M ̸= 1 ]               (target),
+which for M ≥ 2 and 0 ≤ r < N is the witness condition of CM read at r: nonzero, and
+not 1 modulo M . A list cs realises CM when its product agrees with that target on every
+residue of the range (ListRealises):
+                     ∀r ∈ Z, 0 ≤ r < N :            listFire(cs, r) = targetM (r).
+     Two product facts are used later, both one-line consequences of the sign being ±1. If
+each of two members flips its sign on a complementary pair, the product sign is unchanged
+[L]
+    (productSign_invariant_of_both_flip); and a product of two members fires exactly
+when exactly one of the two fires [L] (productFires_iff_xor), since a product of two
+signs differs from the reference product exactly when one factor does. The product sign
+and the product fire here are those of Section 5 (productSign, ProductFires).
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                       29
+
+7.5. The fence at four. A product that realises CM must have the same pair pattern
+at every pair of units. The pair law computes that pattern, and on units it does not
+depend on the residue; so two units with different patterns cannot both be described by
+one product.
+    Let x ≥ 2, let M be a natural number, and let a, b be units modulo N with 0 < a, b < N .
+If the two pairs (a, N − a) and (b, N − b) have different target patterns, that is
+             targetM (a) ⊕ targetM (N − a) ̸= targetM (b) ⊕ targetM (N − b),
+then no list of coefficients realises CM on every residue [L] (not_listRealises_of_pair_
+mismatch). For assume that cs realises CM . At the pair (a, N − a) the realisation identifies
+the two product fires with the two target values, so their sum modulo 2 is the left-hand
+pattern; by the product pair law that sum is the fold over [ N ∤ ca ], and by the unit form
+of the law it is the fold over [ N ∤ c ], which does not mention a. The same computation at
+(b, N − b) gives the same fold and hence the right-hand pattern. The two patterns are
+equal, contrary to the hypothesis.
+    Two choices of units turn the obstruction into arithmetic. Since N is odd, both 1 and
+2 are units modulo N .
+    For x ≥ 2, M ≥ 2, and M dividing neither N − 2 nor N − 3, no list of coefficients
+realises CM [L] (not_listRealises_of_not_dvd). At the pair (1, N − 1) the pattern is
+(0, 1): the residue 1 is never a target, while N − 1 ̸= 0 fails to be a target exactly when
+M | (N − 2). At the pair (2, N − 2) the pattern is (1, 1): 2 mod M is not 1 because 1 < M ,
+and N − 2 fails to be a target exactly when M | (N − 3). The two patterns differ, and the
+obstruction applies.
+Theorem 7.2 (not_listRealises_of_four_le). [L] Let x ≥ 3, let M ≥ 4, and suppose
+that M does not divide N − 2. Then no list of coefficients realises CM on every residue.
+Proof. If M does not divide N − 3 either, the units 1 and 2 give the mismatch just
+computed, and the previous criterion applies: the patterns are (0, 1) and (1, 1).
+    Suppose then that M | (N − 3). The units 1 and 4 are used; 4 is a unit because N is
+odd. At the pair (1, N − 1) the pattern is again (0, 1): 1 is not a target, and N − 1 is one
+because M ∤ (N − 2) by hypothesis. At the pair (4, N − 4) the pattern is (1, 1): 4 mod M
+is 4 when M > 4 and 0 when M = 4, and neither is 1; and N − 4 ̸= 0 fails to be a target
+only if M | (N − 5), which together with M | (N − 3) would give M | 2, impossible for
+M ≥ 4. The patterns differ, and the obstruction applies.                                  □
+
+    In words, for x ≥ 3: if some list of coefficients realises CM on every residue and M ≥ 4,
+then M divides N − 2. So a product of members can realise a filter of modulus M ≥ 4
+only at the class N ≡ 2 (mod M ); every other class is excluded by the mismatch of two
+pairs of units. The fence says nothing at M = 3, and there the law is stronger.
+
+7.6. The dichotomy at three. At M = 3 the two unit patterns of the fence agree on the
+classes N ≡ 0 and N ≡ 2 and differ only at N ≡ 1, so the obstruction excludes one class
+and leaves two; on those two a choice of coefficients turns the agreement into a realisation,
+and the result is a complete answer rather than a fence. The residue form of the witness
+condition is the starting point: for 1 ≤ m ≤ N , the base m is a C3 -witness exactly when
+its residue is nonzero and not 1 modulo 3 [L] (isWitnessMod_three_iff), which is the
+witness predicate of Section 3 with the congruence written as a remainder.
+    The members that realise C3 are read through one arithmetic lemma. If A = nt + v
+with 0 ≤ v < n, then A mod n = v [L] (emod_eq_of_eq_mul_add): cancel the multiple of
+n and use the remainder bound. With it, the reduced value of a member is computed
+30                                 ALESSANDRO SGARBI
+
+in closed form on each class modulo 3. Write x = 3ℓ + 3, so that N = 6ℓ + 5, and put
+a = ⌊r/3⌋. For 0 ≤ r < N the reduced value of the member of coefficient 2ℓ + 1 is
+                            ⎧
+                            ⎪
+                            ⎪ 3ℓ + 3 − a,   r≡0     (mod 3),
+                                                    (mod 3) and a ≤ ℓ + 1,
+                            ⎪
+                            ⎪
+                            ⎨ℓ + 1 − a,
+                            ⎪
+                                            r≡1
+                  V2ℓ+1 (r) = ⎪
+                              ⎪
+                              ⎪ 7ℓ + 6 − a, r ≡ 1   (mod 3) and a > ℓ + 1,
+                              ⎪
+                              ⎩5ℓ + 4 − a, r ≡ 2
+                              ⎪
+                                                    (mod 3),
+each entry lying in [0, N ); the four identities are divisions with remainder, and they are
+what makes the member readable. Comparing the resulting signs at m and at the reference
+base gives
+     the member of coefficient 2ℓ + 1 fires at m ⇐⇒ r(x, m) ̸= 0 and r(x, m)/3 is even
+                                                                       ⌊︂         ⌋︂
+
+
+[L]
+    (coeffFires_third_iff, and resFire_third at the level of residues). The same
+computation, one member at a time, gives the other two members the dichotomy needs:
+on 0 ≤ r < N the member c = 2 fires exactly at the odd residues [L] (resFire_two),
+because its reduced value is x + r or x + r − N and subtracting the odd number N flips
+the parity; and for x = 3ℓ + 2, so that N = 6ℓ + 3, the member c = 2N/3 fires exactly
+at the residues r ≡ 1 (mod 3) [L] (resFire_twoThirds), because its reduced value is
+constant on each class modulo 3. One further law is used to move a member across the
+reflection: the member −c at r is the member c at N − r [L] (resFire_neg_coeff), since
+(N − c)r ≡ c(N − r) (mod N ) and the two signs agree at r = 0 by resSign_congr.
+    On N ≡ 2 (mod 3) two members suffice. For x ≥ 2 with N ≡ 2 (mod 3), the members
+of coefficients 2 and (N − 2)/3 realise C3 on every residue [L] (listRealises_three_of_
+two_mod_three). Write x = 3ℓ + 3, so that (N − 2)/3 = 2ℓ + 1, and let r ∈ [0, N ). If r ≡ 1
+(mod 3) then r is odd exactly when ⌊r/3⌋ is even, so the two members fire together and
+the product does not fire, while the target is 0 because r ≡ 1 (mod 3). If r ̸≡ 1 (mod 3)
+then r is odd exactly when ⌊r/3⌋ is odd, so exactly one member fires, while the target is 1
+for r ̸= 0 and 0 for r = 0, at which neither member fires.
+    On N ≡ 0 (mod 3) three members suffice. For x ≥ 3 with N ≡ 0 (mod 3), the
+members of coefficients 1, N − 1 and 2N/3 realise C3 on every residue [L] (listRealises_
+three_of_zero_mod_three). Here x = 3ℓ + 2, N = 6ℓ + 3 and 2N/3 = 4ℓ + 2. The
+negation law turns the member N − 1 into the member 1 at N − r, so the pair of the first
+two members has the fire [ N ∤ r ] by the pair law, which is [ r ̸= 0 ] because 0 ≤ r < N ;
+the third member has the fire [ r ≡ 1 (mod 3) ]. The sum modulo 2 of these two bits is 0
+at r = 0, 0 at the nonzero residues 1 modulo 3, and 1 at the remaining residues, which is
+the target.
+    On N ≡ 1 (mod 3) nothing suffices. If N ≡ 1 (mod 3) then neither N − 2 nor N − 3
+is divisible by 3, so the obstruction at the units 1 and 2 applies with M = 3: no list
+of coefficients realises C3 on every residue [L] (not_listRealises_three_of_one_mod_
+three).
+Theorem 7.3 (exists_listRealises_three_iff). [L] Let x ≥ 3. Then some list of
+coefficients realises C3 on every residue of [0, N ) if and only if N ̸≡ 1 (mod 3).
+Proof. If a list realises C3 then N ̸≡ 1 (mod 3), because the realisation is impossible
+on that class. Conversely, if N ̸≡ 1 (mod 3) then N is 0 or 2 modulo 3, and the two
+constructions above supply the lists [1, N − 1, 2N/3] and [2, (N − 2)/3] respectively. □
+   At M = 3 products of members reach further than single members. By Theorem 5.4
+no single coefficient realises C3 on a tail of N , while on two of the three classes modulo 3
+a product of two or three members realises it at every N of the class; and on the third
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         31
+
+class no product does, of any length. What the pair law decides for C3 is therefore not
+a fence but a classification, and the classification is by the class of N modulo 3 — the
+modulus of the filter, not the modulus 4 of Section 4.
+    The residue form of the realisation transports to bases. A residue-level realisation of
+CM for M ≥ 2 and x ≥ 2 gives, for every base m with 1 ≤ m ≤ N , the equivalence
+              listSign cs, r(x, m) ̸= listSign(cs, 0) ⇐⇒ m is a CM -witness
+                      (︂          )︂
+
+[L]
+   (listRealises_witnessMod): the left-hand side is the product fire at the residue,
+which the realisation identifies with the target, and the target is the witness predicate
+read on the residue. For the two-member product of the class N ≡ 2 (mod 3) the same
+statement is available directly, as an identity of fires rather than of signs.
+Theorem 7.4 (product_realises_witnessMod_three_of_two_mod_three). [L] Let x ≥
+2 with N ≡ 2 (mod 3). Then for every base m with 1 ≤ m ≤ N , the product of the
+members of coefficients 2 and (N − 2)/3 fires at m if and only if m is a C3 -witness.
+Proof. Write x = 3ℓ + 3, so that N = 6ℓ + 5 and (N − 2)/3 = 2ℓ + 1. By the XOR
+law the product fires exactly when exactly one of its two factors fires. The member 2
+fires exactly at the odd residues (coeffFires_two_iff_resid_odd of Section 5), and
+the member 2ℓ + 1 fires exactly at the nonzero residues whose quotient by 3 is even
+(coeffFires_third_iff). The base is a C3 -witness exactly when its residue is nonzero
+and not 1 modulo 3 (isWitnessMod_three_iff). It remains to compare two Boolean
+conditions on the three quantities r mod 3, r mod 2 and ⌊r/3⌋ mod 2: if r ≡ 1 (mod 3)
+then r is odd exactly when ⌊r/3⌋ is even, and otherwise r is odd exactly when ⌊r/3⌋ is
+odd. In the first case both members fire or neither does, and the residue is not a witness;
+in the second exactly one fires, and the residue is a witness unless it is 0, at which neither
+fires.                                                                                      □
+7.7. The attainable residues, and the certificate at eighty-five. The obstruction of
+the fence reads every residue of [0, N ), and a base attains only some of them. Read on
+the residues that bases attain, the same argument survives with one hypothesis weakened:
+two complementary pairs whose first members have the same annihilator in Z/N have the
+same pair count, by the fold form of the unit law [L] (foldr_dvd_congr), and different
+target patterns then rule out every product. A list realises CM on the attainable residues
+when the product agrees with the target at r(x, m) for every base m with 1 ≤ m ≤ N
+(ListRealisesAtt).
+    Let x ≥ 2 and let M be a natural number. Let m1 , m2 , m3 , m4 be bases in [1, N ] with
+                  r(x, m1 ) + r(x, m2 ) = N,      r(x, m3 ) + r(x, m4 ) = N,
+suppose that r(x, m1 ) and r(x, m3 ) have the same annihilator, that is N | c r(x, m1 ) ⇐⇒
+N | c r(x, m3 ) for every c ∈ Z, and suppose that the target patterns of the two pairs
+differ. Then no list of coefficients realises CM on the attainable residues [L] (not_
+listRealisesAtt_of_pairs). For assume that cs realises CM there. The second member
+of each pair is the reflection of the first, because the two residues sum to N and both lie in
+[0, N ). At the first pair the realisation identifies the two product fires with the two target
+values, so their sum modulo 2 is the pattern of the pair; by the product pair law that sum
+is the fold over [ N ∤ c r(x, m1 ) ], and by the equal-annihilator hypothesis the same fold
+over r(x, m3 ). The computation at the second pair gives the pattern of that pair, which is
+therefore the same fold and hence the same value, contrary to the hypothesis.
+    A finite computation supplies the pairs that make the criterion bite. At N = 85, that
+is x = 43, the bases 6, 11, 31 and 16 have residues 30, 55, 35 and 50; the pairs (30, 55)
+and (35, 50) both sum to 85, and 30 and 35 are both divisible by 5 and both units modulo
+32                                ALESSANDRO SGARBI
+
+17, so each annihilates exactly the coefficients divisible by 17 and the hypothesis on the
+annihilators holds. The C3 patterns of the two pairs are 1 and 0: at (30, 55) the residue
+30 is a target and 55 ≡ 1 (mod 3) is not, so exactly one of the pair is; at (35, 50) both
+residues are targets, since 35 ≡ 50 ≡ 2 (mod 3). Hence no list of coefficients realises C3
+at N = 85 even on the attainable residues [L] (not_listRealisesAtt_three_85) — the
+class N ≡ 1 (mod 3) at which nothing realises C3 , now seen without leaving the residues
+that bases attain.
+    Two dilation laws close the subsection and describe the shape of the span. Multiplying
+the coefficient by an integer d is the same as multiplying the residue by d: the member c d
+at r is the member c at d r [L] (resFire_mul_coeff), by resSign_congr applied to cdr,
+and the same identity holds for a product of members with every coefficient multiplied
+by d [L] (listFire_mul_coeff). The fire functions of products are therefore closed under
+dilation of the residue by any integer; that is the algebraic content of reading the family
+through its span rather than one member at a time.
+7.8. The expression’s own pair law, and products of two. The expression of 2009
+is the member of coefficient (−1)x , and on it the pair law is a statement about signs. For
+x ≥ 2 and bases m, m′ whose residues sum to N , with the first residue nonzero,
+                                   σ(x, m′ ) = −σ(x, m)
+[L]
+    (monsterSign_neg_of_sum_eq_N). The proof reads the sign as the parity bit of Section 5
+(monsterSign_eq_bit). Put P = (−κ(x)) r(x, m); the second residue is N − r(x, m), so
+the corresponding product is −P modulo N ; since the half coefficient κ(x) is a unit and
+r(x, m) ̸= 0, the residue P mod N is nonzero, and negating a nonzero residue modulo the
+odd number N flips its parity. The two parity bits are therefore complementary, and the
+two signs, each −(−1)x times its bit, are opposite. This is the pair law at c = ±1: there
+N | cr happens only for r = 0, so exactly one of the pair fires, and since the two values
+are signs, exactly one firing is the same as the two values being opposite.
+     The fence of the previous subsections bounds the modulus at which a product can
+realise a filter, and it does not forbid a product from firing on both halves of a pair —
+which is why products can outrun members. Two lemmas describe that freedom. If both
+factors flip on a complementary pair then the product sign is unchanged [L] (productSign_
+invariant_of_both_flip), and if both factors fire at both halves then the product fires
+at both [L] (productFires_pair_of_both) — for by the pair alternative of Section 5
+(coeffSign_pair) a member either flips across the pair or keeps its reference sign at both
+points, and firing at both points excludes the second alternative.
+     A proved instance shows how far the reach extends. At N = 15, that is x = 8,
+the product of the members of coefficients 1 and 4 fires exactly at the C3 -witnesses [L]
+(product_realises_witnessMod_three_fifteen). The statement is a conjunction of 15
+decidable comparisons, one for each base, and it is verified base by base. So a blanket
+claim that no product of members realises CM for M ≥ 3 is false, and the fence is a fence
+at M ≥ 4 for the reason the proof gives: at M = 3 the target patterns of the two unit
+pairs of the obstruction agree whenever N ̸≡ 1 (mod 3), and 15 ≡ 0.
+     On the reflection r ↦→ N − r, the member pair law makes the fires of a member
+complementary up to the bit [ N ∤ cr ], the product pair law counts those bits over a
+list, and the count obstructs every product at M ≥ 4 outside the class N ≡ 2 (mod M ).
+At M = 3 the same count classifies: two members suffice on N ≡ 2 (mod 3), three on
+N ≡ 0, and nothing does on N ≡ 1. Where the pair law is silent, another invariant has to
+speak: on a unitary split, the parity of the number of fires of a unit member on the lower
+half-units. That is the subject of Section 8.
+                A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                           33
+
+                        8. The half-units law and semiprimes
+    Section 7 fenced the products of members on the reflection r ↦→ N − r: no product
+realises CM for M ≥ 4 unless M | N − 2, and on the class N ≡ 2 (mod M ) the reflection
+says nothing, because there the target is symmetric under it and the two halves of a
+pair carry the same value. The pair law falls silent exactly where its bit vanishes, so the
+question what a product of members can determine has to be asked on another invariant.
+This section asks it on the lower half of the unit group. For odd n let Hn be the set of
+units u of Z/n with 1 ≤ u ≤ n/2, the lower half-units (halfUnits); the invariant is the
+parity of the number of points of HN at which a member fires. Gauss’s lemma transfers
+the action of a unit on the lower half-units to a sign, (−1) raised to the number of flips,
+and on a composite N with a unitary split, N = de with d, e ≥ 3 coprime, Euler’s theorem
+at half the totient makes that sign trivial: every unit member fires an even number of
+times there. Three things follow. On such a split no product of unit members realises
+CN −2 , although the pair law allows it (N ≡ 2 (mod N − 2)). On a semiprime the same
+parity, together with a constancy of it inside each class of coefficients, closes the question
+for every coefficient. And where both the pair law and the half-units law are silent a finite
+certificate settles it: no product realises the target at N = 29 and at N = 163, while at
+N = 47 one does.
+8.1. The parity of a list. Throughout, x ≥ 2, N = 2x − 1, and a member is the function
+firec (r) = [σc (r) ̸= σc (0)] of the residue r defined in Section 5; a list cs of coefficients
+realises CM when its product fire listFire(cs, r) agrees with targetM (r) at every residue of
+[0, N ) (ListRealises); the member, the product fire and the target are those of Section 5
+and Section 7.
+    The invariant is the parity of a Boolean function on a finite list of residues. For a list
+L and a function g : Z → {0, 1} put
+                                             ⨁︂
+                         parityOn(L, g) =          g(r)     (parityOn),
+                                             r∈L
+the exclusive-or of the values of g on L. Three laws are used without further comment,
+each an induction on the list: functions that agree on L have the same parity there [L]
+(parityOn_congr); the identically false function has parity false, whatever the list [L]
+(parityOn_false); and parity is additive over the pointwise exclusive-or, the parity of
+g ⊕ g ′ being the exclusive-or of the parities of g and g ′ [L] (parityOn_xor). With the three,
+the parity of a product is read off the parities of its factors: for every list cs of coefficients
+the parity of listFire(cs, ·) on L is the exclusive-or of the member parities parityOn(L, firec )
+over c ∈ cs [L] (parityOn_listFire), by induction on cs with the additivity law at the
+step.
+    One reduction is needed to make a finite check finite. A member depends on its
+coefficient only through its class modulo N :
+                                    firec (r) = firec mod N (r)
+[L]
+    (resFire_emod). The fire is a comparison of two signs, and by the congruence form
+of the member sign (resSign_congr of Section 7) a sign depends on the coefficient and
+the residue only through the product cr; the products cr and (c mod N )r are congruent
+modulo N , and the reference products 0 are equal. So a statement about all integer
+coefficients is a statement about the N classes 0, 1, . . . , N − 1, and a computation over
+those classes settles it.
+34                                  ALESSANDRO SGARBI
+
+8.2. The certificate at twenty-nine. The first instance is one at which the pair law is
+silent and a product nevertheless fails. At x = 15 the candidate is N = 29 [L] (N_fifteen),
+and 29 ≡ 2 (mod 9) [L] (N_fifteen_mod_nine), so 9 divides N − 2 = 27 and the fence of
+Theorem 7.2 does not apply to C9 : that theorem excludes every modulus M ≥ 4 which
+does not divide N − 2, and 9 divides it.
+    The certificate is the list of eight residues
+                   lam2 9 = {2, 14, 19, 20, 21, 23, 24, 25}         (lam29).
+On it, two finite statements hold. Every member fires an even number of times,
+                      parityOn(lam2 9 , firec ) = false   for every c ∈ Z
+[L]
+   (parityOn_lam29_resFire); by the reduction of the previous subsection it is enough
+to test the 29 coefficient classes modulo 29, and each test is a comparison of the member
+sign at eight residues with its value at 0. And the C9 target fires an odd number of times,
+                              parityOn(lam2 9 , target9 ) = true
+[L]
+   (parityOn_lam29_target), again a comparison at eight residues, now with no coefficient
+in sight.
+Theorem 8.1 (not_listRealises_nine_29). [L] Let cs be a list of integers. Then the
+product of the members with coefficients cs does not realise C9 at x = 15, that is at N = 29.
+Proof. Assume that cs realises C9 . Every element of lam2 9 is a residue of N = 29, so the
+realisation identifies the two Boolean functions listFire(cs, ·) and target9 at each of the
+eight points, and the agreement law gives
+               parityOn(lam2 9 , listFire(cs, ·)) = parityOn(lam2 9 , target9 ).
+The right-hand side is true. The left-hand side is, by the product-parity law, the exclusive-
+or of the member parities parityOn(lam2 9 , firec ) over the list cs; each of those is false by
+the first finite statement, and a fold of falses is false. The equality of a false and a true
+statement is impossible.                                                                     □
+     At 29 the modulus 9 divides N − 2, so the fence leaves C9 open, and C9 is nevertheless
+out of reach of every product; and the proof never looks at the product, only at the parity of
+its fires on eight residues. For context, the relative class number is h− (Q(ζ29 )) = 8, and 29 is
+the least prime at which that number is even (measured, experiments/q6_bernoulli.py,
+from the numbers B1,χ by the analytic class number formula [13]; the values are those
+tabulated in [1]). The measurement is why the instance was chosen; it enters no proof,
+and nothing here says that the criterion computes h− .
+8.3. Gauss’s transfer on the lower half-units. For n ≥ 1 let Hn be the set of lower
+half-units displayed at the start of the section. For a multiplier a the Gauss count is the
+number of points of Hn at which the multiple au falls in the upper half:
+            flipCount(n, a) = #{ u ∈ Hn : au mod n > n/2 }            (flipCount),
+and the fold is the representative of au modulo n in the lower half,
+                             ⎧
+                             ⎨au mod n,       au mod n ≤ n/2,
+      gaussFold(n, a, u) =                                                  (gaussFold).
+                             ⎩n − (au mod n), au mod n > n/2
+
+It is the residue multiplied by the sign that puts it below n/2.
+    Four elementary facts, and then the transfer. Coprimality survives reduction: if a and u
+are coprime to n then so is the least residue of au [L] (coprime_mul_mod), by the recursion
+for the greatest common divisor and the multiplicativity of coprimality. Consequently,
+                  A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                      35
+
+for odd n ≥ 3 and a coprime to n, the fold lands in Hn [L] (gaussFold_mem): the residue
+au mod n is a unit and is nonzero, so the lower choice is a unit in [1, n/2], and in the upper
+case the complement n − w of a unit w < n is again a unit, and it is positive because
+w < n. Read in Z/nZ the fold is the signed reduction of the multiple,
+                                                           ⎧
+             (︂                    )︂                      ⎨+1, au mod n ≤ n/2,
+                  gaussFold(n, a, u) = ε · au,        ε=
+                                                           ⎩−1, au mod n > n/2,
+
+where the equality is in Z/nZ [L] (gaussFold_cast); in the upper case the complement
+is congruent to −w because n vanishes modulo n. And the fold is injective on Hn [L]
+(gaussFold_injOn): equality of the folds gives u ≡ ±v modulo n, the plus case forces
+u = v because both lie in [1, n/2], and the minus case gives a divisibility n | (u + v) with
+0 < u + v < n, which is impossible.
+    The transfer is Gauss’s lemma [5, §6.11] for the units of Z/n: for odd n ≥ 3 and a
+coprime to n,
+                          a#Hn = (−1)flipCount(n,a)    in Z/nZ
+[L]
+    (gauss_transfer). The fold maps Hn into Hn and is injective on it, and a finite set of
+that cardinality injects into itself only onto itself, so the fold permutes Hn . Multiply the
+multiples over Hn . On one side the product is a#Hn times the product of the units of Hn ;
+on the other it is the product of the signs εu times the product of the folded values, and
+the folded values are the same units in another order. The signs multiply to (−1) raised
+to the number of upper choices, which is the Gauss count. The product of the units of Hn
+is a unit of Z/nZ, so it cancels, and the identity remains.
+     Two consequences of the transfer are needed. The lower half-units are exactly half of
+the units,
+                                        2 #Hn = φ(n)
+[L]
+   (card_halfUnits_mul_two): the map u ↦→ n − u is an injective map from Hn onto the
+units above n/2, because n − u is a unit when u is one, so the units of Z/n split into those
+two halves. And the transfer is trivial at half the totient on a unitary split. Let n = de
+with d, e ≥ 3 coprime and let a be coprime to n. Then
+                                        aφ(n)/2 ≡ 1   (mod n)
+[L]
+    (pow_half_totient): the totient is multiplicative, φ(d) and φ(e) are even because
+d, e > 2, so φ(n)/2 is a multiple of each of them; Euler’s theorem gives the congruence
+modulo d and modulo e after raising to that multiple, and the two congruences combine
+by the Chinese remainder theorem. If in addition n is odd, then the Gauss count is even
+[L]
+    (flipCount_even). For #Hn = φ(n)/2 by the halving identity, so the transfer reads
+(−1)flipCount(n,a) = 1 in Z/nZ; and −1 ̸= 1 there because n ≥ 3, whence the count is even.
+    So on a unitary split the transfer of (Z/n)× to {±1} is trivial: every unit acts on the
+lower half-units with an even number of flips.
+
+8.4. The half-units law. It remains to read a member as a Gauss count. On a natural
+residue the member is the half-interval test at the multiplier x2 c: for u ∈ N,
+                                           [︂                      ]︂
+                               firec (u) = (x2 c u mod N ) > N/2
+[L]
+    (resFire_nat), which is the Demjanenko form of Theorem 5.2 read in natural numbers.
+And x is a unit modulo N [L] (coprime_x_N), since 2x − N = 1. Hence for a coefficient
+coprime to N the multiplier x2 c is a unit, the fires of the member on HN are exactly the
+flips of that multiplier, and the Gauss count of the previous subsection is even.
+36                                  ALESSANDRO SGARBI
+
+     Two bookkeeping laws carry the parity from members to products. The parity of a
+filter cut out by an exclusive-or is the exclusive-or of the two parities: for a finite set S of
+natural numbers and functions g, g ′ ,
+                                      (︂                                                      )︂
+Even #{u ∈ S : g(u) ⊕ g ′ (u)} ⇐⇒       Even #{u ∈ S : g(u)} ⇐⇒ Even #{u ∈ S : g ′ (u)}
+[L]
+    (even_card_filter_xor), from the description of a cardinality as the sum of the
+indicators in Z/2Z. By induction on the list, if every member of a list fires an even number
+of times on S then so does the product [L] (even_card_listFire).
+
+Theorem 8.2 (even_card_halfUnits_resFire). [L] Let x ≥ 2, and let N = de with
+d, e ≥ 3 coprime. Let c ∈ Z be coprime to N . Then the member of coefficient c fires at an
+even number of the lower half-units of N .
+
+Proof. Write c′ = c mod N for the least nonnegative residue of c, so that 0 ≤ c′ < N .
+Coprimality is a congruence property of the first argument, so c′ is coprime to N as well:
+from ac + bN = 1 one reads a(c mod N ) ≡ 1 modulo N after absorbing the multiple of N .
+    By the reduction of the member to its coefficient class, the member of coefficient c
+fires where the member of coefficient c′ does; by the half-interval form, that is where
+(x2 c′ u mod N ) > N/2. So the set of lower half-units at which c fires is exactly the set
+whose cardinality is the Gauss count flipCount(N, x2 c′ ). The multiplier x2 c′ is a unit
+modulo N , being a product of the unit x with itself and of the unit c′ . The count is
+therefore even by the parity of the Gauss count on a unitary split, N = de with d, e ≥ 3
+coprime.                                                                                □
+
+    The law fences the products of unit members at CN −2 . Suppose that every coefficient
+of a list cs is coprime to N . Then every member of the list fires evenly on HN by the
+theorem, so the product fires evenly on HN by the bookkeeping law. If the product realised
+CN −2 , its fire filter on HN would be the target filter, and on HN the target is HN with the
+point 1 removed: for a lower half-unit u one has u ̸= 0, and u mod (N − 2) = 1 exactly
+when u = 1, because u ≤ N/2 < N − 2, a unitary split forcing N ≥ 15. Now #HN is even:
+halving the totient gives 2#HN = φ(N ) = φ(d)φ(e) with both factors even, so #HN is a
+product of even numbers divided by two, hence even. Removing one point leaves an odd
+number, and an even number cannot equal it. Therefore no list of unit coefficients realises
+CN −2 on a unitary split [L] (not_listRealises_N_sub_two).
+    The pair law does not see this. The congruence N ≡ 2 (mod N − 2) holds for every
+N ≥ 4, so the fence’s hypothesis fails at M = N − 2 and the reflection leaves the filter
+open; it is the parity of the fires on the lower half-units, not their pairing, that closes it.
+    Two distinct prime factors are enough for the hypothesis of the law. If an odd N
+is divisible by two distinct primes p and q, then N admits a unitary split N = de with
+d, e ≥ 3 coprime [L] (exists_split_of_two_primes): take d to be the full power of p
+dividing N and e the complementary factor, which is divisible by q. With the split, no
+product of members with coefficients coprime to N realises CN −2 [L] (not_listRealises_
+N_sub_two_of_primes).
+
+8.5. Certificates and realisations. Where neither law applies — on a prime or a prime-
+power candidate, which has no unitary split, or at a modulus other than N − 2 — the
+parity argument of the last subsection has nothing to stand on. What remains is a finite
+linear question over Z/2Z: a product of members is the exclusive-or of the member fires,
+so the coefficient list is a vector of bits and realisability of CM is the question whether
+the target lies in their span. Two results turn that question into a finite computation in
+                  A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                      37
+
+natural numbers, one for each direction, and a third makes the target symmetric on the
+class where the pair law is silent. For M ≥ 3 with N ≡ 2 (mod M ) and 0 < r < N ,
+                                targetM (N − r) = targetM (r)
+[L]
+   (target_pair_of_two_mod): writing t = r mod M and 0 ≤ t < M , the residue of
+N − r modulo M is (2 − t) mod M , which is 1 exactly when t = 1, because M ≥ 3. So on
+that class the pair law never obstructs, and every obstruction there is a further law.
+   The dictionary first. On natural residues the member is the parity test
+                               firec (r) = (xc r mod N ) is odd
+                                          [︂                      ]︂
+
+[L]
+    (resFire_natParity), the parity form of Theorem 5.1; any integer coefficient acts as
+its least nonnegative residue [L] (resFire_toNat); and the target is the finite predicate
+                           targetM (r) = [ r ̸= 0 and r mod M ̸= 1 ]
+[L]
+    (target_natCast). The parity of a Boolean function on a list of natural residues is
+the same exclusive-or fold as before, now read through the inclusion N ⊂ Z (parityN),
+with the agreement law and the additivity law [L] (parityN_congr, parityN_xor) and
+the product law [L] (parityN_listFire); and (natParity) is the parity of the member c
+on such a list, written with the parity test rather than with the sign.
+    The certificate generalises the argument of the instance at twenty-nine to an arbitrary
+finite list of natural residues. Let x ≥ 2, let M ≥ 1, and let L be a finite list of residues
+below N . Suppose that every coefficient c < N fires an even number of times on L, and
+that the CM target fires an odd number of times there. Then no list of integer coefficients
+realises CM [L] (not_listRealises_of_natCert). For a realising product, the agreement
+law equates the product parity on L with the target parity there; the target parity is true;
+and the product parity is the fold of the member parities, each of which is false once the
+coefficient is replaced by its least residue below N . Both hypotheses are finite statements
+about natural numbers.
+    The realisation check runs the other way. Let cs be a list of natural coefficients
+such that, at every residue r below N , the exclusive-or over c ∈ cs of the parity bits
+[ xcr mod N is odd ] equals targetM (r). Then cs realises CM [L] (listRealises_of_nat):
+read a residue as a natural number, apply the hypothesis there, and replace each parity
+bit by the member fire it equals (the parity law of Section 5), by induction on the list.
+    Three instances are proved this way. At x = 82, that is N = 163 and 163 ≡ 2
+(mod 23), the list lam1 6 3 of 54 residues (lam163) certifies that no product realises C23
+[L]
+    (not_listRealises_23_163). At x = 24, that is N = 47, the product of the sixteen
+members with coefficients
+                    1, 4, 6, 8, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 22, 24
+realises C5 [L]
+                 (listRealises_5_47). And at x = 8, that is N = 15, no product realises
+C13 , whether its coefficients are units or not [L] (not_listRealises_13_15), certified by
+a list of eight residues; the next subsection proves this for every semiprime at once, and
+the certificate records the smallest instance.
+    163 is the least prime congruent to 3 modulo 4 with even h− (Q(ζ163 )), and h− (Q(ζ47 )) =
+695 is odd (measured the same way, and tabulated in [1]). The class numbers are why
+163 and 47 were chosen; the certificates record what happens there: at 163 the pair law is
+silent and no product realises the target, at 47 one does.
+38                                  ALESSANDRO SGARBI
+
+8.6. Class constancy on a semiprime. On a semiprime N = pq the hypothesis of unit
+coefficients can be dropped. The half-units law covers the units, and a second argument
+covers the two other classes of coefficients, those divisible by p and those divisible by q.
+Then the pair law makes the coefficients balance across the three classes, and the parity of
+the product’s fires on the lower half-units is a sum of class parities. Throughout, p and q
+are distinct primes with N = pq, so both are odd and at least 3.
+    The first move reads the pair law at the three residues 1, p, q. If cs realises CN −2 , then
+for each r ∈ {1, p, q} an even number of the coefficients satisfy N ∤ cr. Indeed, the product
+pair law of Section 7 writes the exclusive-or of the product fires at r and at N − r as the
+fold of [N ∤ cr] over the list; the realisation identifies the two fires with the two target
+values, which are equal because N ≡ 2 (mod N − 2) and 0 < r < N ; and the fold, read in
+Z/2Z, is the sum of the corresponding indicators.
+    The second move is the constancy inside a class. A member whose coefficient is a
+multiple pc1 with q ∤ c1 reads the residue modulo q:
+                       firepc1 (u) = (xc1 u mod q) is odd
+                                   [︂                       ]︂
+                                                                 (u ∈ N)
+[L]
+   (resFire_class), because the factor p cancels against N = pq in the parity test. And
+the parity of its fires on the lower half-units does not depend on c1 at all: for a prime q
+not dividing c1 , the set of lower half-units at which the member fires has the parity of
+                                #{ u ∈ HN : u mod q > q/2 }
+[L]
+   (even_card_class_iff). The set on the right mentions no coefficient.
+    The proof is a fixed-point-free involution of HN . Let e be the Chinese-remainder unit
+with e ≡ −1 (mod p) and e ≡ 1 (mod q), taken below pq [L] (exists_crt_unit); it is
+a unit modulo N [L] (crt_unit_coprime) and squares to 1 there [L] (crt_unit_sq), the
+two congruences being (−1)2 = 1 and 12 = 1. The map ι(u) = gaussFold(N, e, u) is
+an involution of HN [L] (crt_fold_invol): the fold of e (eu) is u up to sign, and two
+lower half-units congruent modulo N up to sign are equal [L] (eq_of_cast_eq_or_neg),
+because u ≡ v with both in [1, N/2] forces equality, while u ≡ −v forces N | (u + v) with
+0 < u + v < N . The involution has no fixed point [L] (crt_fold_ne): a fixed point makes
+the sign of the fold times e equal to 1 in Z/N Z, and the two signs give e ≡ 1 (mod N ) or
+e + 1 = N ; the first contradicts e ≡ −1 (mod p) since p ≥ 3, the second contradicts e ≡ 1
+(mod q) since q ≥ 3.
+    Modulo q the involution only preserves or complements the residue. For u with q ∤ u,
+     gaussFold(N, e, u) mod q = u mod q    or   gaussFold(N, e, u) mod q = q − (u mod q)
+[L]
+    (crt_fold_mod_q). Read in Z/qZ, the fold is eu times a sign; e is 1 there; so the
+fold is u or −u, and in the second case the two residues below q sum to a multiple of q,
+which is q itself [L] (add_eq_of_dvd_add). Complements of products are computed the
+same way: for b ≤ q with q ∤ mb, the residue of m(q − b) modulo q is q − (mb mod q) [L]
+(mul_sub_mod).
+    With these two descriptions the Boolean difference
+                            G(u) = firepc1 (u) ⊕ [ u mod q > q/2 ]
+is invariant under ι. If the fold preserves u modulo q, both terms are unchanged. If it
+complements, the parity test at (xc1 u mod q) becomes the test at its complement, and a
+number and its complement modulo the odd q have opposite parities; at the same time the
+upper-half test is negated, because q is odd and the complement of a residue in [1, q) lies
+above q/2 exactly when the residue lies below it. Two terms flipping leave the exclusive-or
+unchanged. The support of G is therefore a finite set carrying a fixed-point-free involution,
+so it has even cardinality [L] (even_card_of_invol): remove a point together with its
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                          39
+
+image and induct on what is left. And the parity of G’s support is the exclusive-or of the
+two parities, which is the equivalence asserted above.
+    The third move assembles the class parities, and it is done in Z/2Z. The parity of
+an exclusive-or filter is the sum of the two cardinalities [L] (card_filter_xor_zmod); an
+exclusive-or fold read in Z/2Z is the sum of the indicators [L] (foldr_xor_zmod); and two
+natural numbers of the same evenness have the same image [L] (natCast_zmod_two_eq).
+With the three, the member parity on the lower half-units is a linear combination of the
+two class counts. Write β(r) = [ N ∤ cr ] and
+       Uq = #{ u ∈ HN : u mod q > q/2 },             Up = #{ u ∈ HN : u mod p > p/2 }.
+Then for every coefficient c,
+                                                                              in Z/2Z
+                                  (︂            )︂       (︂          )︂
+        #{ u ∈ HN : firec (u) } = β(1) + β(q) Uq + β(1) + β(p) Up
+[L]
+    (card_member_zmod). The proof replaces c by its least residue c′ < N , so that the
+divisibility conditions N | cr become N | c′ r, and then splits into four cases. If both
+primes divide c′ , then c′ = 0, the member never fires, and the three coefficients β vanish.
+If p divides c′ but q does not, write c′ = pc1 ; the class constancy is the left-hand side, and
+on the right β(1) = 1, β(q) = 0 and β(p) = 1, so the coefficient of Uq is 1 and that of Up
+is 0. The case q | c′ is the same with the two primes exchanged. If neither divides c′ the
+coefficient is a unit, all three values β are 1, both coefficients vanish, and both sides are 0
+by the half-units law.
+     The same assembly, one level up, is a linearity of list sums: the sum over a coefficient
+list of the linear expressions above is the sum of the three lists of coefficient values times
+the two class counts [L] (sum_map_lin); and the parity of a product of members on a finite
+set is the sum of the member parities in Z/2Z [L] (card_listFire_zmod).
+Theorem 8.3 (not_listRealises_N_sub_two_semiprime). [L] Let x ≥ 2, let p ̸= q be
+primes with N = pq, and let cs be a list of integers. Then the product of the members with
+coefficients cs does not realise CN −2 .
+Proof. Assume that cs realises CN −2 . At each of the three residues 1, p, q an even number
+of the coefficients satisfy N ∤ cr, which in Z/2Z is the vanishing of the three sums of the
+indicators β(r) over the list.
+     The product’s parity on the lower half-units is the sum over cs of the member parities,
+by the product law in Z/2Z. Replace each member parity by the linear expression of the
+member formula, and group the sum by the linearity of list sums. What multiplies Uq is
+the sum of β(1) over the list plus the sum of β(q) over the list, and what multiplies Up is
+the sum of β(1) plus the sum of β(p). The sums at 1, p and q vanish, so both coefficients
+vanish, and the product fires an even number of times on HN .
+     By the realisation the product’s fire filter on HN is the target filter of CN −2 , and that
+filter is HN with the point 1 removed, for the reason given in the proof of the half-units
+law: a lower half-unit is nonzero, and it is 1 modulo N − 2 exactly when it is 1. The set
+HN has even cardinality, so HN with one point removed has odd cardinality. An even
+number of fires cannot equal an odd one.                                                      □
+     The two laws fence the products at different invariants. The pair law reads the reflection
+r→↦ N − r and excludes every modulus M ≥ 4 outside the class N ≡ 2 (mod M ). Where
+it is silent the half-units law reads the transfer of the unit group to {±1}: on a unitary
+split it excludes CN −2 for unit coefficients, and on a semiprime it excludes CN −2 for every
+coefficient, because the classes of coefficients are constant in parity on the lower half-units.
+Where both laws are silent a finite certificate settles the matter, and the certificates above
+show both outcomes: no product at 29 and at 163, and one at 47. What is left is a question
+40                                  ALESSANDRO SGARBI
+
+of another kind, not which filters the products realise but what the face itself cannot be,
+and that is the subject of Section 9.
+
+                               9. What the face cannot be
+    Section 8 fenced the products of members at two invariants and, where both were silent,
+at a finite certificate. Every one of those statements is about combinations of members.
+This section asks instead what kind of object the face itself is, and it proves four negative
+results: no additive map realises a filter CM even where G(N ) says that CM has a witness;
+the Fermat map is not diagonalised by the additive characters; the ladder of fires does
+not determine the residue, though it does once one parity bit is added; and the branch of
+Section 2 is removable pointwise but cannot be an additive homomorphism. The section
+closes with the questions none of the four settles.
+    Throughout, x ≥ 2, N = 2x − 1, and r = r(x, m) is the Fermat residue of the base
+m; CM is the rung-M filter and a CM -witness the base of Section 3; a member, its sign
+σc and its firing are those of Section 5; and G(N ) is the largest trivialising modulus of
+Theorem 3.3, whose divisors are exactly the moduli whose face is trivial.
+9.1. No additive face. The first question is whether the face can be carried by a
+homomorphism. An additive map f : Z/N → Z/M can be read as a filter: it fires at the
+base m when f (r) ̸= 0, and it realises CM at x when
+                f r(x, m) ̸= 0 ⇐⇒ m is a CM -witness
+                 (︂       )︂
+                                                                (1 ≤ m ≤ N ).
+This is a definition and not a theorem (LinearFaceRealises), and an f with the property
+is called a linear face. The reading is the natural one, since the face itself is a character of
+Z/N ; what the arithmetic filter does is another matter.
+     Two additive groups of coprime order admit only the zero map between them. For
+N, M ≥ 1 with gcd(N, M ) = 1, every additive f : Z/N → Z/M is zero [L] (no_add_
+hom_coprime). The additive order of f (1) divides that of 1 in Z/N , which is N , because
+N · 1 = 0 and additivity carries that to N · f (1) = 0; the same order divides M , because
+M · f (1) = 0 in Z/M ; hence it divides gcd(N, M ) = 1, and an element of order 1 is 0.
+Every element of Z/N is a multiple of 1, so f vanishes everywhere.
+     Three specialisations are recorded. With both moduli odd and coprime the coprime
+argument applies unchanged [L] (no_add_hom_odd_odd); the oddness of the target is
+carried in the statement and not used by the argument, which is the coprimality of the
+two orders. For odd N and any j the conclusion holds for every additive f : Z/N → Z/2j
+[L]
+    (no_add_hom_odd) — the statement read at the end of the section as the one about the
+branch — and it is recovered from the coprime case [L] (no_add_hom_odd_of_coprime), a
+power of two being coprime to an odd number.
+Theorem 9.1 (not_linear_face_realises). [L] Let M ≥ 2 and let B be a natural
+number. Then there is an x with N (x) > B composite, with M ∤ G(N (x)), and such that
+no additive f : Z/N (x) → Z/M realises CM at x.
+Proof. Take a prime q ≥ M + B + 3 and put N = q 2 , that is x = (q 2 + 1)/2; the number q
+is odd, so x is an integer. Then N > B, and N is composite because q ≥ 3. Since N is
+the second power of a prime, the invariant has the closed form G(N ) = q (residueGcd_
+prime_pow), so M ∤ G(N ): a divisor of the prime q is 1 or q, and M ≥ 2 excludes the first
+while q > M excludes the second. The filter CM therefore has a witness at this N .
+    Because q is prime and M < q, no prime divisor of M divides N = q 2 , so gcd(N, M ) = 1
+and every additive f : Z/N → Z/M is zero. A zero map never fires, f (r) = 0 at every
+residue. If such an f realised CM , no base would be a CM -witness, since the realisation
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                        41
+
+would equate f (r) ̸= 0 with the witness condition and the left-hand side is false everywhere.
+Absence of witnesses is the divisibility M | G(N ) — the arithmetic characterisation of the
+invariant in [11] (noWitnessMod_iff_dvd_residueGcd), the equivalence that Theorem 3.3
+writes on the circle — and that contradicts M ∤ G(N ).                                     □
+    The theorem distinguishes two properties. The existence of a witness is measured by
+G: at N = q 2 the largest trivialising modulus is q, so at every M that does not divide q
+the filter has a witness. Linearity fails at every such M coprime to q, since then every
+additive map into Z/M is zero, and since B is arbitrary, above every bound. The failure
+of a linear face is therefore not a symptom that N is a CM -pseudoprime: G measures what
+the filter can see, and no additive map is a face of what it sees.
+9.2. Additive characters. The second question is finer than the additivity of the filter.
+It asks whether the Fermat map is diagonal in the additive Fourier basis of Z/N , which is
+what an FFT-type shortcut for producing the residues would need. For a ∈ Z/N let
+                                               2πi ⟨ay⟩
+                              (︂           )︂     (︃         )︃
+                ea (y) = WN ⟨ay⟩ + 1 = exp                ,     y ∈ Z/N,
+                                                   N
+be the additive character of index a (addChar), written on the circle with the face
+of Section 3; here ⟨·⟩ is the representative in [0, N ), so that ea is the character y ↦→
+exp(2πi ay/N ). Let φ(y) = y N −1 be the Fermat map of the candidate.
+Theorem 9.2 (no_additive_eigencharacter). [L] Let x ≥ 2 and a ∈ Z/N (x). Suppose
+that there is c ∈ C with      (︂        )︂
+                            ea y N (x)−1 = c ea (y)
+for every y ∈ Z/N (x). Then a = 0.
+Proof. Evaluate at y = 0. Since N − 1 ̸= 0, 0N −1 = 0, and ea (0) = WN (1) = 1 by
+Theorem 3.1 at r = 1; the relation reads 1 = c · 1, so c = 1.
+    Evaluate at y = −1. The exponent N − 1 = 2(x − 1) is even, so (−1)N −1 = 1, and the
+relation now reads ea (1) = ea (−1).
+    Translate that equality of face values into a congruence. The difference form of the
+face, WM (a) = WM (b) if and only if M | (a − b), holds at M = N ̸= 0 [L] (Wface_eq_
+Wface_iff), and is the(︂ form read)︂ in Section 4. Applied to the arguments ⟨a⟩ + 1 and
+⟨−a⟩ + 1 it gives N | ⟨a⟩ − ⟨−a⟩ , that is a ≡ −a (mod N ), or 2a = 0 in Z/N .
+    Finally 2x ≡ 1 (mod N ), because N = 2x − 1. Multiplying 2a = 0 by x gives
+a = (2x) a = 0.                                                                       □
+    The theorem says that the composition operator f ↦→ f ◦φ has no nontrivial eigenvector
+among the additive characters: the trivial character is the only one. A diagonalisation
+in that basis would produce the Fermat residues by multiplying eigenvalues, and there is
+none. No hypothesis on N enters — the argument uses only that N is odd, and with it
+that −1 is not fixed by φ and that 2 is invertible modulo N .
+9.3. The ladder of fires. The third question is how much of the residue the ladder of
+Section 5 encodes. There the rung j has value τj (m) and a reference value, its value at
+residue 1, and it fires at m when the two differ. The value is a prefactor times a sign
+read from a parity, so the fire is a comparison of two parity bits. With κ = κ(x) the half
+coefficient of Section 2, for j ≥ 2,
+      the rung j fires at m ⇐⇒
+                                    (︂                  )︂        (︂          )︂
+                                         ⟨(−κ)j−1 r(x, m)⟩ mod 2 ̸= ⟨(−κ)j−1 ⟩ mod 2
+[L]
+   (towerFires_iff_bit). The proof is the bridge form of the rung: its value is −(−1)x
+times +1 or −1 according as the reduced product ⟨(−κ)j−1 r(x, m)⟩ is even or odd, and the
+42                                   ALESSANDRO SGARBI
+
+reference value is the same expression with r(x, m) replaced by 1. The common prefactor
+cancels, and the two signs differ exactly when the two parities do.
+Theorem 9.3 (exists_same_towerFires_ne_mod_two_pow). [L] There are x, J, m, m′
+with x ≥ 2, J ≥ 2 and 1 ≤ m, m′ ≤ N (x) such that the rungs 2 ≤ j ≤ J fire at m if and
+only if they fire at m′ , while
+                                 r(x, m) ̸≡ r(x, m′ ) (mod 2J ).
+Proof. Take x = 18, that is N = 35, then J = 4, m = 2 and m′ = 4. The residues are
+r(18, 2) = 1 and r(18, 4) = 4: the first is 134 = 1, and the second is 334 reduced modulo 35,
+which by repeated squaring is 4. They are distinct modulo 24 = 16.
+    On each of the three rungs j = 2, 3, 4 the rung value at either base equals the reference
+value of the rung, so neither base fires at any of them. At the base 2, whose residue is 1,
+this holds by definition, the reference value being the value at residue 1; the content of the
+check is at the base 4, three rung values against the reference values. The two fire vectors
+on the range 2 ≤ j ≤ 4 are therefore equal, and the residues are not congruent modulo
+16.                                                                                         □
+   The same pair shows what the fire vector is missing. At this N the residues of the two
+bases have opposite parity, 1 and 4, so
+                                  r(18, 2) ̸≡ r(18, 4) (mod 2)
+[L]
+   (q8_counterexample_separated_by_parity), and one bit separates the pair. The
+rest of the subsection proves that one bit is all that is missing.
+    The arithmetic is a halving. For 0 ≤ r < N ,
+                                   2 ⟨xr⟩ = r + N (r mod 2)
+[L]
+   (two_mul_half_emod). Put z = ⟨xr⟩, so that xr ≡ z (mod N ); since 2x = N + 1,
+doubling gives 2z ≡ 2xr ≡ r (mod N ). The bounds 0 ≤ 2z < 2N and 0 ≤ r < N put
+2z − r in (−N, 2N ), so 2z − r = kN with k ∈ {0, 1}. Reducing that equation modulo 2,
+and N being odd, gives k ≡ r (mod 2); hence k = r mod 2. Two consequences are used.
+Modular multiplication by x is compatible with reduction,
+                                   xi ⟨xr⟩ ≡ xi+1 r   (mod N )
+[L]
+   (pow_mul_half_emod), by multiplying ⟨xr⟩ ≡ xr by xi ; and the halving law read at
+r = zi , where zi = ⟨xi r⟩, says
+                                  2 zi+1 = zi + N (zi mod 2).
+Iterating, r = 2J zJ − N i<J 2i (zi mod 2): each step trades zi for 2zi+1 at the cost
+                            ∑︁
+
+of the parity term. The parities of z0 , . . . , zJ−1 therefore determine r modulo 2J : for
+0 ≤ r, r′ < N ,
+             r ≡ r′   (mod 2J ) whenever zi ≡ zi′         (mod 2) for 0 ≤ i < J
+[L]
+   (emod_two_pow_eq_of_half_parities). The proof is an induction on J: the case
+J = 0 is trivial, and for the step the parity hypothesis at i = 0 gives r ≡ r′ (mod 2), while
+the shifted hypothesis, read through the compatibility of the previous paragraph, gives
+the induction hypothesis for z1 and z1′ , hence 2J | (z1 − z1′ ); the halving law at r and r′ ,
+whose parities agree, gives r − r′ = 2(z1 − z1′ ), so 2J+1 | (r − r′ ).
+   It remains to read the rung fire as one of those parities. The half coefficient satisfies
+                                                                x even,
+                                                         ⎧
+                                                         ⎨+1,
+                       −κ ≡ ε x     (mod N ),         ε=⎩
+                                                            −1, x odd,
+               A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                         43
+
+[L]
+   (neg_halfCoeff_emod): for even x the half coefficient is x−1, so −κ−x = 1−2x = −N ,
+and for odd x it is x, so −κ + x = 0. Since 2x ≡ 1 (mod N ), the multiplier −κ is a unit
+modulo N , as is x, and nonzero residues stay nonzero under multiplication by either. Now
+(−κ)i ≡ εi xi (mod N ), so ⟨(−κ)i r⟩ is the residue of εi zi , which is zi when εi = 1 and
+N − zi when εi = −1; in the second case the parity is opposite, because N is odd. Hence
+the fire at rung i + 1, which by the bit form compares the parity of ⟨(−κ)i r⟩ with the
+parity of ⟨(−κ)i ⟩, compares in effect the parity of zi with a value that depends on x and
+i alone. Equal fires at the two bases therefore give zi ≡ zi′ (mod 2) for 1 ≤ i ≤ J − 1,
+and the index i = 0 is the hypothesis on the residues. Applying the parity lemma, on
+nonzero residues the ladder with its one bit is faithful: for bases m, m′ with r(x, m) ̸= 0
+and r(x, m′ ) ̸= 0, if the rungs 2 ≤ j ≤ J fire at m if and only if they fire at m′ , and the
+two residues have the same parity, then
+                               r(x, m) ≡ r(x, m′ )        (mod 2J )
+[L]
+   (resid_emod_two_pow_eq_of_towerFires). The proof is the reading just made: with
+r = r(x, m), r′ = r(x, m′ ) and zi = ⟨xi r⟩, zi′ = ⟨xi r′ ⟩, the parity hypothesis is the case
+i = 0 of the parity condition, and the fire hypothesis, read through the bit form and the
+reduction −κ ≡ εx, supplies the remaining cases, equal fire bits at rung i + 1 leaving equal
+parities of zi and zi′ for 1 ≤ i ≤ J − 1. The parity lemma then gives the congruence.
+    The statement holds for every J and every pair of nonzero residues. The counterexample
+of the theorem above shows that the parity hypothesis cannot be dropped, and the lift
+shows that nothing else is missing. So the ladder is not injective, the ladder with one
+parity bit is, and the bit is the one the counterexample separates.
+9.4. The branch. The fourth question concerns the branch itself. In Section 2 the sign
+of the expression is computed by cases on whether the doubled argument lies below or
+above N . The case split cannot come from a homomorphism: for odd N and every j, each
+additive f : Z/N → Z/2j is zero [L] (no_add_hom_odd). That is the coprime vanishing
+above, with gcd(N, 2j ) = 1; the branch compares a canonical representative with N , and
+such a comparison is not an operation of the additive group. So no homomorphism can
+supply the case split.
+    It is nevertheless removable pointwise. For a finite set T ⊂ C and any function
+g : C → R there is a continuous F : C → R agreeing with g on T [L] (continuous_
+interpolation). The extension is Lagrange’s formula written in norms,
+                                          ∑︂           ∏︂ ∥z − s∥
+                                F (z) =         g(t)                 ,
+                                          t∈T          s∈T ∥t − s∥
+                                                       s̸=t
+
+a finite sum of finite products of continuous functions of z: the norms ∥z−s∥ are continuous,
+and the denominators ∥t − s∥ are nonzero constants for s ̸= t. At a point t0 ∈ T the term
+indexed by t0 has every factor ∥t0 − s∥/∥t0 − s∥ = 1 and contributes g(t0 ), while every
+other term contains the factor ∥t0 − t∥ = 0 and vanishes; so F (t0 ) = g(t0 ).
+    Applied to the expression, this removes the branch as a function of the base point. For
+every x ≥ 2 there is a continuous F : C → R with
+                                                  (︂            )︂
+                                 C(x, m) = F (−ζ)A(x,m)
+for every base m, the equality being one of complex numbers, where C and A are the
+value and the inner exponent of Section 2 [L] (monster_branchless). The inner exponent
+is a remainder modulo 4x − 2, so the base point w = (−ζ)A(x,m) ranges over the finite
+set T = {(−ζ)a : 0 ≤ a < 4x − 2}. On that set the value is the real part of wN/2 : by
+the bridge of Section 2 the value C(x, m) is the sign σ(x, m), and wN/2 = C(x, m) = ±1,
+44                                    ALESSANDRO SGARBI
+
+whose real part is that sign. Interpolating g(w) = Re(wN/2 ) on T gives a continuous F
+that agrees with the expression at every base point. The interpolation is the form of the
+formal proof and not the shortest route: on the principal branch g is itself continuous on
+C, since across the cut along the negative reals the two limits of wN/2 are |w|N/2 e±iπN/2 ,
+whose real parts are both 0 because N is odd. This continuity is not part of the formal
+development, and nothing below uses it.
+    Of the two ways of being rid of the branch, only one exists. A continuous extension of
+the value as a function of the base point exists at every N , and its construction uses the
+finite set of base points at that N : the function F depends on x, and no uniformity in N
+is asserted. A homomorphic reading is impossible, the only additive map into Z/2j being
+zero.
+
+9.5. What is open. Three questions remain open, and a fourth is answered elsewhere.
+    First, the global face: a closed form for G(N ) read on the circle, through the face of
+Section 3, rather than as a gcd. Theorem 3.3 says that the moduli whose face is trivial are
+exactly the divisors of G(N ), which is an interface and not a formula. With it stands the
+products question on the class N ≡ 2 (mod M ) for odd M ≥ 5: the pair law of Section 7
+is silent there by construction, the half-units law of Section 8 fences only M = N − 2,
+and M = 3 is the one modulus at which a product’s reach is settled at every N , by the
+dichotomy of Theorem 7.3.
+    Second, the schedule remnant of the products question. Theorem 5.4 closes the
+single-coefficient
+            √      question at every M ≥ 3 on a tail of N ; at the schedule modulus
+M (N ) = ⌊ N ⌋ + 1 of Section 3, whether any product of members realises CM (N ) on a tail
+is open, and in the class where the pair law is silent there, that is where M (N ) | N − 2,
+no invariant of this article settles it.
+    Third, the 2-adic ladder as a morphism. The lift lemma says that the fires on the rungs
+together with the parity of the residue determine the residue modulo 2J ; whether the map
+carrying a residue to that data is a homomorphism for multiplication modulo N is open.
+    The fourth asks, for squarefree N , whether the idempotents of Z/N — the Chinese-
+remainder projectors that split a squarefree candidate into its prime-power parts —
+determine the divisors of G(N ), and with them the moduli M for which N is a CM -
+pseudoprime. It is answered in [11]: on the squarefree Korselt numbers (squarefree N
+with p − 1 | N − 1 at every prime p | N ) they do, and on every squarefree composite N
+with at least two prime factors the invariant is the gcd of the numerator cosets when the
+numerators carry nothing and each tops its coset, and 1 otherwise.
+    Together, the four results say what the face is not. It is not a linear object, even
+where G says that it has a witness; the Fermat map it reads is not diagonalised by its own
+additive characters; its ladder of rungs does not encode the residue, though the ladder with
+one parity bit does; and its branch can be smoothed by a continuous function of the base
+point but cannot be a homomorphism. The object itself was identified in Section 6, and
+the fences around what its products can determine were drawn in Section 7 and Section 8.
+
+                                           References
+ 1. Sequence A000927: “first factor” (relative class number) h− for the cyclotomic field Q(exp(2πi/p)),
+    The On-Line Encyclopedia of Integer Sequences, https://oeis.org/A000927.
+ 2. Bruce C. Berndt, Classical theorems on quadratic residues, L’Enseignement Mathématique (2) 22
+    (1976), no. 3–4, 261–304, MR0441835, Zbl 0337.10031.
+ 3. R. D. Carmichael, Note on a new number theory function, Bulletin of the American Mathematical
+    Society 16 (1910), no. 5, 232–238.
+ 4. H. G. Folz and H. G. Zimmer, What is the rank of the Demjanenko matrix?, Journal of Symbolic
+    Computation 4 (1987), 53–67.
+                A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                                  45
+
+ 5. G. H. Hardy and E. M. Wright, An introduction to the theory of numbers, 6 ed., Oxford University
+    Press, 2008.
+ 6. Fumio Hazama, Demjanenko matrix, class number, and Hodge group, Journal of Number Theory 34
+    (1990), no. 2, 174–177.
+ 7. A. R. Korselt, Problème chinois, L’Intermédiaire des Mathématiciens 6 (1899), 142–143.
+ 8. J. W. Sands and W. Schwarz, A Demjanenko matrix for abelian fields of prime power conductor,
+    Journal of Number Theory 52 (1995), no. 1, 85–97.
+ 9. Wolfgang Schwarz, Demjanenko matrix and 2-divisibility of class numbers, Archiv der Mathematik 60
+    (1993), 154–156.
+10. Alessandro Sgarbi, The counterexamples of a Fermat test read modulo four, Companion article, in
+    preparation (working title).
+11.         , A number that decides a family of tests, Companion article, in preparation (working title).
+12. Hirofumi Tsumura, On a direct sum decomposition of the Dem’yanenko matrix, Acta Arithmetica 77
+    (1996), no. 1, 71–76.
+13. Lawrence C. Washington, Introduction to cyclotomic fields, 2 ed., Graduate Texts in Mathematics,
+    vol. 83, Springer-Verlag, New York, 1997.
+46                                      ALESSANDRO SGARBI
+
+                     Appendix A. The character-sum identity
+    One computation of the body was cited and carried out nowhere. Section 6 displayed
+the character sum of the member of coefficient 1, reduced both of its forms to an engine,
+and left the engine to this appendix. What follows proves it: the sign of that member
+on the odd and on the even residues, three ways of splitting a sum over one period,
+the four relations among the sums a period carries, and the identity that follows from
+them by one linear combination. The identity is the theorem that Section 6 applies to a
+Dirichlet character; its companion, the reading in Demjanenko’s language, consumes the
+four relations directly.
+    Throughout, h ≥ 0, N = 2h + 1, x = h + 1, and K is a field. The member sign is that
+of Section 5 at
+             (︂ coefficient 1 and is not redefined here. At a residue r its reduced value is
+u = V1 (r) = x(1 + r) mod N , and in terms of u the sign is
+                        )︂
+
+
+                        σ1 (r) = 1 − 2[ u odd ] 1 − 2[ u > N/2 ] ,
+                                   (︂                 )︂(︂                     )︂
+
+
+the form recorded in Section 6: the first factor is +1 exactly on the even values of u, the
+second +1 exactly on the values below the midpoint of the range. Indices run over the
+representatives 0, 1, . . . , N − 1 of the residues.
+
+A.1. The sign of the member on the residues. On an odd residue the sign is one
+parity.
+   For 1 ≤ k ≤ h,
+                            σ1 (2k − 1) = (−1)k
+a machine-checked identity [L] (resSign_one_odd). For the proof, (h + 1) 1 + (2k − 1) =
+                                                                                    (︂    )︂
+
+2k(h + 1) = k + kN , so that u = k. Then 2u = 2k ≤ 2h < N , so the second factor is +1,
+and the first is +1 exactly when k is even; the product is (−1)k .
+   On an even residue the half-turn of the range enters.
+   For 0 ≤ k ≤ h,
+                                    σ1 (2k) = (−1)h+k
+machine-checked as well [L] (resSign_one_even). For the proof, (h + 1)(1 + 2k) =
+(h + 1 + k) + k(2h + 1). If k < h then 0 ≤ h + 1 + k < N , so u = h + 1 + k; the second factor
+is −1, because 2u = 2h + 2 + 2k exceeds N , and the first is +1 exactly when h + 1 + k is
+even, so the product is (−1)h+1+k (−1) = (−1)h+k . If k = h then (h + 1)(1 + 2h) = (h + 1)N
+and u = 0: both factors are +1, and +1 = (−1)h+h .
+
+A.2. Three splits of one period. Let g : N → K. A sum over one period splits into its
+even and its odd indices:
+                            2h
+                            ∑︂               h
+                                            ∑︂               h−1
+                                                             ∑︂
+                                  g(i) =          g(2k) +          g(2k + 1)
+                            i=0             k=0              k=0
+
+a machine-checked identity [L] (sum_range_even_odd), proved by induction on h: at h = 0
+both sides are g(0), and the step adds the two new indices 2h + 2 and 2h + 1 to the even
+and to the odd sum respectively.
+   The same period splits at its midpoint,
+                             2h
+                             ∑︂              h
+                                            ∑︂               h−1
+                                                             ∑︂
+                                   g(i) =         g(k) +           g(2h − j)
+                             i=0            k=0              j=0
+
+again machine-checked [L] (sum_range_split_half), since 2h + 1 = (h + 1) + h and the
+upper block h + 1, . . . , 2h is the reflection j ↦→ 2h − j of 0, . . . , h − 1.
+                   A COMPLEX FORMULA FROM 2009 AND ITS CLASSICAL OBJECT                                          47
+
+      And the odd indices may be read backwards,
+                               h−1
+                               ∑︂                      h−1
+                                                       ∑︂     (︂                          )︂
+                                     g(2k + 1) =             g 2h + 1 − 2(j + 1)
+                               k=0                     j=0
+
+machine-checked [L] (sum_range_odd_reflect), the substitution k = h − 1 − j giving
+2k + 1 = 2h − 1 − 2j = 2h + 1 − 2(j + 1).
+
+A.3. The four relations. Let f : N → K satisfy the three conditions of Section 6:
+      f (0) = 0,      f (N − a) = −f (a) (0 < a < N ),                         f (2a) = f (2) f (a) (2a < N ).
+Write
+                          h                            h                            h
+                                                                                        (−1)k f (k),
+                         ∑︂                           ∑︂                           ∑︂
+                    S=         f (k),        P =            k f (k),         R=
+                         k=0                          k=0                          k=0
+                                     2h
+                                     ∑︂                                 2h
+                                                                        ∑︂
+                               A=          a f (a),          Mon =            σ1 (r) f (r).
+                                     a=0                                r=0
+
+Theorem A.1 (monster_core). [L] Let h ≥ 0, N = 2h + 1, and let f : N → K satisfy
+the three conditions above. Then
+                                        Mon = 2(−1)h f (2) R,
+                                           2R = 2 f (2) S,
+                                            A = 2P − N S,
+                                            A = 4 f (2) P − N f (2) S.
+Proof. Three identities about f are used throughout. For k ≤ h the index 2k lies below
+N , so f (2k) = f (2)f (k). For
+                             (︂ j < h the index 2(j(︂ + 1) satisfies 0 < 2(j + 1) ≤ 2h < N , so
+the antisymmetry gives f N − 2(j + 1) = −f 2(j + 1) and the multiplicativity gives
+                                           )︂                 )︂
+
+
+f 2(j + 1) = f (2)f (j + 1). And f (2h − j) = f N − (j + 1) = −f (j + 1) for j < h.
+ (︂          )︂                                                    (︂                )︂
+
+    For the first relation, split∑︁Mon into even and odd indices and read the odd part
+backwards. The even part is k≤h (−1)h+k f (2)f (k) = (−1)h f (2) R. The odd part has
+indices 2h + 1 − 2(j + 1) = 2(h − j) − 1, so its sign is (−1)h−j and its ∑︁
+                                                                         value −f (2)f (j + 1); as
+(−1)  h−j+1
+             = (−1)h+j+1
+                         , the term is (−1) f (2) (−1) f (j +1), and j<h (−1)j+1 f (j +1) =
+                                            h            j+1
+
+   k=1 (−1) f (k) = R because f (0) = 0. The two parts therefore contribute (−1) f (2) R
+∑︁h         k                                                                            h
+
+each.
+    For the second relation, compare the alternating       sum T = 2h i=0 (−1) f (i) computed in
+                                                                              i
+                                                                    ∑︁
+
+two ways. Splitting at the midpoint gives R + j<h (−1)2h−j f (2h − j); since (−1)2h−j =
+                                                     ∑︁
+
+−(−1)j+1 and f (2h − j) = −f (j + 1), the second sum is R, and T = 2R. Splitting
+into even and odd indices gives k≤h f (2)f (k) + j<h f (2)f (j + 1) = 2f (2) S: the index
+                                   ∑︁                   ∑︁
+
+2h + 1 − 2(j + 1) is odd, so its sign is −1, and the value there is −f (2)f (j + 1), whose
+product is f (2)f (j + 1). Hence 2R = 2f (2) S.
+    For the third relation, split A at the midpoint: it is P + j<h (2h − j)f (2h − j), and
+                                                                   ∑︁
+
+with f (2h − j) = −f (j + 1) and 2h − j = N − (j + 1) that sum is −N S + P .
+    For the fourth, split A into even and odd indices. The even part is k≤h 2kf (2)f (k) =
+                                                                             ∑︁
+
+(︂ (2) P . The )︂
+2f              odd part has index N − 2(j + 1) and value −f (2)f (j + 1), so its term is
+  2(j + 1) − N f (2)f (j + 1), and the part is 2f (2) P − N f (2) S. The two parts sum to
+4f (2) P − N f (2) S.                                                                           □
+   The four relations say what one period of a function with the three conditions carries:
+the member sum is a multiple of the alternating half-sum, the alternating half-sum is
+48                                    ALESSANDRO SGARBI
+
+the half-sum weighted by f (2), and the weighted total is read in two ways. The identity
+proved below is one linear combination away.
+A.4. The identity.
+Theorem A.2 (monster_bernoulli). [L] Let h ≥ 0 and N = 2h + 1, let K be a field in
+which 2 ̸= 0, and let f : N → K satisfy the three conditions above. Then
+                      2h                              (︂            2h
+                                                                 )︂ ∑︂
+                            σ1 (r) f (r) = 2(−1)h f (2) 1 − 2f (2)
+                      ∑︂
+                  N                                                        a f (a).
+                      r=0                                            a=0
+
+Proof. Apply Theorem A.1 and multiply its four relations by 2N , by 2N (−1)h f (2), by
+8(−1)h f (2)2 , and by −4(−1)h f (2) respectively; add the four products. Write ε = (−1)h
+and F = f (2). The first two contribute 2N Mon − 4N εF R and 4N εF R − 4N εF 2 S; the
+last two contribute 8εF 2 A − 16εF 2 P + 8εF 2 N S and −4εF A + 16εF 2 P − 4εF 2 N S. The
+terms in R, in P and in S cancel, and the sum is
+                                              (︂                                      )︂
+           2N Mon − 4εF (1 − 2F ) A = 2 N Mon − 2(−1)h f (2)(1 − 2f (2)) A ,
+which is therefore zero. Since 2 ̸= 0 in K, the bracket vanishes, and that is the display. □
+     The identity was found before it was proved. It was checked on all 14 592
+odd characters modulo primes below 600, with largest error 1.0 · 10−10 , by
+the script experiments/q6_bernoulli_identity.py of the development (output
+experiments/results/q6_bernoulli_identity_600.txt). The measurement says that
+the identity held where it was tested and nothing beyond that: it enters no step of the
+proof above, and the theorem does not rest on it.
+     What remains is the reading. With f = ψ an odd Dirichlet character the theorem
+above is the display of Section 6, and with the same three conditions and no character at all
+its four relations give the Demjanenko form; both proofs are the two applications recorded
+there, and neither re-does the summation. The engine is closed, and the appendix ends
+where the identification began: the member of coefficient 1, summed, returns a Bernoulli
+number.
+
+
+
+
+                                      Alessandro Sgarbi
+                                     alex.sgarbi@gmail.com
+                            https://orcid.org/0009-0005-4528-964X
+

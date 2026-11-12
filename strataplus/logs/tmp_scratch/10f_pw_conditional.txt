@@ -1,0 +1,947 @@
+
+\section{What a Hypothesis Buys}
+\label{sec:pw-conditional}
+
+The problem P-W was stated in \S\ref{sec:pw} with a list of certified members
+and a rule that carries a member along a family (\S\ref{sec:pw-propagate}); what it did not have is a way
+of making a new member out of nothing. \S\ref{sec:pw-hypothesis} said so, and
+deferred two questions to this section: what the hypothesis behind such a rule
+is, and what the problem reduces to under it. The two are answered here, in that
+order, and the order is the section's argument --- a reader who has just been
+told that nobody can settle the problem is owed the hypothesis route first,
+because it is what an outsider would try, and the reduction second, because a
+reduction is worth having only once it is clear what it is a reduction of.
+
+Two things can be done with a problem for which no way of making a new member is known, and this section does both.
+The first is to assume the arithmetic --- Dickson's conjecture, or
+Bateman--Horn, which is strictly stronger on a family --- and then the
+infinitude is a theorem whose statement carries its hypothesis. The second is to
+make the problem smaller, and exactly one move does that: at $\omega \le 5$ the
+carry condition is redundant, so a miss there is the single congruence
+$4 \mid v_p$ at every prime. The second move has a ceiling --- at $\omega = 6$
+the two conditions separate, and a Carmichael number exists where they do ---
+and that ceiling is where the book stops.
+
+The plan of the section: at $\omega \le 5$
+the two conjuncts of the miss condition --- $4 \mid v_p$ and \eqref{eq:pw-at}, in
+Theorem~\ref{thm:pw-at} --- collapse into one, and at $\omega = 6$ they do not. The two halves of that sentence are
+Theorems~\ref{thm:five-factors} and \ref{thm:six-factors}, and everything between
+them is what makes the first half a reduction and the second half a ceiling.
+\S\ref{sec:conditional-hypothesis} says
+what a Bateman--Horn hypothesis is and extracts the two theorems it implies;
+\S\ref{sec:conditional-families} runs the four families of P-W through it and
+into the small problem; \S\ref{sec:conditional-carry} proves that the carry is
+the Egyptian sum modulo every divisor of $N-1$, which is the one congruence the
+rest of the section uses; \S\ref{sec:conditional-small} states the problem
+without the no-carry conjunct and identifies its two forms, and
+\S\ref{sec:conditional-worth} says what the hypothesis of that problem is worth;
+\S\ref{sec:conditional-ceiling} shows why the reduction stops at $\omega = 6$,
+on a number; \S\ref{sec:conditional-rate} proves that the last numerator is
+forced and quotes what the census says about the rate;
+\S\ref{sec:conditional-grid} bounds the error in the model behind that rate;
+and \S\ref{sec:conditional-stop} says where the book stops.
+
+The same problem is told in \cite{Companion-korselt-misses} in the
+order of its three layers --- the certified instances, the conditional
+infinitude, the open problem --- and that order is the article's frame. Here the
+frame is the book's grades, so the conditional layer arrives first and the
+reduction second, and the two documents state the same mathematics in different
+orders on purpose. Nothing in this section is history. The provenance of the
+formula was spent in \S\ref{sec:origin}, the parameter ledger in
+\S\ref{sec:off-carmichael}, and what is left here is arithmetic.
+
+\subsection{What a hypothesis buys}
+\label{sec:conditional-hypothesis}
+
+Throughout, $x \ge 2$, $N = N(x) = 2x-1$, and $\omega$ is the number of prime
+factors of $N$. For $p \mid N$ the cofactor is $N/p$, which is
+$\lean{cof}(S,p)$ of \S\ref{sec:wrap} at a prime of the support of a squarefree
+number; a \emph{numerator} at $p$ is an integer $v_p$ with $0 < v_p < p$ and
+$p \mid v_p\,(N/p)+1$; and $C$ is the carry of \eqref{eq:carry}, the integer with
+\[
+  \sum_{p \mid N} v_p\,\frac{N}{p} \;=\; (C+1)N - 1 .
+\]
+The notation is \S\ref{sec:korselt}'s and the two definitions are not repeated.
+What is repeated, because the whole section turns on it, is that the carry is
+bounded by the number of prime factors and not by their size:
+$0 \le C \le \omega - 2$\ \ ($\lv$ \lean{carry\_nonneg}, $\lv$
+\lean{carry\_le\_card\_sub\_two}).
+
+Fix $k \ge 1$, a $k$-tuple $a = (a_1,\dots,a_k)$ of positive integers, a residue
+$r$ and a modulus $M > 0$. The hypothesis of this subsection is the lower bound
+of Bateman--Horn \cite{BatemanHorn1962} on the single progression
+$m = Mt + r$, restricted to the $k$ forms of the family:
+$\lean{BHFor}\,a\,r\,M$ asserts that there are $c > 0$ and $T_0$ such that for
+every $T \ge T_0$
+\[
+  c\,\frac{T}{(\log T)^k}
+  \;\le\;
+  \#\{\, t \le T \;:\; a_i(Mt+r)+1 \text{ prime for all } i \,\} .
+\]
+The set counted is $\lean{goodSet}\,a\,r\,M\,T$. Two things about it are worth
+saying before it is used. It is a proposition, a hypothesis written into the
+statement of every result below that assumes it, and never an axiom: the
+theorems below are theorems about a conditional, and each of them says so in its
+header. And it is \emph{stronger} than the qualitative statement the families
+need, which is the first theorem: a bound of order $T/(\log T)^k$ is unbounded,
+so assuming it settles Dickson's question on the progression outright.
+
+\begin{theorem}[Bateman--Horn implies Dickson on the progression]
+\label{thm:bh-dickson}
+\lvCond{} \lean{dicksonForK\_of\_BHFor}
+Let $k \ge 1$, let $a$ be a $k$-tuple of positive integers, let $r, M \in \N$
+with $M > 0$, and suppose $\lean{BHFor}\,a\,r\,M$. Then for every bound $B$
+there is $t > B$ such that every number $a_i(Mt+r)+1$ is prime. Equivalently,
+$\lean{DicksonForK}\,a\,r\,M$ of \S\ref{sec:pw-hypothesis} holds.
+\end{theorem}
+
+\begin{proof}
+Suppose the conclusion fails. Then some bound $B$ is never exceeded: every good
+$t$ lies in $\{0,\dots,B\}$, so for every $T$ the set $\lean{goodSet}\,a\,r\,M\,T$
+is contained in $\{0,\dots,B\}$ and has at most $B+1$ elements.
+
+Put $\varepsilon = c/(2(B+1))$, a positive real. The only asymptotic input of
+the theorem is $(\log T)^k = o(T)$; in the form needed here, there is $T_1$ with
+$(\log T)^k \le \varepsilon T$ for $T \ge T_1$.
+
+Let $T \ge \max(T_0, T_1, 3)$. The hypothesis gives
+\[
+  c\,\frac{T}{(\log T)^k}
+  \;\ge\; c\,\frac{T}{\varepsilon T}
+  \;=\; 2(B+1) \;>\; B+1 ,
+\]
+while the count of good $t \le T$ is at most $B+1$. That is a contradiction, so
+for every $B$ there is a good $t > B$.
+
+Finally put $m = Mt + r$. Since $M \ge 1$ and $r \ge 0$ one has $m \ge t > B$;
+the congruence $m \equiv r \pmod M$ holds by construction; and every
+$a_i m + 1$ is prime because $t$ is good. Those are the three clauses of
+$\lean{DicksonForK}\,a\,r\,M$.
+\end{proof}
+
+The content of the theorem is one inequality read backwards: a lower bound of
+order $T/(\log T)^k$ is unbounded, and an unbounded lower bound is what
+infinitude means on a progression. Nothing number-theoretic entered --- the
+passage from a count to a single good $t$ is the observation that a power of a
+logarithm is little-oh of $T$ --- and that is the point of stating it. The
+hypothesis has been moved from a conjecture about primes to a statement about
+one family at a time, which is what makes the count below possible; nothing has
+been added to the evidence for it.
+
+\begin{theorem}[The count under Bateman--Horn]
+\label{thm:bh-count}
+\lvCond{} \lean{card\_pwData\_ge\_rpow\_of\_BHFor}
+Let $k \ge 1$, let $a$ be a $k$-tuple of positive integers with $a_{i_0} > 0$
+for some $i_0$, let $r, M \in \N$ with $M > 0$, and suppose that at every $t$
+for which all $a_i(Mt+r)+1$ are prime the number $\lean{famNk}(a, Mt+r)$
+carries P-W data in the sense of \S\ref{sec:pw-problem}. If
+$\lean{BHFor}\,a\,r\,M$ holds, then there are $c' > 0$ and $X_0$ such that for
+every $X \ge X_0$
+\[
+  c'\,\frac{X^{1/k}}{(\log X)^k}
+  \;\le\;
+  \#\{\, n \le X \;:\; \lean{PWData}(n) \,\} .
+\]
+\end{theorem}
+
+\begin{proof}
+The count at the parameter of the family comes first
+($\lvCond$ \lean{card\_pwData\_ge\_of\_BHFor}). On a good $t \le T$ the number
+$\lean{famNk}(a, Mt+r)$ carries P-W data, by the hypothesis on the members, and
+the map $t \mapsto \lean{famNk}(a, Mt+r)$ is strictly increasing: it is the
+strictly monotone $\lean{famNk}$ ($\lv$ \lean{famNk\_strictMono}, which uses
+$a_{i_0} > 0$) composed with the strictly increasing affine map $t \mapsto Mt+r$
+($M > 0$). So distinct good $t$ give distinct members, all of them at most
+$\lean{famNk}(a, MT+r)$, and
+\[
+  \#\{\, n \le \lean{famNk}(a, MT+r) \;:\; \lean{PWData}(n) \,\}
+  \;\ge\; \#\lean{goodSet}\,a\,r\,M\,T
+  \;\ge\; c\,\frac{T}{(\log T)^k}
+\]
+for $T \ge T_0$.
+
+For the passage from $T$ to $X$, size the member. With $S = \sum_i a_i$ one has
+$\lean{famNk}(a,m) \le (Sm+1)^k$ ($\lv$ \lean{famNk\_le\_pow}), and the member
+is monotone in $m$, so it is enough to invert that inequality. Put
+$D = S\,M$, $y = X^{1/k}$ and $T = \lfloor (y-1-Sr)/D \rfloor$. Then
+$T \ge y/(2D)$ once $X$ is at least a bound depending on $S$, $r$, $M$, $T_0$
+and $k$, and $T \ge T_0+3$ for that same bound.
+
+At that $T$ the member is at most $X$: the inequality
+$S(MT+r)+1 \le y$ is what the choice of $T$ gives, and raising it to the $k$-th
+power and applying the size bound gives
+$\lean{famNk}(a, MT+r) \le y^k = X$. Hence the count up to $X$ dominates the
+count up to the member, and the count at the member is at least
+$cT/(\log T)^k$ by the first step.
+
+Two comparisons close the proof. The count is monotone in the bound, so it is
+enough to compare at $X$. And $T \le X$, because $T \le MT+r < \lean{famNk}(a, MT+r) \le X$;
+therefore $\log T \le \log X$ and $1/(\log X)^k \le 1/(\log T)^k$.
+
+Combining, with $c' = c/(2D)$,
+\[
+  c'\,\frac{X^{1/k}}{(\log X)^k}
+  \;\le\; c\,\frac{T}{(\log T)^k}
+  \;\le\; \#\{\, n \le X \;:\; \lean{PWData}(n) \,\} ,
+\]
+which is the display of the theorem.
+\end{proof}
+
+The shape of the conclusion deserves a sentence of its own, because it is the
+same shape in every instance below. The exponent on $X$ is $1/k$ and the power
+of the logarithm is $k$, and both come from the single inequality
+$\lean{famNk}(a,m) \le (Sm+1)^k$: a product of $k$ primes grows like $m^k$, so a
+count of $T$ parameters is a count of $T$ numbers of size $T^k$. The theorem
+promises infinitude, and it promises it in the only form a lower bound can take.
+
+At accessible sizes the bound is no evidence. At
+$k = 4$ the factor $X^{1/4}/(\log X)^4$ is $0.011$ at $X = 10^{18}$ and $1.39$
+at $X = 10^{30}$. The first evaluation is a factor of ninety below one: below
+$10^{18}$ the theorem says nothing at all, and the census of \S\ref{sec:conditional-rate}
+is what the reader has there. The second is arithmetic at a scale no census
+reaches, and a constant $c'$ smaller than one would move it. Those two numbers
+are arithmetic, not Lean, and they carry no marker: they are the theorem's own
+shape read twice.
+
+\subsection{The four families, and where they land}
+\label{sec:conditional-families}
+
+The four families of \S\ref{sec:pw-propagate} are the ones that carry P-W data:
+the three four-term tuples $(1,2,5,10)$ at $m \equiv 546 \pmod{720}$,
+$(1,2,6,9)$ at $m \equiv 5\,670 \pmod{10\,080}$ and $(5,7,15,21)$ at
+$m \equiv 4\,056 \pmod{26\,880}$, and the five-term tuple $(2,3,10,15,30)$ at
+$m \equiv 12\,780 \pmod{21\,840}$. Each is certified by the data of
+ \eqref{eq:pw-data} and the polynomial identity stated with it, which has, in each
+ case, the coefficients of the family:
+\[
+  \sum_i u_i\,(\alpha_i X + \beta_i) \prod_{j \ne i} (a_j X + 1)
+  \;=\; L\,\Bigl( \prod_i (a_i X + 1) - 1 \Bigr)
+  \qquad (X \in \Z),
+\]
+with $L = 36$ for $(1,2,5,10)$, $L = 280$ for $(1,2,6,9)$ and $L = 64$ for
+$(5,7,15,21)$. The three kernel-checked expansions are $\lv$
+\lean{hpoly\_1\_2\_5\_10}, $\lv$ \lean{hpoly\_1\_2\_6\_9} and $\lv$
+\lean{hpoly\_5\_7\_15\_21}; the five-term identity is \S\ref{sec:pw-propagate}'s
+and is not restated.
+
+With the identity in hand, each family yields a counting statement:
+$\lvCond$ \lean{card\_pwData\_ge\_1\_2\_5\_10}, $\lvCond$
+\lean{card\_pwData\_ge\_1\_2\_6\_9}, $\lvCond$
+\lean{card\_pwData\_ge\_5\_7\_15\_21} and $\lvCond$
+\lean{card\_pwData\_ge\_2\_3\_10\_15\_30} each assume
+$\lean{BHFor}$ at their own modulus and conclude the $T$-form of
+Theorem~\ref{thm:bh-count}, and the four $X$-forms
+$\lvCond$ \lean{card\_pwData\_ge\_rpow\_1\_2\_5\_10}, $\lvCond$
+\lean{card\_pwData\_ge\_rpow\_1\_2\_6\_9}, $\lvCond$
+\lean{card\_pwData\_ge\_rpow\_5\_7\_15\_21} and $\lvCond$
+\lean{card\_pwData\_ge\_rpow\_2\_3\_10\_15\_30} are the same instances of
+Theorem~\ref{thm:bh-count}. Nothing distinguishes the four but the exponents
+$1/4$, $1/4$, $1/4$ and $1/5$: the $k$ of the family enters the count as
+$X^{1/k}$, and the logarithms as $(\log X)^k$.
+
+The landing is a different theorem, and it is the one the section needs.
+$\lvCond$ \lean{pwProblemSmall\_of\_dicksonFor} takes the numerical hypotheses
+of a four-term family, its polynomial identity and $\lean{DicksonFor}$ for its
+class, and returns $\lean{PWProblemSmall}$. Four steps. Dickson's statement,
+applied to the bound $\max(n_0, m_0)$, gives a good $m > \max(n_0, m_0)$ in the
+class; the propagation theorem of \S\ref{sec:pw-propagate} turns ``all four forms
+prime at $m$'' into $\lean{PWData}(\lean{famN}(a,m))$; a product of four primes
+has at most four prime factors ($\lv$ \lean{card\_primeFactors\_prod\_le}, the
+prime factors of a product injecting into the index set), so the bound
+$\omega \le 5$ holds; and $\lv$ \lean{pwSmall\_of\_pwData} deletes the Egyptian-sum
+conjunct, which is exactly the passage from the data of \S\ref{sec:pw-problem}
+to the predicate of \S\ref{sec:conditional-small}. The member exceeds its
+parameter, $\lean{famN}(a,m) > m \ge n_0$ ($\lv$ \lean{lt\_famN} of
+\S\ref{sec:pw-propagate}), which is the bound of the problem.
+
+The four instances are that paragraph four times: $\lvCond$
+\lean{pwProblemSmall\_of\_dickson\_1\_2\_5\_10}, $\lvCond$
+\lean{pwProblemSmall\_of\_dickson\_1\_2\_6\_9} and $\lvCond$
+\lean{pwProblemSmall\_of\_dickson\_5\_7\_15\_21} at the three four-term families, with the numerical
+hypotheses discharged by finite evaluation and the polynomial identity supplied
+by the matching expansion; and $\lvCond$
+\lean{pwProblemSmall\_of\_dickson\_2\_3\_10\_15\_30} at the five-term family,
+where the propagation step is the five-term one of \S\ref{sec:pw-propagate} and
+the monotonicity step is $\lv$ \lean{lt\_famNk}. Each of the four carries its
+hypothesis in the signature and none of them is $\lv$; the unconditional problem
+is untouched by all four, exactly as in \S\ref{sec:pw-hypothesis}.
+
+The point of the subsection is the last clause, not the count. The four families
+do not merely give infinitely many P-W members conditionally --- that was
+\S\ref{sec:pw-hypothesis} --- they give infinitely many with $\omega \le 5$, and
+that is what makes them land in the small problem rather than beside it. The
+reduction of \S\ref{sec:conditional-small} is therefore a reduction of a problem
+that a hypothesis already populates: a family known to be infinite gives small
+misses outright, and \S\ref{sec:conditional-small} composes exactly that. No
+member is quoted here; the eight certified rows are \S\ref{sec:pw-members}'.
+
+\subsection{The carry is the Egyptian sum modulo every divisor of \texorpdfstring{$N-1$}{N-1}}
+\label{sec:conditional-carry}
+
+The second half of the section lives inside the carry, and the one congruence it
+uses is a rewriting of the carry's definition. It is worth stating as a numbered
+result because everything after it is an application, and because what it does
+\emph{not} use is the reason it can be applied where the Korselt locus is not
+available.
+
+\begin{theorem}[The carry is the Egyptian sum modulo every divisor of \texorpdfstring{$N-1$}{N-1}]
+\label{thm:carry-congruence}
+\lv{} \lean{egyptianSum\_modEq\_carry}
+Let $S$ be a finite set of primes with $\prod_{p \in S} p = N$, let $v_p$ be
+integers with $p \mid v_p\,(N/p)+1$ for $p \in S$ --- so that
+$N \mid \sum_{p \in S} v_p\,(N/p) + 1$ ($\lv$ \lean{egyptianSum\_add\_one\_dvd},
+\S\ref{sec:korselt}) --- and let $m$ be an integer with $m \mid N-1$. Then
+\[
+  \sum_{p \in S} v_p\,\frac{N}{p} \;\equiv\; C \pmod m .
+\]
+\end{theorem}
+
+\begin{proof}
+By the definition of the carry, \eqref{eq:carry},
+\[
+  \sum_{p \in S} v_p\,\frac{N}{p} \;=\; (C+1)N - 1 .
+\]
+Write $N = mt + 1$, which is what $m \mid N-1$ says. Subtracting $C$ from the
+identity gives
+\[
+  \sum_{p \in S} v_p\,\frac{N}{p} - C
+  \;=\; (C+1)N - 1 - C
+  \;=\; (C+1)(N-1)
+  \;=\; (C+1)\,mt ,
+\]
+a multiple of $m$. Hence the sum and the carry are congruent modulo $m$.
+\end{proof}
+
+The display is four lines and it is numbered for what it does not use. No
+primality, no Korselt condition, no self-duality of the cofactors, no property
+of the numerators beyond the divisibility that makes $C$ exist. It is a
+rewriting of the definition of $C$, and that is why it survives both uses the
+section makes of it: on numbers that are not Korselt, where the measurement of
+\S\ref{sec:conditional-rate} applies it, and with the numerator set replaced by any other
+set of integers of the same shape.
+
+Three refinements are used below, each one step from the display. In the
+library's own letters, with $n = \prod_{p \in S} p$ and numerators satisfying
+$p \mid v_p\,\lean{cof}(S,p)+1$, the divisibility $N \mid \sum + 1$ is automatic
+and the congruence reads $C \equiv \sum_{p \in S} v_p\,\lean{cof}(S,p) \pmod m$
+for every $m \mid n-1$ ($\lv$ \lean{carry\_modEq\_sum}); this is the form used
+below, because the library's numerators are indexed by the prime support and the
+cofactor is the quotient. If $m$ divides every numerator and $m \mid N-1$, then
+$m$ divides the whole sum term by term and, by the identity of the proof above,
+$m$ divides $C = \sum_{p \in S} v_p\,\lean{cof}(S,p) - (C+1)mt$ ($\lv$
+\lean{dvd\_carry\_of\_dvd\_numerators}); the section uses that four times and
+never reproves it.
+
+The third refinement is the following congruence, in its inverse form. Suppose every cofactor is self-dual modulo $m$, that is
+$\lean{cof}(S,p)^2 \equiv 1 \pmod m$, and let $\varepsilon_p$ invert
+$\lean{cof}(S,p)$ modulo $m$. Then $C \equiv \sum_p \varepsilon_p\,v_p \pmod m$
+($\lv$ \lean{carry\_modEq\_sum\_inv}). The proof is two congruences and a sum.
+From $\varepsilon_p \lean{cof}(S,p) \equiv 1$ and
+$\lean{cof}(S,p)^2 \equiv 1$ one gets
+$(\varepsilon_p - \lean{cof}(S,p))\lean{cof}(S,p) \equiv 1 - 1 = 0$; the
+cofactor is a unit modulo $m$, so $m \mid \varepsilon_p - \lean{cof}(S,p)$;
+summing the differences with the weights $v_p$ is a term-by-term divisibility
+that passes to the sums ($\lv$ \lean{dvd\_sum\_sub\_sum}), and adding it to the
+display gives the inverse form. At $m = 4$ self-duality is a property of parity:
+an odd $x$ satisfies $x^2 \equiv 1 \pmod 4$, since $x = 2k+1$ gives
+$x^2 - 1 = 4k(k+1)$ ($\lv$ \lean{odd\_mul\_self\_modEq\_one\_mod\_four}), and
+every cofactor of an odd number is odd. So on $N \equiv 1 \pmod 4$ with odd
+cofactors one has $C \equiv \sum_p \varepsilon_p\,v_p \pmod 4$ with
+$\varepsilon_p$ the inverse of $N/p$ modulo four ($\lv$
+\lean{carry\_modEq\_sum\_inv\_four}).
+
+That is the congruence the run had measured, and the measurement is the one
+figure this subsection quotes. On all $1\,394\,806$ Carmichael numbers
+$N \equiv 1 \pmod 4$ below $10^{18}$ the two sides agree modulo four, with zero
+mismatches (\texttt{experiments/results/pw\_carry\_congruence.txt}, field F1;
+the range is the census's, the script is
+\texttt{experiments/pw\_carry\_congruence.py}). The figure carries no marker: it
+is a check on the statement, not a statement, and the theorem above is what the
+check is a check of.
+
+One sentence, and it is the only place the book says it. Nothing in this
+subsection mentions $G$. The reduction of Part~V and the local theory of Part~VI
+decided \emph{which moduli see $N$}; the carry decides \emph{what the numerators
+do modulo $m$}, and the two questions meet only through the numerator cosets of
+\S\ref{sec:numerators}, which is where \S\ref{sec:conditional-worth} picks the
+second one up. The section returns to $G$ once, there, and only to say what the
+restriction on $\omega$ is a restriction of.
+
+\subsection{The problem without the no-carry conjunct}
+\label{sec:conditional-small}
+
+The miss condition on the Korselt locus, as \S\ref{sec:pw-problem} states it, is
+a conjunction: the Egyptian sum takes its extreme value and every numerator is
+divisible by four. The first conjunct is redundant at small $\omega$, and the
+chain that removes it is six steps, all of them already proved.
+
+The carry is non-negative and at most $\omega - 2$
+(\S\ref{sec:korselt}). If $m$ divides every numerator and $m \mid N-1$, then
+$m$ divides $C$. Hence if $\omega - 2 < m$, a non-negative multiple of $m$ below
+$m$ can only be zero: writing $C = mk$ with $k \ge 1$ would give
+$m \le mk = C \le \omega-2 < m$, so $C = 0$ ($\lv$
+\lean{carry\_eq\_zero\_of\_dvd\_numerators\_of\_card}). At $m = 4$ and
+$\omega \le 5$ the hypothesis $\omega - 2 < 4$ is the bound on the number of
+prime factors, and the conclusion is that four divisibilities force the carry to
+vanish ($\lv$ \lean{carry\_eq\_zero\_of\_four\_dvd\_numerators\_of\_card\_le\_five}).
+And $C = 0$ is exactly $\sum_p v_p\,(N/p) = N-1$ ($\lv$
+\lean{carry\_eq\_zero\_iff\_egyptianSum}) --- the identification that makes the
+whole subsection possible, and it is \S\ref{sec:korselt}'s.
+
+The hypothesis $N \equiv 1 \pmod 4$ in the fourth step is not a technicality.
+For odd $x$ one has $4 \mid N(x)-1$ ($\lv$ \lean{four\_dvd\_N\_sub\_one\_of\_odd},
+one line: $N = 2x-1$ with $x = 2u+1$ gives $N-1 = 4u$), and the section states
+its results at $x$ odd for that reason. Without the congruence the redundancy
+fails, and the failure is measured: below $10^{18}$ there are three Carmichael
+numbers with $\omega = 5$ and every numerator divisible by four whose carry is
+$2$, and all three are $\equiv 3 \pmod 4$
+(\texttt{experiments/results/carry\_mod\_eight.txt}, the line
+\texttt{omega=5: 22 numbers, C=0: 19, other carries: \{2: 3\}}); they are
+necessarily on that side, since on the other side the fourth step would give
+$C = 0$. The count is the script's; the congruence is the statement's.
+
+\begin{definition}[P-W at five prime factors]
+\label{def:pw-small}
+$\lean{PWProblemSmall}$: for every bound $n_0$ there is a natural number
+$n > n_0$ with $n \equiv 1 \pmod 4$, $n$ squarefree, $2 \le \omega(n) \le 5$,
+$p-1 \mid n-1$ for every prime $p \mid n$, and integers $v_p$ with
+$0 < v_p < p$, $p \mid v_p\,(n/p)+1$ and $4 \mid v_p$ --- and no condition on
+the Egyptian sum.
+
+$\lean{KorseltMissInfiniteSmall}$: the same statement at the parameter, with
+$N = N(x)$ in place of $n$ and $\lean{AllZero}\,x$ in place of the numerators.
+\end{definition}
+
+The two predicates are the ones of \S\ref{sec:pw-problem} with one clause
+deleted, and the subsection's whole claim is that the deleted clause was
+redundant. So they are not a weakening of P-W but a restatement of it at
+$\omega \le 5$: the definition is displayed as a pair, the way the problem was,
+and what follows proves that the pair is one statement.
+
+\begin{theorem}[A miss at five prime factors is one congruence]
+\label{thm:five-factors}
+\lv{} \lean{korselt\_allZero\_iff\_four\_dvd\_of\_card\_le\_five}
+Let $x \ge 2$ be odd, put $N = N(x)$, and let $S$ be a finite set of primes
+with $\prod_{p \in S} p = N$, $2 \le |S| \le 5$ and $p-1 \mid 2x-2$ for
+$p \in S$. Let $v_p \in (0,p)$ be integers with
+$p \mid v_p\,\lean{cof}(S,p)+1$. Then
+\[
+  \lean{AllZero}\,x
+  \iff
+  4 \mid v_p \ \text{ for every } p \in S .
+\]
+\end{theorem}
+
+\begin{proof}
+The criterion's own form of the miss on this locus is \S\ref{sec:pw-problem}'s
+Theorem~\ref{thm:pw-nocarry}: $\lean{AllZero}\,x$ holds if and only if
+$\sum_{p \in S} v_p\,\lean{cof}(S,p) = N-1$ and $4 \mid v_p$ at every prime.
+
+One direction is that second conjunct, directly.
+
+For the other, assume $4 \mid v_p$ at every $p$. Since $x$ is odd,
+$4 \mid N-1$, so the redundancy lemma applies at $m = 4$: the carry vanishes.
+By the identification of the chain above, $C = 0$ is exactly
+$\sum_{p \in S} v_p\,\lean{cof}(S,p) = N-1$ ($\lv$
+\lean{egyptianSum\_eq\_sub\_one\_of\_four\_dvd\_numerators\_of\_card\_le\_five}
+is that step with the definitions unfolded). That is the first conjunct.
+
+So the two sides of \S\ref{sec:pw-problem}'s theorem coincide, and the
+conjunction is the divisibility alone.
+\end{proof}
+
+Two corollaries are read off it and used below. First, a miss at $\omega \le 5$
+forces the order condition $(W)$ of \S\ref{sec:korselt}: the carry vanishes, and
+$C = 0$ is equivalent to $\lean{AntitoneIdem}$ ($\lv$
+\lean{antitoneIdem\_of\_four\_dvd\_numerators\_of\_card\_le\_five}) --- so at
+five prime factors the miss event lives on the same antitone-idempotent locus as
+the atom sum and the closed forms, which is where the book has been since
+Part~VI. Second, the criterion's own form of the problem at $\omega \le 5$ keeps
+only the numerator condition: $\lean{AllZero}\,x$ holds if and only if there are
+integers $v_p \in (0,p)$ with $p \mid v_p\,\lean{cof}(S,p)+1$ and $4 \mid v_p$
+at every prime ($\lv$ \lean{allZero\_iff\_pw\_reduced\_at\_card\_le\_five}),
+which is \S\ref{sec:pw-problem}'s arithmetic condition with the Egyptian-sum
+conjunct deleted. That is the form in which the problem is one congruence.
+
+\begin{theorem}[The two small forms are one statement]
+\label{thm:small-iff}
+\lv{} \lean{pwProblemSmall\_iff}
+$\lean{PWProblemSmall}$ holds if and only if
+$\lean{KorseltMissInfiniteSmall}$ does.
+\end{theorem}
+
+\begin{proof}
+For the forward direction, let $n$ be a small-form member beyond the bound
+$n_0$. It is $\equiv 1 \pmod 4$, so $n \ne 0$; it is at least $6$: a squarefree
+ number with at least two prime factors has at least
+two distinct primes, and the smallest pair of distinct primes is $2$ and $3$. So
+$x = (n+1)/2$ is a natural number with $N(x) = 2x-1 = n$; this is the only place
+in the section where the parameter and the number are interchanged, and it is
+why the second predicate is stated at $x$ while the first is stated at $n$.
+
+The six arithmetic clauses transfer along $N(x) = n$: the bound $n > n_0$, the
+class modulo four, squarefreeness, the two bounds on $\omega(n)$, and Korselt's
+condition $p-1 \mid n-1$.
+
+For the last clause, apply the reduced form of the criterion at that $x$, in the
+direction from the numerators to the pass, with the numerators the definition
+provides; its hypotheses are the five clauses just transported, and its
+conclusion is $\lean{AllZero}\,x$.
+
+For the converse, let $x$ satisfy the second predicate beyond $n_0$, and put
+$n = N(x)$. The same five clauses transfer the other way, and the reduced form
+of the criterion, read in the other direction, produces the numerators. Hence
+each predicate implies the other, and they differ by nothing but the letter of
+the parameter.
+\end{proof}
+
+Three corollaries, each carrying its hypothesis in the signature, and the
+section says so in each case: the mark is $\lvCond$ because the
+\emph{statement} assumes the small problem, not because a proof has a gap.
+
+First, the small form implies the full one ($\lvCond$ \lean{pwProblem\_of\_small}):
+through \S\ref{sec:pw-problem}'s identification of the problem with the question
+and Theorem~\ref{thm:small-iff}, a small miss is a miss. Second, it delivers the
+same conclusion as the full problem from a strictly simpler hypothesis: for
+every bound $n_0$ there is $x \ge 2$ with $N(x) > n_0$, $N(x)$ composite and
+$\lean{AllZero}\,x$ ($\lvCond$
+\lean{infinitely\_many\_counterexamples\_of\_pw\_small}, which is
+\S\ref{sec:pw-hypothesis}'s corollary applied to the first). Third --- and this
+is the section's strongest statement about P-W --- the $(1,2,5,10)$ family
+composed with Theorem~\ref{thm:small-iff} gives
+$\lean{KorseltMissInfiniteSmall}$ with Dickson's conjecture as the only
+hypothesis ($\lvCond$ \lean{korseltMissInfiniteSmall\_of\_dickson\_1\_2\_5\_10}):
+infinitely many small misses, outright. It is a composition of two results the
+reader already has, one from \S\ref{sec:conditional-families} and one from this
+subsection, and it is the reason the families were run into the small problem
+rather than left in the general layer.
+
+The restriction is not vacuous and it is not automatic, and one number shows
+both. Let $N = 188461 = 7\cdot 13\cdot 19\cdot 109$, the Korselt number of
+\S\ref{sec:korselt} whose invariant is $1$. Its numerators, in the order
+$7, 13, 19, 109$, are $6, 6, 18, 80$ and its carry is $2$
+(\texttt{experiments/results/carmichael\_numerator\_gcd.txt}, the row
+\texttt{188461 [7, 13, 19, 109] v=[6, 6, 18, 80] carry=2 G=1}); three of the
+four are not divisible by four and the last is. So $188461$ is not a miss, and
+Theorem~\ref{thm:five-factors} is what says so: the theorem is an equivalence, and
+this is the number on its false side at $\omega = 4$. Its role in the book is
+elsewhere --- it is the instance that corrected the atom formula --- and here it
+is doing something else, which is what a running example is for. That the
+restriction is not vacuous is a measurement with a range: below $10^{18}$ every
+Korselt miss has $\omega \le 5$, all $1266$ of them, and none has six or more
+prime factors
+(\texttt{experiments/results/pw\_carry\_congruence.txt}, field F3: the counts by
+$\omega$ are $1148$, $99$, $19$, $0$ and then zero again). The figure carries no
+marker; it is the census's, and \S\ref{sec:conditional-rate} is where the census
+is read properly.
+
+\subsection{What the hypothesis of the small problem is worth}
+\label{sec:conditional-worth}
+
+The small problem is a hypothesis in everything above, and it is worth saying
+exactly what it assumes --- not what it would imply about the criterion, which
+was the last subsection, but what it asserts about Carmichael numbers, which is
+what a reader sceptical of the reduction will want to see. Three statements, all
+unconditional, do that; they are the reason the section can call the restriction
+a restriction and not a reformulation into something easier.
+
+The first is that the lower bound $\omega \ge 2$ in the definition is really
+$\omega \ge 3$, and the reason is Korselt's condition alone. A squarefree number
+with exactly two prime factors is never Korselt: if $n = pq$ then
+$p-1 \mid n-1 = (p-1)q + (q-1)$ forces $p-1 \mid q-1$, and symmetrically
+$q-1 \mid p-1$, so $p = q$ and $n$ is not squarefree with two factors ($\lv$
+\lean{not\_korselt\_of\_card\_two}). Consequently a squarefree Korselt number
+with at least two prime factors has at least three ($\lv$
+\lean{card\_ge\_three\_of\_korselt}), and the $\omega = 2$ branch of the small
+problem is empty: no bound admits a member with exactly two prime factors
+($\lv$ \lean{not\_pwSmall\_card\_two}). The problem can therefore be stated at
+$3 \le \omega \le 5$ with nothing lost:
+
+$\lean{SmallMissData}(n)$ is the arithmetic content of a single $n$ --- the class
+modulo four, squarefreeness, Korselt, and numerators $v_p \in (0,p)$ with
+$p \mid v_p\,(n/p)+1$ and $4 \mid v_p$ at every prime,
+without the Egyptian sum --- and $\lean{PWProblemSmall}$ is the statement that
+for every bound there is a larger $n$ with $2 \le \omega(n) \le 5$ and
+$\lean{SmallMissData}(n)$ ($\lv$ \lean{pwProblemSmall\_iff\_data}); the same with
+$3 \le \omega(n) \le 5$ is the same statement ($\lv$
+\lean{pwProblemSmall\_iff\_data\_three}), by the two results of the paragraph
+above.
+
+The second is that the restricted problem splits at fixed $\omega$, and this is
+a statement about infinitude rather than about members. The negation of ``for
+every bound there is a larger member'' is ``all members beyond some bound fail''
+($\lv$ \lean{not\_infinite\_iff\_bounded}, a two-line equivalence), and
+$3 \le \omega \le 5$ is a finite union. So if the small problem holds, one of
+its three fixed-$\omega$ halves holds: there is a $k \in \{3,4,5\}$ for which
+infinitely many squarefree Korselt $n \equiv 1 \pmod 4$ with exactly $k$ prime
+factors carry $\lean{SmallMissData}$ ($\lvCond$
+\lean{exists\_fixed\_card\_of\_pwProblemSmall}). Each of the three disjuncts
+requires infinitely many Carmichael numbers with exactly $k$ prime factors, and
+that is not a statement the published constructions provide.
+
+The third makes the last clause exact. A Carmichael number is $1 < n$,
+composite, squarefree and Korselt ($\lean{IsCarmichael}$); being composite and
+squarefree it has at least two prime factors, and with at least two it has at
+least three, the case of two being excluded by the theorem above ($\lv$
+\lean{card\_ge\_three\_of\_isCarmichael}).
+Write $\lean{CarmichaelsSmallOneFour}$ for the statement that infinitely many
+Carmichael numbers $\equiv 1 \pmod 4$ have $3 \le \omega \le 5$. Then the small
+problem implies it ($\lvCond$
+\lean{carmichaelsSmallOneFour\_of\_pwProblemSmall}): a small miss is a Korselt
+number with $\omega$ between three and five, hence a Carmichael number in that
+class, and the bound of the problem makes the infinitude. This is the
+unconditional content of the hypothesis, and no theorem of
+Alford--Granville--Pomerance \cite{AGP1994}, Wright \cite{Wright2013} or
+Matom\"aki \cite{Matomaki2013Carmichael} type supplies it: the constructions
+behind those counts produce Carmichael numbers whose number of prime factors
+grows, whereas the hypothesis asks for infinitely many below six prime factors.
+
+The link with $G$ is cited from \S\ref{sec:korselt} (Theorem~\ref{thm:criterion-four}). On a squarefree Korselt $N \equiv 1 \pmod 4$
+the criterion misses if and only if $4 \mid G(N)$, with no bound on $\omega$
+($\lv$ \lean{allZero\_iff\_four\_dvd\_residueGcd}, the identification of
+\S\ref{sec:korselt} in the prime-factor language). Consequently P-W is the
+statement that infinitely many squarefree Korselt $N \equiv 1 \pmod 4$ with
+$\omega \ge 2$ have $4 \mid G(N)$ ($\lv$ \lean{pwProblem\_iff\_residueGcd}), and
+the small problem is the same statement with $\omega \le 5$ added and nothing
+else changed ($\lv$ \lean{pwProblemSmall\_iff\_residueGcd}; the two differ by
+the bound on $\omega$ and by no other clause, $\lv$
+\lean{pwProblem\_iff\_residueGcd\_without\_card}). Nothing is re-derived here:
+the equivalence is Part~V's, the letters are \S\ref{sec:korselt}'s, and the
+paragraph exists so that a reader who thinks in the invariant can see that the
+restriction of this section is a restriction on $\omega$ and not a change of
+problem.
+
+\subsection{Why the reduction stops at six prime factors}
+\label{sec:conditional-ceiling}
+
+The redundancy of \S\ref{sec:conditional-small} is not an accident of the number
+four. It is the first case of a bound, and the bound is sharp at the second.
+
+The general statement is about a divisor of the numerators. Call $A$ an
+\emph{atom-gcd} of the numerator set when $\lean{AtomGcdDvd}$ holds: $A$ divides
+$N-1$ and divides $e-1$ for every one-prime atom $e$ of \S\ref{sec:korselt}.
+Under a nonzero carry such an $A$ is at most $\omega - 2$ ($\lv$
+\lean{atomGcd\_le\_card\_sub\_two}: $A \mid C$ by
+$\lean{atomGcd\_dvd\_carry}$, $0 < C$ by non-negativity, and
+$C \le \omega-2$); and for a positive $A$ the $2$-adic part $2^{v_2(A)}$ divides $A$ ($\lv$
+\lean{two\_pow\_padicValNat\_le}, one line). Hence
+\[
+  2^{v_2(A)} \;\le\; A \;\le\; \omega - 2
+  \qquad
+  (\lv\ \lean{two\_pow\_v2\_atomGcd\_le}),
+\]
+and in particular $2^k \mid A$ forces $\omega \ge 2^k + 2$ ($\lv$
+\lean{card\_ge\_of\_two\_pow\_dvd}). The carry is bounded by the number of prime
+factors; a power of two dividing the atom-gcd is bounded by the carry; and the
+two together make the number of prime factors grow with the power of two.
+
+At $k = 2$ this reads: under a nonzero carry, $4 \mid A$ forces $\omega \ge 6$
+($\lv$ \lean{card\_ge\_six\_of\_four\_dvd}). And the other direction at
+$\omega \le 9$ closes the gap: if $4 \mid v_p$ at every prime then $4 \mid C$,
+while $0 \le C \le \omega-2 \le 7$, so the carry is $0$ or $4$ ($\lv$
+\lean{carry\_eq\_zero\_or\_four\_of\_four\_dvd\_numerators\_of\_card\_le\_nine}).
+Together the two say that the $\omega \le 5$ redundancy of \S\ref{sec:conditional-small}
+is the last one of its kind: at $\omega = 6$ a miss still needs $C = 0$, while a
+number with $4 \mid v_p$ everywhere and $C = 4$ is a non-miss. The redundancy
+does move one scale up --- at $\omega \le 9$ with $8 \mid N-1$ and $8 \mid v_p$
+at every prime the carry is again $0$ ($\lv$
+\lean{carry\_eq\_zero\_of\_eight\_dvd\_numerators\_of\_card\_le\_nine}) --- but
+the hypothesis there is strictly stronger, and the number of the next display
+fails it at one prime, so the $m = 8$ form sharpens the statement without
+removing the ceiling.
+
+\begin{theorem}[The ceiling at six prime factors]
+\label{thm:six-factors}
+\lv{} \lean{omega6\_instance}
+Let $N_6 = 9\,505\,981\,178\,881\,201 = 7\cdot 241\cdot 283\cdot 1327\cdot 1873\cdot 8011$,
+let $S_6$ be its prime support, $v_6$ the numerators
+$4, 208, 220, 1176, 1704, 7948$ at those primes, and $e_6$ the atoms
+$(p - v_6(p))\,(N_6/p)$. Then
+\[
+\begin{aligned}
+&\text{each } p \in S_6 \text{ is prime}, \qquad
+  \prod_{p \in S_6} p = N_6, \qquad |S_6| = 6, \\
+&p - 1 \mid N_6 - 1 \ \ (p \in S_6), \qquad
+  C = 4, \qquad \sum_{p \in S_6} e_6(p) = N_6 + 1, \\
+&\lean{AtomGcdDvd}\,S_6\,N_6\,4, \qquad
+  N_6 \equiv 1 \pmod 4, \qquad
+  \neg\,\lean{AntitoneIdem}\,S_6\,N_6 .
+\end{aligned}
+\]
+\end{theorem}
+
+\begin{proof}
+The number, its support, the numerators and the atoms are the definitions
+$\lean{N6}$, $\lean{S6}$, $\lean{v6}$ and $\lean{e6}$; the six factors are prime ($\lv$ \lean{primes\_N6},
+each small enough for a finite check), their product is $N_6$ ($\lv$
+\lean{prod\_N6}) and there are six of them ($\lv$ \lean{card\_S6}).
+
+Korselt: $p-1 \mid N_6-1$ at each of the six ($\lv$ \lean{korselt\_N6}). So the
+number is a Carmichael number, and the criterion's own locus is where the ceiling
+is attained.
+
+The numerators lie in $(0,p)$ at every prime ($\lv$ \lean{hv6}, $\lv$
+\lean{hvlt6}) and satisfy $p \mid v_6(p)\,(N_6/p)+1$ ($\lv$ \lean{hvp6}); all
+six are divisible by four by inspection, which is the hypothesis of the
+subsection. The atoms are pinned by the CRT: any one-prime atom of $N_6$ equals
+$N_6 - v_6(p)\,(N_6/p)$ ($\lv$ \lean{atom\_N6\_eq}, from
+$\lean{atom\_eq\_sub\_mul}$ of \S\ref{sec:korselt}), and $e_6$ is that value
+($\lv$ \lean{e6\_eq}).
+
+The carry is $4$, and $4 = \omega - 2$ ($\lv$ \lean{carry\_N6}); so the atom sum
+takes the value $(6-1-4)N_6 + 1 = N_6+1$ ($\lv$ \lean{sum\_atoms\_N6}, which is
+\S\ref{sec:korselt}'s exact atom sum restated at $\omega = 6$ and $C = 4$,
+$\lv$ \lean{sum\_atom\_eq\_n\_mul}). The atom-gcd is $4$: it divides $N_6-1$ and
+each $e_6(p)-1$ ($\lv$ \lean{atomGcdDvd\_N6}); the number is $\equiv 1 \pmod 4$
+($\lv$ \lean{N6\_mod\_four}); and the order condition $(W)$ fails ($\lv$
+\lean{not\_antitoneIdem\_N6}), because $(W)$ would force the carry to vanish and
+the carry is $4$.
+
+The nine clauses together are the display. And the bound of the previous
+paragraph is attained, not merely approached: the instance satisfies its
+hypotheses and has $\omega = 6 = 2^2+2$ exactly ($\lv$
+\lean{omega6\_attains\_bound}), so the ceiling is sharp.
+\end{proof}
+
+\begin{example}[The carry-four number at six prime factors]
+\label{ex:omega6}
+$N = 9\,505\,981\,178\,881\,201$ is the smallest of the $28$ rows of the
+census below $10^{21}$ that have $\omega = 6$, every numerator divisible by four
+and carry $4$
+(\texttt{experiments/results/pw\_omega6\_f1\_list.txt}, whose first row it is;
+the factorisation is the c21 census \cite{Pinch2007}). Its numerators at
+$7, 241, 283, 1327, 1873, 8011$ are $4, 208, 220, 1176, 1704, 7948$, each in
+$(0,p)$, and its carry is $4 = \omega-2$, so its atom sum is $N+1$ rather than
+the $5N+1$ a vanishing carry would give. It is doing three things at once:
+it is the case where the two conjuncts of the miss condition separate, it
+attains the bound $\omega \ge 2^2+2$ of \S\ref{sec:conditional-ceiling} with
+equality, and it is a Carmichael number, so the ceiling is attained on the
+criterion's own locus and not off it. It also fails the $m = 8$ hypothesis of the
+paragraph above at $p = 283$, since $220 \equiv 4 \pmod 8$.
+\end{example}
+
+Two statements of the same module make the separation exact, and they are worth
+naming because one of them is the ceiling in the criterion's own letters. First,
+the $\omega = 6$ analogue of Theorem~\ref{thm:five-factors} fails: there are a
+set of six primes, a product $n$ and numerators in $(0,p)$ with
+$p \mid v_p\,\lean{cof}(S,p)+1$ and $4 \mid v_p$ everywhere, whose Egyptian sum
+is \emph{not} $n-1$ ($\lv$ \lean{card\_le\_six\_analogue\_fails}). So the
+hypothesis $\omega \le 5$ of the small problem cannot be raised to $\omega \le 6$
+in the numerator-only formulation without losing the equivalence with the miss
+event. Second, at the number of the example the criterion \emph{detects}: with
+$x_6 = \lean{x6} = (N+1)/2 = 4\,752\,990\,589\,440\,601$, so that
+$N(x_6) = N_6$ ($\lv$ \lean{N\_x6}), one has
+$\neg\,\lean{AllZero}\,x_6$ ($\lv$ \lean{not\_allZero\_x6}), although every
+numerator of $N_6$ is divisible by four. A carry-four number is a
+non-miss with the numerator condition of a miss, and that is the whole content of
+the ceiling: at $\omega \le 5$ the two conditions collapse into one, at
+$\omega = 6$ they separate, and the number where they separate is a Carmichael
+number. The small problem implies P-W.
+
+\subsection{The last numerator is forced, and the rate it predicts}
+\label{sec:conditional-rate}
+
+A miss at $\omega \le 5$ is a conjunction of $\omega$ divisibilities, but on the
+no-carry locus it is one divisibility and $\omega-1$ consequences of it. The
+mechanism is a lemma about sums, and the section states it because it is what
+turns the census of this subsection from a list into a rate.
+
+On the no-carry locus, $\sum_{p \in S} v_p\,\lean{cof}(S,p) = n-1$ with
+$4 \mid n-1$. Suppose $\omega - 1$ of the numerators are divisible by four and
+let $p_0$ be the remaining prime. Then $4 \mid n-1$ gives $4$ divides the sum;
+the summand at $p_0$ is the sum minus the summands at the other primes, each of
+which is divisible by four, so $4 \mid v_{p_0}\,\lean{cof}(S,p_0)$ ($\lv$
+\lean{dvd\_of\_dvd\_sum\_of\_dvd\_all\_but\_one}, which needs only that the
+cofactor at $p_0$ be coprime to the modulus); and the cofactor at $p_0$ is odd,
+$n$ and every prime being odd, so it is a unit modulo four --- if
+$\lean{cof}(S,p_0) = 2k+1$ then
+$\lean{cof}(S,p_0)^2 - 4k(k+1) = 1$, a Bezout identity and no inversion to
+compute. Hence $4 \mid v_{p_0}$ ($\lv$
+\lean{four\_dvd\_of\_dvd\_sum\_sub\_one\_all\_but\_one}). The event
+``$4 \mid v_p$ at every prime'' is therefore one congruence and not $\omega$
+independent ones, which is why the congruence contributes $4^{1-\omega}$ and not
+$4^{-\omega}$, and why the predicted density carries one factorial and not
+$\omega$ of them.
+
+What the census says about that prediction is a measurement with a range and a
+script, in four sentences, and no figure in it carries a marker. First the
+shape: below $10^{18}$, among Carmichael numbers $\equiv 1 \pmod 4$, the counts
+of misses by $\omega$ are $1148$, $99$, $19$ and $0$ for $\omega = 3, 4, 5, 6$,
+against $32\,749$, $40\,685$, $175\,417$ and $414\,660$ Carmichael numbers in
+those classes; the prediction $4^{1-\omega}/(\omega-1)!$ applied to those
+denominators gives $1023$, $106$, $29$ and $3$
+(\texttt{experiments/results/pw\_carry\_congruence.txt}, field F3; the range is
+$10^{18}$, the script \texttt{experiments/pw\_carry\_congruence.py}). Second the
+split at six: with $4 \mid v_p$ everywhere the carry below $10^{18}$ is $0$ at
+$\omega = 3$ (all $1148$ numbers) and at $\omega = 4$ (all $99$); at
+$\omega = 5$ it is $0$ for $19$ numbers and $2$ for the three numbers
+$\equiv 3 \pmod 4$ of \S\ref{sec:conditional-small}; and at $\omega = 6, 7, 8$
+it is $4$ throughout, for $3$, $12$ and $2$ numbers respectively --- one carry
+value per row and no exception
+(\texttt{experiments/results/carry\_mod\_eight.txt}, the rows
+\texttt{omega=6}, \texttt{omega=7}, \texttt{omega=8}). Third the census above
+the range: Pinch's list of the $20\,138\,200$ Carmichael numbers below $10^{21}$
+\cite{Pinch2007} contains $7\,648$ P-W members
+(\texttt{experiments/results/pw\_survival\_bh.txt}, the full sample, its
+parameter \texttt{PMAX} fixed at $10^7$; the dataset is the one whose hash is
+\texttt{experiments/results/pw\_c21.sha256}). Fourth, these are
+consistency checks on a model whose shape was fixed before the data were examined
+(\texttt{experiments/results/pw\_prereg.txt}); the analysis is
+\texttt{experiments/results/pw\_prereg\_analysis.txt}, and the summary there is
+$13$ cells in $(10^{18}, 10^{21}]$ and two models, the first inside its predicted
+interval in $11$ of the $13$. No figure in the four sentences is promoted to a
+theorem; the only theorem in this neighbourhood is the next subsection's, and it
+is about the model and not about the primes.
+
+\subsection{The coupling bound}
+\label{sec:conditional-grid}
+
+The model behind those counts is a statement about boxes, and it has one theorem
+in it. Its subject is the relation between two ways of reading a tuple of
+fractions: the \emph{weight box} $\{1,\dots,q_i-1\}^r$, in which every coordinate
+carries its own denominator, and the \emph{grid} $\{1,\dots,L\}^r$, in which all
+of them share one. The theorem says the grid is a faithful model of the box for
+the carry statistic, with an error the section can write down.
+
+Name the objects first. For $m, L \in \N$ and $k \in \N$,
+$\lean{coupled}(m,L,k) = \lceil mk/L \rceil$ is a natural number; $\lean{box}(r,L)$
+is $\{1,\dots,L\}^r$; $\lean{vbox}(q)$ is $\{1,\dots,q_i-1\}^r$;
+$\lean{jbox}(q,L)$ is $\{1,\dots,L/(q_i-1)\}^r$; the coordinatewise coupling is
+$\lean{coupledTuple}(q,L,k)_i = \lean{coupled}(q_i-1,L,k_i)$; and
+$\lean{residue}(m,L,k)$ is the index of $k$ inside the fibre of its coupled
+weight. The hypothesis on the moduli is $q_i \ge 2$ with $q_i - 1 \mid L$, so
+$L$ is a common multiple of the $q_i-1$. The two counts are
+$\lean{carryCount}(q,c)$, the weight tuples whose coordinate sum of fractions
+has floor $c$, and $\lean{gridCount}(r,L,c)$, the grid tuples whose sum has
+floor $c$; the coordinate sum on a grid tuple is $\lean{sumQ}$.
+
+The proof has eight steps, and the first two control the rounding.
+$\lv$ \lean{coupled\_bounds} brackets the ceiling: for $L > 0$,
+$L\lfloor a/L\rfloor \le a$ and $a < L\lfloor a/L\rfloor + L$ at
+$a = mk + (L-1)$, which is the division algorithm written twice. Its
+consequences are that $mk \le L\,\lean{coupled}(m,L,k)$ ($\lv$
+\lean{coupled\_le\_mul}) and that the coupling lands in $\{1,\dots,m\}$ when
+$m \ge 1$, $1 \le k \le L$ and $m \mid L$ ($\lv$ \lean{coupled\_mem}); so a coupled tuple
+of a grid tuple is a weight tuple ($\lv$ \lean{coupledTuple\_mem}).
+
+The third step is that the fibres are exact. Inside the fibre of its weight, $k$
+is bracketed by $\lv$ \lean{fiber\_lo} and $\lv$ \lean{fiber\_hi}; the index lies in
+$\{1,\dots,L/m\}$ ($\lv$ \lean{residue\_mem}); every $k$ is reconstructed from
+its weight and its index, $k = (\lean{coupled}-1)(L/m) + \lean{residue}$ ($\lv$
+\lean{residue\_reconstruct}); and the reconstruction is inverted by the coupling
+($\lv$ \lean{coupled\_of\_reconstruct}). Consequently the index tuple of a grid
+tuple is a tuple of indices ($\lv$ \lean{residueTuple\_mem}) and the tuple is
+recovered from its coupled tuple and its index tuple ($\lv$
+\lean{tuple\_reconstruct}).
+
+The fourth step is the count on a fibre. For any predicate $P$ on weight tuples,
+the grid tuples whose coupled weight satisfies $P$ number the $P$-filtered weight
+tuples times $\prod_i L/(q_i-1)$ ($\lv$ \lean{card\_coupled\_fibre}); the proof
+is the bijection $k \mapsto \bigl(\lean{coupledTuple}(q,L,k),\ (\lean{residue}(q_i - 1, L, k_i))_i\bigr)$
+onto the product of the weight box with the box of indices, whose inverse is the
+reconstruction of the third step.
+
+The fifth step is the pointwise distance. For $1 \le k \le L$ and $m > 0$,
+\[
+  \left| \frac{\lceil mk/L\rceil}{m+1} - \frac{k}{L} \right| \;\le\; \frac{1}{m+1}
+  \qquad
+  (\lv\ \lean{coupled\_dist});
+\]
+with $m = q_i-1$, so that $m+1 = q_i$, this reads
+$\lvert v_i/q_i - k_i/L \rvert \le 1/q_i$ coordinate by coordinate, and summing
+the $r$ inequalities by the triangle inequality gives
+$\lvert \sum_i v_i/q_i - \sum_i k_i/L \rvert \le \varepsilon$ with
+$\varepsilon = \sum_i 1/q_i$ ($\lv$ \lean{coupled\_sum\_dist}).
+
+The sixth step says where the two floors can disagree. If $\lfloor x\rfloor = c$
+and $\lfloor y\rfloor \ne c$ while $\lvert x - y\rvert \le \varepsilon$, then
+$y$ lies within $\varepsilon$ of $c$ or within $\varepsilon$ of $c+1$: there are
+only two sides on which $y$ can leave the unit interval containing $x$ ($\lv$
+\lean{floor\_ne\_mem\_windows}).
+
+The seventh step bounds each of the two windows. A window of half-width
+$\varepsilon$ around a centre holds at most $(2\varepsilon L + 1)L^{r-1}$ grid
+points: slice on the last coordinate, whose fibre is an interval of integers, and
+bound that interval by its length plus one ($\lv$ \lean{card\_Icc\_filter\_le},
+$\lv$ \lean{card\_window\_le}).
+
+The eighth step adds the two windows and normalises. The two counts differ by at
+most the number of grid points in the union of the two windows, which is at most
+$(4\varepsilon L + 2)L^{r-1}$; dividing by $L^r = L^{r-1}L$ gives
+$4\varepsilon + 2/L$; and the count on the coupled side is converted to
+$\lean{carryCount}(q,c)/\prod_i (q_i-1)$ by the fibre count of the fourth step
+and the identity $\prod_i \bigl(L/(q_i-1)\bigr)\cdot\prod_i (q_i-1) = L^r$.
+
+\begin{theorem}[The grid models the weight box]
+\label{thm:carry-grid}
+\lv{} \lean{carryGrid\_dist}
+Let $r \ge 1$, $L \ge 1$ and $q : \mathrm{Fin}\,r \to \N$ with $q_i \ge 2$ and
+$q_i - 1 \mid L$ for every $i$. Then for every $c \in \N$
+\[
+  \left|
+    \frac{\lean{carryCount}(q,c)}{\prod_i (q_i-1)}
+    -
+    \frac{\lean{gridCount}(r,L,c)}{L^r}
+  \right|
+  \;\le\;
+  4\sum_i \frac{1}{q_i} + \frac{2}{L} .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\varepsilon = \sum_i 1/q_i \ge 0$. The coupled count on the grid side is,
+by the fourth step applied to the predicate whose floor is $c$,
+\[
+  A \;=\; \lean{carryCount}(q,c)\,\prod_i \frac{L}{q_i-1} ,
+\]
+and the grid count is $B = \lean{gridCount}(r,L,c)$ by definition.
+
+The two sets differ only on tuples whose coupled floor is $c$ and whose own
+floor is not, or the other way round. On such a tuple the two coordinate sums
+are within $\varepsilon$ by the fifth step, so by the sixth step the tuple lies
+in one of the two windows of the seventh step; hence
+$\lvert A - B\rvert$ is at most the number of grid points in the union of the two
+windows, which is at most $2(2\varepsilon L+1)L^{r-1}$.
+
+Divide by $L^r = L^{r-1}L$: the quotient is at most $(4\varepsilon L + 2)/L =
+4\varepsilon + 2/L$. What is divided is $\lvert A - B\rvert$, and $A/L^r$ is the
+first term of the display by the normalisation
+$\prod_i \bigl(L/(q_i-1)\bigr)\prod_i(q_i-1) = L^r$ of the fourth step; so the
+display follows.
+\end{proof}
+
+The bound is $O(\sum_i 1/q_i + 1/L)$: for fixed $r$ and large moduli the grid is
+a faithful model of the weight box to within a sum of reciprocals, which is the
+sense in which the two counts agree. What the theorem does
+\emph{not} say is that either count converges to the Eulerian numbers. The
+passage from the grid count to the Eulerian law is not this theorem, it is not
+proved anywhere in this development, and the census of \S\ref{sec:conditional-rate}
+is a measurement and not a corollary of this display. The theorem is the one
+piece of mathematics inside the heuristic, and it is about boxes; the reader who
+wants the law should read the measurement as a measurement.
+
+\subsection{Where the book stops}
+\label{sec:conditional-stop}
+
+P-W is now a statement about one congruence on a locus. At $\omega \le 5$ it is
+$4 \mid v_p$ at every prime and nothing else: the no-carry conjunct is redundant
+(Theorem~\ref{thm:five-factors}), the two forms of the restricted problem are one
+statement (Theorem~\ref{thm:small-iff}), and the restriction is a restriction on
+$\omega$ and not a change of problem (the $G$-form of the two, at the end of
+\S\ref{sec:conditional-worth}). At $\omega \ge 6$ it is the
+same congruence together with $C = 0$, the two are no longer redundant, and the
+ number of
+the ceiling is a Carmichael number where they separate
+(Theorem~\ref{thm:six-factors}).
+
+The conditional layer is a hypothesis and its count is a shape. Theorem~\ref{thm:bh-count}
+gives a bound of the form $c'X^{1/4}/(\log X)^4$, whose factor is $0.011$ at $10^{18}$ and $1.39$ at
+$10^{30}$, while the census stops at $10^{21}$ with $7\,648$ members in it, and
+the grid bound says only that the model behind the census's shape is faithful to
+within a sum of reciprocals.
+
+The problem can be stated exactly, and it is not settled here. The open questions of \S\ref{sec:open} include this one, in
+the sharpest form it has here --- the small problem of
+\S\ref{sec:conditional-small} --- and none of them is answered: the condition is a congruence on the numerators of
+a Korselt number with at most five prime factors, and whether infinitely many
+such numbers exist is not a question this book can settle. That is where it stops.

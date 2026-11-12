@@ -1,0 +1,494 @@
+=== sections/08_where_it_bites.tex
+1: \section{Where it bites}
+2: \label{sec:least-safe-where_it_bites}
+3: 
+4: Every conditional statement of \cref{sec:least-safe-conditional_ladder} rests on
+5: one number: at the conductor $m = 2\operatorname{lcm}(1,\ldots,B) - 1$ there is an
+6: admissible multiplier $K$, bounded in size
+7: (\cref{def:least-safe-dickson-consec-lcm-size}). Its demands on $K$ are of two
+8: kinds. The first is congruence, three conditions,
+9: \[
+10:   (m+1) \mid K, \qquad m \mid 2K + 3, \qquad (m+2) \mid 2K + 2m + 1 .
+11: \]
+12: They are conditions on the residue of $K$ modulo the product $m(m+1)(m+2)$
+13: alone, so a bounded quantity decides them, and if the class they describe has a
+14: member at all then it has one below that product --- at no cost in hypothesis. The
+15: second is the primality of the three numbers $mK+1$, $(m+1)K+1$ and $(m+2)K+1$,
+16: which is not a divisibility of $K$ at all. Every conditional statement of this
+17: paper assumes the primality of those three numbers, in one form or another; none
+18: proves it. The rest of the
+19: section asks how little of the size side the rate needs.
+20: 
+21: \begin{theorem}\lv\lean{consecDiv\_iff\_mod}
+22: \label{thm:least-safe-consec-div-iff-mod}
+23: Let $m$ and $K$ be natural numbers and put $S = m(m+1)(m+2)$; let
+24: \lean{ConsecDiv} $m$ $K$ be the conjunction of the three divisibilities
+25: \[
+26:   (m+1) \mid K, \qquad m \mid 2K + 3, \qquad (m+2) \mid 2K + 2m + 1 .
+27: \]
+28: Then \lean{ConsecDiv} $m$ $K$ holds if and only if \lean{ConsecDiv} $m$
+29: $(K \bmod S)$ holds.
+30: \end{theorem}
+31: \begin{proof}
+32: Those three divisibilities are the Korselt conditions on the multiplier of the
+33: consecutive family (\cite{Companion-monograph}), and the theorem says that they
+34: see the residue of $K$ modulo the product of their three moduli and nothing
+35: else. What makes $S$ a period is that it satisfies each of the three conditions
+36: with the coefficient that condition carries: $(m+1) \mid S$, since
+37: $S = (m+1) \cdot m(m+2)$; then $m \mid 2S$, since $2S = m \cdot 2(m+1)(m+2)$; and
+38: $(m+2) \mid 2S$, since $2S = (m+2) \cdot 2m(m+1)$. Adding $S$ times an integer to
+39: $K$ therefore moves none of the three conditions, and that two-sided
+40: equivalence, at an arbitrary pair of a residue and a multiplier of the period,
+41: is \lean{consecDiv\_add\_mul}.
+42: 
+43: Every natural number leaves a remainder and a quotient on division by $S$, and
+44: $K$ is the sum of the remainder $K \bmod S$ and a multiple of $S$. By the
+45: previous paragraph the three divisibilities hold at $K$ exactly when they hold
+46: at that remainder, so reading them at $K \bmod S$ in place of $K$ is lossless,
+47: which is the statement.
+48: \end{proof}
+49: 
+50: Deciding the three congruences is therefore a bounded computation, and the next
+51: statement is its consequence: the multipliers satisfying them are decided by a
+52: residue below the period.
+53: 
+54: \begin{lemma}\lv\lean{exists\_residue\_lt\_step}
+55: \label{lem:least-safe-exists-residue-lt-step}
+56: Let $m \ge 1$ and let $K$ be admissible at $m$: let it satisfy $m + 3 \le K$, let
+57: the three divisibilities of \cref{thm:least-safe-consec-div-iff-mod} hold of it,
+58: and let the three numbers $mK+1$, $(m+1)K+1$ and $(m+2)K+1$ be prime. Then there
+59: is a natural number $r$ with $r < m(m+1)(m+2)$ and with \lean{ConsecDiv} $m$ $r$.
+60: \end{lemma}
+61: \begin{proof}
+62: Unpack the admissibility: the floor $m + 3 \le K$, the three divisibilities, and
+63: the primality of $P = mK+1$, $Q = (m+1)K+1$ and $R = (m+2)K+1$. The proof keeps
+64: the three divisibilities and discards the floor and the three primalities ---
+65: that discard is the content of the lemma --- and the step that keeps them is
+66: \lean{ConsecAdm.toDiv}, which reads the admissibility as the conjunction
+67: \lean{ConsecDiv} $m$ $K$.
+68: 
+69: Let $r = K \bmod S$ with $S = m(m+1)(m+2)$. By
+70: \cref{thm:least-safe-consec-div-iff-mod} the class holds at $r$, and $r < S$
+71: because $S$ is the product of the three positive integers $m$, $m+1$ and $m+2$:
+72: here, and here only, the hypothesis $1 \le m$ is used.
+73: 
+74: So a conductor at which the congruences have a solution at all has one below the
+75: period. The lemma does not assert that they have a solution: what it cuts is the
+76: size of a member of the class, and the existence of a member is the part of the
+77: hypothesis that stays open.
+78: \end{proof}
+79: 
+80: The smallest admissible pair this paper exhibits makes both halves visible. At
+81: the first row of \cref{tab:least-safe-ladder} --- the member of
+82: \cref{ex:least-safe-sixty}, whose invariant is $G(N) = 60$ --- the conductor is
+83: $m = 29$ and the multiplier is $K = 6486240$, so the period of
+84: \cref{thm:least-safe-consec-div-iff-mod} at that conductor is
+85: $S = 29 \cdot 30 \cdot 31 = 26970$. The multiplier sits $240$ periods above a
+86: residue of the period: $6486240 = 13440 + 240 \cdot 26970$, and $13440$ satisfies
+87: all three divisibilities, $30 \mid 13440$, $29 \mid 2 \cdot 13440 + 3$ and
+88: $31 \mid 2 \cdot 13440 + 2 \cdot 29 + 1$. At that residue the three numbers are
+89: $29 \cdot 13440 + 1 = 389761$, which is prime --- trial division by the primes up
+90: to $624$ decides it --- and $30 \cdot 13440 + 1 = 403201 = 191 \cdot 2111$ and
+91: $31 \cdot 13440 + 1 = 416641 = 373 \cdot 1117$, two of the three composite. So a
+92: residue below the period need not be admissible. The multiplier of the row need
+93: not be the least admissible one at its conductor, and its conductor is not one of the
+94: conductors $2\operatorname{lcm}(1,\ldots,B) - 1$ that
+95: \cref{sec:least-safe-conditional_ladder} builds at: no bound $B$ gives $29$ of
+96: that form, the values below it being $1$, $3$, $11$, $23$, and the next $119$.
+97: 
+98: The congruence half of the hypothesis costs no size:
+99: \cref{thm:least-safe-consec-div-iff-mod} puts any solution of the congruences below the period
+100: (for $m \ge 1$), and \cref{lem:least-safe-exists-residue-lt-step} applies this to an admissible $K$. The
+101: primality of the three numbers $mK+1$, $(m+1)K+1$ and $(m+2)K+1$ is not proved in
+102: this paper; every conditional statement of
+103: \cref{sec:least-safe-conditional_ladder} and every conditional statement below
+104: assumes it, in one form or another. In its qualitative form it is an instance of
+105: Dickson's hypothesis on three linear forms at a single conductor, which is what
+106: the hypothesis class of \cref{def:least-safe-dickson-consec-lcm-size} says, and
+107: all that it says. So the size hypothesis does not bite at the congruences:
+108: whatever is asked of the admissible $K$, a polynomial bound on it or a
+109: logarithmic one, what is not proved is the existence of the three primes.
+110: 
+111: A bound on the size of $K$ is more than the rate reads. What the proof of
+112: \cref{thm:least-safe-modulus-gt-conditional} used of the multiplier, in its bound on
+113: $\log_2 N$, was its logarithm $\log_2 K$, and the hypothesis can be stated in that currency alone:
+114: \lean{DicksonConsecAtLog} takes an exponent $E$ and a conductor and asks for one
+115: admissible $K$ there with $\log_2 K \le E$, while
+116: \lean{DicksonConsecLcmLog} is the same requirement at the conductor
+117: $m = 2\operatorname{lcm}(1,\ldots,B) - 1$ for every $B \ge 2$, the exponent read
+118: as an arbitrary function $E$ of $B$. The requirement only becomes easier as the
+119: exponent grows (\lean{DicksonConsecAtLog.mono}). The hypothesis of
+120: \cref{def:least-safe-dickson-consec-lcm-size} sits at the head of this family: a
+121: bound $K \le \bigl(m(m+1)(m+2)\bigr)^C$ on the multiplier is the bound
+122: $\log_2 K \le C\,(4 + 12B)$ on its logarithm (\lean{log2\_K\_le\_of\_lcm\_size}),
+123: which is \lean{DicksonConsecLcmSize.toLog}, and that in turn is the quadratic
+124: form $\log_2 K \le 8CB^2$ (\lean{DicksonConsecLcmSize.toExp}), because
+125: $4 + 12B \le 8B^2$ for $B \ge 2$. The converse is not claimed, so each form below
+126: is a genuine weakening of the one before it.
+127: 
+128: \begin{theorem}\lvCond\lean{leastSafeModulus\_gt\_of\_log\_size}
+129: \label{thm:least-safe-modulus-gt-of-log-size}
+130: Let $E$ and $B \ge 2$ be natural numbers, put $L = \operatorname{lcm}(1,\ldots,B)$
+131: and $m = 2L - 1$, and assume the hypothesis \lean{DicksonConsecAtLog} $E$ $m$ at
+132: this one conductor: there is an admissible $K$ at $m$ with $\log_2 K \le E$.
+133: Nothing is assumed at any other bound. Then there is an odd composite $N$ with
+134: \[
+135:   \ell(N) > B, \qquad \log_2 N \;\le\; 12B + 3E + 10 .
+136: \]
+137: \end{theorem}
+138: \begin{proof}
+139: Fix $B \ge 2$ and put $L = \operatorname{lcm}(1,\ldots,B)$, $m = 2L - 1$. Then
+140: $L \ge 2$: the integer $2$ lies in $\{1,\ldots,B\}$, so it divides $L$.
+141: 
+142: The hypothesis at this conductor is a pair, an admissible $K$ at $m$ together
+143: with the bound $\log_2 K \le E$, and it is exactly what
+144: \lean{exists\_blind\_of\_log\_size} consumes, the size-parametric form of the
+145: core of \cref{lem:least-safe-exists-blind-core}. That theorem returns an odd
+146: composite $N$ with $G(N) \ge 1$, with $L \mid G(N)$, and with
+147: \[
+148:   \log_2 N \;\le\; 3\log_2 L + 3E + 10 .
+149: \]
+150: The size bound inside it is the size of the product $N = PQR$ read through the
+151: bounds on the conductor and on the multiplier: the product is at most
+152: $2(m+2)^3K^3$, the bound proved in
+153: \cref{sec:least-safe-conditional_ladder}, and taking logarithms of
+154: $m + 2 < 2^{\log_2(m+2) + 1}$ and $K < 2^{\log_2 K + 1}$ gives
+155: $\log_2 N \le 3\log_2(m+2) + 3E + 7$
+156: (\lean{log2\_N\_le\_of\_pow\_bounds}, \lean{log2\_N\_le\_of\_log\_size}); at
+157: $m = 2L - 1$ the factor $m + 2 = 2L + 1$ has
+158: $\log_2(m+2) \le \log_2 L + 1$ (\lean{log2\_two\_mul\_add\_one\_le}), which is
+159: how the displayed constant $3$ and the additive $10$ arise.
+160: 
+161: Every integer $j$ with $1 \le j \le B$ divides $L$, by the defining property of
+162: a least common multiple, and hence divides $G(N)$ by transitivity. With
+163: $G(N) \ge 1$ this is the criterion of \cref{thm:least-safe-lt-of-icc-dvd} at the
+164: bound $B$ (\lean{lt\_leastSafeModulus\_of\_Icc\_dvd}), which reads the
+165: divisibilities below $B$ as the single inequality $B < \ell(N)$. The same step
+166: was taken by the bounds of \cref{sec:least-safe-conditional_ladder}, and only
+167: the bound on $\log_2 N$ changes here.
+168: 
+169: It remains to spend the estimate on the least common multiple that
+170: \cref{thm:least-safe-lcm-log-bound-four} proves without hypothesis:
+171: $\log_2 L \le 4B$ for every $B \ge 1$. Composing it with the logarithmic bound
+172: on $N$ gives $\log_2 N \le 3 \cdot 4B + 3E + 10 = 12B + 3E + 10$, the displayed
+173: inequality.
+174: \end{proof}
+175: 
+176: One bound $B$ at a time: the hypothesis is consumed at a single conductor and
+177: produces a single composite, so a statement about how often $\ell$ exceeds $B$
+178: needs the hypothesis only at the bounds that statement names. That is why the
+179: statement above is the master form of the size hypothesis, and why what the rate
+180: reads is the exponent, and not the size of $K$.
+181: 
+182: \begin{theorem}\lvCond\lean{leastSafeModulus\_gt\_exp\_conditional}
+183: \label{thm:least-safe-modulus-gt-exp-conditional}
+184: Let $A$ be a natural number and assume the hypothesis \lean{DicksonConsecLcmExp}
+185: $A$: for every $B \ge 2$, at the conductor $m = 2\operatorname{lcm}(1,\ldots,B) - 1$
+186: there is an admissible $K$ with $\log_2 K \le A B^2$. Then for every $B \ge 2$
+187: there is an odd composite $N$ with
+188: \[
+189:   \ell(N) > B, \qquad \log_2 N \;\le\; (3A + 9)B^2 .
+190: \]
+191: \end{theorem}
+192: \begin{proof}
+193: Fix $B \ge 2$ and put $L = \operatorname{lcm}(1,\ldots,B)$. The hypothesis at
+194: this $B$ is the hypothesis of \cref{thm:least-safe-modulus-gt-of-log-size} at the
+195: exponent $E = AB^2$, so that theorem produces an odd composite $N$ with
+196: $\ell(N) > B$ and $\log_2 N \le 12B + 3AB^2 + 10$.
+197: 
+198: Two of those terms are absorbed by the quadratic growth of the exponent. For
+199: $B \ge 2$ the difference $9B^2 - 12B - 10$ is increasing and equals $2$ at
+200: $B = 2$, so $12B + 10 \le 9B^2$ from $B = 2$ on. Hence
+201: $12B + 3AB^2 + 10 \le (3A + 9)B^2$, which is the displayed bound.
+202: \end{proof}
+203: 
+204: The rate that this buys is a square root. For each member the theorem produces
+205: at $B$, the inequality $B < \ell(N)$ and the bound
+206: $\log_2 N \le (3A + 9)B^2$ combine into
+207: $\ell(N) > \sqrt{\log_2 N / (3A + 9)}$: quasi-polynomial size in the multiplier
+208: already forces the least safe modulus of those members to grow like the square
+209: root of the logarithm of the number. The conclusion is weaker than the linear
+210: rate that \cref{def:least-safe-dickson-consec-lcm-size} gives, and so is the
+211: hypothesis, in one direction: a polynomial bound on the multiplier gives the
+212: linear exponent in $B$ (\lean{DicksonConsecLcmSize.toLog}) and hence the
+213: quadratic one (\lean{DicksonConsecLcmSize.toExp}). Whether the quadratic hypothesis is strictly weaker is not known. The square root is that pair read at the members the
+214: theorem produces, with the hypothesis named in the same sentence; no statement
+215: of this paper asserts such a rate for the composites at large.
+216: 
+217: \begin{theorem}\lvCond\lean{leastSafeModulus\_gt\_of\_dickson\_linnik}
+218: \label{thm:least-safe-modulus-gt-of-dickson-linnik}
+219: Let $E$ and $B \ge 2$ be natural numbers, put
+220: $L = \operatorname{lcm}(1,\ldots,B)$ and $m = 2L - 1$, and assume both halves of
+221: the hypothesis at this conductor: that there be an admissible $K$ at $m$ above
+222: every bound --- the qualitative Dickson hypothesis on the three linear forms,
+223: \lean{DicksonConsecAt} $m$, which is the form the monograph uses for this family
+224: (\cite{Companion-monograph}) --- and that, if an admissible $K$ at $m$ exists,
+225: then one exists with $\log_2 K \le E$, that is, the first-hit bound
+226: \lean{LinnikConsecAtLog} $E$ $m$. Then there is an odd composite $N$ with
+227: \[
+228:   \ell(N) > B, \qquad \log_2 N \;\le\; 12B + 3E + 10 .
+229: \]
+230: \end{theorem}
+231: \begin{proof}
+232: The two halves compose into the size form. The qualitative half produces an
+233: admissible $K$ at $m$, since it produces one above every bound and the bound $0$
+234: is one of them, and the quantitative half, applied to that existence, upgrades
+235: it to an admissible $K$ with $\log_2 K \le E$. Their composition is
+236: \lean{dicksonConsecAtLog\_of\_linnik}, and what it gives at this conductor is
+237: nothing but the hypothesis of \cref{thm:least-safe-modulus-gt-of-log-size} at
+238: this $E$; that theorem then produces the odd composite, with the same bound
+239: $12B + 3E + 10$ on $\log_2 N$.
+240: \end{proof}
+241: 
+242: This is not a weakening of the hypothesis but a naming of its two halves, and
+243: the two factors mean different things. The first is existence: an admissible
+244: multiplier is there at all. The second is a first-hit bound: if there is one, one
+245: is found soon. Existence alone bounds no size, so no statement about the rate can
+246: rest on the first factor by itself. When the first-hit bound is linear in $B$ ---
+247: the shape a polynomial bound on the multiplier takes in logarithms,
+248: $\log_2 K \le C\,(4 + 12B)$, as \lean{DicksonConsecLcmSize.toLog} states it ---
+249: the conclusion is again a bound linear in $B$, the shape of
+250: \cref{thm:least-safe-modulus-gt-linear-conditional}.
+=== sections/09_measurement.tex
+1: \section{Measurement}
+2: \label{sec:least-safe-measurement}
+3: 
+4: Every statement this paper has proved about the least safe modulus concerns the
+5: divisors of $G(N)$: $\ell(N) > B$ exactly when every $m \le B$ divides $G(N)$, that is,
+6: when $\operatorname{lcm}(1,\ldots,B) \mid G(N)$ (\cref{thm:least-safe-lcm-before,thm:least-safe-lt-of-icc-dvd}),
+7: and $\ell(N)$ is the least non-divisor of $G(N)$ (\cref{def:least-safe-modulus}).
+8: What is left is what that divisor set looks like in the numbers we can reach.
+9: This section reports three measurements of it, each with the script and the range
+10: that produced it: the size of
+11: $\ell$ against the scale of the bounds of this paper; the levels $L \mid G(N)$
+12: among the three-factor Carmichael numbers up to $10^{23}$, with the first member
+13: of each level; and the size of the multiplier $K$ of
+14: \cref{def:least-safe-dickson-consec-lcm-size} at the conductors where it has been
+15: computed. These are measurements, not theorems, and no theorem depends on them.
+16: 
+17: An odd composite's invariant divides $N(N-1)$, and on a Carmichael number
+18: \cref{thm:least-safe-lcm-before} reads
+19: $\operatorname{lcm}(1,\ldots,\ell(N)-1) \mid G(N)$. The cube inequality
+20: $G(N)^3 \le N$, which holds on the squarefree numbers with at least three prime
+21: factors and so on every Carmichael number, gives the other side
+22: (\cite{Companion-residue-gcd}):
+23: \[
+24:   \ln\operatorname{lcm}(1,\ldots,\ell(N)-1) \;\le\; \ln G(N) \;\le\;
+25:   \frac{1}{3}\ln N .
+26: \]
+27: That chain is the scale in which this section measures, and it is not derived
+28: here. For squarefree $N$ with at least three prime factors the source states the
+29: sharper form $\ell(N) \le \lfloor \log_2 N / 3 \rfloor + \log_2(\log_2 N + 2) + 3$
+30: (\cite{Companion-residue-gcd},
+31: \lean{NumeratorCalculus.leastSafeModulus\_le\_third\_log2}).
+32: 
+33: What a record measures is the level of the least common multiple, not the value
+34: of $\ell$: an occurrence at $\ell$ means
+35: $\operatorname{lcm}(1,\ldots,\ell-1) \mid G(N)$, so a first occurrence at a level
+36: $L$ belongs in the ratio $\ln N / \ln L$, which is the ratio reported. Over
+37: every Carmichael number below $10^{18}$ --- Pinch's tables \cite{Pinch2006} ---
+38: the first $N$ with $L \mid G(N)$ has
+39: \[
+40:   \frac{\ln N}{\ln L} \;=\;
+41:   12.69,\ 14.62,\ 10.63,\ 8.96,\ 9.80,\ 10.17,\ 9.54,\ 10.00,\ 8.55
+42: \]
+43: at $L = 2, 3, 4, 6, 8, 12, 24, 60, 120$, while $L = 840$ is not attained below
+44: $10^{18}$ (\texttt{experiments/\allowbreak results/\allowbreak
+45: least\_safe\_constant.txt}). As a fraction of $\ln N$, the records of $\ell$
+46: itself give $\ell/\ln N = 0.316, 0.341, 0.249, 0.198, 0.171$ at
+47: $\ell = 2, 3, 4, 5, 7$, and normalised by $\ln N/\ln\ln N$ instead they read $0.58$ to $0.74$
+48: (\texttt{experiments/\allowbreak results/\allowbreak
+49: pinch\_least\_safe\_records.txt}); the census adds $0.151$ at $\ell = 8$. The
+50: value $1/6 \approx 0.167$ lies inside that band, and the heuristic
+51: $\ell \approx \ln N/6$ is a fit to those six records. In the other convention the
+52: proved statement is the chain above, where the same data read $8.55$ to $14.62$;
+53: the two stand in separate sentences, each with its own file. The records of
+54: \cref{tab:least-safe-ladder} lie at the top of the band --- $\ln N/\ln L$ from
+55: $12.6$ to $14.5$ over all seven rows --- on members that, at $\ell = 7$ and $8$, are not minimal for their level.
+56: 
+57: The census counts three-factor Carmichael numbers \cite{AGP1994} --- the $N = pqr$
+58: with $p - 1$, $q - 1$ and $r - 1$ each dividing $N - 1$, which is Korselt's
+59: criterion --- and asks which $L$ divide their $G$. The members are few,
+60: which is why the census can be complete in its
+61: range: \texttt{experiments/\allowbreak carmichael3\_G/\allowbreak carm3g.c}
+62: reaches $10^{23}$ and finds $790885$ of them ($224763$ below $10^{21}$), \texttt{analyse.py} reduces each number to $G$ and to its level, and
+63: \texttt{experiments/\allowbreak results/\allowbreak
+64: carmichael3\_G\_1e23\_analysis.txt} tabulates the result. The $G$ column is read
+65: on the CRT idempotents of $N$: at a Carmichael number every attainable residue is
+66: an idempotent and every idempotent is attained, so $G(N)$ is the gcd of $e - 1$
+67: over the nonzero idempotents $e$, which is the reading of
+68: \cref{thm:least-safe-numerators}, and \texttt{verify\_records.py} rechecks the
+69: record line independently of the C program: the three factors are prime, each
+70: $p - 1$ divides $N - 1$, and the gcd of $e - 1$ over the nonzero idempotents is
+71: $420$.
+72: 
+73: The level $420 \mid G$ --- that is $\ell = 8$, the second value of
+74: \cref{tab:least-safe-ladder} --- has its first three-factor member at
+75: \[
+76:   N = 7757611 \cdot 20686961 \cdot 618022931 = 99181182856782173431201
+77:   \;\approx\; 9.9 \cdot 10^{22},
+78: \]
+79: with $\ln N = 52.95$ and $\ln N/\ln 420 = 8.77$. The number is not a
+80: member of the consecutive family at the conductor $m = 839$: the three quotients
+81: $(p-1)/839$, $(q-1)/840$ and $(r-1)/841$ are not integers, while a member at $m = 839$ has $p - 1 = 839K$, $q - 1 = 840K$ and $r - 1 = 841K$. So the census finds a recorded level at a number the construction did not build. The
+82: minimality claim travels with the value: it is the first three-factor member of
+83: its level, and numbers with four or more factors are enumerated only to
+84: $10^{18}$.
+85: 
+86: The third measurement is the size of the multiplier that
+87: \cref{def:least-safe-dickson-consec-lcm-size} asks for. At a conductor $m$ the
+88: three divisibilities of that hypothesis put $K$ in one class modulo
+89: $m(m+1)(m+2)$ --- the three moduli are pairwise coprime because $m$ is odd --- so
+90: \texttt{experiments/\allowbreak least\_K\_lcm\_moduli.py} walks that class and
+91: reports the least $K$ for which $mK+1$, $(m+1)K+1$ and $(m+2)K+1$ are prime,
+92: with the exponent $\log K / \log\bigl(m(m+1)(m+2)\bigr)$ that the size bound
+93: compares with $C$. At $m = 2\operatorname{lcm}(1,\ldots,B) - 1$ that exponent
+94: lies between $1.040$ and $1.809$ for every prime-power level $B \le 47$, so in
+95: the form of \cref{def:least-safe-dickson-consec-lcm-size}, the hypothesis holds with $C = 2$ at every
+96: level measured (\texttt{experiments/\allowbreak results/\allowbreak
+97: least\_K\_lcm\_moduli.txt}). Its primalities are decided by Miller--Rabin on the
+98: first thirteen prime bases, which is a proof of primality below
+99: $3.3 \cdot 10^{24}$ \cite{SorensonWebster2017} and only a strong probable-prime
+100: test above it, that is, at every level from $B = 13$ on; Rabin's error bound does
+101: not apply there, since the bases are fixed rather than random.
+102: 
+103: The measurements settle nothing about the primality of the three values $mK+1$,
+104: $(m+1)K+1$ and $(m+2)K+1$ that
+105: \cref{def:least-safe-dickson-consec-lcm-size} needs. The measurements above are printed with the file that produced them, except the
+106: ratios $\ln N/\ln L$ of the records, which are computed from \cref{tab:least-safe-ladder}.
+=== sections/app_certificate_check.tex
+1: % ---------------------------------------------------------------------------
+2: %  app_certificate_check — the certificate machinery of the old §6, moved out
+3: %  of the body (condensation 2026-10-31, referee report 2026-10-30, §7): the
+4: %  body keeps the seven values and the seven triples, this appendix the checker
+5: %  that certifies their factors.
+6: %
+7: %  Nothing new is proved: Pratt's criterion through Lucas's converse of Fermat's
+8: %  little theorem, with the exponentiation and the list recursion formalised.
+9: %  Every \lean{} name of the old §6 keeps a home, here or in §6.
+10: %
+11: %  Displayed: binModPowFuel_eq, prattOK_prime, both \lv. Inline names carry no
+12: %  marker of their own.
+13: % ---------------------------------------------------------------------------
+14: 
+15: \section{Checking the certificates}
+16: \label{app:least-safe-certificates}
+17: 
+18: The nine factors of the last three records of
+19: \cref{sec:least-safe-certificates} have between $26$ and $37$ digits, beyond
+20: trial division, and each is certified prime by a finite certificate that the
+21: kernel checks. The check is Pratt's criterion \cite{Pratt1975}, read through
+22: Lucas's converse of Fermat's little theorem (\lean{lucas\_primality}), and it
+23: follows the precedent of formally checked Pocklington certificates
+24: \cite{TheryPrimality2022}. Nothing here is new mathematics: it is the arithmetic
+25: that turns primality into a verdict the kernel can compute.
+26: 
+27: A certificate is either the one that names $2$, or a triple of a number $p$, a
+28: base $a$ and a list of certificate-and-exponent pairs. The checker reads six
+29: clauses of it: $p$ lies below a fixed fuel bound, every listed certificate is
+30: accepted, every listed exponent is positive, the listed prime powers multiply to
+31: $p - 1$, the computed residue of $a^{p-1}$ is $1$, and the computed residue of
+32: $a^{(p-1)/q}$ differs from $1$ at every listed $q$.
+33: 
+34: Both residues are computed by binary exponentiation: the base is squared modulo
+35: the modulus and the exponent halved at each step (\lean{binModPowFuel}), so that
+36: halving a positive exponent halves its bit length (\lean{bitLength},
+37: \lean{bitLength\_div2}), while an exponent below $2^k$ has bit length at most
+38: $k$ (\lean{bitLength\_le\_of\_lt\_two\_pow}). With the fuel set to the bit length
+39: of the exponent the procedure returns $a^n \bmod m$ for every $n$ and every
+40: nonzero $m$ (\lean{binModPow}, \lean{binModPow\_eq}); in the residue ring modulo
+41: a prime $p$ the same identity reads that the computed value is the class of
+42: $a^n$ (\lean{binModPowFuel\_coe}), so that it is $1$ exactly when
+43: $a^n \equiv 1 \pmod p$ (\lean{binModPowFuel\_eq\_one\_iff}). That identity is
+44: the first of the appendix's two statements.
+45: 
+46: \begin{lemma}\lv\lean{binModPowFuel\_eq}
+47: \label{lem:least-safe-binmodpow-fuel}
+48: Let $a$, $n$ and $m \ne 0$ be natural numbers, and let the fuel $k$ be at least
+49: the bit length of $n$. Then the exponentiation with fuel $k$, base $a$, exponent
+50: $n$ and modulus $m$ returns $a^n \bmod m$.
+51: \end{lemma}
+52: \begin{proof}
+53: Induct on the fuel. At exponent $0$, at any fuel, the procedure returns
+54: $1 \bmod m$, which is $a^0 \bmod m$; and at fuel $0$ the exponent is $0$ in any
+55: case, since the bit length of $0$ is $0$ and a positive number has positive bit
+56: length. At fuel $k + 1$ with $n$ positive the procedure squares the base modulo
+57: $m$ and recurses at the exponent $n/2$, whose bit length is half that of $n$
+58: (\lean{bitLength\_div2}), so the remaining fuel still covers it and the induction
+59: hypothesis applies to the recursive call, which returns
+60: $\bigl((a \cdot a) \bmod m\bigr)^{n/2} \bmod m$. If $n$ is even this is
+61: $(a^2)^{n/2} = a^n$ modulo $m$; if $n$ is odd the procedure multiplies by $a$,
+62: reduced modulo $m$, and $2 \cdot (n/2) + 1 = n$ gives $a^n$ modulo $m$ again.
+63: \end{proof}
+64: 
+65: Every clause of the check is one of these: the fuel guard (\lean{lucasFuel}); the
+66: recursion through the list, each listed certificate accepted in its turn
+67: (\lean{prattOKList}, \lean{prattOKList\_ok}); the positivity of the listed
+68: exponents (\lean{expsPos}, \lean{expsPos\_pos}); the product of the listed prime
+69: powers, nonzero as a product of prime powers and divisible by each listed value
+70: (\lean{factorProd}, \lean{factorProd\_ne\_zero}, \lean{mem\_dvd\_factorProd});
+71: and the two families of computed residues (\lean{prattNeList\_ne}). A prime
+72: divisor of that product is one of the listed values
+73: (\lean{factorProd\_prime\_dvd}), so each listed factor is prime by induction on
+74: the list (\lean{prattOKList\_prime}), and the number a certificate names is its
+75: own (\lean{PrattCert.value}). That an accepted certificate names a prime is the
+76: second statement, \lean{prattOK\_prime} \lv, also exported as
+77: \lean{prime\_of\_prattOK} \lv; the checker itself is \lean{prattOK}.
+78: 
+79: \begin{theorem}\lv\lean{prattOK\_prime}
+80: \label{thm:least-safe-pratt-sound}
+81: A certificate that \lean{prattOK} accepts names a prime.
+82: \end{theorem}
+83: \begin{proof}
+84: The certificate that names only $2$ names the prime $2$. Otherwise acceptance
+85: unwinds into the six clauses above. Each listed factor is prime: an induction on
+86: the list, a listed certificate being accepted as soon as the whole list is
+87: (\lean{prattOKList\_prime}). The list cannot be empty, an empty product being $1$
+88: while the product must be $p - 1$; so it holds a factor $q$ with a positive
+89: exponent $e$, and $2 \le q^e \le p - 1 < p$, whence $p > 1$. Since $p < 2^{128}$, the exponents
+90: $p - 1$ and $(p-1)/q$ have bit length at most $128$
+91: (\lean{bitLength\_le\_of\_lt\_two\_pow}), and with that much fuel the computed
+92: residues are the classes of $a^{p-1}$ and of $a^{(p-1)/q}$ modulo $p$
+93: (\lean{binModPowFuel\_eq\_one\_iff}); the two clauses therefore read
+94: $a^{p-1} \equiv 1 \pmod p$ and $a^{(p-1)/q} \not\equiv 1 \pmod p$ at every
+95: listed $q$. Lucas's converse (\lean{lucas\_primality}) asks this at every prime
+96: $q$ dividing $p - 1$: such a $q$ divides the product of the listed prime powers,
+97: hence equals one of the listed values, because those values are prime
+98: (\lean{factorProd\_prime\_dvd}), and at that value the check has supplied the
+99: non-congruence (\lean{prattNeList\_ne}). Hence $p$ is prime.
+100: \end{proof}
+101: 
+102: The data behind the records is one block, generated by the script
+103: \texttt{experiments/\allowbreak cursorPratt\_gen\_certs.py} into
+104: \texttt{experiments/results/\allowbreak cursorPratt\_certs.json}: $91$
+105: certificates, one for each prime in the trees, at depth at most $7$. The smallest
+106: is \lean{cert\_2}, the certificate that names $2$; the largest is
+107: \lean{cert\_6309744080195907196223714244800892001}, a prime of $37$ digits
+108: between $2^{122}$ and $2^{123}$, the largest factor of the member of the last
+109: record. The certificates of the small primes $3, 5, 7, 11, 13, 17, 23, 29$ and
+110: $61$ (\lean{cert\_3}, \lean{cert\_5}, \lean{cert\_7}, \lean{cert\_11},
+111: \lean{cert\_13}, \lean{cert\_17}, \lean{cert\_23}, \lean{cert\_29},
+112: \lean{cert\_61}) serve the other certificate trees of the library. Two small
+113: cases sit beside them, where the checker is seen agreeing with primality long
+114: before it is trusted at $37$ digits: the verdicts \lean{prime\_7\_pratt} and
+115: \lean{prime\_28817\_pratt}, the second at a prime that the certificates of the
+116: second record's three factors themselves list.
+117: 
+118: The block also holds one certificate per factor of a record member:
+119: \lean{cert\_lsm7\_P}, \lean{cert\_lsm7\_Q} and \lean{cert\_lsm7\_R} for the
+120: first record, \lean{cert\_lsm8\_P}, \lean{cert\_lsm8\_Q} and \lean{cert\_lsm8\_R},
+121: \lean{cert\_lsm11\_P}, \lean{cert\_lsm11\_Q} and \lean{cert\_lsm11\_R}, and
+122: \lean{cert\_lsm13\_P}, \lean{cert\_lsm13\_Q} and \lean{cert\_lsm13\_R} for the
+123: next three, then \lean{cert\_lsm17\_P}, \lean{cert\_lsm17\_Q},
+124: \lean{cert\_lsm17\_R}, \lean{cert\_lsm19\_P}, \lean{cert\_lsm19\_Q},
+125: \lean{cert\_lsm19\_R}, \lean{cert\_lsm23\_P}, \lean{cert\_lsm23\_Q} and
+126: \lean{cert\_lsm23\_R} for the last three. For the records at $\ell = 8$, $11$ and
+127: $13$ it carries the checker's verdict and the primality as well, which
+128: \cref{sec:least-safe-certificates} states. The first record does not need its
+129: certificate: its three factors $188100961$, $194587201$ and $201073441$ are
+130: proved prime by direct evaluation in the kernel, inside the computation of
+131: $G(N) = 60$ (\lean{residueGcd\_consec\_record\_eq\_sixty}, quoted from
+132: \cite{Companion-monograph}); the block checks them a second way all the same,
+133: so that every record carries the same evidence (\lean{prattOK\_lsm7\_P},
+134: \lean{prattOK\_lsm7\_Q}, \lean{prattOK\_lsm7\_R}, \lean{prime\_lsm7\_P},
+135: \lean{prime\_lsm7\_Q}, \lean{prime\_lsm7\_R}).

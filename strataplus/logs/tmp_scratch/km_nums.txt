@@ -1,0 +1,430 @@
+
+########## 00_abstract.tex ##########
+13:$N \equiv 1 \pmod 4$, $N > N_0$, with $2 \le \omega(N)$, whose numerators,
+17:through a rule on its class \cite{Companion-never-a-test}, has no witness, counted on squarefree Korselt numbers $N \equiv 1 \pmod 4$ with $\omega(N) \ge 2$: on
+22:numerators forced; a reduction at $\omega \le 5$
+23:that stops at $\omega = 6$. Conditional: P-W follows if Dickson's conjecture holds for a family of linear forms with
+
+########## 01_intro.tex ##########
+14:coprime to $N$ \cite{Carmichael1910}; by Korselt's criterion they are the squarefree composites with
+15:$p - 1 \mid N - 1$ for every prime $p \mid N$, and there are infinitely many of them \cite{AGP1994}.
+21:squarefree Korselt number $N$ \cite{Korselt1899} and a prime
+32:$2 \le \omega(N)$ and $p - 1 \mid N - 1$ for every prime $p \mid N$, and integers $v_p$, one
+43:$\omega(N) \ge 2$ at which the criterion is zero at every base.
+55:$\omega(N) \ge 2$ the criterion is zero at every base if and only if such numerators exist, all
+74:$N > N_0$, $\omega(N) \ge 2$, at which the criterion is zero at every base. A squarefree
+105:$N \equiv 1 \pmod 4$ with $\omega(N) \ge 2$ counted here, \cref{thm:miss-nocarry-four}
+113:$\omega(N)$ is odd, so a semiprime is never one of them and the shape counted by
+119:reduction at $\omega \le 5$ (\cref{sec:korselt-misses-few-factors}, with two implications that
+135:\cite{Schwarz1981Semigroups,Porubsky2018Idempotents}; the identity is its exact form: the carry
+138:\cite{ButskeJajeMayernik2000}, and the Giuga numbers satisfy the neighbouring condition
+139:$\sum_{p \mid N} 1/p - 1/N \in \Z$ \cite{BorweinGiuga1996}. What we have not found in the sources
+142:relative to \cite{Chernick1939}, \cite{Dubner1996Egyptian} and \cite{ButskeJajeMayernik2000};
+143:the infinitude results of the Carmichael literature \cite{GranvillePomerance2002,Wright2013} do
+
+########## 02_miss.tex ##########
+12:Fix a squarefree Korselt number $N \equiv 1 \pmod 4$ with $\omega(N) \ge 2$, so that
+41:Let $N$ be squarefree and Korselt with $N \equiv 1 \pmod 4$ and $\omega(N) \ge 2$, and for
+77:Let $N$ be squarefree and Korselt with $N \equiv 1 \pmod 4$ and $\omega(N) \ge 2$. Then the
+145:The member $N = 24055615898561844361 = 22147 \cdot 44293 \cdot 110731 \cdot 221461$
+147:$v = (3076, 14764, 46140, 24604)$, all of them multiples of $4$, and the lattice places
+154:  22147  & 3076  & 49046303297 \\
+155:  44293  & 14764 & 12261852653 \\
+156:  110731 & 46140 & 1961923001  \\
+157:  221461 & 24604 & 490482965   \\
+161:At $p = 22147$, for instance, $j_p = 49046303297$ and \cref{eq:jp-lattice} reads
+163:  3076 \cdot 49046303296 = 1 + 6812048085 \cdot 22147,
+165:with $s_p = 6812048085 \le j_p - 2$. The numerators are multiples of $4$, and they are
+
+########## 03_carry.tex ##########
+21:divisibilities, together with $0 < v_p < p$ and $\omega \ge 2$. All three are unconditional.
+23:Throughout, $S$ is a finite set of primes, $\omega = |S|$, and $v_p \in \Z$ for $p \in S$.
+73:makes the carry vanish as soon as $d$ exceeds $\omega - 2$: if in addition $0 < v_p < p$ at
+74:every prime, $\omega \ge 2$ and $\omega - 2 < d$, then $C = 0$
+77:$C \le \omega - 2$, belong to the carry algebra of \cite{Companion-residue-gcd}
+133:(\lean{dvd\_of\_dvd\_sum\_of\_dvd\_all\_but\_one})\lv: the $\omega - 1$ divisible terms are
+135:the no-carry locus, where the sum is $N - 1$ and $4 \mid N - 1$, this says that $\omega - 1$
+138:condition ``$4 \mid v_p$ at every prime'' is one congruence rather than $\omega$ independent
+139:ones: once $\omega - 1$ numerators are fixed modulo $4$, the last is determined modulo $4$.
+142:$C$ with the integer part of a sum of $\omega - 1$ rationals, and it does so for every choice
+147:Let $S$ be a finite set of primes with $N = \prod_{p \in S} p$ and $\omega \ge 2$, and let
+171:The bracket lies in $(0,1)$. Since $\omega \ge 2$ the set $S \setminus \{p\}$ is non-empty,
+180:the $\omega$ local conditions cannot all be independent: the omitted numerator is the one
+192:$\omega \le 9$, the remaining hypotheses unchanged
+194:$d = 4$ and $\omega \le 9$, the divisibility $4 \mid C$ together with $C \le \omega - 2$
+198:prime gives (\lean{dvd\_carry\_of\_dvd\_numerators}), and the bound $0 \le C \le \omega - 2$ of
+199:the carry algebra \cite{Companion-residue-gcd}. With $\omega \le 9$ the bound reads $C \le 7$,
+205:$C \le \omega - 2$ rather than alone.
+
+########## 04_small_omega.tex ##########
+15:$\omega(N) \le 5$, and that restriction is on the number of prime factors, not a hypothesis
+17:floor bounds the carry, and that the bound $0 \le C \le \omega - 2$ is what the vanishing
+18:argument consumes. At $\omega \le 5$ the bound is decisive: a non-negative multiple of $4$
+28:(\lean{carry\_eq\_zero\_of\_dvd\_numerators\_of\_card}) is stated in a modulus $d$ and a count $\omega$:
+29:if $0 < v_p < p$, $p \mid v_p (N/p) + 1$ and $d \mid v_p$ at every prime $p \mid N$, $d \mid N - 1$, $2 \le \omega$ and
+30:$\omega - 2 < d$, then $C = 0$. Its two ingredients are the divisibility $d \mid C$, which
+31:follows term by term from $d \mid v_p$, and the bound $0 \le C \le \omega - 2$ of the carry
+35:(\lean{four\_dvd\_N\_sub\_one\_of\_odd})\lv, and the inequality $\omega - 2 \le 3 < 4$, so
+41:$\sum_{p \mid N} v_p (N/p) = N - 1$ read at $C = 0$, so at $\omega \le 5$ the exact
+44:Second, the same vanishing says where a small-$\omega$ counterexample sits: under exactly
+46:antitone in the support \cite{Companion-residue-gcd}, so a counterexample at $\omega \le 5$
+52:Let $N$ be squarefree and Korselt with $N \equiv 1 \pmod 4$ and $2 \le \omega(N) \le 5$,
+83:Let $N$ be squarefree and Korselt with $N \equiv 1 \pmod 4$ and $2 \le \omega(N) \le 5$.
+110:P-W at $\omega \le 5$. For every bound $N_0$ there are a squarefree Korselt
+111:$N \equiv 1 \pmod 4$ with $N_0 < N$ and $2 \le \omega(N) \le 5$, and integers $v_p$, one
+119:$N \equiv 1 \pmod 4$ with $N_0 < N$ and $2 \le \omega(N) \le 5$ at which the criterion is
+135:$N \equiv 1 \pmod 4$ with $N > N_0$ and $2 \le \omega(N) \le 5$, and they carry the same
+138:$2 \le \omega(N)$ is in force, so \cref{thm:reduced-miss-small} equates those two clauses.
+143:\lean{PWProblemSmall} and \lean{KorseltMissInfiniteSmall}, is known. The restriction $\omega \le 5$ is the only
+149:squarefree Korselt $N \equiv 1 \pmod 4$ with $N > N_0$ and $2 \le \omega(N) \le 5$ at which
+151:data exist. Dropping the conjunct $\omega(N) \le 5$ leaves a family of Korselt misses in the
+163:A number presented as a product of $k \le 5$ primes has $\omega(N) \le 5$
+165:member with $\omega \le 5$ is the data of \cref{def:pw-small} with the Egyptian sum dropped
+
+########## 05_ceiling.tex ##########
+13:$\omega \le 5$ a non-negative multiple of $4$ that is at most $\omega - 2 \le 3$
+16:the question, and the answer is to $\omega = 5$ and no further: under a nonzero
+17:carry the divisibility $4 \mid A$ alone already costs $\omega \ge 6$.
+19:Throughout, $S$ is a finite set of primes with $\omega = |S| \ge 2$,
+27:of those $\omega + 1$ numbers is such an $A$, so the quantified form is the
+34:Let $S$ be a finite set of primes with $\omega = |S| \ge 2$, put
+40:  2^{v_2(A)} \;\le\; A \;\le\; \omega - 2 .
+57:$A > 0$ with $A \mid C$ gives $A \le C$. It is also at most $\omega - 2$
+58:(\lean{carry\_le\_card\_sub\_two})\lv, since $\omega \ge 2$ and $N > 1$. Hence
+59:$A \le \omega - 2$, and with the lower half this is the statement
+65:$A \mid 0$, and at $\omega = 4$ with $4 \mid A$ the upper half would read
+70:$2^k \le A$, and the ceiling gives $2^k + 2 \le \omega$
+72:$4 \mid A$ forces $\omega \ge 6$ (\lean{card\_ge\_six\_of\_four\_dvd})\lv, so at
+73:$\omega \le 5$ with $4 \mid A$ the carry vanishes, which is the vanishing behind
+74:\cref{thm:miss-four-dvd-small}. At $k = 3$, $8 \mid A$ forces $\omega \ge 10$.
+76:\begin{theorem}[\lean{omega6\_instance}]\lv
+77:\label{thm:omega6-instance}
+78:Let $N = 9505981178881201 = 7 \cdot 241 \cdot 283 \cdot 1327 \cdot 1873 \cdot 8011$
+79:and $S = \{7, 241, 283, 1327, 1873, 8011\}$, let $v_7 = 4$, $v_{241} = 208$,
+80:$v_{283} = 220$, $v_{1327} = 1176$, $v_{1873} = 1704$ and $v_{8011} = 7948$, and
+84:$C = \omega - 2$; $\sum_{p \in S} e_p = N + 1$; $4$ divides $N - 1$ and every
+102:$C = \omega - 2$, the largest value that $C \le \omega - 2$ allows
+106:$\sum_{p \in S} e_p = N(\omega - 1 - C) + 1$ of
+107:\lean{sum\_atom\_eq\_n\_mul}\lv read at $\omega = 6$ and $C = 4$. Since $4$
+118:$6 \le |S|$ and $|S| = 2^2 + 2$ (\lean{omega6\_attains\_bound})\lv. The bound is
+119:attained at the first $\omega$ at which it can be.
+124:$\omega \le 5$ of \cref{thm:miss-four-dvd-small}, and nothing in the section concerns the
+125:existence of counterexamples at $\omega \ge 6$.
+127:The ceiling is linear in $\omega$, so for fixed $\omega$ it bounds $v_2(A)$ by
+128:$\log_2(\omega - 2)$, which is monotonicity applied to
+129:$2^{v_2(A)} \le \omega - 2$ and not a further result. Uniformly it bounds
+131:stated in the development; its first case, $8 \mid A$, already costs $\omega \ge 10$.
+133:What stops the reduction of \cref{thm:miss-four-dvd-small} at $\omega = 5$ is
+134:therefore the bound $C \le \omega - 2$: from $\omega = 6$ on it leaves room for a
+137:$\omega \ge 6$ exist all the same: the seven-factor member of
+
+########## 06_instances.tex ##########
+27:carry from the six-factor number of \cref{thm:omega6-instance}, whose carry is $4 \ne 0$.
+36:Let $N = 22147 \cdot 44293 \cdot 110731 \cdot 221461 = 24055615898561844361$
+38:$S = \{22147, 44293, 110731, 221461\}$, and let $v_{22147} = 3076$, $v_{44293} = 14764$,
+39:$v_{110731} = 46140$ and $v_{221461} = 24604$ (\lean{v\_1\_2\_5\_10}). Then every
+47:The four factors are distinct primes (\lean{prime\_22147}, \lean{prime\_44293},
+48:\lean{prime\_110731}, \lean{prime\_221461}); they are the prime divisors of $N$, and
+51:certificates descend: \lean{cert\_22147} records $22147 - 1 = 2 \cdot 3 \cdot 3691$,
+52:\lean{cert\_3691} records $3691 - 1 = 2 \cdot 3^2 \cdot 5 \cdot 41$ and \lean{cert\_41'}
+53:records $41 - 1 = 2^3 \cdot 5$, the primes of the descent being \lean{prime\_3691} and
+54:\lean{prime\_41}; \lean{cert\_44293}, \lean{cert\_110731} and \lean{cert\_221461} record
+55:$44293 - 1 = 2^2 \cdot 3 \cdot 3691$, $110731 - 1 = 2 \cdot 3 \cdot 5 \cdot 3691$ and
+56:$221461 - 1 = 2^2 \cdot 3 \cdot 5 \cdot 3691$.
+66:the printed products $N/p$ (\lean{cof\_22147}, \lean{cof\_44293}, \lean{cof\_110731},
+67:\lean{cof\_221461})\lv, and $v_p (N/p) + 1 = p \, q_p$ with $q_{22147} = 150859616893487$,
+68:$q_{44293} = 181029905376953$, $q_{110731} = 90522309761311$ and
+69:$q_{221461} = 12067788378905$ (\lean{v\_1\_2\_5\_10\_dvd})\lv. The range and this
+74:$3076 \cdot 1086179432815363 + 14764 \cdot 543101977706677
+75:+ 46140 \cdot 217243733900731 + 24604 \cdot 108622357428901
+76:= 24055615898561844360 = N - 1$ (\lean{v\_1\_2\_5\_10\_sum})\lv. By
+84:Let $m = 691110$, $a = (1, 2, 6, 9)$ and $N = \prod_i (a_i m + 1)$
+87:  N = 691111 \cdot 1382221 \cdot 4146661 \cdot 6219991 = 24638461220793765442114081 .
+89:Then $N$ is a P-W member, with numerators $(155500, 394920, 1658668, 555352)$.
+93:The four factors are distinct primes (\lean{prime\_691111}, \lean{prime\_1382221},
+94:\lean{prime\_4146661}, \lean{prime\_6219991}), each certified (\lean{cert\_691111},
+95:\lean{cert\_1382221}, \lean{cert\_4146661}, \lean{cert\_6219991}); the descent passes through
+96:\lean{cert\_1097}, which records $1097 - 1 = 2^3 \cdot 137$, and through \lean{cert\_137}.
+103:  (w, \alpha, \beta) = \big((40, 9, 10),\ (7, 4, 0),\ (5, 12, 20),\ (56, 45, -238)\big),
+105:and at $m = 691110$ these are $(155500, 394920, 1658668, 555352)$: integers in $(0, p)$,
+111:  \qquad u = (7, 40, 56, 5), \quad L = 280,
+119:Let $m = 6670296$, $a = (5, 7, 15, 21)$ and $N = \prod_i (a_i m + 1)$
+122:  N = 33351481 \cdot 46692073 \cdot 100054441 \cdot 140076217
+123:  = 21825241302354798940900884725761 .
+125:Then $N$ is a P-W member, with numerators $(16154624, 13132144, 21886916, 2188684)$.
+129:The four factors are distinct primes (\lean{prime\_33351481}, \lean{prime\_46692073},
+130:\lean{prime\_100054441}, \lean{prime\_140076217}), each certified (\lean{cert\_33351481},
+131:\lean{cert\_46692073}, \lean{cert\_100054441}, \lean{cert\_140076217}); the descent passes
+132:through \lean{cert\_30881}, which records $30881 - 1 = 2^5 \cdot 5 \cdot 193$, and through
+133:\lean{cert\_193}. The verification is the one written out for
+137:  (w, \alpha, \beta) = \big((64, 155, 56),\ (32, 63, -40),\ (32, 105, 232),\ (64, 21, -440)\big),
+151:Let $m = 28$, $a = (1, 24, 115, 384, 480)$ and $N = \prod_i (a_i m + 1)$
+154:  N = 29 \cdot 673 \cdot 3221 \cdot 10753 \cdot 13441 = 9085838517557761 .
+156:Then $N$ is a P-W member, with numerators $(4, 216, 100, 5408, 96)$.
+160:The five factors are distinct primes (\lean{prime\_29}, \lean{prime\_673},
+161:\lean{prime\_3221}, \lean{prime\_10753}, \lean{prime\_13441}), each certified
+162:(\lean{cert\_673}, \lean{cert\_3221}, \lean{cert\_10753}, \lean{cert\_13441}). Every factor
+165:$p - 1 \mid N - 1$ are exact; and the tuple $(4, 216, 100, 5408, 96)$ has $0 < v_p < p$,
+171:\begin{theorem}[\lean{pw\_instance\_2\_3\_10\_15\_30\_m3987660}]\lv
+173:Let $m = 3987660$, $a = (2, 3, 10, 15, 30)$ and $N = \prod_i (a_i m + 1)$; thus
+176:  N &= 7975321 \cdot 11962981 \cdot 39876601 \cdot 59814901 \cdot 119629801 \\
+177:    &= 27224159871922604904217687612666423201
+180:(\lean{n\_m3987660}, \lean{n\_m3987660\_eq}). Then $N$ is a P-W member, with numerators
+181:$(394384, 1281748, 25634956, 3450864, 17089968)$.
+185:The five factors are prime (\lean{prime\_7975321}, \lean{prime\_11962981},
+186:\lean{prime\_39876601}, \lean{prime\_59814901}, \lean{prime\_119629801}), each certified
+187:(\lean{cert\_7975321}, \lean{cert\_11962981}, \lean{cert\_39876601}, \lean{cert\_59814901},
+188:\lean{cert\_119629801}). Each predecessor $p - 1 = a_i m$ factors over $\{2, 3, 5, 41, 1621\}$, since
+189:$m = 2^2 \cdot 3 \cdot 5 \cdot 41 \cdot 1621$ and every $a_i$ is a product of $2$, $3$ and $5$,
+191:\lean{cert\_41} and \lean{cert\_1621}, which record $41 - 1 = 2^3 \cdot 5$ and
+192:$1621 - 1 = 2^2 \cdot 3^4 \cdot 5$. Since $3987660 = 21840 \cdot 182 + 12780$, the parameter
+194:(\lean{pw\_instance\_2\_3\_10\_15\_30\_m3987660})\lv. Every factor is $1 \pmod 4$, every
+200:$10^{30}$ at which \cref{sec:korselt-misses-rate} reads the expected count of the class.
+204:Let $N = 17 \cdot 61 \cdot 113 \cdot 1009 \cdot 2017 \cdot 8677 \cdot 347041
+205:= 718132609376191497601$ and let $v = (4, 4, 12, 388, 140, 1196, 400)$ on the seven factors
+211:\lean{prime\_113}, \lean{prime\_1009}, \lean{prime\_2017}, \lean{prime\_8677},
+212:\lean{prime\_347041}), each certified (\lean{cert\_113}, \lean{cert\_241},
+213:\lean{cert\_1009}, \lean{cert\_2017}, \lean{cert\_8677}, \lean{cert\_347041}), and their
+240:$631986$ & $15952585018644172593910441$ & $(87776, 421324, 1316640, 702204)$ \\
+241:\multicolumn{3}{@{}l}{$N = 631987 \cdot 1263973 \cdot 3159931 \cdot 6319861$} \\
+243:$670866$ & $20255561818039774459636201$ & $(93176, 447244, 1397640, 745404)$ \\
+244:\multicolumn{3}{@{}l}{$N = 670867 \cdot 1341733 \cdot 3354331 \cdot 6708661$} \\
+250:(\lean{a\_1\_2\_5\_10}), whose member at $m = 22146$ is the number of
+252:(\lean{n\_m631986}, \lean{n\_m631986\_eq},
+253:\lean{pw\_instance\_1\_2\_5\_10\_m631986})\lv{} and (\lean{n\_m670866},
+254:\lean{n\_m670866\_eq}, \lean{pw\_instance\_1\_2\_5\_10\_m670866})\lv. Each row satisfies the
+256:(\lean{prime\_631987}, \lean{prime\_1263973}, \lean{prime\_3159931}, \lean{prime\_6319861},
+257:\lean{prime\_670867}, \lean{prime\_1341733}, \lean{prime\_3354331}, \lean{prime\_6708661}),
+258:certified by \lean{cert\_631987}, \lean{cert\_1263973}, \lean{cert\_3159931},
+259:\lean{cert\_6319861} through \lean{cert\_105331} and \lean{cert\_3511}, and by
+260:\lean{cert\_670867}, \lean{cert\_1341733}, \lean{cert\_3354331}, \lean{cert\_6708661} through
+261:\lean{cert\_15973}; each product is $1 \pmod 4$ and squarefree; Korselt's condition holds at
+264:at which this section evaluates the tuple $(1, 2, 5, 10)$, $22146$, $631986$ and $670866$, are congruent modulo $720$.
+270:$2508013 = 53 \cdot 79 \cdot 599$ of \cite{Companion-never-a-test}, the smallest in the census of
+271:\cite{Companion-blind-semiprimes}, is one of them, with $\omega = 3$;
+273:$10^{21}$ have three prime factors. The members displayed here were chosen as the first of
+
+########## 07_classes.tex ##########
+30:$2 \le \omega(N)$; $p - 1 \mid N - 1$ for every prime $p \mid N$; and there are integers
+136:\cref{thm:even-b-witnesses} forces at $b = 2$. Chernick's construction \cite{Chernick1939}
+251:$24055615898561844361$ of \cref{thm:instance-1-2-5-10} is the member $m = 22146$ of the class
+252:$m \equiv 546 \pmod{720}$ for $a = (1,2,5,10)$, and the propagation lemma re-derives its P-W
+255:route instead of prime by prime. The two later members of that class, at $m = 631986$ and
+256:$m = 670866$ (\cref{tab:instance-1-2-5-10-later}), are re-derived the same way
+257:(\lean{pw\_instance\_1\_2\_5\_10\_m631986\_via\_family},
+258:\lean{pw\_instance\_1\_2\_5\_10\_m670866\_via\_family}). Without this, a class statement could
+263:Let $a = (2,3,10,15,30)$. Then every $m \ge 12780$ with $m \equiv 12780 \pmod{21840}$ for
+268:The tuple \lean{a\_2\_3\_10\_15\_30} has five distinct entries, $a_i \mid 21840$ for every $i$, and
+269:$4 \mid 21840$ and $30 \mid 21840$; the modulus is a common multiple of all the $a_i$ and of
+272:  w = (182, 28, 14, 52, 7), \qquad \alpha = (18, 9, 90, 45, 30), \qquad
+273:  \beta = (8, 4, -16, 228, -24),
+276:  u = (2, 13, 26, 7, 52), \qquad L = 364 .
+278:Then $u_i w_i = 364$ and $4w_i \mid 21840$ at every $i$; at $m_0 = 12780$ the values
+279:$\alpha_i m_0 + \beta_i$ are $w_i v_i$ with $v = (1264,\,4108,\,82156,\,11064,\,54768)$ (for
+280:instance $18 \cdot 12780 + 8 = 230048 = 182 \cdot 1264$), and since every $v_i$ is a multiple
+289:  = 364 \Big( \prod_{i=1}^5 (a_i x + 1) - 1 \Big)
+297:the class has a member; the member is \cref{thm:instance-k5-class}, at $m = 3987660$, the
+301:The four tuples of the paper, with their classes, are $(1,2,5,10)$ at $546 \pmod{720}$,
+302:$(1,2,6,9)$ at $5670 \pmod{10080}$, $(5,7,15,21)$ at $4056 \pmod{26880}$ and $(2,3,10,15,30)$
+303:at $12780 \pmod{21840}$ (\lean{a\_1\_2\_5\_10}, \lean{a\_1\_2\_6\_9},
+
+########## 08_dickson.tex ##########
+33:where the offsets are arbitrary, contains the twin-prime problem \cite{Dickson1904}; we know of
+34:no unconditional route to it. Every modulus below is one of $720$, $10080$, $26880$ and
+35:$21840$.
+77:$m \equiv 546 \pmod{720}$, then P-W holds.
+83:arithmetic: $u_i w_i = 36$, $4w_i \mid 720$, $a_i \mid 720$, $4 \mid 720$ and
+84:$0 \le \alpha_i \le w_i a_i$. At $m_0 = 546$ one has $N(546) \equiv 1 \pmod 4$ and
+85:$a_i \mid Q(546)$, and $\alpha_i \cdot 546 + \beta_i = w_i v_i$ with $v = (76,364,1140,604)$, so
+86:the four numerators are integers in $(0,\, w_i (a_i \cdot 546 + 1))$, each divisible by $4$. The
+93:$m \equiv 5670 \pmod{10080}$ with $L = 280$ (\lean{pwProblem\_of\_dickson\_1\_2\_6\_9}), and
+94:$(5,7,15,21)$ on $m \equiv 4056 \pmod{26880}$ with $L = 64$
+98:conditions impose --- $4$, the four $a_i$ and the four $4w_i$ --- so $720 = 2^4 \cdot 3^2 \cdot 5$,
+99:$10080 = 2^5 \cdot 3^2 \cdot 5 \cdot 7$ and $26880 = 2^8 \cdot 3 \cdot 5 \cdot 7$; the conditions
+108:holds for the tuple $(2,3,10,15,30)$ on the class $m \equiv 12780 \pmod{21840}$, then P-W holds.
+113:The hypothesis, invoked at $\max(N_0, 12780)$, gives one $m > \max(N_0, 12780)$ with
+114:$m \equiv 12780 \pmod{21840}$ and all five forms prime. The witness
+116:parameter $m$, needs exactly $m \ge 12780$, $m \equiv 12780 \pmod{21840}$ and the five
+123:modulus $21840 = 2^4 \cdot 3 \cdot 5 \cdot 7 \cdot 13$ is again the least common multiple of $4$,
+128:$\omega(N) \le 5$. The same hypothesis gives that form, and the proof is the proof of
+133:adds, because $N(m)$ is a product of four primes, so $\omega(N(m)) \le 4$ by the count of
+134:\cref{sec:korselt-misses-few-factors}, and $4 \le 5$. P-W data at a number with $\omega \le 5$ are
+142:$m \equiv 546 \pmod{720}$ then there are infinitely many squarefree Korselt $N \equiv 1 \pmod 4$
+143:with $2 \le \omega(N) \le 5$ at which the criterion is zero at every base
+
+########## 09_bateman_horn.tex ##########
+47:the Bateman--Horn conjecture predicts for the forms \cite{BatemanHorn1962}, whose constant is a
+54:\cite{HardyLittlewood1923}.
+173:for Carmichael numbers with $k$ prime factors in a fixed family \cite{GranvillePomerance2002}. The
+185:If $\mathrm{BH}_F(a,r,M)$ holds for $a = (1,2,5,10)$, $r = 546$ and $M = 720$, then there are
+194:Here $k = 4$, $r = 546$, $M = 720$ and $a_{i_0} = a_0 = 1 > 0$, so $S = 18$ and $D = 12960$.
+204:modulus, $4w_i \mid 720$ and $a_i \mid 720$ at the four indices; its remaining hypotheses are
+205:congruence and inequality checks at $m_0 = 546$. Every parameter of the class is at least $546$, so
+212:$c\,T/(\log T)^4$ for the count below $N(720T + 546)$. The other three tuples are the same
+214:$m \equiv 5670 \pmod{10080}$, identity \lean{hpoly\_1\_2\_6\_9} with $L = 280$; $(5,7,15,21)$ on
+215:$m \equiv 4056 \pmod{26880}$, identity \lean{hpoly\_5\_7\_15\_21} with $L = 64$; and
+216:$(2,3,10,15,30)$ on $m \equiv 12780 \pmod{21840}$, where the per-member hypothesis is
+234:It degrades with $k$. At $X = 10^{30}$ the four-term factor $X^{1/4}/(\log X)^4$ is $1.39$ and
+235:the five-term factor $X^{1/5}/(\log X)^5$ is $6.4 \cdot 10^{-4}$; the first reaches $1$ near
+236:$X = 10^{29.3}$ and the second near $X = 10^{51.9}$. These are values of the factor and not of
+
+########## 10_census.tex ##########
+20:numbers below $10^{18}$ \cite{Pinch2006} in increasing order, one row per number, and records
+22:$\omega$, $N \bmod 4$, the residues of the numerators modulo $4$ and the carry $C$ of
+23:\cref{eq:carry-defining}; the second carries the same row to $10^{21}$, on Pinch's
+24:tables to that bound \cite{Pinch2007}.
+26:$10^{18}$ there are $1{,}401{,}644$ Carmichael numbers, and at $1{,}340$ of them the
+27:criterion is zero at every base \cite{Companion-never-a-test}; $1{,}266$ of those are P-W
+30:$74$ lie on $N \equiv 3 \pmod 4$, all of them at $\omega = 3$, as the parity constraint
+31:recalled in \cref{sec:korselt-misses-intro} allows ($\omega$ odd and every prime
+35:one sees that they do. To $10^{21}$ the counts are $20{,}138{,}200$ Carmichael numbers, Pinch's count
+36:\cite{OEIS-A055553} (the exploration and confirmation halves of
+37:\texttt{pw\_confirm2.txt} used in \cref{sec:korselt-misses-rate}, $10{,}070{,}870 + 10{,}067{,}330$) and $7{,}648$ P-W members
+43:\caption{The census by number of prime factors. Columns 2 and 3 count to $10^{21}$
+45:$10^{18}$ (\texttt{pw\_scan.txt}, \texttt{pw\_prereg\_analysis.txt}). All entries are exact
+51:$\omega$ & $\le 10^{21}$ & $\le 10^{21}$ & $< 10^{18}$ & $(10^{18}, 10^{21}]$ \\
+53:3  & 224\,763    & 7\,160 & 1\,148 & 6\,012 \\
+54:4  & 151\,566    & 361    & 99     & 262    \\
+55:5  & 846\,627    & 111    & 19     & 92     \\
+56:6  & 3\,230\,120 & 15     & 0      & 15     \\
+57:7  & 6\,363\,475 & 1      & 0      & 1      \\
+58:8  & 6\,015\,901 & 0      & 0      & 0      \\
+59:9  & 2\,714\,473 & 0      & 0      & 0      \\
+60:10 & 547\,528    & 0      & 0      & 0      \\
+61:11 & 42\,764     & 0      & 0      & 0      \\
+62:12 & 983         & 0      & 0      & 0      \\
+64:total & 20\,138\,200 & 7\,648 & 1\,266 & 6\,382 \\
+70:feature and a tail. At $\omega = 3$ the census holds $224{,}763$ Carmichael numbers, $1.1$ per
+71:cent of the total, and $7{,}160$ of the $7{,}648$ members, $93.6$ per cent; the tail is $361$,
+72:$111$, $15$, $1$ at $\omega = 4, 5, 6, 7$, and no member at all at $\omega \ge 8$. Of the
+73:$7{,}648$ members, $6{,}382$ lie in $(10^{18}, 10^{21}]$: most of what the census knows about
+74:P-W is a property of its last three decades, which is why the entry at $\omega = 7$ is a
+75:statement about that band. One row can be read whole: $24\,055\,615\,898\,561\,844\,361$, the
+76:member at $m = 22146$ of the $(1,2,5,10)$ class, has $\omega = 4$, $N \equiv 1 \pmod 4$, all
+79:columns above: among the $4{,}598$ Carmichael numbers below $10^{18}$ with $N \equiv 1 \pmod 4$
+80:and every prime $\equiv 3 \pmod 4$, exactly $2$ are counterexamples, both at $\omega = 4$
+85:The single $\omega = 7$ entry of \cref{tab:census-by-factors} is one row of one band:
+86:$718132609376191497601$ is the only P-W member with seven prime factors in
+87:$(10^{18}, 10^{21}]$, and the census holds none with eight or more. Its seven primes, their
+97:(\texttt{pw\_combo\_k5\_search.txt}); block B reconstructs the $118$ members below $10^{18}$
+98:with $\omega \ge 4$ as families (\texttt{pw\_combo\_families.txt},
+100:the range of B is the members below $10^{18}$.}
+106:tuples enumerated                 & 5\,302\,911 \\
+107:tuples surviving the period filter  & 1\,195 \\
+110:class                             & $(2,3,10,15,30)$, $m \equiv 12\,780 \pmod{21\,840}$ \\
+118:\multicolumn{4}{@{}l}{\emph{B: families behind the members below $10^{18}$ with $\omega \ge 4$}} \\
+121:$\omega = 4$ & 99  & 98  & 1 \\
+122:$\omega = 5$ & 19  & 15  & 4 \\
+123:total        & 118 & 113 & 5 \\
+130:$5{,}302{,}911$ of them. The period of a tuple is the modulus of the residue classes of $m$ in
+134:keeps the $1{,}195$ tuples whose period is small enough that a member need not lie beyond the scale at
+137:\cref{thm:admissible}: $(2,3,10,15,30)$, at $m \equiv 12\,780 \pmod{21\,840}$, the class of
+140:$m = 3987660$ with $N \approx 2.72 \cdot 10^{37}$ (\cref{thm:instance-k5-class}), above the
+141:scale of \cref{sec:korselt-misses-rate} and consistent with the expectation $0.0256$ at $10^{30}$
+142:that the rate of that section gives. Block B takes the $118$ members below $10^{18}$
+143:with $\omega \ge 4$ and writes each as a family: $g = \gcd_i (p_i - 1)$, $a_i = (p_i - 1)/g$,
+147:there. The three four-term moduli come back minimal, with one residue each --- $546 \bmod 720$,
+148:$5670 \bmod 10080$, $4056 \bmod 26880$ --- by brute force on $[1, M]$ and a check of the class
+149:at its first $300$ parameters (\texttt{pw\_an\_k4\_verify.txt}, \texttt{pw\_survival\_bh.txt}).
+167:  & $1{,}394{,}806$ Carmichael $N \equiv 1 \pmod 4$
+168:  & $N < 10^{18}$ & $0$ mismatches \\
+170:  & $1{,}312{,}709$ Carmichael $N \equiv 1 \pmod 8$
+171:  & $N < 10^{18}$ & $0$ mismatches \\
+172:atom sum $\sum_p e_p = (\omega - 1 - C)N + 1$ \newline \texttt{atom\_sum\_carry.txt}
+174:  & $N < 2 \cdot 10^{5}$ & every row; $C \le \omega - 2$ \\
+176:  & $20{,}138{,}200$ Carmichael
+177:  & $N \le 10^{21}$ & $0$ disagreements \\
+179:  & $40$ cells, $4$ decades $\times$ $\omega = 3, \dots, 12$
+180:  & $10^{18}, \dots, 10^{21}$ & all match \\
+182:  & $4{,}598$ Carmichael, every prime $\equiv 3 \pmod 4$
+183:  & $N < 10^{18}$ & $2$ counterexamples, both $\omega = 4$ \\
+184:$4 \mid A$ under a nonzero carry, $\omega = 5$ \newline \texttt{cursorB\_carry\_k5k6.txt}
+186:  & $N < 10^{11}$ & none, as \cref{thm:atom-gcd-ceiling} forces \\
+187:$4 \mid A$ under a nonzero carry, $\omega = 6$ \newline \texttt{cursorB\_carry\_k5k6.txt}
+189:  & $N < 5 \cdot 10^{11}$ & none found; the $28$ at $\omega = 6$ lie above $9.5 \cdot 10^{15}$ \\
+190:$\omega = 6$ with $C = 4$ \newline \texttt{pw\_omega6\_maxcarry.txt},
+191:\texttt{pw\_omega6\_f1\_list.txt}
+192:  & $24{,}639$ Carmichael, $28$ with $4 \mid A$
+193:  & $N \le 10^{21}$ & $28$ rows listed; the smallest is \cref{thm:omega6-instance} \\
+209:can contradict a theorem if the pipeline is wrong: below $10^{18}$ there are $1{,}286$ of them,
+210:$1{,}266$ carry-free and therefore members, three more at $\omega = 5$ with $C = 2$ --- and
+211:those three lie on $N \equiv 3 \pmod 4$, where the reduction at $\omega \le 5$ does not apply
+212:--- and $17$ at $\omega = 6, 7, 8$ with $C = 4$, all $17$ on $N \equiv 1 \pmod 8$
+214:the divisibilities $4 \mid v_p$ give $4 \mid C$, and with $C \le \omega - 2$ the carry is $0$ or
+215:$4$ at every $\omega \le 9$ (\cref{rem:carry-eight}); $C = 4$ needs $\omega \ge 6$.
+219:in a range rather than prohibitions: no member at $\omega \ge 8$ below $10^{21}$, no
+220:$4 \mid A$ under a nonzero carry below $5 \cdot 10^{11}$ at $\omega = 6$ (at $\omega = 5$ it is
+
+########## 11_rate.tex ##########
+12:\Cref{sec:korselt-misses-census} counted how many members there are, at which $\omega$, and
+16:$\omega(N) = k$ is a counterexample. The rate is a model --- one line of a script,
+34:and the expected number of counterexamples below $X$ at $\omega = k$ is
+37:  \omega(N) = k \,\}\cdot h_k .
+43:before it is compared, because one subfamily is decided exactly rather than at random. A Chernick number, $(6k+1)(12k+1)(18k+1)$ \cite{Chernick1939}, is the
+45:$4 \mid k$; the first band $(10^{18}, 10^{19}]$ holds $27{,}353$ Korselt numbers $N \equiv 1
+46:\pmod 4$ with $\omega(N) = 3$ and $652$ Chernick numbers, $163$ of them with $4 \mid k$, so the
+47:expectation there is $(27353 - 652)h_3 + 163 = 997.4$ rather than $27353\,h_3 = 855$
+52:the census band $(10^{18}, 10^{21}]$. At $k = 3$ and $k = 4$ the $95$ per cent interval of the measured value contains $1/(k-1)!$,
+53:$0.4988$ against $0.5$ and $0.16791$ against $0.16667$; from $k = 5$ on it does not. The
+62:numbers $N \equiv 1 \pmod 4$ with $\omega(N) = k$ in $(10^{18}, 10^{21}]$, with its 95 per
+71:3 & 0.4988     & 0.5      & $-0.24\,\%$ & contains law \\
+72:4 & 0.16791    & 0.16667  & $+0.75\,\%$ & contains law \\
+73:5 & 0.040614   & 0.041667 & $-2.5\,\%$  & excludes law \\
+74:6 & 0.0076304  & 0.0083333 & $-8.4\,\%$ & excludes law \\
+75:7 & 0.0011793  & 0.0013889 & $-15.1\,\%$ & excludes law \\
+76:8 & 0.00013536 & 0.00019841 & $-31.8\,\%$ & excludes law \\
+82:$k = 3, \dots, 7$ is $0.060764$, $0.014072$, $0.0034314$, $0.00069823$, $0.00014405$, against
+83:$4^{1-k} = 0.0625$, $0.015625$, $0.0039062$, $0.00097656$, $0.00024414$; the interval contains
+85:$0.234^{k-1}$ whose constant comes from the data below $10^{18}$ (\texttt{pw\_prereg.py};
+86:\texttt{pw\_prereg\_analysis.txt} \S4). The measured $0.0608$ lies between the two candidates
+87:with an interval that excludes both, so at $k = 3$ the data exclude $1/4$ and $0.234$ alike,
+92:assumption of independence, and the events are not independent: below $\omega = 6$ the second
+94:$C > 0$ together with $4 \mid v_p$ at every prime forces $\omega \ge 6$
+97:$k = 3, 4, 5$; from $\omega = 6$ it has $25$ at $k = 6$ and $109$ at $k = 7$
+98:(\texttt{pw\_prereg\_analysis.txt} \S5). The bound $0 \le C \le \omega - 2$ behind both
+107:comparisons made together) is $0.0133$, and the analysis
+109:low, by $1.7$, $4.0$ and $5.6$ per cent, and the last of them, $(10^{20}, 10^{21}]$, is the
+110:cell with raw $p = 0.00102$ and adjusted $p = 0.0133$
+114:The second preregistered test asks where the deficit of the carry factor sits; it was fixed in advance and run on a confirmation half: the rows to $10^{21}$ were
+116:$10{,}067{,}330$ rows, not read before the test, with the
+122:$j_{p_{\max}}$, is confirmed, with odds ratio $0.865$ (the odds of $C = 0$ in the lowest quintile
+123:divided by those in the highest; Holm $p = 3.0\cdot10^{-6}$) at $k = 6$
+124:and $0.843$ ($3.7\cdot10^{-3}$) at $k = 7$. The third, that $h_3$ is right on the non-Chernick
+126:$0.8986$, interval $[0.8628, 0.9355]$, $p = 1.26\cdot10^{-7}$. The same file checks one statement with no
+127:randomness in it, and it holds without exception: of the $2{,}219$ even-$b$ family members in that half,
+128:$592$ are counterexamples, all of them on the class of \cref{thm:even-b-class}, and every
+136:observed-to-predicted ratios are $1.015$, $1.009$, $0.984$, $1.012$ and $0.903$ at
+145:The $(1,2,5,10)$ class holds $1, 1, 7, 26$ members below $10^{21}, 10^{24}, 10^{27}, 10^{30}$
+147:three four-factor classes together carry $31.0 \pm 5.6$ at $10^{30}$; the even-$b$ families
+148:below $10^{21}$ with $b \le 200$ give $1{,}492$ against $1{,}536.6$, a ratio of $0.971$; and
+149:the one admissible five-factor class has $\mathbb{E}(10^{30}) = 0.0256$, an expectation that
+151:\cref{thm:instance-k5-class}, lies near $2.7 \cdot 10^{37}$
+154:Bateman--Horn count \cite{BatemanHorn1962} for the forms of the class, with its singular series
+155:($124.5$ for $(1,2,5,10)$ on $546 \bmod 720$, and $290.6$ for each of the other two four-term
+254:independent: that is not an identity, and the counts of $0, 0, 0, 25, 109$ above say where it
+259:what the theorem is evidence for. A member with $N \approx 10^{21}$ and $\omega = k$ has
+260:primes of geometric mean size $10^{21/k}$, so $4\sum_i 1/q_i$ is about $4k/10^{21/k}$:
+261:$1.2\cdot10^{-6}$ at $k = 3$, $9\cdot10^{-5}$ at $k = 4$, $1.3\cdot10^{-3}$ at $k = 5$,
+262:$7.6\cdot10^{-3}$ at $k = 6$, $2.8\cdot10^{-2}$ at $k = 7$ and $7.6\cdot10^{-2}$ at $k = 8$.
+263:Against the measured $P(C = 0)$ of \cref{tab:rate-euler} that is $2.4\cdot10^{-6}$ at
+264:$k = 3$, $5.4\cdot10^{-4}$ at $k = 4$, three per cent at $k = 5$, as large as the measured
+265:value at $k = 6$, $24$ times it at $k = 7$ and $561$ times at $k = 8$; at the survival scale, $N \approx 10^{30}$,
+266:the bound itself (not relative to the law) is $5.1\cdot10^{-7}$ at $k = 4$ and $2.0\cdot10^{-5}$
+275:third at $k = 8$. It is right about the order of magnitude at $10^{30}$. The one thing in the section that is proved is a bound on the step
+
+########## 12_open.tex ##########
+24:$2 \le \omega(N)$ and $p - 1 \mid N - 1$ for every prime $p \mid N$, and integers $v_p$, one
+38:once, and what is left is a condition on the numerators alone. The clause $2 \le \omega(N)$ is
+40:reduced problem of \cref{def:pw-small}, which drops the Egyptian sum and adds $\omega \le 5$:
+50:products of subsets of $\mathcal{P}$ are counted \cite{AGP1994}. The primes are chosen and the
+52:infinitely many Korselt $N \equiv 1 \pmod 4$, and that is available: \cite{AGP1994} for the
+53:infinitude and \cite{Matomaki2013Carmichael,Wright2013} for the progression. It needs a supply at bounded
+54:$\omega$, if the reduction of \cref{sec:korselt-misses-few-factors} is to be used at all, and
+55:that is not available: what \cite{LarsenWright2025} gives is one Carmichael number with exactly
+68:omitted prime, an inequality on $\omega$ real numbers in $(0,1)$, with a floor and no modulus.
+77:\cite{Matomaki2013Carmichael} controls $N$ modulo a fixed modulus; \cite{Larsen2025} decides which
+104:\cref{sec:korselt-misses-few-factors} stops at $\omega = 5$
+106:only, while the seven-factor member $718132609376191497601$ of \cref{thm:instance-d7} comes from
+107:neither. At the scale where the quantitative answers are compared, $10^{30}$, the expectation on
+109:member lies near $2.7 \cdot 10^{37}$ (\cref{thm:instance-k5-class}); so an aggregate answer at
+115:the pointwise form of the condition, the carry, the reduction at $\omega \le 5$ and its ceiling, the

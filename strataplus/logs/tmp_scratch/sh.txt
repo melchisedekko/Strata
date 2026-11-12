@@ -1,0 +1,3175 @@
+arXiv:1705.09703v1 [math.NT] 26 May 2017
+
+Some remarks on the asymmetric sum–product phenomenon ∗
+Shkredov I.D.
+
+Annotation.
+Using some new observations connected to higher energies, we obtain quantitative lower bounds on
+max{|AB|, |A + C|} and max{|(A + α)B|, |A + C|}, α 6= 0 in the regime when the sizes of finite subsets
+A, B, C of a field differ significantly.
+
+1
+
+Introduction
+
+Let p be a prime number and A, B ⊂ Fp = Z/pZ be finite sets. Define the sum set, the difference
+set, the product set and the quotient set of A and B as
+A + B := {a + b : a ∈ A, b ∈ B} ,
+AB := {ab : a ∈ A, b ∈ B} ,
+
+A − B := {a − b : a ∈ A, b ∈ B}
+A/B := {a/b : a ∈ A, b ∈ B, b 6= 0} ,
+
+correspondingly. One of the central problems in arithmetic combinatorics [35] it is the sum–
+product problem, which asks for estimates of the form
+max{|A + A|, |AA|} ≥ |A|1+c
+
+(1)
+
+for some positive c. This question was originally posed by Erdős and Szemerédi [13] for finite
+sets of integers; they conjectured that (1) holds for all c < 1. The sum–product problem has
+since been studied over a variety of fields and rings, see, e.g. [4], [6], [7], [12], [11], [13], [35] and
+others. We focus on the case of Fp (and sometimes consider R), where the first estimate of the
+form (1) was proved by Bourgain, Katz, and Tao [11]. At the moment the best results in this
+direction are contained in [23] and in [19].
+In this article we study an asymmetric variant of the sum–product question (”the sum–
+product theorem in Fp for sets of distinct sizes”) in the spirit of fundamental paper [3]. Let us
+recall two results from here.
+Theorem 1 Given 0 < ε < 1/10, there is δ > 0 such that the following holds. Let A ⊂ Fp and
+pε < |A| < p1−ε .
+∗
+
+This work is supported by the Russian Science Foundation under grant 14-11-00433.
+
+1
+
+2
+Then either
+|AB| > pδ |A|
+
+for all
+
+B ⊂ Fp , |B| > pε
+
+|A + C| > pδ |A|
+
+for all
+
+C ⊂ Fp , |C| > pε .
+
+or
+
+Theorem 2 Given 0 < ε < 1/10, there is δ > 0 such that the following holds. Let A ⊂ Fp and
+pε < |A| < p1−ε .
+Then for any x 6= 0 either
+|AB| > pδ |A|
+
+for all
+
+B ⊂ Fp , |B| > pε
+
+or
+|(A + x)C| > pδ |A|
+
+for all
+
+C ⊂ Fp , |C| > pε .
+
+Theorems 1, 2 were derived in [3] from the following result of paper [5]. Given a set A ⊆ Fp
+′
+2k : a + · · · + a = a′ + · · · + a′ }|. We write
+′
+denote by T+
+1
+k
+1
+k
+k (A) := |{(a1 , . . . , ak , a1 , . . . , ak ) ∈ A
++
++
+E (A) for T2 (A).
+Theorem 3 For a positive integer Q, there are a positive integer k and a real τ > 0 such that
+if H ⊆ F∗p and
+|HH| < |H|1+τ
+then
+2k −1+1/Q
++ cQ |H|−Q ) ,
+T+
+k (H) < |H| (p
+
+where cQ > 0 depends on Q only.
+The aim of this paper is to obtain explicit bounds in the theorems above. Our arguments
+are different and more elementary than in [3], [10] and [14]. In the proof we almost do not use
+the Fourier approach and hence the container group Fp . That is why we do not need in lower
+bounds for sizes of A, B, C in terms of the characteristic p but, of course, these sets must be
+comparable somehow. Also, the arguments work in R as well and it differs this article from paper
+[3], say. Let us formulate our variant of Theorems 1, 2 (see Corollary 33 below). One can show
+that Theorem 4 implies both of these results if |A| < p1/2−ε , say, see Remark 36 from section 5.
+(k+1) −k
+2
+1+ 2(k+4)
+
+Theorem 4 Let A, B, C ⊆ Fp be arbitrary sets, and k ≥ 1 be such that |A||B|
+and
+k
++ 1
+(k+4)/4
+|B| 8 2(k+4) ≥ |A| · C∗
+logk (|A||B|) .
+
+≤p
+(2)
+
+where C∗ > 0 is an absolute constant. Then
+1
+
+max{|AB|, |A + C|} ≥ 2−3 |A| · min{|C|, |B| 2(k+4)
+
+2−k
+
+},
+
+(3)
+
+3
+
+I. D. Shkredov
+
+and for any α 6= 0
+
+1
+
+max{|AB|, |(A + α)C|} ≥ 2−3 |A| · min{|C|, |B| 2(k+4)
+
+2−k
+
+}.
+
+(4)
+
+Actually, we prove that the lower bounds for |A + C|, |(A + α)C| in (3), (4) could be
+replaced by similar upper bounds for the energies E+ (A, C), E× (A + α, C), see the second part
+of Corollary 33 from section 5. We call Theorem 4 an asymmetric sum–product result because
+A can be much larger than B and C (say, |A| > (|B|C|)100 ) in contrast with the usual quadratic
+restrictions which follow from the classical Szemerédi–Trotter Theorem, see [34], [35] for the real
+setting and see [11], [14], [24] for the prime fields. On the other hand, the roles of B, C are not
+symmetric as well. The thing is that the method of the proof intensively uses the fact that if
+|AB| is small comparable to |A|, then, roughly speaking, for any integer k size of (kA)B is small
+comparable to kA, roughly speaking (rigorous formulation can be found in section 5). Of course
+this observation is not true more in any sense if we replace × to + and vice versa.
+Also, we obtain a ”quantitative” version of Theorem 3.
+Theorem 5 Let A, B ⊆ Fp be sets, M ≥ 1 be a real number and |AB| ≤ M |A|. Then for any
+k+1
+k ≥ 2, 216k M 2 C∗2 log8 |A| ≤ |B|, one has
+k
+
+(A) ≤ 24k+6 C∗ log4 |A|·
+T+
+2k
+
+k+1
+
+M 2 |A|2
+p
+
+2
+
+k+1
+
++16k M 2
+
+k+1 −4
+
+C∗k−1 log4(k−1) |A|·|A|2
+
+|B|−
+
+(k−1)
+2
+
+E+ (A) .
+(5)
+
+Here C∗ > 0 is an absolute constant.
+As a by-product we obtain the best constants in the problem of estimating of the exponential
+sums over multiplicative subgroups [5], [14] and relatively good bounds in the question on
+basis properties of multiplicative subgroups [15]. Also, we find a wide series of ”superquadratic
+expanders in R” [2] with four variables, see Corollary 35.
+In contrast to paper [3] we prove Theorem 4 and Theorem 5 independently. We realise that
+Theorem 4 is equivalent to estimating another sort of energies, namely,
+′
+2k
+′
+E+
+: a1 − a′1 = · · · = ak − a′k }|
+k (A) := |{(a1 , . . . , ak , a1 , . . . , ak ) ∈ A
+
+(see the definitions in section 2). Thus, a new feature of this paper is an upper bound for E+
+k (A)
+for sets A with |AB| ≪ |A| for some large B, see Theorem 27 below. Such upper bound can be
+of independent interest.
+Theorem 6 Let A, B ⊆ Fp be two sets, k ≥ 0 be an integer, and put M := |AB k+1 |/|A|. Then
+for any k ≥ 0 such that
+k
+
+(k+4)/4
+
+|B|k/8+1/2 ≥ |A| · M 2 +1 23k+1 C∗
+
+logk |AB k | ,
+
+where C∗ > 0 is an absolute constant, we have
+k+1
+
+(A) ≤ 2|AB k |2
+E+
+2k+1
+
+.
+
+(6)
+
+4
+Our approach develops the ideas from [3], [29] (see especially section 4 from here) and uses
+several sum–product observations of course. We avoid to repeat combinatorial arguments of
+Bourgain’s paper [3] (although we use a similar inductive strategy of the proof) but the method
+relies on recent geometrical sum–product bounds from Rudnev’s article [24] and further papers
+as [1], [21], [23], [31] and others. In some sense we introduce a new approach of estimating
++
+moments Mk (f ) (e.g., T+
+k (H) in Theorem 3 or Ek (A) in Theorem 6) of some specific functions f
+: instead of calculating Mk (f ) in terms of suitable norms of f , we comparing Mk (f ) and Mk/2 (f ).
+If Mk (f ) is much less than Mk/2 (f ), then we use induction and if not then thanks some special
+nature of the function f we deriving from this fact that the additive energy E+ of a level set
+of f is huge and it gives a contradiction. Clearly, this process can be applied at most O(log k)
+number of times and that is why we usually have logarithmic savings (compare the index in
+(k−1)
+
+(A) and the gain |B|− 2 in estimate (5), say).
+T+
+2k
+The paper is organized as follows. Section 2 contains all required definitions. In section 3 we
+give a list of the results, which will be further used in the text. In the next section we consider a
+particular case of multiplicative subgroups Γ and obtain an upper estimate for T+
+k (Γ). It allows
+us to obtain new upper bounds for the exponential sums over subgroups which are the best
+at the moment. This technique is developed in section 5 although we avoid to use the Fourier
+approach as was done in [3] and in the previous section 4. The last section 5 contains all main
+Theorems 4–6.
+The author thanks Misha Rudnev and Sophie Stevens for careful reading of the first draft
+of this paper and for useful discussions.
+
+2
+
+Notation
+
+In this paper p is an odd prime number, Fp = Z/pZ and F∗p = Fp \ {0}. We denote the Fourier
+transform of a function f : Fp → C by fb,
+X
+f (x)e(−ξ · x) ,
+(7)
+fb(ξ) =
+x∈Fp
+
+where e(x) = e2πix/p . We rely on the following basic identities
+X
+1 X b 2
+f (ξ) ,
+|f (x)|2 =
+p
+x∈Fp
+
+X
+
+X
+
+y∈Fp x∈Fp
+
+f (x)g(y − x)
+
+and
+f (x) =
+
+(8)
+
+ξ∈Fp
+
+2
+
+=
+
+1 X b 2
+2
+f (ξ) gb(ξ) ,
+p
+
+(9)
+
+ξ∈Fp
+
+1 X b
+f (ξ)e(ξ · x) .
+p
+
+(10)
+
+ξ∈Fp
+
+Let f, g : Fp → C be two functions. Put
+X
+(f ∗ g)(x) :=
+f (y)g(x − y)
+y∈Fp
+
+and
+
+(f ◦ g)(x) :=
+
+X
+
+y∈Fp
+
+f (y)g(y + x) .
+
+(11)
+
+5
+
+I. D. Shkredov
+
+Then
+
+f[
+∗ g = fbgb
+
+and
+
+f[
+◦ g = fbgb .
+
+(12)
+
+Put E+ (A, B) for the common additive energy of two sets A, B ⊆ Fp (see, e.g., [35]), that is,
+E+ (A, B) = |{(a1 , a2 , b1 , b2 ) ∈ A × A × B × B : a1 + b1 = a2 + b2 }| .
+If A = B we simply write E+ (A) instead of E+ (A, A) and E+ (A) is called the additive energy in
+this case. Clearly,
+X
+X
+X
+E+ (A, B) =
+(A ∗ B)(x)2 =
+(A ◦ B)(x)2 =
+(A ◦ A)(x)(B ◦ B)(x)
+x
+
+x
+
+and by (9),
+E(A, B) =
+
+x
+
+1X b 2 b
+|A(ξ)| |B(ξ)|2 .
+p
+
+(13)
+
+ξ
+
+Also, notice that
+
+E+ (A, B) ≤ min{|A|2 |B|, |B|2 |A|, |A|3/2 |B|3/2 } .
+
+(14)
+
+In the same way define the common multiplicative energy of two sets A, B ⊆ Fp
+E× (A, B) = |{(a1 , a2 , b1 , b2 ) ∈ A × A × B × B : a1 b1 = a2 b2 }| .
+Certainly, the multiplicative energy E× (A, B) can be expressed in terms of multiplicative convolutions similar to (11).
+Sometimes we use representation function notations like rAB (x) or rA+B (x), which counts
+the number of ways x ∈ Fp can be expressed as a product ab or a sum a + bPwith a ∈ A,
+2
+(x) =
+b ∈ B, respectively. For example, |A| = rA−A (0) and E+ (A) = rA+A−A−A (0) = x rA+A
+P
+2
+x rA−A (x). In this paper we use the same letter to denote a set A ⊆ Fp and its characteristic
+function A : Fp → {0, 1}. Thus, rA+B (x) = (A ∗ B)(x), say.
+Now consider two families of higher energies. Firstly, let
+2k
+′
+′
+: a1 +· · ·+ak = a′1 +· · ·+a′k }| =
+T+
+k (A) := |{(a1 , . . . , ak , a1 , . . . , ak ) ∈ A
+
+Secondly, for k ≥ 2, we put
+E+
+k (A) =
+
+X
+
+x∈Fp
+
+(A ◦ A)(x)k =
+
+X
+
+1 X b 2k
+|A(ξ)| . (15)
+p
+
+k
+rA−A
+(x) = E+ (∆k (A), Ak ) ,
+
+ξ
+
+(16)
+
+x∈Fp
+
+where
+∆k (A) := {(a, a, . . . , a) ∈ Ak } .
+
++
++
++
+k
+Thus, E+
+2 (A) = T2 (A) = E (A). Also, notice that we always have Ek (A) ≥ |A| . Finally, let us
++
+2
+remark that by definition (16) one has E1 (A) = |A| . Some results about the properties of the
++
++
+energies E+
+k can be found in [27]. Sometimes we use Tk (f ) and Ek (f ) for an arbitrary function
+f and the first formula from (16) allows to define E+
+k (A) for any positive k. It was proved in
+
+6
+1/2k is a norm for even k and a real function f . The fact that
+[31, Proposition 16] that (E+
+k (f ))
++
+1/2k
+is a norm is contained in [35].
+(Tk (f ))
+Let A be a set. Put
+
+
+a1 − a
+: a, a1 , a2 ∈ A, a2 6= a
+R[A] :=
+a2 − a
+
+and
+Q[A] :=
+
+
+
+a1 − a2
+: a1 , a2 , a3 , a4 ∈ A, a3 6= a4
+a3 − a4
+
+
+
+.
+
+All logarithms are to base 2. The signs ≪ and ≫ are the usual Vinogradov symbols. When
+the constants in the signs depend on some parameter M , we write ≪M and ≫M . For a positive
+integer n, we set [n] = {1, . . . , n}.
+
+3
+
+Preliminaries
+
+We begin with a variation on the famous Plünnecke–Ruzsa inequality, see [26, Chapter 1].
+Lemma 7 Let G be a commutative group. Also, let A, B1 , . . . , Bh ⊆ G, |A + Bj | = αj |A|,
+j ∈ [h]. Then there is a non-empty set X ⊆ A such that
+|X + B1 + · · · + Bh | ≤ α1 . . . αh |X| .
+
+(17)
+
+Further for any 0 < δ < 1 there is X ⊆ A such that |X| ≥ (1 − δ)|A| and
+|X + B1 + · · · + Bh | ≤ δ−h α1 . . . αh |X| .
+
+(18)
+
+We need a result from [24] or see [21, Theorem 8]. By the number of point–planes incidences
+I(P, Π) between a set of points P ⊆ F3p and a collection of planes Π in F3p we mean
+I(P, Π) := |{(p, π) ∈ P × Π : p ∈ π}| .
+Theorem 8 Let p be an odd prime, P ⊆ F3p be a set of points and Π be a collection of planes
+in F3p . Suppose that |P| = |Π| and that k is the maximum number of collinear points in P. Then
+the number of point–planes incidences satisfies
+I(P, Π) ≪
+
+|P|2
++ |P|3/2 + k|P| .
+p
+
+Notice that in R we do not need in the first term in estimate (19).
+Let us derive a consequence of Theorem 8.
+
+(19)
+
+7
+
+I. D. Shkredov
+
+Lemma 9 Let A, Q ⊆ Fp be two sets, A, Q 6= {0}, M ≥ 1 be a real number, and |QA| ≤ M |Q|.
+Then
+!
+2 |Q|4
+3/2 |Q|3
+M
+M
+,
+(20)
+E+ (Q) ≤ C∗
++
+p
+|A|1/2
+where C∗ ≥ 1 is an absolute constant.
+P r o o f. Put A = A \ {0}. We have
+E+ (Q) = |{q1 + q2 = q3 + q4 : q1 , q2 , q3 , q4 ∈ Q}| ≤
+≤ |A∗ |−2 |{q1 + q̃2 /a = q3 + q̃4 /a′ : q1 , q3 ∈ Q, q̃2 , q̃4 ∈ QA, a, a′ ∈ A∗ }| .
+The number of the solutions to the last equation can be interpreted as the number of incidences
+between the set of points P = Q × QA × A−1
+∗ and planes Π with |P| = |Π| = |A∗ ||Q||QA|. Here
+k = |QA| because A, Q 6= {0}. Using Theorem 8 an a trivial inequality |QA| ≤ |Q||A|, we obtain
+ 2 2
+
+|A| |Q| |QA|2
+M 2 |Q|4 M 3/2 |Q|3
+E+ (Q) ≪ |A|−2
++ |Q|3/2 |QA|3/2 |A|3/2 ≪
++
+p
+p
+|A|1/2
+as required.
+
+✷
+
+Finally, we need a combinatorial
+Lemma 10 Let G be a finite abealian group, A, P be subsets of G. Then for any k ≥ 1 one has
+!2
+X
+X
+k
+k
+rA−A (x)
+rA−A
+(x)rP −P (x) .
+(21)
+≤ |A|k
+x
+
+x∈P
+
+In particular,
+X
+
+!4
+
+k
+rA−A
+(x)
+
+x∈P
+
++
+≤ |A|2k E+
+2k (A)E (P ) .
+
+(22)
+
+P r o o f. Clearly, inequality (22) follows from (21) by the Cauchy–Schwarz inequality. To prove
+estimate (21), we observe that
+X
+
+!2
+
+k
+rA−A
+(x)
+
+x∈P
+
+≤ |A|k
+
+X
+
+x1 ,...,xk
+
+
+
+=
+
+X
+
+x1 ,...,xk ∈A
+
+2
+
+|P ∩ (A − x1 ) ∩ · · · ∩ (A − xk )| ≤
+
+|P ∩ (A − x1 ) ∩ · · · ∩ (A − xk )|2 = |A|k
+
+as required.
+Combining Theorem 8 and Lemma 10, we obtain
+
+X
+
+k
+rP −P (x)rA−A
+(x)
+
+x
+
+✷
+
+8
+Corollary 11 Let A ⊆ Fp , and B, P ⊆ F∗p be sets. Then for any k ≥ 1 one has
+!4
+ 4
+
+X
+|P |3
+|P |
+k
+2k +
++
+rA−A (x)
+≤ C∗ |A| E2k (AB)
+.
+1/2
+p
+|B|
+x∈P
+
+(23)
+
+P r o o f. By Lemma 10, we have
+X
+
+!2
+
+k
+rA−A
+(x)
+
+x∈P
+
+≤ |A|k
+
+X
+
+k
+rA−A
+(x)rP −P (x) .
+
+x
+
+Further clearly for any b ∈ B the following holds
+rA−A (x) ≤ rAB−AB (xb) .
+Hence
+X
+
+x∈P
+
+!2
+
+k
+(x)
+rA−A
+
+≤
+
+|A|k X X k
+|A|k X k
+r
+(x)rB(P −P ) (x) .
+rAB−AB (xb)rP −P (x) =
+|B| x
+|B| x AB−AB
+b∈B
+
+Using the Cauchy–Schwarz inequality, we obtain
+!4
+X
+X
+|A|2k +
+k
+2
+rA−A (x)
+rB(P
+E2k (AB)
+≤
+−P ) (x) .
+2
+|B|
+x
+x∈P
+
+To estimate the sum
+
+P
+
+2
+x rB(P −P ) (x) we use Theorem 8 as in the proof of Lemma 9. We have
+
+X
+x
+
+Thus,
+
+X
+
+2
+rB(P
+−P ) (x) ≤ C∗
+
+!4
+
+k
+rA−A
+(x)
+
+x∈P
+
+
+
+|B|2 |P |4
++ |B|3/2 |P |3
+p
+
+≤ C∗ |A|2k E+
+2k (AB)
+
+
+
+
+
+.
+
+|P |3
+|P |4
++
+p
+|B|1/2
+
+
+
+.
+
+This completes the proof.
+
+4
+
+✷
+
+Multiplicative subgroups
+
++
+In this section we obtain the best upper bounds for T+
+k (Γ), Ek (Γ) and for the exponential sums
+over multiplicative subgroups Γ. We begin with the quantity T+
+k (Γ).
+
+Theorem 12 Let Γ ⊆ F∗p be a multiplicative subgroup. Then for any k ≥ 2, 264k C∗4 ≤ |Γ| one
+has
+k+1
+
+T+
+(Γ) ≤ 24k+6 C∗ log4 |Γ| ·
+2k
+
+|Γ|2
+p
+
+2
+
+k+1 − (k+7)
+2
+
++ 16k C∗k−1 log4(k−1) |Γ| · |Γ|2
+
+where C∗ is the absolute constant from Lemma 9.
+
+E+ (Γ) ,
+
+(24)
+
+9
+
+I. D. Shkredov
+
+P r o o f. Fix any s ≥ 2. Our intermediate aim is to prove
+ 4s
+
+|Γ|
++
+4
+4
+T2s (Γ) ≤ 32C∗ s log |Γ| ·
++ |Γ|2s−1/2 T+
+(Γ)
+.
+s
+p
+
+(25)
+
+We have
+′
+
+X
+
+8X
+rsΓ (x)rsΓ (y)rsΓ (x + z)rsΓ (y + z) ≤
+rsΓ (x)rsΓ (y)rsΓ (x + z)rsΓ (y + z) + E ,
+5 x,y,z
+x,y,z
+
+T+
+2s (Γ) =
+
+3s
+where the sum above is taken over nonzero variables x with r(x) > T+
+2s (Γ)/(8|Γ| ) := ρ and
+X
+2s−1 +
+E ≤ 4rsΓ (0)
+rsΓ (y)rsΓ (z)rsΓ (y + z) ≤ 4rsΓ (0)|Γ|s T+
+Ts (Γ) .
+(26)
+s (Γ) ≤ 4|Γ|
+y,z
+
+Put Pj = {x : ρ2j−1 < rsΓ (x) ≤ ρ2j } ⊆ F∗p . If (25) does not hold, then the possible number
+of sets Pj does not exceed L := s log |Γ|. By the Dirichlet principle there is ∆ = ∆j0 , and a set
+P = Pj0 such that
+8 4
+4 +
+′
+T+
+2s (Γ) ≤ L (2∆) E (P ) + E = T2s (Γ) + E .
+5
+Indeed, putting fi (x) = Pi (x)rsΓ (x), and using the Hölder inequality, we get
+′
+X
+
+x,y,z
+L
+X
+
++
+
+rsΓ (x)rsΓ (y)rsΓ (x + z)rsΓ (y + z) ≤
+
++
+
++
+
++
+
+1/4
+
+(E (fi )E (fj )E (fk )E (fl ))
+
+=
+
+L
+X
+
+L
+X
+
+X
+
+fi (x)fj (y)fk (x + z)fl (y + z) ≤
+
++
+
+1/4
+
+!4
+
+i,j,k,l=1 x,y,z
+
+(E (fi ))
+
+i=1
+
+i,j,k,l=1
+
+≤ L3
+
+L
+X
+i=1
+
+E+ (fi ) ≤ L4 max E+ (fi ) .
+i
+
+s
+Moreover we always have |P |∆2 ≤ T+
+s (Γ) and |P |∆ ≤ |Γ| . Using Lemma 9, we obtain
+ 4
+
+|P |
+|P |3
++
+E (P ) ≤ C∗
+.
++
+p
+|Γ|1/2
+
+Hence
+8
+T′2s (Γ) ≤ (16C∗ )L4 ∆4
+5
+
+
+
+|P |3
+|P |4
++
+p
+|Γ|1/2
+
+
+
+8
+≤ (16C∗ )L4
+5
+
+
+
+|Γ|4s |P |3 ∆4
++
+p
+|Γ|1/2
+
+
+
+.
+
+(27)
+
+s
+Let us consider the second term in (27). Then in view of |P |∆2 ≤ T+
+s (Γ) and |P |∆ ≤ |Γ| , we
+have
+|P |3 ∆4 = (P ∆)2 P ∆2 ≤ |Γ|2s T+
+s (Γ) .
+
+In other words, by (26), we get
+8
+4
+T+
+2s (Γ) ≤ (16C∗ )L
+5
+
+
+
+
+|Γ|4s
+2s−1/2 +
++ |Γ|
+Ts (Γ) + 4|Γ|2s−1 T+
+s (Γ) ≤
+p
+
+10
+
+4
+
+4
+
+≤ 32C∗ s log |Γ| ·
+
+
+
+
+|Γ|4s
+2s−1/2 +
++ |Γ|
+Ts (Γ)
+p
+
+and inequality (25) is proved.
+Now applying formula (25) successively (k − 1) times, we obtain
+k+1
+(k−1)
+|Γ|2
+k
+2
++
+4k+6
+4
+C∗ log |Γ| ·
+T2k (Γ) ≤ 2
++ 16k C∗k−1 log4(k−1) |Γ| · |Γ|2 +···+4− 2 E+ (Γ) ≤
+p
+k+1
+
+4k+6
+
+≤2
+
+|Γ|2
+C∗ log |Γ| ·
+p
+4
+
+k+1 − (k+7)
+2
+
+2
+
++ 16k C∗k−1 log4(k−1) |Γ| · |Γ|2
+
+E+ (Γ) .
+
+(28)
+
+To get the first term in the last formula we have used our condition 264k C∗4 ≤ |Γ| to insure that
+|Γ|1/2 ≥ 24k+1 C∗ log4 |Γ|. This completes the proof.
+✷
+Remark 13 The condition 264k C∗4 ≤ |Γ| can be dropped but then we will have the multiple
+2
+16k (C∗ log |Γ|)k−1 in the first term of (24).
+Splitting any Γ—invariant set onto cosets over Γ and applying the norm property of T+
+l ,
+we obtain
+Corollary 14 Let Γ ⊆ F∗p be a multiplicative subgroup, and Q ⊆ F∗p be a set with QΓ = Q. Then
+for any k ≥ 2, 264k C∗4 ≤ |Γ| one has
+k+1
+
+(Q) ≤ 24k+6 C∗ log4 |Γ| ·
+T+
+2k
+
+|Q|2
+p
+
+2
+
++ 16k C∗k−1 log4(k−1) |Γ| · |Γ|−
+
+(k+7)
+2
+
+k+1
+
+E+ (Γ)|Q|2
+
+.
+
+(29)
+
+√
+Let Γ be a subgroup of size less than p. Considering a particular case k = 2 of formula
+(12) of Theorem 12 and using E+ (Γ) ≪ |Γ|5/2−c , where c > 0 is an absolute constant (see [28]),
+one has
+Corollary 15 Let Γ be a multiplicative subgroup, |Γ| ≤
+T+
+4 (Γ) ≪
+
+√
+
+p. Then
+
+|Γ|8 log4 |Γ|
++ |Γ|6−c .
+p
+
+In particular, |4Γ| ≫ |Γ|2+c .
+√
+2k−2+ck with
+Previous results on T+
+p with small k had the form T+
+k (Γ), |Γ| ≤
+k (Γ) ≪ |Γ|
++
+some ck > 0, see, e.g., [20]. The best upper bound for T3 (Γ) can be found in [33].
+Now we prove a corollary about exponential sums over subgroups which is parallel to results
+from [9], [10], [14]. The difference between the previous estimates and Corollary 16 is just slightly
+better constant C in (31).
+
+11
+
+I. D. Shkredov
+
+Corollary 16 Let Γ be a multiplicative subgroup, |Γ| ≥ pδ , δ > 0. Then
+b
+max |Γ(ξ)|
+≪ |Γ| · p
+
+−
+
+δ
+−1
+27+2δ
+
+ξ6=0
+
+.
+
+(30)
+
+Further we have a nontrivial upper bound o(|Γ|) for the maximum in (30) if
+log |Γ| ≥
+
+C log p
+,
+log log p
+
+(31)
+
+where C > 2 is any constant.
+√
+P r o o f. We can assume that |Γ| < p, say, because otherwise estimate (30) is known, see [20].
+By ρ denote the maximum in (30). Then by Theorem 12, a trivial bound E+ (Γ) ≤ |Γ|3 and
+formula (15), we obtain
+k+1
+
+|Γ|ρ2
+
+k+1
+
+≤ pT2k (Γ) ≤ 24k+6 C∗ log4 |Γ| · |Γ|2
+
+2
+
+k+1 − k+1
+2
+
++ 16k C∗k−1 log4(k−1) |Γ| · |Γ|2
+
+p,
+
+(32)
+
+provided 264k C∗4 ≤ |Γ|. Put k = ⌈2 log p/ log |Γ| + 4⌉ ≤ 2/δ + 5. Also, notice that
+p log4(k−1) |Γ|
+≤1
+|Γ|k/2
+
+(33)
+
+because k ≥ 2 log p/ log |Γ| + 4 and p is a sufficiently large number. Also, since |Γ| ≥ pδ , it follows
+that 264k C∗4 ≤ |Γ| for sufficiently large p. Taking a power 1/2k+1 from both parts of (32), we see
+in view of (33) that
+
+
+δ
+−
+− 1
+1− 1
+− 1
+ρ ≪ |Γ| |Γ| 2k+2 + |Γ| 2k+2 ≪ |Γ| 2k+2 ≪ |Γ| · p 27+2δ−1 .
+To prove the second part of our corollary just notice that the same choice of k gives something
+nontrivial if 2k+2 ≤ ε log |Γ| for any ε > 0. In other words, it is enough to have
+k+2≤
+
+2 log p
++ 7 ≤ log log |Γ| − log(1/ε) .
+log |Γ|
+
+It means that the inequality log |Γ| ≥ C log p/(log log p) for any C > 2 is enough. This completes
+the proof.
+✷
+Remark 17 One can improve some constants in the proof (but not the constant C in (31)),
+probably, but we did not make such calculations.
++
+Now we estimate a ”dual” quantity E+
+s (Q) for Γ–invariant set Q (about duality of Tk/2 (A)
+and E+
+k (A), see [27] and formulae (36)—(39)). We give even two bounds and both of them use
+the Fourier approach.
+
+12
+Theorem 18 Let Γ ⊆ F∗p be a multiplicative subgroup, and Q ⊆ F∗p be a set with QΓ = Q and
+|Q|2 |Γ| ≤ p2 . Then for 0 ≤ k, 264k C∗4 ≤ |Γ| one has
+k+2 +3
+
+(Q) ≤ 22
+E+
+2k+1
+
+k+1
+
+(log |Q|)2
+
+k+1
+
+|Q|2
+
+×
+
+
+
+(k+1)
+2
+× 24k+6 log4 |Q| + 16k C∗k−1 (log |Q|)4(k−1) · |Γ|− 2 p .
+
+(34)
+
+k+2
+
+Further let k ≥ 1 be such that |Γ| 2 ≥ |Q| log4k |Q|. Then
+
+k+1
+
+(Q) ≤ (28 C∗ )k+1 |Q|2
+E+
+2k+1
+
+1
+
+|Γ| 2 .
+
+(35)
+
+P r o o f. We begin with (34) and we prove this inequality by induction. For k = 0 the result is
+trivial in view of our condition |Q|2 |Γ| ≤ p2 . Put s = 2k , k ≥ 1. By the Parseval identity and
+formula (12), we have
+E+
+2s (Q) =
+
+≤
+
+X
+
+1
+p2s−1
+
+x1 +···+x2s =0
+
+2s|Q|2 E+
+1
+2s−1 (Q)
++ 2s−1
+p
+p
+
+b 1 )|2 . . . |Q(x
+b 2s )|2 ≤
+|Q(x
+
+X
+
+x1 +···+x2s =0 : ∀j xj 6=0
+
+b 1 )|2 . . . |Q(x
+b 2s )|2 =
+|Q(x
+
+2s|Q|2 E+
+2s−1 (Q)
++ E′2s (Q) .
+=
+p
+
+(36)
+
+(37)
+
+(38)
+
+Put L = log |Q|. By the Parseval identity
+X
+
+1
+p2s−1
+2
+b
+≤ max |Q(x)|
+·
+x6=0
+
+1
+p2s−1
+
+x1 +···+x2s =0 : ∀j xj 6=0
+
+X
+
+x1 +···+x2s =0 : ∀j xj 6=0
+
+b 1 )|2 . . . |Q(x
+b 2s )|2 ≤
+|Q(x
+
+2
+b 1 )|2 . . . |Q(x
+b 2s−1 )|2 ≤ max |Q(x)|
+b
+|Q(x
+· |Q|2s−1 .
+x6=0
+
+2s−1 ), further, the sets P =
+Hence as in the proof of Theorem 12 consider ρ2 = E+
+j
+2s (Q)/(8|Q|
+b
+{x : ρ2j−1 < |Q(x)|
+≤ ρ2j } ⊆ F∗p and using the Dirichlet principle, we find ∆ = ∆j0 ≥ ρ and
+P = Pj0 such that
+4L2s (2∆)4s +
+Ts (P ) .
+(39)
+E′2s (Q) ≤
+p2s−1
+
+Clearly, P Γ = P (and this is the crucial point of the proof, actually). Applying Corollary 14, we
+get
+
+
+(k+7)
+|P |2s
+24s+2 L2s ∆4s
+k 2 k−1
+4(k−1)
+− 2
+4k+6
+4
+′
++
+2s
++ 16 C∗ log
+|Γ| · |Γ|
+· 2
+log |Γ| ·
+E2s (Q) ≤
+E (Γ)|P |
+.
+p2s−1
+p
+(40)
+
+13
+
+I. D. Shkredov
+
+By the Parseval identity, we see that
+
+Whence
+
+∆2 |P | ≤ |Q|p .
+
+(41)
+
+
+
+(k+7)
+2
+E′2s (Q) ≤ 24s+2 L2s |Q|2s · 24k+6 L4 + 16k C∗k−1 L4(k−1) · |Γ|− 2 E+ (Γ)p .
+
+(42)
+
+Using a trivial bound E+ (Γ) ≤ |Γ|3 , we get
+
+
+(k+1)
+2
+E′2s (Q) ≤ 24s+2 L2s |Q|2s · 24k+6 L4 + 16k C∗k−1 L4(k−1) · |Γ|− 2 p .
+
+(43)
+
+s−1 E+ (Q), the condition |Q|2 |Γ| ≤ p2 , and induction
+Applying a crude bound E+
+s
+2s−1 (Q) ≤ |Q|
+assumption, we get
+2s|Q|2 E+
+2s|Q|s+1 E+
+2s−1 (Q)
+s (Q)
+≤
+≤
+p
+p
+
+
+k
+2s|Q|s+1
+2
+≤
+· Ls |Q|s · 22s+3 24k+2 L4 + 16(k−1) C∗k−2 L4(k−2) · |Γ|− 2 p ≤
+p
+
+
+(k+1)
+2
+≤ 24s+2 L2s |Q|2s · 24k+6 L4 + 16k C∗k−1 L4(k−1) · |Γ|− 2 p .
+
+Hence combining the last estimate with (43), we derive
+
+
+− (k+1)
+4k+6 4
+k 2 k−1 4(k−1)
+2k+1
+2k+2 +3 2k+1
+2
+p
+C
+L
+·
+|Γ|
+·
+2
+L
++
+16
+|Q|
+(Q)
+≤
+2
+L
+E+
+k+1
+∗
+2
+
+and thus we have obtained (34).
+l
+To get (35), put l = 2k−1 , k ≥ 1 and consider E+
+4l (Q). Further define g(x) = rQ−Q (x)
++
+and notice that gb(ξ) ≥ 0, gb(0) = El (Q). Moreover, taking the Fourier transform and using the
+Dirichlet principle, we get
+E+
+4l (Q) =
+
++
+4E+
+1 X
+E+ (b
+g)
+4L4 (2ω)4 +
+l (Q)E3l (Q)
+g
+b
+(x)b
+g
+(y)b
+g
+(x
++
+z)b
+g
+(y
++
+z)
+=
+≤
++
+E (G) , (44)
+3
+3
+p x,y,z
+p
+p
+p3
+
+−3l := ρ because the sum over
+where G = {ξ : ω < gb(ξ) ≤ 2ω} ⊆ F∗p , and ω ≥ 2−3 E+
+∗
+4l (Q)|Q|
+gb(ξ) < ρ∗ by formula (10) does not exceed
+
+4ρ∗ X
+·
+g(y)b
+b
+g (x + z)b
+g (y + z) = 4ρ∗ g3 (0) = 4ρ∗ |Q|3l .
+p3 x,y,z
+
+Further in view of the Parseval identity, we see that
+X
+ω 2 |G| ≤
+gb(ξ)2 ≤ pE+
+2l (Q) ,
+
+(45)
+
+ξ∈G
+
+and by formula (10)
+
+ω|G| ≤
+
+X
+
+ξ∈G
+
+gb(ξ) = pg(0) = p|Q|l .
+
+(46)
+
+14
+Clearly, G is Γ–invariant set (again it is the crucial point of the proof). Further returning to
+(44) and applying Lemma 9, we see that
+
+
++
++
+4E+
+4E+
+26 L4 ω 4 +
+26 C∗ L4 ω 4 |G|4
+|G|3
++
+l (Q)E3l (Q)
+l (Q)E3l (Q)
+E4l (Q) ≤
+=
++
+E (G) ≤
++
++
+p
+p3
+p
+p3
+p
+|Γ|1/2
+=
+
++
+4E+
+l (Q)E3l (Q)
++ E′4l (Q) .
+p
+
+Applying (45), (46), we get
+E′4l (Q) ≤ 26 C∗ L4 |Q|4l +
+
+26 C∗ L4 (ω|G|)2 ω 2 |G|
+−1/2
+≤ 26 C∗ L4 |Q|4l + 26 C∗ L4 |Q|2l E+
+.
+2l (Q)|Γ|
+|Γ|1/2 p3
+
+It follows that
+
+
++
+4E+
+|Q|2l
+1
++
+6
+4
+2l +
+l (Q)E3l (Q)
+E4l (Q) ≤
+.
++ 2 C∗ L |Q| E2l (Q)
++
+p
+|Γ|1/2
+E+
+2l (Q)
+
+(47)
+
+Further estimating the first term of (47) very roughly as
++
+|Q|l+1 E+
+|Q|2l+1 E+
+E+
+3l (Q)
+2l (Q)
+l (Q)E3l (Q)
+≤
+≤
+,
+p
+p
+p
+−1/2 .
+we get in view of our condition |Q|2 |Γ| ≤ p2 that this term is less than L4 |Q|2l E+
+2l (Q)|Γ|
+Whence
+
+
+|Q|2l
+1
++
+7
+4
+2l +
++ 1/2 .
+E4l (Q) ≤ 2 C∗ L |Q| E2l (Q)
+(48)
+|Γ|
+E+
+2l (Q)
+2l
+
+Notice that the term E|Q|
++ |Γ|11/2 ≤ 2. Applying bound (47) exactly 0 ≤ s ≤ k times, where s
++
+(Q)
+2l
+
+is the maximal number (if it exists) such that the second term |Γ|11/2 in formula (48) dominates,
+we obtain
+!
+k−s+1
+1
+|Q|2
++
+8
+s 4s
+−s/2
+2k +···+2k−s+1 +
++
+|Q|
+E2k−s+1 (Q)
+E2k+1 (Q) ≤ (2 C∗ ) L |Γ|
+.
+(49)
+E+
+(Q) |Γ|1/2
+2k−s+1
+
+Now by the definition of s, we see that the first term in (49) dominates. Whence, using (47),
+(48) one more time (if s < k), we get
+k+1 −2k−s+1
+
+(Q) ≤ 2(28 C∗ )s L4s |Γ|−s/2 |Q|2
+E+
+2k+1
+
+k+1
+
+k+2
+
+= 2(28 C∗ )s L4s |Γ|−s/2 |Q|2
+
+k−s+1
+
+· |Q|2
+
+.
+
+=
+(50)
+
+From the assumption |Γ| 2 ≥ |Q| log4k |Q|, it follows that |Γ| ≥ |Q|2/(k+2) log8k/(k+2) |Q|. Hence
+bound (50) is much better than (35) if s < k. If s = k, then by the same calculations, we derive
+k+1 −2
+
+2
+(Q) ≤ (28 C∗ )k L4k |Γ|−k/2 E+
+E+
+2 (Q)|Q|
+2k+1
+
+.
+
+15
+
+I. D. Shkredov
+
+Since |Q|2 |Γ| ≤ p2 by Lemma 9, it follows that E+ (Q) ≤ 2C∗ |Q|3 /|Γ|1/2 and hence
+k+1 +1
+
+E+
+(Q) ≤ (28 C∗ )k+1 L4k |Γ|−(k+1)/2 |Q|2
+2k+1
+
+.
+
+k+2
+
+Further by the choice of k, namely, |Γ| 2 ≥ |Q| log4k |Q| we see that the last bound is better
+k
+(Q) ≤
+(Q) ≤ |Q|2 |Γ|1/2 and hence E+
+than (35). Finally, if s = 0, then by definition E+
+2k+1
+2k
+k+1
+1/2
+2
+|Γ| . This completes the proof.
+✷
+|Q|
+Remark 19 From the second part of the arguments above one can derive explicit bounds for
+the energies E+
+s (Q) for small s. For example,
+E4 (Q) ≪
+
+|Q|2 E3 (Q)
++ (log |Γ|)4 |Q|4 + (log |Γ|)4 |Q|2 E(Q)|Γ|−1/2 .
+p
+
+Now we obtain an uniform upper bound for size of the intersection of an additive shift of
+any Γ–invariant set. Our bound (52) is especially effective if sizes of Q1 ,Q2 are comparable with
+size of Γ, namely, |Q1 |, |Q2 | ≪ |Γ|C , C is an absolute constant (which can be large). In this case
+the number k below is a constant as well.
+Corollary 20 Let Γ ⊆ F∗p be a multiplicative subgroup, |Γ| ≥ pδ , δ > 0, and Q1 , Q2 ⊆ F∗p be two
+sets with Q1 Γ = Q1 , Q2 Γ = Q2 , |Q1 |2 |Γ| ≤ p2 , |Q2 |2 |Γ| ≤ p2 . Put Q = max{|Q1 |, |Q2 |}. Then
+for any x 6= 0, one has
+δ
+p
+−
+(51)
+|Q1 ∩ (Q2 + x)| ≪ |Q1 ||Q2 | log Q · p 27+2δ−1 .
+k+2
+
+Further choose k ≥ 1 such that |Γ| 2 ≥ Q log4k Q. Then for an arbitrary x 6= 0 the following
+holds
+p
+1 −k
+(52)
+|Q1 ∩ (Q2 + x)| ≪ |Q1 ||Q2 | · |Γ|− 4 ·2 .
+
+P r o o f. From the conditions |Q1 |2 |Γ| ≤ p2 , |Q2 |2 |Γ| ≤ p2 , it follows that |Γ| ≤ p2/3 . Put
+L = log Q. On the one hand, applying the Cauchy–Schwarz inequality, we obtain
+X k+1
+2
+(Q2 ))1/2 .
+(Q1 ))1/2 (E+
+rQ
+(y) ≤ (E+
+1 −Q2
+2k+1
+2k+1
+y
+
+On the other hand, by formula (34) of Theorem 18 and Γ–invariance of Q1 , Q2 , we have
+X k+1
+k+1
+2
+|Γ||Q1 ∩ (Q2 + x)|2
+≤
+rQ
+(y) ≤
+1 −Q2
+y
+
+k+2 +3
+
+≤ 22
+
+k+1
+
+L2
+
+
+k
+
+(|Q1 ||Q2 |)2
+
+2
+
+24k+6 log4 |Q| + 16k C∗k−1 L4(k−1) · |Γ|−
+
+(k+1)
+2
+
+
+p ,
+
+provided 264k C∗4 ≤ |Γ|. As in Corollary 16 choosing k = ⌈2 log p/ log |Γ| + 4⌉ ≤ 2/δ + 5 and
+applying an analogue of (33) which holds for large p, namely,
+p log4(k−1) |Q|
+≪1
+|Γ|k/2
+
+16
+we obtain
+|Q1 ∩ (Q2 + x)| ≪ L
+
+p
+
+k+2
+
+|Q1 ||Q2 | · (|Γ|−1/2
+≪L
+
+p
+
+k+2
+
++ |Γ|−1/2
+
+|Q1 ||Q2 |p
+
+−
+
+δ
+−1
+27+2δ
+
+)≪L
+
+p
+
+k+2
+
+|Q1 ||Q2 ||Γ|−1/2
+
+≪
+
+and it easy to insure that inequality 264k C∗4 ≤ |Γ| takes place for sufficiently large p.
+To derive (52), we just use the second formula (35) of Theorem 18 and the previous calculations. This completes the proof.
+✷
+Remark 21 It is known, see, e.g., [20] that if Γ ⊆ F∗p is a multiplicative subgroup with |Γ| <
+p3/4 , then for any x 6= 0 one has |Γ ∩ (Γ + x)| ≪ |Γ|2/3 and this bound it tight in some regimes.
+One can extend this to larger Γ–invariant sets and obtain a lower bound of a comparable quality.
+It gives a lower estimate in (51).
+Indeed, let Γ ⊆ F∗p be a multiplicative subgroup with |Γ| < p1/2 . Consider R = R[Γ] and
+Q = Q[Γ]. It was proved in [30] that |R| ≫ |Γ|2 / log |Γ| and one can check that R = 1 − R, see,
+e.g., [21]. Finally, the set Q is Γ–invariant and it is easy to check [32] that |Q| ≤ |Γ|3 . Whence
+|Q ∩ (1 − Q)| ≥ |R| ≫
+
+|Q|2/3
+|Γ|2
+≫
+.
+log |Γ|
+log |Q|
+
+Also, notice that if |Γ| < p1/2 and |Q[Γ]|2 |Γ| ≤ p2 , then |Q[Γ]| ≫ |Γ|2+c for some c > 0, see
+the first part of Corollary 35 from the next section.
+Corollary 20 gives a nontrivial upper bound for the common additive energy of an arbitrary
+invariant set and any subset of Fp .
+Corollary 22 Let Γ ⊆ F∗p be a multiplicative subgroup, |Γ| ≥ pδ , δ > 0, and Q ⊆ F∗p be a set
+with QΓ = Q, |Q|2 |Γ| ≤ p2 . Then for any set A ⊆ Fp , one has
+E+ (A, Q) ≪ |Q||A|2 · p
+
+−
+
+δ
+−1
+27+2δ
+
+log |Q| + |A||Q| .
+
+(53)
+
+Further for an arbitrary α 6= 0 the following holds
+E× (A, Q + α) ≪ |Q||A|2 · p
+
+−
+
+δ
+−1
+27+2δ
+
+log |Q| + |A||Q| .
+
+(54)
+
+In particular,
+δ
+
+|A + Q| ≫ |Q| · min{|A|, p 27+2δ−1 log−1 |Q|} ,
+and
+
+δ
+
+|A(Q + α)| ≫ |Q| · min{|A|, p 27+2δ−1 log−1 |Q|} .
+Further if k ≥ 1 is chosen as |Γ|
+p
+
+δ
+−1
+27+2δ
+
+(55)
+
+1
+
+k+2
+2
+
+≥ |Q| log4k |Q|, then one can replace the quantity
+
+log−1 |Q| above by |Γ|− 4 ·2 .
+−k
+
+(56)
+
+17
+
+I. D. Shkredov
+
+P r o o f. Inequalities (55), (56) follow from (53), (54) via the Cauchy–Schwarz inequality, so it
+is enough to obtain the required upper bound for the additive energy of A and Q and for the
+multiplicative energy of A and Q + α. By Corollary 20, we have
+E+ (A, Q) =
+
+X
+x
+
+rA−A (x)rQ−Q (x) = |A||Q|+
+
+X
+x6=0
+
+rA−A (x)rQ−Q (x) ≪ |A||Q|+|Q||A|2 ·p
+
+−
+
+δ
+−1
+27+2δ
+
+log |Q|
+
+as required. Similarly
+E× (A, Q + α) ≪ |A||Q| +
+
+X
+
+x6=0,1
+
+rA/A (x)r(Q+α)/(Q+α) (x) ≪ |A||Q| + |Q||A|2 · p
+
+−
+
+δ
+−1
+27+2δ
+
+log |Q|
+
+because in view of Corollary 20 one has
+r(Q+α)/(Q+α) (x) = |Q ∩ (xQ + α(x − 1))| ≪ |Q| · p
+
+−
+
+δ
+−1
+27+2δ
+
+log |Q| .
+
+δ
+
+1
+
+So, we have obtained bounds (53)—(56) with p 27+2δ−1 log−1 |Q| and to replace it by |Γ|− 4 ·2
+one should use the second part of Corollary 20. This completes the proof.
+✷
+
+−k
+
+From (55) one can obtain that for any multiplicative subgroup Γ ⊆ F∗p there is N such that
+−1
+N Γ = Fp and N ≪ δ−1 4δ . The results of comparable quality were obtained in [15].
+
+5
+
+The proof of the main result
+
+In this section we obtain an upper bound for T+
+k (A) (see Theorem 23) and an upper bound for
++
+Ek (A) (see Theorem 27) in the case when size of the product set AB is small comparable to A,
+where B is a sufficiently large set. From the last result we derive our quantitative asymmetric
+sum–product Theorem 5 from the introduction. Let us begin with an upper bound for T+
+k (A).
+Theorem 23 Let A, B ⊆ Fp be sets, M ≥ 1 be a real number and |AB| ≤ M |A|. Then for any
+k+1
+k ≥ 2, 216k M 2 C∗2 log8 |A| ≤ |B|, one has
+M
+T+
+(A) ≤ 24k+6 C∗ log4 |A|·
+2k
+
+2k |A|2k+1
+
+p
+
+2
+
+k+1
+
++16k C∗k−1 M 2
+
+k+1 −4
+
+log4(k−1) |A|·|A|2
+
+|B|−
+
+(k−1)
+2
+
+E+ (A) .
+(57)
+
+k+1
+
+P r o o f. We have B 6= {0} by the condition 216k M 2 C∗2 log8 |A| ≤ |B|, say. We apply the
+arguments and the notation of the proof of Theorem 12. Fix any s ≥ 2 and put L := s log |A|.
+Our intermediate aim is to prove
+!
+2s
+4s
+|A|
+|A|
+4
+2s
+4
++ p T+
+,
+(58)
+T+
+s (A)
+2s (A) ≤ Cs M log |A| ·
+p
+|B|
+
+18
+where C = 25 C∗ . As in the proof of Theorem 12, we get
+T+
+2s (A) ≤
+
+8 4
+L (2∆)4 E+ (P ) + E ,
+5
+
+where
+E ≤ 4|A|2s−1 T+
+s (A)
+
+3s
+further ∆ > T+
+2s (A)/(8|A| ) is a real number and P = {x
+2
+we always have |P |∆ ≤ T+
+s (A).
+
+(59)
+: ∆ < rsA (x) ≤ 2∆} ⊆ F∗p . Moreover,
+
+To proceed as in the proof of Theorem 12 we need to estimate |P B|. Observe that for any
+x ∈ P B the following holds rsAB (x) ≥ ∆. Thus, we have
+X
+rsAB (x) ≤ |AB|s ≤ M s |A|s .
+(60)
+|P B|∆ ≤
+x∈P B
+
+Hence using Lemma 9, we obtain
+M 2s |A|2s |P |2 M 3s/2 |A|3s/2 |P |3/2
++
+∆2 p
+∆3/2 |B|1/2
+
+E+ (P ) ≤ C∗
+
+!
+
+.
+
+Hence in view of estimate (59), combining with |P |∆ ≤ |A|s and |P |∆2 ≤ T+
+s (A), we get
+!
+8
+M 2s |A|2s |P |2 M 3s/2 |A|3s/2 |P |3/2
++
+4 4
+T2s (A) ≤ (16C∗ )L ∆
++ 4|A|2s−1 T+
++
+s (A) =
+3/2
+1/2
+5
+∆2 p
+∆ |B|
+8
+= (16C∗ )L4
+5
+
+M 2s |A|2s |P |2 ∆2 M 3s/2 |A|3s/2 |P |3/2 ∆5/2
++
+p
+|B|1/2
+
+8
+≤ (16C∗ )L4
+5
+
+M 2s |A|4s M 3s/2 |A|3s/2 (|P |∆2 )(|P |∆)1/2
++
+p
+|B|1/2
+≤ 32C∗ L
+
+4
+
+!
+
+!
+
+M 2s |A|4s
+M 3s/2 |A|2s T+
+s (A)
++
+1/2
+p
+|B|
+
++ 4|A|2s−1 T+
+s (A) ≤
++ 4|A|2s−1 T+
+s (A) ≤
+!
+
+and inequality (58) is proved. Here we have used a trivial inequality |B|1/2 ≤ |A| which follows
+k+1
+from |B| ≤ |AB| ≤ M |A| ≤ |B|1/2 |A| because M 2 ≤ 216k M 2 C∗2 log8 |A| ≤ |B|.
+Now applying formula (58) successively (k − 1) times, we obtain
+k
+
+T2k (A) ≤ 24k+6 C∗ log4 |A|·
+k
+
+≤ 24k+6 C∗ log4 |A| ·
+
+k+1
+
+M 2 |A|2
+p
+
+2
+
+k+1
+
++16k M 2
+
+k
+
+C∗k−1 log4(k−1) |A|·|A|2 +···+4 |B|−
+
+k+1
+
+M 2 |A|2
+p
+
+2
+
+k+1
+
++ 16k M 2
+
+k+1 −4
+
+C∗k−1 log4(k−1) |A| · |A|2
+k+1
+
+To get the first term in we have used our condition 216k M 2
+k
+24k+1 C∗ M 2 log4 |A|. This completes the proof.
+
+|B|−
+
+(k−1)
+2
+
+(k−1)
+2
+
+E+ (A) ≤
+
+E+ (A) . (61)
+
+C∗2 ≤ |B| to insure that |B|1/2 ≥
+✷
+
+19
+
+I. D. Shkredov
+
+Remark 24 It is easy to see that instead of the assumption |AB| ≪ |A| we can assume a weaker
+condition |As · ∆s (B)| ≪ |A|s , 1 < s ≤ 2k−1 , see formula (60).
+The same arguments work in the case of real numbers. In this situation we have no the
+characteristic p and hence we have no any restrictions on the parameter k.
+Theorem 25 Let A, B ⊂ R be finite sets, M ≥ 1 be a real number and |AB| ≤ M |A|. Then for
+any k ≥ 2, one has
+2
+
+3
+
+k
+
+k+1 −1
+
+(A) ≤ 16k C∗k−1 M 2 (2 −1) log4(k−1) |A| · |A|2
+T+
+2k
+
+k
+
+|B|− 2 .
+
+(62)
+
+Corollary 26 Let A ⊂ R be a finite set, M ≥ 1 be a real number and |AA| ≤ M |A| or
+|A/A| ≤ M |A|. Then for any k ≥ 2, one has
+k
+
+3
+
+k
+
+|2k A| ≫k |A|1+ 2 M − 2 (2 −1) · log−4(k−1) |A| .
+
+(63)
+
+Bounds of such a sort were obtained in [18] by another method. The best results concerning
+lower bounds for multiple sumsets kA, k → ∞ of sets A with small product/quotient set can be
+found in [12].
+To obtain an analogue of Theorem 18 for sets with |AA| ≪ |A| we cannot use the same
+arguments as in section 4 because the spectrum is not an invariant set in this case. Moreover,
+in R there is an additional difficulty with using Fourier transform : the dual group of R does
+not coincide with R of course. That is why we suggest another method which works in ”physical
+space” but not in the dual group.
+To formulate our main result about E+
+k (Q) for sets Q with small product QΓ for some
+relatively large set Γ we need some notation. Let us write Q(k) = |QΓk−1 | for k ≥ 1 and
+Q(k) = |Q| for k = −1.
+Theorem 27 Let Γ, Q ⊆ Fp be two sets, and k ≥ 0 be an integer. Suppose that |QΓk+1 ||QΓk ||Γ| ≤
+p2 , further Q(k) |Γ| ≤ p, and M = |QΓk+1 |/|Q|. Then either
+k
+
+(k+4)/4
+
+(Q) ≤ (M 2 +1 23k+1 C∗
+E+
+2k+1
+
+k+1 +1
+
+logk Q(k) ) · |Q|2
+
+|Γ|−k/8−1/2
+
+(64)
+
+or
+k+1
+
+E+
+(Q) ≤ 2(Q(k) )2
+2k+1
+
+.
+k
+
+(k+4)/4
+
+In particular, if we choose k such that |Γ|k/8+1/2 ≥ |Q| · M 2 +1 23k+1 C∗
+k+1
+
+(Q) ≤ 2(Q(k) )2
+E+
+2k+1
+
+.
+
+logk Q(k) , then
+(65)
+
+20
+P r o o f. Without loss of generality one can assume that 0 ∈
+/ Γ. Fix an integer l ≥ 1 and prove
+that either
+1/4
+l/2 +
+−1/8
+(66)
+E+
+5l/2 (Q) ≤ 8C∗ log |Q| · |Q| E2l (QΓ)|Γ|
+or
+5l/2
+.
+E+
+5l/2 (Q) ≤ 2|Q|
+
+(67)
+
+5l/2 ≥ 0. We will assume below
+l
+Put g(x) = rQ−Q
+(x), L = log |Q| and E′5l/2 (Q) = E+
+5l/2 (Q) − |Q|
+
+that E′5l/2 (Q) ≥ 2−1 E+
+5l/2 (Q) because otherwise we obtain (67) immediately. Using the Dirichlet
+principle, we find a set P and a positive number ∆ such that P = {x : ∆ < g(x) ≤ 2∆} ⊆ F∗p
+and
+X 5l/2
+E′5l/2 (Q) ≤ L
+rQ−Q (x) .
+x∈P
+
+Applying Corollary 11, we obtain
+E′5l/2 (Q) ≤ L(2∆)3/2
+
+X
+
+x∈P
+
+1/4
+1/4
+l
+rQ−Q
+(x) ≤ 3C∗ L∆3/2 |Q|l/2 (E+
+2l (QΓ))
+
+1/4
+1/4
+≤ 3C∗ L|Q|l/2 (E+
+2l (QΓ))
+
+
+
+∆6 |P |4 ∆6 |P |3
++
+p
+|Γ|1/2
+
+
+
+|P |4
+|P |3
++ 1/2
+p
+|Γ|
+
+1/4
+
+1/4
+
+≤
+
+.
+
++
++
+2
+2 +
+6
+4
+2
+We have ∆|P | ≤ E+
+l (Q), ∆ |P | ≤ E2l (Q) and hence ∆ |P | ≤ (E2l (Q)) (El (Q)) . It follows that
+1/4
+1/4
+E′5l/2 (Q) ≤ 3C∗ L|Q|l/2 (E+
+2l (QΓ))
+
+To prove that the first term
+
+
+
+2 +
+2
+(E+
+(E+ (Q))3
+2l (Q)) (El (Q))
++ 2l 1/2
+p
+|Γ|
+
+1/4
+
+.
+
+3
+2 +
+2
+(E+
+(E+
+2l (Q))
+2l (Q)) (El (Q))
+is less than |Γ|
+1/2 , we need to check that
+p
+
+2
+1/2
+(E+
+≤ E+
+l (Q)) |Γ|
+2l (Q)p .
+
+But using the Hölder inequality, we see that the required estimate follows from
+1
+
+2(l−1)
+
+4l
+
+1
+
++
+2
+2l−1 |Q| 2l−1 |Γ| 2 ≤ E+ (Q)p
+2
+(E+
+l (Q)) |Γ| ≤ (E2l (Q))
+2l
+
+or, in other words, from
+2l−1
+|Q|4l |Γ|(2l−1)/2 ≤ E+
+.
+2l (Q)p
+
+(68)
+
+Finally, we can suppose that for any s ≥ 2 one has, say,
+1
+
+1
+
+s+1
+E+
+|Γ|− 8 log s− 2
+s (Q) ≥ |Q|
+
+because otherwise estimate (64) follows easily. In view of our assumption |Q||Γ| ≤ p, we obtain
+1
+
+1
+
+|Q|2l−1 |Γ| 8 log 2l+l ≤ p2l−1 |Γ|1+ 8 log 2l−l ≤ p2l−1
+
+21
+
+I. D. Shkredov
+
+and hence (68) takes place for l ≥ 2. For l = 1 see calculations below. Hence under this
+assumption and the inequality E′5l/2 (Q) ≥ 2−1 E+
+5l/2 (Q), we have
+1/4
+
+E+
+5l/2 (Q) ≤ 8C∗
+
+−1/8
+log |Q| · |Q|l/2 E+
+2l (QΓ)|Γ|
+
+and we have proved (66). Trivially, it implies that
+1/4
+
+E+
+4l (Q) ≤ 8C∗
+
+−1/8
+log |Q| · |Q|2l E+
+2l (QΓ)|Γ|
+
+and subsequently using this bound, we obtain
+k/4
+
+(Q) ≤ (23k C∗
+E+
+2k+1
+
+k
+
+k−1 +···+2
+
+logk |QΓk−1 |) · M 2
+k/4
+
+= (23k M 2 −2 C∗
+
+k
+
+|Q|2 +···+2 E+ (QΓk )|Γ|−k/8 =
+
+k+1 −2
+
+logk |QΓk−1 |) · |Q|2
+
+E+ (QΓk )|Γ|−k/8 .
+
+Now recalling the assumption |QΓk+1 ||QΓk ||Γ| ≤ p2 and applying Lemma 9, we get
+k
+
+(k+4)/4
+
+(Q) ≤ (M 2 +1 23k+1 C∗
+E+
+2k+1
+
+k+1 +1
+
+logk |QΓk−1 |) · |Q|2
+
+|Γ|−k/8−1/2 .
+
+In particular, this final step covers the remaining case l = 1 above. This completes the proof. ✷
+Remark 28 Let Γ be a multiplicative subgroup and QΓ = Q. Then by Theorem 27 if |Q||Γ| ≤ p
+k +1
+and a number k1 is chosen as |Γ|k1 /8+1/2 ≥ |Q| logk1 |Q|, then E+
+(Q) ≪k1 |Q|2 1 . Let us
+2k1 +1
+k2 +2
+
+compare this with Theorem 18. By this result, choosing k2 such that |Γ| 2 ≥ |Q| log4k2 |Q|,
+1
+k +1
+we get E+
+(Q) ≪k2 |Q|2 2 |Γ| 2 . After that applying the second part of Corollary 20 other
+2k2 +1
+n := 2k2 +1 times, we obtain
+2k2 +2
+
+E+
+(Q) ≪k2 |Q|2
+22k2 +2
+
+1
+
++E+
+(Q)(|Q||Γ|− 4 ·2
+2k2 +1
+
+−k2
+
+2k2 +2
+
+)n ≪k2 |Q|2
+
+k2 +1
+
++|Q|2
+
+1
+
+1
+
+2k2 +2
+
+|Γ| 2 |Q|n |Γ|− 2 ≪ |Q|2
+
+Thus, Theorem 18 gives slightly better bound (in the case of multiplicative subgroups) but of the
+same form.
+2l
+
+|Q|
+Remark 29 From formula (36), it follows that for any l one has E+
+l (Q) ≥ pl−1 . Hence upper
+bound (65) can has place just for small sets Q. For example, taking the smallest possible l = 2
+√
+and comparing |Q|2 with |Q|4 /p we see that the condition |Q| < p is enough. If Q = QΓ,
+where Γ is a multiplicative subgroup, then it is possible to refine this condition because in the
+proof of Theorem 18 another method (the Fourier approach) was used. We did not make such
+calculations.
+
+Now we can obtain analogues of Corollaries 20 and 22.
+Corollary 30 Let Γ, Q1 , Q2 ⊆ Fp be sets. Take k ≥ 0 such that for j = 1, 2 one has
+|Qj Γk+2 ||Qj Γk+1 ||Γ| ≤ p2 , |Qj Γk ||Γ| ≤ p, |Qj Γ| ≤ M∗ |Qj |, |Qj Γk+2 | ≤ M |Qj |, and
+k
+
+(k+4)/4
+
+|Γ|k/8+1/2 ≥ |Qj | · M∗ M 2 +1 23k+1 C∗
+Then for any x 6= 0 the following holds
+|Q1 ∩ (Q2 + x)| ≤ 2M∗ M
+
+p
+
+logk |Qj Γk | .
+1 −k
+
+|Q1 ||Q2 | · |Γ|− 2 2
+
+.
+
+(69)
+
+(70)
+
+.
+
+22
+P r o o f. Denote by ρ the quantity |Q1 ∩(Q2 +x)|. On the one hand, applying the Cauchy–Schwarz
+inequality and the second part of Theorem 27, we obtain
+X k+1
+2
+(ΓQ2 ))1/2 ≤
+(ΓQ1 ))1/2 (E+
+rΓQ
+(y) ≤ (E+
+1 −ΓQ2
+2k+1
+2k+1
+y
+
+k
+
+k
+
+k
+
+k+1
+
+≤ 23k+2 M 2 +1 (|Q1 Γ||Q2 Γ|)2 ≤ 23k+2 M 2 +1 M∗2
+
+k
+
+(|Q1 ||Q2 |)2 .
+
+On the other hand, it is easy to see that for any y ∈ Γx one has rΓQ1 −ΓQ2 (y) ≥ ρ. Thus,
+k+1
+
+ρ2
+
+k
+
+k+1
+
+|Γ| ≤ 23k+2 M 2 +1 M∗2
+
+and hence
+ρ ≤ 2M∗ M
+
+p
+
+k
+
+(|Q1 ||Q2 |)2 .
+1 −k
+
+|Q1 ||Q2 | · |Γ|− 2 2
+
+.
+
+Here we have used inequality k ≥ 5 which easily follows from |Γ| ≤ |Qj Γ| ≤ M |Qj | and condition
+(69). This completes the proof.
+✷
+In the next two corollaries we show how to replace the condition |QΓk | ≪ |Q| to a condition
+with a single multiplication, namely, |QΓ| ≪ |Q|.
+Corollary 31 Let Γ, Q be subsets of Fp , M ≥ 1 be a real number, |QΓ| ≤ M |Q|. Suppose that
+for k ≥ 1 one has (2M )k+1 |Q||Γ| ≤ p, and
+k
+
+(k+4)/4
+
+|Γ|k/8+1/2 ≥ |Q| · (2M )(k+3)2 C∗
+
+logk ((2M )k |Q|) .
+
+(71)
+
+Then for any A ⊆ Fp the following holds
+1 −k
+
+|A + Q| ≥ 2−3 |Q| · min{|A|, 2−(4+k) M −(k+3) |Γ| 2 2 } ,
+and for any α 6= 0
+
+1 −k
+
+|A(Q + α)| ≥ 2−3 |Q| · min{|A|, 2−(4+k) M −(k+3) |Γ| 2 2 } .
+
+(72)
+
+(73)
+
+P r o o f. Using Lemma 7, find a set X ⊆ Q, |X| ≥ |Q|/2 such that for any l the following
+holds |XΓl | ≤ (2M )l |X|. Also, notice that |XΓ| ≤ |QΓ| ≤ 2M |X|. We apply Corollary 30 with
+M = (2M )k+2 , M∗ = 2M and see that for any x 6= 0 the following holds
+p
+1 −k
+|Q1 ∩ (Q2 + x)| ≤ 2k+4 M k+3 |Q1 ||Q2 | · |Γ|− 2 2 .
+
+Here Q1 = X and Q2 = X or Q2 = αX. Using the arguments from Corollary 22, we estimate
+the energies E+ (A, X), E× (A, X + α). In particular, we obtain lower bounds for the sumset from
+(72) and the product set from (73). It remains to check condition (2M )2k+3 |Q|2 |Γ| ≤ p2 . But
+it follows from (2M )k+1 |Q||Γ| ≤ p if M ≤ |Γ|/2. The last inequality is a simple consequence of
+(71). This completes the proof.
+✷
+Now we prove an analogue of Corollary 30 where we require just |Qj Γ|, j = 1, 2 are small
+comparable to |Qj |. For simplicity we formulate the next corollary in the situation |Q′ | = |Q|
+but of course general bound takes place as well.
+
+23
+
+I. D. Shkredov
+
+Corollary 32 Let Γ, Q, Q′ be subsets of Fp , |Q′ | = |Q|, M ≥ 1 be a real number, |QΓ|, |Q′ Γ| ≤
+M |Q|. Suppose that for k ≥ 1 one has (2M )k+1 |Q||Γ| ≤ p, and
+k
+
+|Γ| 8
+
+1
++ 2(k+4)
+
+k
+
+(k+4)/4
+
+≥ |Q| · M (k+3)2 C∗
+
+k
+
+logk (|Γ| 2(k+4)
+
+2−k
+
+|Q|)
+
+Then for any x 6= 0 one has
+1
+2−k
+− 2(k+4)
+
+|Q ∩ (Q′ + x)| ≤ 4M |Q| · |Γ|
+
+.
+
+(74)
+
+P r o o f. Let Q̃ = Q ∩ (Q′ + x). Then |Q̃Γ| ≤ |QΓ| ≤ M |Q| = M |Q|/|Q̃| · |Q̃| := M̃ |Q̃|. Similarly,
+|(Q̃ − x)Γ| ≤ |Q′ Γ| ≤ M |Q|. Applying the second part of Corollary 31 with α = x, Q = Q̃,
+A = Γ and M = M̃ , we get
+1 −k
+
+1 −k
+
+M |Q| ≥ |(Q̃ − x)Γ| ≥ 2−(7+k) |Q̃|M̃ −(k+3) |Γ| 2 2
+
+= 2−(7+k) M −(k+3) |Q̃|k+4 |Q|−(k+3) |Γ| 2 2
+
+provided
+k
+
+(k+4)/4
+
+|Γ|k/8+1/2 ≥ |Q| · (2M̃ )(k+3)2 C∗
+k
+
+(k+4)/4
+
+≥ |Q̃| · (2M̃ )(k+3)2 C∗
+It gives us
+
+logk ((2M̃ )k |Q|) ≥
+
+logk ((2M̃ )k |Q̃|) .
+
+1
+2−k
+− 2(k+4)
+
+|Q̃| ≤ 4M |Q| · |Γ|
+1
+
+Now if inequality does not hold, then M̃ ≤ |Γ| 2(k+4)
+k
+
+|Γ| 8
+
+1
++ 2(k+4)
+
+k
+
+2−k
+
+(75)
+
+/4. Hence the condition
+
+(k+4)/4
+
+≥ |Q| · M (k+3)2 C∗
+
+.
+
+k
+
+logk (|Γ| 2(k+4)
+
+2−k
+
+|Q|)
+
+is enough. This completes the proof.
+
+✷
+
+Now we are ready to prove the main asymmetric sum–product result of this section.
+(k+1)
+
+1+ 2(k+4) 2−k
+
+Corollary 33 Let A, B, C ⊆ Fp be arbitrary sets, and k ≥ 1 be such that |A||B|
+and
+k
+(k+4)/4
++ 1
+|B| 8 2(k+4) ≥ |A| · C∗
+logk (|A||B|) .
+Then
+
+1
+
+max{|AB|, |A + C|} ≥ 2−3 |A| · min{|C|, |B| 2(k+4)
+
+2−k
+
+≤p
+(76)
+
+},
+
+(77)
+
+2−k
+
+(78)
+
+and for any α 6= 0
+1
+
+max{|AB|, |(A + α)C|} ≥ 2−3 |A| · min{|C|, |B| 2(k+4)
+Moreover,
+|AB| +
+
+1
+|A|2 |C|2
+2−k
+−4
+4(k+4)
+},
+≥
+2
+|A|
+·
+min{|C|,
+|B|
+E+ (A, C)
+
+}.
+
+(79)
+
+24
+and for any α 6= 0 the following holds
+|AB| +
+
+1
+|A|2 |C|2
+2−k
+≥ 2−4 |A| · min{|C|, |B| 4(k+4) } ,
+×
+E (A + α, C)
+
+(80)
+
+provided
+k
+
+|B| 8
+
+1
+− 14 + 4(k+4)
+
+(k+4)/4
+
+≥ |A| · C∗
+
+logk (|A||B|) .
+
+P r o o f. We will prove just (77) because the same arguments hold for (78). Put |AB| = M |A|,
+M ≥ 1. Applying Corollary 31 with Q = A, Γ = B, A = C and choosing k such that
+k
+
+k
+
+(k+4)/4
+
+|B|k/8+1/2 ≥ |A| · 2(k+3)2 M (k+3)2 C∗
+
+logk ((2M )k |A|) ,
+
+we obtain
+
+(81)
+
+1 −k
+
+|A + C| ≥ 2−3 |A| · min{|C|, 2−(k+4) M −(k+3) |B| 2 2 } .
+Thus, by small calculations (which correspond to the optimal choice of the parameter M , namely,
+1
+
+M = M0 = 2−2 |B| 2(k+4)
+
+2−k
+
+), we get
+1
+
+max{|AB|, |A + C|} ≥ 2−3 |A| · min{|C|, |B| 2(k+4)
+
+2−k
+
+}.
+
+Substituting M = M0 into (81), we obtain our condition (76). The condition (2M )k+1 |A||B| ≤ p
+1+ (k+1) 2−k
+
+≤ p.
+gives us |A||B| 2(k+4)
+To prove (79), (80) we use Corollary 32 instead of Corollary 31 and apply the arguments
+of the proof of Corollary 22. We obtain
+1
+− 2(k+4)
+2−k
+
+E+ (A, C), E× (A + α, C) ≤ 2|A||C| + 4|A||C|2 · M · |B|
+1
+
+After that it remains to choose M optimally, M = 2−1 |B| 4(k+4)
+
+2−k
+
+. This completes the proof. ✷
+
+Notice that one cannot obtain any nontrivial bounds for min{E× (A, B), E+ (A, C)}. Just
+take B equals a geometric progression, C equals an arithmetic progression, |B| = |C| and
+A = B ∪ C.
+Remark 34 The results of this section take place in R. In this case we do not need in any
+conditions containing the characteristic p.
+Corollary 33 gives us a series of examples of ”superquadratic expanders” [2] with four
+variables. The first example of such an expander with four variables was given in [25].
+1 −16
+Corollary 35 Let ϕ : R → R be an injective function. Then for any κ < 40
+2
+and an
+2+κ
+arbitrary finite set A ⊂ R one has |R[A]ϕ(A)| ≫ |A| . In particular,
+
+
+(y − x)w
+: x, y, z, w ∈ A, x 6= z
+R[A]A =
+z−x
+
+25
+
+I. D. Shkredov
+
+is a superquadratic expander with four variables.
+Moreover, for any finite sets A, B, C, D of equal sizes one has
+
+
+(y − x)w
+: x ∈ A, y ∈ B, z ∈ C, w ∈ D, x 6= z ≫ |A|2+κ .
+z−x
+
+(82)
+
+P r o o f. By a result from [17], [22], we have |R[A]| ≫ |A|2 / log |A|. Further R[A] = 1 − R[A] and
+R−1 [A] = R[A], see Remark 21. Hence applying estimate (78) of Corollary 33 with A = R[A],
+B = C = ϕ(A) and α = −1, we obtain
+1
+
+|R[A]ϕ(A)| ≫ |R[A]| · |A| 2(k+4)
+
+2−k
+
+,
+
+provided
+k
+
+|A| 8
+
+1
++ 2(k+4)
+
+(k+4)/4
+
+≥ |R[A]| · 22k C∗
+(k+4)/4
+
+≥ |R[A]| · C∗
+
+logk |A| ≥
+
+(83)
+
+logk |R[A]ϕ(A)| .
+
+Put |R[A]| = C|A|2+c / log |A|, c ≥ 0 and C > 0 is an absolute constant. Then taking k = 16+8c,
+say, we satisfy (83) for large A. It follows that
+1
+2−16−8c
+2+c+ 2(20+8c)
+
+|R[A]ϕ(A)| ≫ |A|
+
+log−1 |A| .
+
+One can check that the optimal choice of
+just notice that from
+n c is c = 0. Finally, to prove (82) o
+b−a
+the method of [17], [22] it follows that c−a : a ∈ A, b ∈ B, c ∈ C, c 6= a ≫ |A|2 / log |A| for
+any sets A, B, C of equal cardinality. After that repeat the arguments above. This completes the
+proof.
+✷
+Remark 36 Let us show quickly how Corollary 33 implies both Theorems 1, 2 for sets A with
+√
+|A| < p1/2−ε (the appearance p bound was discussed in Remark 29).
+Let B, C be some sets of sizes greater than pε such that max{|AB|, |A + C|} ≤ pδ |A| or
+max{|(A + α)B|, |A + C|} ≤ pδ |A| for some α 6= 0. We can find sufficiently large k = k(ε) such
+that condition (76) takes place for B because |A| < p1/2−ε ≤ p and |B| ≥ pε . Applying Corollary
+1+
+
+(k+1)
+
+2−k
+
+≤ p just use
+33 for A, B, C, we arrive to a contradiction. Finally, to insure that |A||B| 2(k+4)
+the assumption |A| < p1/2−ε , inequality |B| ≤ |AB| ≤ pδ |A| and take sufficiently small δ = δ(ε)
+and sufficiently large k = k(ε).
+Let A ⊂ R be a finite set. Consider a characteristic of A (see, e.g., [32]), which generalize
+the notion of small multiplicative doubling of A. Namely, put
+|f (A) + B|2
+,
+f B6=∅
+|A||B|
+
+d+ (A) := inf min
+
+where the infimum is taken over convex/concave functions f .
+Problem. Suppose that d+ (A) ≤ |A|ε , ε > 0 is a small number. Is it true that there is
+k
+k = k(ε) such that E+
+k (A) ≪ |A| ?
+
+26
+2 2
+2
+Notice that one cannot obtain a similar bound for T+
+k (A). Indeed, let A = {1 , 2 , . . . , n }.
++
+Then one can show that for such A the quantity d (A) is O(1) (see, e.g., [32]) but, clearly,
+|kA| ≪k |A|2 . It means that it is not possible to obtain any upper bound for T+
+k (A) of the form
++
+2k−2−c
+Tk (A) ≪ |A|
+, c > 0 and hence any analogues of Theorems 23, 25 for sets A with small
+d+ (A).
+
+References
+[1] E. Aksoy Yazici, B. Murphy, M. Rudnev, I. D. Shkredov, Growth Estimates in
+Positive Characteristic via Collisions, Int. Math. Res. Not. IMRN, 2016. First published
+online, doi: 10.1093/imrn/rnw206.
+[2] A. Balog, O. Roche-Newton, D. Zhelezov, Expanders with superquadratic growth,
+arXiv:1611.05251v1 [math.CO] 16 Nov 2016.
+[3] J. Bourgain, More on the sum–product phenomenon in prime fields and its applications,
+Int. J. Number Theory 1:1 (2005), 1–32.
+[4] J. Bourgain, On the Erdős-Volkmann and Katz-Tao ring conjecture, GAFA 13 (2003),
+334–365.
+[5] J. Bourgain, Estimates on exponential sums related to the Diffie–Hellman distributions,
+GAFA 15:1 (2005), 1–34.
+[6] J. Bourgain, Exponential sum estimates over subgroups of Z∗q , q arbitrary, J. Anal.
+Math. 97 (2005), 317–355.
+[7] J. Bourgain, Exponential sum estimates in finite commutative rings and applications, J.
+Anal. Math. 101 (2007), 325–355.
+[8] J. Bourgain, M.-C. Chang, Exponential sum estimates over subgroups and almost subgroups of, where Q is composite with few prime factors, GAFA 16:2 (2006), 327–366.
+[9] J. Bourgain, M.Z. Garaev, On a variant of sum-product estimates and explicit exponential sum bounds in prime fields, Math. Proc. Cambridge Philos. Soc. 146 (2009), no.1,
+1–21.
+[10] J. Bourgain, A. A. Glibichuk, S. V. Konyagin, Estimate for the number of sums
+and products and for exponential sums in fields of prime order. J. London Math. Soc. (2)
+73 (2006), 380–398.
+[11] J. Bourgain, N. Katz, T. Tao,, A sum–product theorem in finite fields and applications,
+GAFA, 14:1 (2004), 27–57.
+[12] A. Bush, E. Croot, Few products, many h–fold sums, arXiv:1409.7349v4 [math.CO] 18
+Oct 2014.
+
+I. D. Shkredov
+
+[13] P. Erdős, E. Szemerédi, On sums and products of integers, Studies in pure mathematics, 213–218, Birkhäuser, Basel, 1983.
+[14] M.Z. Garaev, Sums and products of sets and estimates of rational trigonometric sums
+in fields of prime order, Uspekhi Mat. Nauk, 65:4 (2010), 599–658.
+[15] A.A. Glibichuk, S.V. Konyagin, Additive Properties of Product Sets in Fields of Prime
+Order, Additive combinatorics 43 (2007): 279–286.
+[16] H.A. Helfgott, Growth and generation in SL2 (Z/pZ), Annals of Mathematics (2008),
+601–623.
+[17] T.G.F. Jones, New quantitative estimates on the incidence geometry and growth of finite
+sets, PhD thesis, arXiv:1301.4853, 2013.
+[18] S.V. Konyagin, h–fold Sums from a Set with Few Products, MJCNT, 4:3 (2014), 14–20.
+[19] S. V. Konyagin, I. D. Shkredov, New results on sum-products in R, Proc. Steklov
+Inst. Math. 294 (2016), 87–98.
+[20] S. V. Konyagin, I. Shparlinski, Character sums with exponential functions, Cambridge
+University Press, Cambridge, 1999.
+[21] B. Murphy, G. Petridis, O. Roche-Newton, M. Rudnev, I. D. Shkredov, New results on sum-product type growth in positive characteristic, arXiv:1702.01003v2 [math.CO]
+8 Feb 2017.
+[22] O. Roche–Newton, A short proof of a near–optimal cardinality estimate for the product
+of a sum set, arXiv:1502.05560v1 [math.CO] 19 Feb 2015.
+[23] O. Roche–Newton, M. Rudnev, I. D. Shkredov, New sum–product type estimates
+over finite fields, Adv. Math. 293 (2016), 589–605.
+[24] M. Rudnev, On the number of incidences between planes and points in three dimensions,
+Combinatorica, 2017. First published online, doi:10.1007/s00493-016-3329-6.
+[25] M. Rudnev, On distinct cross–ratios and related growth problems arXiv:1705.01830v1
+[math.CO] 4 May 2017.
+[26] I.Z. Ruzsa, Sumsets and structure, Combinatorial number theory and additive group
+theory (2009): 87–210.
+[27] T. Schoen and I. D. Shkredov, Higher moments of convolutions, J. Number Theory
+133 (2013), no. 5, 1693–1737.
+[28] I. D. Shkredov, Some new inequalities in additive combinatorics, MJCNT, 3:2 (2013),
+237–288.
+[29] I. D. Shkredov, Energies and structure of additive sets, Electronic Journal of Combinatorics, 21:3 (2014), #P3.44, 1–53.
+
+27
+
+28
+[30] I. D. Shkredov, On tripling constant of multiplicative subgroups, Integers, #A75 16
+(2016), 1–10.
+[31] I. D. Shkredov, Some remarks on the Balog–Wooley decomposition theorem and quantities D + , D × , Proc. Steklov Math. Inst., accepted; arXiv:1605.00266v1 [math.CO] 1 May
+2016.
+[32] I. D. Shkredov, Difference sets are not multiplicatively closed, Discrete Analysis, 17,
+(2016), 1–21. DOI: 10.19086/da.913.
+[33] Yu. N. Shteinikov, Estimates of trigonometric sums over subgroups and some of their
+applications, Mathematical Notes, 98:3 (2015), 667–684.
+[34] E. Szemerédi, W. T. Trotter, Extremal problems in discrete geometry, Combinatorica
+3 (1983), 381–392.
+[35] T. Tao, V. Vu, Additive combinatorics, Cambridge University Press 2006.
+I.D. Shkredov
+Steklov Mathematical Institute,
+ul. Gubkina, 8, Moscow, Russia, 119991
+and
+IITP RAS,
+Bolshoy Karetny per. 19, Moscow, Russia, 127994
+and
+MIPT,
+Institutskii per. 9, Dolgoprudnii, Russia, 141701
+ilya.shkredov@gmail.com
+
+

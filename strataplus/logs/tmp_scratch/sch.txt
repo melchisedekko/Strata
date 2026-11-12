@@ -1,0 +1,1380 @@
+Mathematica Slovaca
+
+Štefan Schwarz
+The role of semigroups in the elementary theory of numbers
+Mathematica Slovaca, Vol. 31 (1981), No. 4, 369--395
+
+Persistent URL: http://dml.cz/dmlcz/128855
+
+Terms of use:
+© Mathematical Institute of the Slovak Academy of Sciences, 1981
+Institute of Mathematics of the Academy of Sciences of the Czech Republic provides access to
+digitized documents strictly for personal use. Each copy of any part of this document must contain
+these Terms of use.
+This paper has been digitized, optimized for electronic delivery and stamped
+with digital signature within the project DML-CZ: The Czech Digital Mathematics
+Library http://project.dml.cz
+
+Math. Slovaca 31,1981, No. 4, 369-395
+
+THE ROLE OF SEMIGROUPS
+IN THE ELEMENTARY THEORY OF NUMBERS
+STEFAN SCHWARZ
+
+One of the motives to write this paper has been the observation that from time to
+time various generalizations of the classical Euler—Fermat theorem are published.
+The aim of this paper is to show that one of the methods how to really
+understand various results obtained in this connection is via the description of the
+multiplicative semigroup of residue classes (mod m) as it is done in section 2
+below. This description is visualized in Fig. 1.
+We emphasize that we are not seeking the shortest proofs of some special
+problems. We rather develop a general point of view from which many special
+results concerning congruences (mod m) often become almost obvious.
+In section 1 we recall some simple facts concerning finite commutative semigroups. The goal is to introduce the necessary notations and to present some results
+for those who are not working directly in semigroups. In sections 2 and 3 we give
+a description of the multiplicative semigroup Sm of residue classes (mod m). [This
+has been done (in a partly different way) also in [2], [8], [9].] Section 4 has to
+a certain extent an auxiliary character. It contains information concerning the
+orders of the elements in the so-called maximal subgroups of Sm. In section 5 we
+give various generalizations of the Euler—Fermat theorem. In section 6 some
+further simple questions are solved. Here the choice has been made taking into
+account problems which appeared (mainly in the Amer. Math. Monthly) in the past
+few years. In section 7 an (internal) direct product decomposition of Sm is given.
+Several consequences are deduced. In section 8 formulas for the product of all
+elements contained in the maximal subgroups and maximal one idempotent
+subsemigroups of Sm are given.
+Though the material discussed here has been treated in hundreds of papers and
+monographs, the point of view taken in the present paper leads in a natural way to
+some observations which as far as I am able to decide have never been explicitly
+stated in the vast amount of literature. (See in particular Theorems 5,2 and 5,3,
+Theorems 7,1 and 7,3 and Theorems 8,1 and 8,2.)
+From the methodical point of view it should be underlined that we are primarily
+interested in the multiplicative structure of the ring of residue classes (mod m).
+369
+
+But, of course, we freely use also the additive properties of this ring, which give
+a special feature to the semigroup Sm.
+1. Preliminaries
+In all of this section S is a finite commutative semigroup. If jceS, then the
+sequence
+(1,1)
+
+jc,jc 3 ,jc 3 ,...
+
+contains only a finite number of different elements. Denote by JC\ fc = fc(x), the
+least power of JC which appears in (1,1) more than once. Denote further by fc + d,
+d = d(jc) 1= 1, the least exponent for which xk = xk+d holds. Then (1,1) is of the form
+(1,2)
+
+x.дc 2 ,...,**-!**,....;-
+
+X
+
+,
+
+It is well known and easy to prove that {JC ,...,JC + " }isa cyclic group of order d.
+Hence (1,1) contains a (unique) idempotent e = jcr and the least number r=r(x)
+having this property is uniquely determined by the inequalities fc.= r^fc + d - l
+and the fact that dlr. It is easy to see that jcr+1 is one of the generators of the group
+(JC\ ..., jcfc+d_1}. Hence {JC\ ..., jck+d_1} = {xe, x2e, ...,xde = e}.
+If e is the idempotent contained in the sequence (1,1), we shall say that JC belongs
+to e. Denote by E the set of all idempotents e S Denote further by P(e) the set of
+all elements e S belonging to the idempotent e. Then S = (J P(e) is a union of
+eeE.
+
+disjoint subsemigroups of S. We call P(e) the maximal subsemigroup of S
+belonging to the idempotent e. It is the largest subsemigroup of S containing e and
+no other idempotent.
+To every eeE there is a unique largest group G(e) (subgroup of S) containing e
+as its identity element. We call G(e) the maximal group belonging to the
+idempotent e. Clearly G(e)czP(e).
+The group G(e) can be characterized as the set of all JC e P(e) satisfying jce = JC.
+We have G(e) = P(e) • e. The mapping \pe: P(e)->G(e) defined by i^(jc) = jce is
+a homomorphism of the semigroup P(e) onto the group G(e) leaving all elements
+e G(e) invariant.
+Note explicitly: If S contains an identity element, say 1, then P(1) = G(1).
+With any x e S w e have associated three integersfc(jc),d(x), r(x), where fc(jc) =
+r(jc) .= fc(jc) + d(jc) - 1 and d(jc)/r(jc). Denote
+K = max {fc(jc)|jceS}
+
+and D = l.c.m {d(x)\x
+
+and define R as the unique integer satisfying K^R<K
+D, R are characteristics of S. We have:
+370
+
+eS}
+
++ D and DIR. Clearly, K,
+
+Proposition 1,1. For any xeS we have xK ^=XK+D. The numbers K^K(S)
+and D = D(S) (as defined above) are the least positive integers having this
+property.
+Proposition 1,2. For any xeSthe element xR is an idempotent and R = R(S) is
+the least positive integer having this property.
+Proposition 1,1 may be called the Euler—Fermat theorem for the finite
+semigroup S. The numerical values for K and D in the case of the multiplicative
+semigroup of residue classes (mod m) go back to Lucas (1890) and Carmichael
+(1910). Incredible though it may sound the observation concerning the value of R
+seems to appear for the first time in the present paper.
+Remark. The majority of the results stated above is true also for non-commutative semigroups. But in this case P(e) need not be a semigroup. There is a rather
+limited number of classes of semigroups for which the exact values of K and D are
+known. In this paper we restrict our attention to the semigroup Sm to be introduced
+below.
+2. The description of Sm
+Let m = pV pi2 ... p?', a, i^ 1 be the factorization of a given integer m > 1 into
+the product of different primes. By Sm we denote the multiplicative semigroup of
+all residue classes (mod m). The class containing the number x will be denoted by
+[JC]. G(l) denotes the maximal group belonging to the idempotent [1], i.e. the set of
+all [JC] for which (x,m) = l. [G(l)is usually called the group of units of Sm.]
+Any element xeSm can be written in the form
+x = [pk*pk2> ...p>a],
+
+(2.1)
+where [a]eG(l)
+
+and fc^O.
+
+Lemma 2,1. Toany element x ofthe form (2,1) there is a [b]eG(l) such that
+X
+
+- = | p 7 i n ( k l ' a i ) • pmin(fc2.a2)
+
+min(fcr,ar) . £ j
+
+Proof. Since x = [p*1] ... [pkrr] [a], it is sufficient to prove it for one factor, say
+y = [pi',]» where we may suppose that fci>ai. We have y = [p?1] [pi1""1 +
++ p?2 ... p"']. The second factor is in G(l) since it is not divisible by px, p 2 , ..., pr.
+Hence y = [p? !, fli], [fli]eG(l). Treating in the same way all factors in which
+fc >a,, we obtain Lemma 2,1.
+Remark: It should be noted that given x the element [b] e G(l) is not uniquely
+determined.
+Lemma 2,2. Let be 0^fc,^a„ O ^ / . ^ a . (i = 1, 2, ..., r).If [pk* ... p>]G(l) n
+[pr ... p'/]G(l)^0, then ki = l (1 = 1, ..., r).
+371
+
+Proof. If [pi1 .. Pkra] = [pi1 .. Plrrb], [a], [b]eG(\) and, say kx>U, we may
+write [p\x] [pi 1- ' 1 P*2 ... pkf * a - pli ... pjr • 6] = [0]. But this is impossible since the
+left-hand side is not divisible by p?1.
+Corollary 2.1. The semigroup Sm admits a decomposition into (ai + 1) (a 2 + 1)
+... (ar + 1) mutually disjoint sets in the form S = (J*. krtpi1 ... p?r] G(l), where
+O^fcSa, (i = \, ..., r).
+We now proceed to the description of all idempotents e Sm. But first we make
+(for simplicity and typographical reasons) the following convention. In what
+follows we shall deal with products of the form (2,1). It will be often important that
+some of the p. do not appear and only s(<r) different prime powers have an
+exponent =£0. In such cases to avoid unnecessary subscripts we shall consider
+instead of expressions as [p*,'1 p£2 ... Pusa], k,bi=l the expression [pkl p\2 ... pksa],
+fc = l, having in mind that this is only a typical representative of products of 5
+different prime powers.
+Suppose that e = [p\x ... pk'a], [a]eG(l), l ^ f c ^ a , , l=\s^r, is anidempotent
+eSm. Denote v(m) = max(ai, ..., a-). Then e = e2= ... = ev implies e = [pifcl ...
+pvsksav]. By Lemma 2,1 e = [p?1 ... pf'c] with a suitably chosen [c] e G(l). If s = r,
+we have e = [0], suppose therefore in the following s<r. If an element
+[pi*1 ... psa *c],[c]eG(l) is anidempotent, then [p?a« . . . p * V ] = [pV ... p?*c],i.e.
+(2,2)
+
+p?1 ... p?*c = l (rnodp?*1 ... p».
+
+The congruence (2,2) determines c uniquely (mod p%V ... p°r). If c is a solution,
+then all solutions are c + t-phv ... p?r with an integer t. Since [p?1 ... pf'(c-\+ tp"3Ax ... p?r)] = [p?1 ... pt'c], the element e = [pV ... p?*c] is independent of the
+choice of the solution of (2.2). We have proved: If e is an idempotent, then e is
+necessarily of the form e = [pV... p"sc], where c is any solution of (2,2).
+Let conversely c0 be a fixed chosen solution of (2,2) and p?1 ... pst°c0 =
+= 1 + top^v ... parr. Clearly c0 is not divisible by p*+i, ..., pr. Choose now an
+integer u such that c0 + hp^V ... p?r is not divisible by pi,..., ps. Then [a0] = [c0 +
++ fipsVi1 ... p? r ]eG(l).
+The choice of U is always possible. If c0 is divisible by none of the pu ..., ps, put
+ti = 0. If Co is divisible by pi, ...,pv and not divisible by pv+\, ...,p s ,putfi = p v +i...
+Ps.
+
+The element e = [p"x ... p"sa0] is an idempotent eSm since
+£2^[pV ...p*a0][pV ...p^c 0 ] =
+= [p ?' ... p>a0] [1 + fop.Vi1 ... p?r] = [p?' ... p?*a0] = e.
+We have:
+Theorem 2,1. Let there be m = p"x ... p?r, a,- = l. The semigroup Sm contains
+372
+
+exactly 2r idempotents (including [0] and [1]). Any idempotent e Sm can be written
+in the form e = [p\x ... plrra], where h is either 0 or a, and [a] is a suitably chosen
+element eG(l).
+In the set E we introduce two operations: A and v. Let e', e"eE and
+!
+
+l r
+
+e' = [pi ... p r a'], where /, is either 0 or a,,
+e" = [pV ... p V ] , where jt is either 0 or a,.
+We define
+e'Ae" = e'e" = [ p r x ( / l / , ) . . . p r x ( / - p - c ] ,
+e've" = [ p
+
+mina
+
+)
+
+'^ ...p
+
+,nin(/
+
+)
+
+-^ -d],
+
+where [c], [d] are determined by the requirement that e'Ae", e've" are idempo­
+tents eSm. It is easy to see that E with respect to these operations becomes
+a Boolean algebra.
+Two kinds of idempotents play a special role:
+The primitive idempotents are the idempotents of the form
+
+/. = [5;*1 [*lєG(i) (i = l, ...,/•).
+
+-P«
+The maximal idempotents e E are the idempotents of the form
+fi = \p7-bi], [bi]eG(l)
+
+(i = l,.... r ) .
+
+a
+
+In this terminology: If m = p , then /i = [l] is a primitive idempotent, while
+/. = [0] is a maximal idempotent.
+If e = [p?' ... pa*a]eE, s^l, then e = /i /2 ... /*.
+Lemma 2,3. Any idempotent eSm which is =£ 1 is a product of maximal
+idempotents.
+The following multiplicative properties of idempotents follow directly from the
+definition:
+m
+(0
+
+(ii)
+
+fifi=
+
+ioxi4z
+f f-[fi
+i>
+^ " I I O ] for/ = / .
+[0]tori*j.
+
+The additive properties which we shall use are the following:
+i)
+
+/-+/- = [!].
+
+ii)
+
+/, + ... + /, = [l].
+
+The first follows from the fact that / + / is an idempotent and in the above notation
+—at di + pT'bi is clearly contained in G(l). Analogously for the second property.
+373
+
+If e=l .../„ then c = ( l - / , ) ... ( l - / s ) = 1-(/, + ...+/ s ) = / s+1 + ... + /..
+Hence, any idemptotent ef=0 can be written as a sum of primitive idempotents.
+(This is of course well known and holds for large classes of commutative rings.)
+Note explicitly that the product of any idempotents is an idempotent, while the sum
+of two (non-primitive) idempotents need not be an idempotent. This makes clear
+the advantage of the multiplicative representation of idempotents in general
+considerations. (In contradistinction to this, for numerical computations the
+additive representation is more advantageous.)
+We now identify the maximal subsemigroups belonging to a given idempotent e.
+Let there be
+(2.3)
+
+e = [p?«...p? fl ], l S s ^ r ,
+
+[<i]eG(l).
+
+An element x = [p\x ... p/y], foi^O, [y] e G(\) belongs to e if and only if we have
+[pf1 ... pry1] = [p?1 ... pa°a] for some integer f g l .
+By Lemma 2,1 we may write (with a suitably chosen [b]e G(l)) [pr , ( r k , , a , ) ...
+p7nUk'^'b]
+= [pV ...p,°-fl], whence by Lemma 2,2 fcs+i = ... = kr = 0.
+Conversely: Let jc = [pk' ... pksb], where l^h = ou and [b] any element e G ( l ) .
+Denote a = max (a., ..., as). Then xa = [pak{ ... paksba] and by Lemma 2,1 there
+is a [c]eG(l) such that
+JC° = [p?'...p^c] = [p?'...p^a][ca- 1 ] = e[ca- 1 ].
+If v is the order of [ca~l] in G(l), we have x~° = e. This implies:
+Theorem 2,2. Ife = [p?1 ... pa*a] e E, then the maximal semigroup belonging to
+e is the union of a. a 2 ... as disjoint subsets P(e) =
+
+U [pkl ... p ks ]G(l), where
+ki,...,ks
+
+l ^ f c ^ a , (i = l, ..., s).
+To identify the maximal group belonging to e, recall that for any semigroup
+G(e) = P(e) • e. If e is of the form (2,3) we have by Theorem 2,2
+(2.4)
+
+G(e)=
+
+U
+
+[p^..pM[p?'...p^]G(l).
+
+Now (for fixed fci,..., fcs) by Lemma 2,1 [p,1 ...ps°][pV ...pM = [p?1 ...p" j c] with
+[c] e G(l) and each of the summands in (2.4) is of the form [p?1 ... p?5 ca]G(l) = '
+= [p?' ...p? f l ][c]G(l) = e - G ( l ) .
+We have proved:
+Theorem 2,3. If eeE, the maximal group G(e) belonging to e is given by the
+formula G(e) = eG(l).
+Remark 1. The mapping <f>6: G(l)->G(e) defined by <Pe(x) = xe
+is
+a homomorphism of G(l) onto G(e). The kernel of this homomorphism will be
+described later (see Lemma 4,2).
+374
+
+Remark 2. Note explicitly: If an element xeSm is given in the (usual) form
+x = [p\x ... pkssa], [a] e G(l), fc ^ 1, we can immediately say that x e F(/i .../») and
+xeG(jx .../s) iff fc^a, for all i = l, 2, ...,s.
+The results obtained are schematically described (for r = 3) in Figure 1. Here the
+circles denote maximal groups, the rectangles denote maximal subsemigroups
+belonging to the corresponding idempotents. If e = [pV ... p"sa]eE, it will be
+shown that card G(e) = \G(e)\ = q>(m/pil ... p?) and |P(e)| = p?1"1 ...
+p"s~l\G(e)\. Hence if e'<e" (in the sense of the ordering in the Boolean
+algebra E), then \P(e')\ ^ \P(e")\ and \G(e')\ ^ \G(e")\. This has been
+incorporated in Figure 1.
+
+Fig.l
+
+Remark. If S is a commutative semigroup, the principal ideal generated by x is
+the set L = {JC, Sx}. By the H-class containing x we mean the set of all y generating
+the same ideal L of S, i.e. H(x) = {y | (x, Sx) = (y, Sy)}. The semigroup S is
+a union of disjoint H-classes. An H-class is a group iff it contains an idempotent. In
+the set of H-classes we may introduce a partial ordering by writing H(x)^H(z) if
+Lczlz.
+If S = Sm9 it is easy to see that each of the sets [pf1 ... p?r]G(l) mentioned in
+Corollary 2,2 is exactly one H-class. Hence there are exactly (ai + 1) ... (a- + 1)
+different H-classes.
+Let e = [p?1 ... passa], [a] e G(l). Then it follows from Theorem 2,2 that P(e) is
+the union of exactly ai a 2 ... a, H-classes of Sm. The H-classes contained in P(e)
+(in the ordering just mentioned) form a lattice with the least element G(e) = [p?1
+375
+
+s
+
+... p" ]G(l) and the greatest element [p. ... p-]G(l). From this point of view it is
+more appropriate to describe "the position" of G(e) in P(e) in the way given in
+Figure 2 (i.e. to emphasize that G(e) is "at the bottom" of P(e)).
+To have the figure as simple as possible the ordering of the H-classes is not
+incorporated in Figure 1.
+b н ( P , . . . p.)
+-G(e) = H(pï....pľ')
+Fig.2
+
+3. How to find fc(jc) and d(x)l
+In this section the element
+x = [pV...p>al
+
+(3,1)
+
+l = s = r,
+
+fciH,
+
+[a]eG(l)
+
+is given.
+We have to find a (possibly reasonable) method how to compute the numbers
+/C(JC) and
+
+d(x).
+
+If JC e G ( l ) , then k(x) = 1 and d(jc) is the least positive integer for which jcd = [1].
+In the following suppose that JC £ G ( l ) .
+Denote by p = p(x) the least integer such that p • fc-=a, for all i = 1 , 2 , . . . , s.
+Call ,U(JC) the indicator of JC. Clearly 1 = /X(JC) = max (a., ..., a,). Whith respect to
+Lemma 2,1 the number JLX(JC) is independent of the form in which the class [JC] is
+presented. It follows (see Theorem 2,3) that JLX(JC) is the least integer such that x" is
+contained in a group, namely the group [pV ... p"s]G(l) containing the idempotent
+e=fi ...fs. Hence k(jc) = |u(jc).
+N«>w the group (JCM, x*+\ ..., jcM+d_1} is identical with the group {jce, jc2e, ...,
+d(x)
+jc e}. Hence d(x) is the least integer d 1= 1 such that xde = e.This can be written in
+the form (jcd - l)e = 0(mod m), which implies jcd - 1 = 0(mod mlpV ... p?°) if
+s<r. If 5 = r, then d(x)= 1.
+In view of the preceding considerations we may summarize as follows:
+Theorem 3,1- Let x be of the form (3,1). Then JC' = jc/+h holds if and only if
+i) /i=|u(jc), where JLI(JC) is the indicator of x;
+ii) h is a positive multiple of d(x), where d(x) is the least integer such that
+jcd = l(mod m/pV ... p?5) if s<r, and d(x)= 1 if s = r.
+This Theorem has been proved in [5]. It may be called the "individual"
+Euler—Fermat theorem for the given element x e Sm. (Compare with Theorem 5,1
+and Theorem 5,2 below.)
+376
+
+Remark. From the computational point of view it can be shown that the
+number d(x) for x given in (3,1) can be found as follows. For i = s + 1, ..., r find
+the least d, such that xd* = l(mod pf')- Then d(x) = l.c.m.[ds+i, ..., dr]. (This
+follows immediately from Lemma 4,3 to be proved below. We omit the explicit
+proof.)
+4. An internal direct decomposition of G (e)
+The aim of this section is to find the value of the highest order of an element
+6 G(e). [For G(l) this is well known. See, e.g., [12] or [14].] We need this only to
+show that some of our results proved below are the best possible.
+By the way we obtain an internal direct decomposition of G(l) and G(e) which
+does not seem to be generally known (and which will be used in section 7).
+Consider the maximal group belonging to a primitive idempotent / = — a e E
+(l^i^r).
+By Theorem 2,3 we have G(/) = G ( l ) / . If [JC], [y]eG(l), we have
+[x]f ={y]fi (in Sm) if and only if JC = y(mod p?(). This implies
+
+G(fi) =
+
+{[h]fi\\^h<p^(Kpi)=\}.
+
+The fact that the structure of this group is known will not be used before the end of
+the section.
+Each of the groups G(/) is "at the bottom" in Figure 1 "far away from G ( l ) " .
+Consider now the set Gi = {fi + g\ge G(/)}. Each of the elements / + [h]f is in
+G(l) (since it is divisible by none of the primes pi, ...,p r ). The set G, is
+a semigroup since (/ + [h\]f) (/.+ [h2]f) = f + [h\ h2]f. It is a group since
+a subsemigroup of a finite group is a group. G, is clearly isomorphic with G(/).
+Lemma 4,1. The group G(l) is the direct product of its r subgroups: G(l) =
+= G\ • G2 ... Gr.
+Proof, i) Let there be x e G(l). Since xf e G ( l ) / = G(/.), the element xt = / +
++ xf is contained in G,. Now X\X2...xr
+= (/i + Jc/i) ... (fr + xfr) = x(f\ +
++ ... + /r) = JC. Hence G(l) c Gi ... G- and since trivially Gi ... Gr c G(l), we
+have G(l) = G, G2 ... Gr.
+ii) To prove that the product is direct we have to show that dnGj = [1] for
+i±j. Letu=fi + g',v=fj + g", g' e G(/), g"eG(f). liu = v, we have uf = vfi, i.e.
+( / + / ) / = (/ + </")/, G'fi=fi (since g"fieG(fi)fi =[0]). Hence g'=fi and
+u=f + gf = / + / = [ 1 ]. Analogously uf = vf implies v = [ 1 ]. This proves
+Lemma 4,1.
+Remark. The explicit description of the groups G, as subsets of G(l) is
+sometimes important in number-theoretical questions. It enables also to find the
+groups G(e) as subsets of Sm (and not merely their structural properties up to an
+isomorphism).
+377
+
+Lemma 4,2. Let there be e = fi ... f5eE
+
+and s <r.
+
+i) If l^i=\s, then Ge = e.
+ii) If s + 1 .= i -= r, then G,e is a subgroup ofG(t) which is isomoprhic with G .
+Proof, i) Since (/ + [ft]/.)/ = / for any h, we have in the first case G,e = G/i...
+/ ... /, = (G/)e = / e = e.
+ii) In the second case [since for i =;s + 1 we have / e = / ] (/ + [h]f)e = / e +
++ [h]f and Ge = {/* + fllfll € G(/)}.
+The mapping F: G,—> Ge defined by / + [ft]/ H-» / e + [ft]/ is a 1 - 1 mapping
+from G, onto G,e since / e + [hi]/, = / e + [ft2]/ implies [fti]/ = [h2]f, hence
+/ + [fti]/ = / + [h2]f. It is a homomorphism since
+(f + [hi]f) (f + [h2]f) = 1 + [hMf ->/* + [hih2]fi =
+= (fie + [hi]fi)(fie + [h2]fi).
+Hence F is an isomorphism. This proves Lemma 4,2.
+Remark. Lemma 4,2 describes explicitly the kernel of the homomorphism
+<Pe: G(l)-» G(e) defined by <&e(x) = xe. If e = /i ... / s , then the kernel of <Pe is the
+subgroup Gi ... G. of G(l). Also since G, is the kernel of the homomorphism
+G (l)-> G(f) defined by x ^xf, we have G, = {x e G(l) | xf = / } . (This shows that
+it is possible to define G, multiplicatively as {xe G(l)|xfi=fi}. We prefer the
+definition given above in order to have an explicit description of G,.)
+Lemma 4,3. Let e =/i ... fseE,
+direct product of its subgroups:
+(4,1)
+
+1 ^s =ir. Then the maximal group G(e) is the
+
+G(e) = (G s+ ie) (G s + 2 e)... (G-e).
+
+Proof. By Theorem 2,3 G(e) = G(l)- e = Gi ... Gr • e and G,ecG(e). By
+Lemma 4,2 for i = 1,..., s we have G,e = e. Hence G(e) = Gs+i ... Gre = (G s+ ie)
+... (Gre) so that the product decomposition (4,1) holds.
+To prove that the product is direct it is sufficient to show that for i, j e {s + 1,
+..., r}, i£j we have Giec\Gje = e. This is done by the same argument as in
+Lemma4,1. Let u=fe + g', v=fje + g", g'eG(ft), g"eG(fj). If u = v, then
+ufi = vfi,(fie + g')fi = (jje + g'%, g'=fe. Hence u=fe + g' = / e + / e = e.This
+proves our statement.
+Since G, is isomorphic with G(ft), Gi is a group of order (p(p0i), the structure of
+which is known. If pt is odd or p?< = 2 or p?' = 4, then G, is cyclic of order qp(p?0- If
+pfl = 2a* and a* > 2 , G, is not cyclic, the order of each element e G, is a power of
+2 and G, contains an element of order 2a'~2.
+Define (the Carmichael function):
+if m = l,
+Я(m) = | 2 „ - 2
+" if m = 2a, a>2,
+378
+
+A(m)
+
+f cp(m) if m = 2, 4, pa with p an odd prime,
+" " l l.c.m. [A(p?0,A(p?2),...,A(P?0]
+if m = pi* . . . p l \
+
+Then we can state that each of the groups G, contains an element, say gt, of order
+A(p?«). The element g = gi g2 ... greG(l) is exactly of order A(m). Finally any
+element eG(l) has an order dividing A(ra). Hence for any j t e G ( l ) we have
+xk(m) = [l].
+
+An analogous result holds for the group G(e). If e=fi ... fseE,
+l=\s^r,
+consider the decomposition of G(e) given in Lemma 4,3. Each of the groups G,e
+(s + 1 ^ i ^ r) is isomorphic with the corresponding group G, and it contains the
+element gte e G(e) of order A(p?0- The element ge = (gs+ie) ... (g-e) is exactly of
+order A(m/p?1 ... p"s) and the order of any element eG(e) is a divisor of this
+number.
+Summarily (including the case s = r, i.e. e = [0]):
+Theorem 4,1. For any* e G(l) wehavex*(m) = [l]. If e=f, ...
+fs,l^s^r,then
+for atiy xeG(e) we have xA(m/p?1 p?J) = e. Hereby the exponents cannot be
+replaced by a smaller number.
+From Lemma 4,3 we also obtain:
+Corollary 4,1. I / e = / i .../*, then \G(e)\ = cp(m/pa> ...pa-).
+Remark 1. Suppose that m = 2p°2 ... p°r. Then it can be immediately verified
+that /i = [p22 ... p°r] is a primitive idempotent eSm. Hence /i = [l - p " 2 . . . p°r] is
+a maximal idempotent e Sm. The maximal group G(/i) is the one point group {/i}
+and Gi = {[l]}. In this (but in no other case) the product decomposition in
+Lemma 4,1 contains only r - 1 non-trivial factors. This implies for Lemma 4,3: If e
+as a product of maximal idempotents does not contain the factor [l — pp ... parr],
+then one of the groups Gs+ie, ..., Gre reduces to {e}.
+Other pecularities which take place in this (but no other) case are: G(/i) is
+isomorphic to G(l) and P(/i) is isomorphic to P(0).
+Remark 2. Motivated by further purposes and emphasizing the multiplicative
+structure of Sm we described G(e) as a direct product. From the point of view of
+numerical computations there is a simpler additive description which is a consequence of the ring structure of Sm and follows also from Lemma 4,3. If e =/i ... /,,
+then G(e) consists of all elements of the form
+(/s + l + [/ls + l]/ S + l) ... (/r + [M/r)/l ...fS = [/l- + l]/ S + l + . . . + [M/r,
+
+where
+l^h<pa\
+
+(fe,pi) = l ( i = s + l , . . . , r ) .
+
+Hence we may write symbolically G(e) = G(/, + i) © ... © G(fr). We say
+379
+
+"symbolically" since G(f) is a multiplicative (but not an additive) subgroup of S*
+The sign © means that every JC e G(e) can be written uniquely as JC = JC,+I + ..
++ jcr, JC, e G(f) and (in order to get G(e)) none of the summands can be omitted.
+
+5. Generalizations of the Euler—Fermat theorem
+We suppose again m = p?1 ... p"r and consider the semigroup Sm.
+Lemma 5,1. Denote v(m) = max (ai, ..., a r ). Then for any xeSm the element
+jcv(m) is contained in a maximal group of Sm.
+Proof. If jceG(l) = P(l), the statement is trivially true. Suppose therefore
+jceP(e) and e = [pV ... p"sa]eE, l ^ s l S r . By Theorem 2,2 we may write
+jc = [pi' ...pk°b], [b]eG(l), l ^ f c ^ a . We have jcv(m) = [pvfc> ... pyk>b2]. Here
+vfci^a.. By Lemma 2,1 there is a [c]eG(l) such that Jcv = [p?' ... pa'c]. By
+Theorem 2,3 JCV e G(e). This proves our statement
+Corollary 5,1. For any xeSm we have fc(jc)Sv(m).
+As a matter of fact we have proved more:
+Corollary 5,1a. IfxeP(e)ande=fi
+... fs e E , thenk(x) ._§ max(ai, a2, ...,a-).
+The estimation is sharp. Denote-for a while — a = max (ai, ..., a ) . Then for
+jc = [pi ... ps]eP(e) we have x°eG(e), while
+xa'liG(e).
+Lemma 5,2. For any xeSm the number d(x) is a divisor of k(m).
+Proof. If JceG(l), this is true by Theorem 4,1. Suppose that jceP(e), e =
+U ...fs. The group {JC*(X), ..., xk(x)+d(x)~x} = {jce,jc2e, ..., xde} is a subgroup of
+G(e) and d(x) is the least integer for which (xe)d = e. Now the order of any
+element eG(e) is a divisor of k(m/pV ... p?5), hence d(x)lk(mlpa\x ... p?s), and
+therefore d(jc)/A(m) for any JceP(e).
+Note that k(m) cannot be replaced by a smaller number since G(l) contains an
+element of order k(m).
+Again we have proved somewhat more:
+Corollary 5,2. If e = fi ... fs and x e P(e), then d(x)lk(mlp^ ... pa°).
+Theorem 5,1. (The global Euler—Fermat theorem.) For any x e Sm we have xv(m)
+__
+
+v(m)+A.(rn)
+
+Proof. Since JCV is contained in a subgroup of Sm, the set {xk(x\ ..., x^*"^1}
+is
+v+d(x)_1
+v+d(x
+V+1
+V
+V
+identical with (JC\ JC , ..., x
+}. Hence JC = x \ which implies JC =
+= xy+d = xv+2d=... and since d(x)/k(m), we have JCV = jcv+Mm).
+A slightly stronger form of Theorem 5,1 will be given in Proposition 7,1.
+Remark. If we insist on the natural requirement to make the exponents
+independent of the special choice of the element JC, neither v nor v + A can be
+replaced by a smaller number. It is the best possible generalization of the classical
+380
+
+Euler—Fermat theorem (which deals only with x e G(\)). The observation concerning v(m) seems to go back to Lucas (1890). A historical survey, including the
+history of various confusions, is contained in paper [10].
+A few words should be added to the term "best possible generalization".
+Theorem 5,1 is a statement concerning polynomials of the form JC M -JC L
+(M>L ^ 1) which vanish identically in Sm. If we consider monic polynomials f(x)
+of any form which are identically zero in Sm, the degree of f(x) may be essentially
+smaller than v(m) + A(m). Let there be, e.g., m = pa,p >2, a =\l. Then xp-x is
+divisible by p (for any x e Sm), hence (xp - x)a is a polynomial of degree ap which
+vanishes for all xeSm. Hereby pa<v(m) + A(m) = a + p a - 1 ( p - l ) if a 1^2.
+(Even pa is "in general" not the lowest possible degree. This question is treated in
+detail in [15].)
+If we specify "the position" of x in Sm, we may obtain a result analogous to
+Theorem 5,1. The following result is simply the Euler—Fermat theorem for the
+semigroup P(e) in the sense of Section 1.
+Theorem 5,2. (The local Euler—Fermat theorem.) Let e=fi
+For any x e P(e) we have
+/?
+
+| \
+
+r max ( a i '"' a»* =
+
+.../,eE,l§s.§r.
+
+r m a x * a - ' ' " a s ) + A ( m / P i a l •• P*" 5 )
+
+and none of the exponents can be replaced by a smaller number.
+Proof. Denote — for a while — a = max (ai, ..., as). By Corollary 5,1a
+xa e G(e) and o cannot be replaced by a smaller number. Next the group {xk(x\ ...,
+^ ^ xd^e} i s a s u b g r o U p of G(e) and d(x) is the least integer
+x*(,)+d(,)-ij = j
+d
+for which (xe) = e. By Corollary 5,2 d(x) divides A(m/p ai ... p» and this number
+cannot be replaced by a smaller one since G(e) contains an element of order
+A(m/p?> ... pa>). Finally the group {xk(x\ ..., xk(x)+d(x)_1} is identical with the group
+{jca, xa+\ ..., xa+d(^},
+hence xa = xa+d(x). This implies xa = xa+d = xa+2d = ...
+a
+and since A(m/p > ... p?) is a positive multiple of d(x), we have (5,1). This proves
+Theorem 5,2.
+In the following we shall need
+Lemma 5,3. If m±8 and m^24, then v(m)^A(m).
+Proof. Let m = pa* ... p> and suppose p i < p 2 < . . . < P r . If p is odd, a<
+<A(p a ) = p a _ 1 ( p - l ) . Further v(2) = 1 = A(2), v(22) = 2 = A(22) and for
+a
+a 2
+= A(2a). Hence, if m is not of the form
+a g 4 we have v(2 ) = a ^ 2 "
+3 a
+a
+m = 2 p 2 ... p \ we have v(m)=iA(m).
+i) Let m = 23. Then v(23) = 3>A(2 3 ) = 2. This is the first exceptional case.
+ii) Suppose m = 23p%2 ... pa' and r ^ 2 . If max (a2, ..., ar) = a, = 3, we have a,
+= v(m) < A(p,a0 =^ A(m). Suppose therefore moreover a, ^ 2 for all i = 2,..., r. If
+r g 3 (hence P3^5), we have
+A(m) = l.c.m[2, . . . , p a 3 - 1 ( p 3 - l ) , ...]>4>v(m) = 3.
+381
+
+iii) There remains the case of m = 2 3 p ? 2 and a2_=2. If a2 = 2, A(m) = [2,
+p2(p2-l)] = p2(p2-l)
+> v(m) = 3. If a 2 = l a n d p 2 ^ 5 , A ( m ) = [ 2 , p 2 - l ] ^
+4>v(m) = 3. If a 2 = l a n d p 2 = 3,i.e. m = 24, we have A(24) = 2<v(24) = 3, the
+second exceptional case. This proves Lemma 5,3.
+We now prove a theorem which is a kind of generalization of the Euler—Fermat
+theorem and has an algebraic (rather than number-theoretical) flavour.
+Theorem 5,3. Let m > 1, andm£8 and m=£ 24. Then for any x e Sm the element
+x
+is an idempotent e Sm. Hereby the number k(m) is the least integer having
+this property:
+Proof. By Theorem 5,1 we have JCV = JCV+A for all xeSm. If A ( m ) - v ( m ) > 0 ,
+multiply the last relation by JC*"V. We obtain JC* = JC2\ i.e. xk is an idempotent. If
+A(m) = v(m), we have directly JCA = JC2\
+Remark. If m = 8, or m = 24, we have v(m) = 3 and k(m) = 2. InS 8 and S24the
+element JC4 is an idempotent for all JCGSS and jceS 24 , respectively, and the
+exponent 4 cannot be replaced by a smaller number.
+k(m)
+
+Corollary 5,3. Let m > 1, and m ^ 8 and m±24. Then for any xeSm we have
+x2k(m)-xk(m) = [0].
+6. Some further applications.
+We now give some examples to show how useful the description of Sm may be as
+given in section 2.
+Example 6,1. Let m > l be given. We have to find all JceSm for which
+If JC satisfies (*), then {JC, JC2, ..., jc<p(m)} is cyclic group with xq>(m) = e as the
+identity element. Hence JC is contained in the maximal group G(e). Conversely, if
+an element is contained in a maximal group, say JC e G(ei), we have xd(x) = e, and
+since d(x)lk(m)lq)(m\ we have jc<p(m) = ei, whence x~(m)+1 = JC.
+We have proved:
+Proposition 6,1. The relation xq,(m)+l = x holds if and only if x is contained in
+a subgroup of Sm.
+This has been proved in [6].
+Example 6,2. Under what conditions (concerning m) does there exist an
+integer L > 1 such that JCL = JC holds for all xeSm.
+If JC = JCL, L > 1 holds for all JC, we have necessarily v(m) = 1, i.e. m = px ... pr'\s
+squarefree. In this case Sm is a union of disjoint groups Sm = (J G(e). By
+eeE
+
+Theorem 5,1 we then have JC = xk(m)+1 for all JC e Sm. Hereby L = A(m) F 1 is the
+least integer for which JC = JCL for all xeSm.
+It is immediately seen that any L satisfying xL = x (for all JC e Sm) is of the form
+382
+
+L = / A ( m ) + 1 , where / > 0 is an integer. Note also that in this case A(m) =
+= l.c.m [ p i - 1, p2- 1, ..., pr- 1].
+We have proved:
+Proposition 6,2. The relation xL = x with some L > 1 holds for all xeSm if and
+only if m is squarefree. The least L having this property is L = A(m) + 1.
+This has been proved in [3].
+Example 6,3. Let JTL: Sm-*Sm be the mapping defined by JC»-»XL. Under what
+conditions (concerning m and L) jtL is a permutation of the elements eSm.
+This has been solved in [1]. The problem is the same as to ask under what
+conditions any element xeSm is an L-th power (See [11].) An analogous somewhat more general question has been solved in [13].
+Proposition 6,3. The mapping jtL is a permutation of the elements e Sm if and
+only if the following two conditions hold: i) m is squarefree, ii) (L, A(m))= 1.
+Proof. If Sm contains a non-zero nilpotent element, jtL cannot be a permutation. For, if JTL is a permutation, so are jtl, JTI, ... But for any nilpotent
+element xeSm we have jtl(x) = xvL = [0]. Hence if JTL is a permutation, m =
+pi ... pr must be squarefree and Sm = (J G(e) is a union of disjoint groups.
+eeE
+
+1. Let JZL be a permutation. Then each of the groups G(e) as a whole is invariant
+under this mapping. [For, xeG(e) implies xL e G(e).] Now JTL restricted to G(/.)
+(a cyclic group of order p, - 1) is a permutation if and only if (L, p. - 1) = 1. Hence
+a necessary condition in order that JTL should be a permutation is also the fulfilment
+of the conditions (L, p, - 1) = 1 (/ = 1, ..., r), which is equivalent to (L, A(m)) = 1.
+2. Let m be squarefree and (L, k(m)) = 1. We first prove that x »-->xL restricted
+to G(l) is a permutation on G(l). To show this it is sufficient to show that for ai,
+a2 e G(l) the relation a\ = a\ implies ai = a2. Since (L, A(m)) = 1, there exist two
+integers u, v such that uL + vX(m) = 1. Then a\ = a\ implies auL = auL and (since
+aum)
+
+=
+
+anm)
+
+=
+
+[1])a?L+.A
+
+=
+
+QuL+^
+
+h e n c e
+
+a i =
+
+a2
+
+To end the proof let x e Sm and x e G(e) for some e e E. By Theorem 2,3 x can
+be written in the form x = [a]e, [a] e G(l). Since [a] = [b]L with some [b] e G(l),
+we have x = [a]e = [bLe] = [be]L and [be] e G(e). Hence any element e G(e) is
+an L-th power and therefore jtL is' a permutation on Sm. This proves Proposition 6,3.
+The smallest L satisfying (L, A(m))= 1 is the smallest prime which does not
+divide A(m).
+Example 6,4. The foregoing two examples lead to the following pertinent
+question. Consider the set Qm of all mappings JZL: Sm^>Sm defined by JC•—>xL (not
+necessarily a permutation of Sm). Under the usual composition JtijiM(x) = JCML the
+set Qm is a finite abelian semigroup. Denote by Qm the subgroup of all permutations of the type considered. WTiat can be said about Qm and Qm ?
+We restrict ourselves to the case when m is squarefree. By means of
+Theorem 5,1 this can be easily extended to the general case.
+383
+
+Proposition 6,4. Suppose that m is squarefree.
+
+Then
+
+i) Qm is isomorphic with the semigroup Sx (m) ;
+ii) Qm is isomorphic with the group of units of S^m).
+Proof. Since for any xeSmx = xk(m)+\ we also have JTA+I = JTI and jrA+/ = K\ for
+any integer j > 0. The mappings {ni, JT2, ..., JTx} are all different one from the other.
+Indeed, jii = xh l=\i^j=\X
+would imply xl = x' (in particular) for all
+xeG(l).
+j i+l
+Hence JC = x '
+for all x e G ( l ) . Now / = / - i + 1 ^ A and x = xl with / < A + 1 (for
+all x e G ( l ) ) contradicts Theorem 4,1 (or Proposition 6,2).
+Note that Kx is the zero element e Qm. It sends each element of a maximal group
+into the corresponding idempotent. [I.e. jtx(Sm) = E.]
+The mapping F: Qm^S^™) defined by F(jr L ) = [L] has the property that
+F(JZLJIM) = [L] [M] (mod A). It is onto. Hence Q m is isomorphic with Sx(m).
+By Proposition 6,3 7tL is a permutation of Sm if and only if ( L , A ) = 1 and
+1 ^ L < A. Hence Qm is a group consisting of all JTL e Qm for which (L, A) = 1. This
+proves Proposition 6,4.
+R e m a r k . Problems analogous to that treated in Example 6,4 for wider classes
+of semigroups are treated in [4].
+
+7. An internal direct decomposition of Sm
+It is immediately clear that Sm is isomorphic to the (external) direct product
+SP1°i x SP2«- x ... x SPr°*. To see this it is sufficient to assign to any JteS m an
+r-tuple (JCI, x2,..., x r ), where JC, = jc(mod p?1). This is a 1 - 1 correspondence which
+preserves the obvious multiplication.
+What is not obvious is the question how to embed isomorphically SPl«- into the
+semigroup S m .
+Denote V. = {[0], /,, [2] fh ..., [p?«- 1]/,}. An element [h]f e Vi is equal to [0]
+(in Sm) iff h is divisible by p?', hence iff h = 0. Also any two elements [h']fif [h'%
+with h' £ h" are different since [h' - h"]f = [0] would imply that h' - h" is divisible
+by pf«, which is impossible since \h'
+-h"\<p?'.
+To prove that Vi is a semigroup consider the product of x = [h']fe Vi and
+y = [h"]fie V. We have xy = [h'h"]fi. Write h'h" in the form h'h" = h + up?>,
+where he{0, 1, 2, ..., p r « - l } and u=\0 is an integer. Then xy = [h + up?«]/. =
+= [&]/*, hence xy E V . Summarily:
+Lemma 7,1. The set Vi is a subsemigroup of Sm containing exactly pT« different
+elements e S m .
+384
+
+V, contains G(/,) and it can be written as a union of two disjoint sets in the form
+1
+Vi = G(fi) u I(ft), where 1(f) = {[ft]/|(ft, p , ) > l , O^hKpT }. The set 1(f) is
+contained in P(0), hence it is a nilpotent subsemigroup of Sm.[As a matter of fact
+/(/,) is even a nilpotent ideal of Sm since it follows from the foregoing considera­
+tions that Vi = Smf.]
+Consider now the sets
+i=l,2
+
+Ti={fi + v\veVi},
+
+r.
+
+T is a subsemigroup of Sm since (/ + [h\]f) (/+ [h2]f) = /, + [ft,ft2]/, and
+[ft,ft2]/e V. Next TtnT, = [1] if i±j. For, suppose /, + [ft,]/, = /. + [ft2]/,
+0_^ft, <p?', 0^ft 2 <p?'. Multiplying by /, and / we obtain [ft,]/, = / and / = [ft2]/,
+whence (by Lemma 7,1) [ft,] = [ft2] = [1]. But then / + [ft,]/, = / + [ft2]/ = [1].
+The semigroup T contains [1] as its unit element and /, as its zero element. T.
+contains G, and it can be written in the form T = G,u/,, where I, = {/, +
++ [ft]/, |(ft, p , ) > l , 0--ift<pfi}. Clearly h is a semigroup and it is contained in
+P(fd ' m = p " ' r l . Moreover I, is a nilpotent ideal of the semigroup T (but not of
+the semigroup Sm if r > l ) .
+The situation is visualized in Figure 3. Note that the whole semigroup T, is
+"above" G(/).
+
+-Л^н-IЮ
+101
+
+Fig. 3
+
+We now easily prove:
+Theorem 7,1. The semigroup Sm admits the following decomposition into
+a direct product of its subsemigroups:
+Sm = TiT2...
+
+Tr.
+
+Hereby T = {/, +[ft]/, | ft = 0,1,...,p?'-l}.
+385
+
+Proof. We have proved that TnTJ = [1]. The set Ti T 2 ... T- contains formally
+pV ...parr products. To prove our statement it is sufficient to show that two
+products
+x = (/i + Vi) ... (/- + Vr), Vi e Vi,
+y = (fl + I l l ) . . . ( f r + Mr),
+ueVi,
+
+are different unless w, = t>, for all i = 1, 2, ..., r. Suppose that x = y. Multiply by / .
+Taking account of the fact that for / ==
+/ i we have v,/ = [0] and / / = / , we obtain jc/i
+= Vif = Vi and y/ = Uif = u,, hence u. = t>, for all i e {1, 2, ..., r}. This proves
+Theorem 7,1.
+Remark. The set T can be defined multiplicatively as T =
+{xeSm\xfi=fi}.
+We prefer to define T by its explicit description. (See the Remark after Lemma 4,1
+concerning the definition of G,.)
+We are now able to give product decompositions of the maximal subsemigroups
+P(e). Consider the product
+Sm = Ti T 2 ... Tr = (GiuIi) (G 2 ul 2 )... (G-uI r ).
+Sm is a union of the product Gi G 2 ... Gr and 2 r - l products of the form
+7i ...L G,+i ... G- ( I S f S r ) .
+Let U = L ... L G,+i ... Gr. Any element aeU belongs to the idempotent /1 ...
+ft- 1 ... 1. If U^h U' and a' e U', then a and a' belong to two different idempo tents.
+Hence if e =/i ... /$, then the set of all elements e Sm belonging to e is exactly the
+set h ... L G-+i ... Gr so that P(e) = h ... L G-+i ... G-.
+Note that for i£j Lnlj = 0 and GnGj = [l]. We have proved:
+Theorem7,2. If e = f\ .../- ( l ^ s ^ r ) , then P(e) is the direct product of r
+subsemigroups of Sm:
+P(e) =
+
+L...LGs+i...Gr.
+
+Corollary 7,1. If e =/i ... /-, then
+
+\P(e)\=p^-\..p?-i-(p(pto...pV
+
+=
+
+= p^-\..p-MG(e)|=-^(ps+i-l)...(pr-l).
+p i ... pr
+
+Corollary 7,2. The set of all nilpotent elements P(0) is the direct product
+P(0) = L L ... L and \P(0)\ = p?1"1 ... p^'\
+Note that if r > l , then P(O)nL = 0.
+For the following Corollary recall the ordering in the Boolean algebra E (see
+Section 2).
+386
+
+Corollary 7,3. Ife'>e",
+
+then \P(e')\ ^ \P(e")\ and \G(e')\ ^
+
+\G(e")\.
+
+Proof. If e' = /, ...fs and e"<e', then e" = /, . . . / * / - + . ... /,+„ l^t^r-s.
+It
+follows from Corollary 7,1 and Corollary 4,1 |P(e')| = ( p , + i - l ) ...
+(p $ + ,-l)|P(e")| and |G(e')| = cp(p^ ... p^v) • \G(e")\. Hence |P(e')| ^
+|P(e")| andtheequalityholdsiff f = l and p-+, = 2. Further |G(e')| ^ |G(e")| and
+the sign of equality holds iff r = 1 and p?.vY = 2.
+Returning to Theorem 7,2 it is worth to note that the product Ix ... h = 1(e) is
+contained in P(e) while for s > 1 none of the h itself is contained in P(e). Further
+1(e) is a subsemigroup of P(e) containing e. The set 1(e) can be characterized as
+the set {xe P(e) \xe = e}. The semigroup P(e) is a direct product of 1(e) and the
+group Gs+i ... G- which is outside P(e) (namely in G(l)). Of course since
+GJ+i ... Gr is isomorphic with G(e), the semigroup P(e) is isomorphic with the
+(external) direct product 1(e) x G(e).
+We are finally able to describe more precisely the homomorphism tye: P(e) -*
+G(e) defined by \pe(x) = x • e for jceP(e).
+L e t e = / , .../-^[0]andjceP(e) = J, ... L G s+ , ... G r . Thenjc = (/, + [ft.]/,)...
+(/* + [/isj/s) • a, where [hi], ..., [hs] and a are uniquely determined by JC. Next,
+since (for l^i^s)
+we have (/ + [fc«]/«)e = e, we obtain jce = aee(Gs+\ ...
+Gr)e = G(e). Hence the homomorphism \l>e sends the whole set h ... ha c P(e)
+into the element aeeG(e). In particular it sends the whole semigroup 1(e)
+= h ...h into e. Thus p?1"1 ... p?1"1 elements e P(e) are always mapped onto one
+element eG(e). (This will be used in Lemma 8,1.)
+Theorem 7,1 can be used to solve the following general question. Given two
+integers L, M, 1 S L < M we have to find the number of solutions of JCL = JCM in
+Clearly the set of all solutions forms a subsemigroup Z = Z(L, M, m) of Sm
+containing [0] and [1]. We first prove a formula for \Z\ and next we show on
+a numerical example how to describe explicitly all the elements e Z.
+By Theorem 7,1 any xeSm can be written in the form JC = JCIJC2 ... xr, x< e Tiy and
+JCL = JCM holds iff xL = xM for every i = l, 2, ..., r.
+Write again Tl = GiUli.
+i) We first find the number of solutions of xL = xM supposing that JC, e h.
+If Xi e h, then xL = xM implies xL = xM = jcr ( M - L ) = ... = x?+/(M"L) for any
+integer 1^0. But if M + l(M-L)><Xi, then xM+t(M~L) = fi. Hence we have
+necessarily xL=f. If conversely x, satisfies xL=f, then for any M>L we have
+xM = f.
+Hence we have to find the number of solutions of xL = / .
+An element JC = [pl]gieh (y = 1, g* eG,) is a solution of jet = / iff yL = a,. If
+y = Yi is the least such integer, then the number of solutions contained in h is clearly
+p?,-Y'. Since y, is an integer, we have
+387
+
+j1
+(7,1)
+
+if
+
+Lloii,
+
+y. = -
+
+[fj + l « ^««In particular, y, = 1 iff L^CL{.
+ii) If JC, e G , then JCL = JCY is equivalent to'Jcff"L = [l]. If P« is odd, then G, is
+a cyclic group of order (p(p?1) and there are di = (M-L, (p(p"0) elements e G
+satisfying xL = JCY. If pr-2, then the number of solutions in G, is d, = 1. If p?« = 4,
+the number of solutions is d. = ( M - L , 2). If p?i = 2a, a § 3 , then the number of
+solutions of x^" L = [l] is ( M - L , 2) (M-L, 2a~2).
+The foregoing considerations imply:
+Theorem 7.3. Let m = pV ... p°r and 1 = T < M . TTien the number of solutions
+of xL =xM in Sm is given by the formula
+
+\Z(L,M,m)\ = f\(pr^
+
++ di).
+
+i= l
+
+Here y is defined by (7,1) and
+1
+
+f ( M - L , <p(pf'))
+l(M-L,2)-(M-L,2a-2)
+
+if if p« is odd, orp?> = 2orp?> = 4;
+if pf' = 2 a , a ^ 3 .
+
+As a numerical ilustration consider the equation JC2 = JC6 in Sm, where
+2 3
+m = 3 5 =H25.
+Here p?' = 32, Yi = | = l , rfi = (4, cp(l)) = 2 and p°2 = 53, y2 = [ | ] + 1 = 2,
+d2 = (4, (p(125)) = 4.Hence|Z| = (3 2-1 + 2) (53"2 + 4) = 45. There are exactly 45
+solutions of JC2 = JC6 in Sm.
+We next describe Z. A simple calculation shows that in Sm we have fx =
+= [53 • 8] = [1000], hence /, = [126] = [32 • 14]. Further (since here primitive and
+maximal idempotents coincide) /2 = [32 • 14] and f2 = [53 • 8]. Therefore
+Ti = {/i + [/i]/i|0;=ri<9},
+
+T2={f2 +
+
+[h]f2\0^h<125}.
+
+The solutions of JC? = JC , in L are {/- + [h]fi \h = 0, 3, 6}. The solutions of x\ = [1] in
+Gi are (as it can be easily verified) {/i + [h]fi \ h = 1,8}. Hence all solutions of
+JC2 = JCI in Ti constitute the following subsemigroup of Ti.
+Z, = {U + [h']U\h'eH'},
+
+where H'= {0, 3, 6, 1, 8}.
+
+The solutions of JC2 = JC2 in L are {fi + [h]f2\h = 0,25, 50, 75, 100}. The four
+solutions of JC2 = [1] in G2 are {f2 + [h]f2\h = 1, 57, 68, 124}.
+[Note that to find JC2G G2 it is necessary in essential to solve JC4= 1 (mod 125). In
+numerical calculations we cannot avoid to find first a primitive root g (mod 5), next
+388
+
+a primitive root (mod 52), which is either g or g + 5, and to use then the known fact
+2
+a
+that a primitive root (mod p ) is a primitive root (mod p ) for any a > 2 . ]
+All solutions of JC1 = JC1 in T 2 form the semigroup Z 2 = {/2 + [h"]f2\h"eH"},
+where H" = {0, 25, 50, 75, 100, 1, 57, 68, 124}.
+All 45 solutions in Sm are exactly the elements of the (direct) product of two
+subsemigroups Z = Zi • Z 2 .
+For numerical calculations (see Remark 2 in Section 4) it is of course more
+convenient to use (/i + [ft']/,) (f2 + [h"]f2) = [ft']/i + [h"]f2. Hence all 45
+solutions are [ft' • 1000] + [h" • 126], where ft', ft" run indenpendently over the
+sets H' and H", respectively.
+Remark. An interesting simple result is obtained for the solutions of JC = JC3.
+By Theorem 7,3 we get
+r3 r
+for m odd, or m = 4p? 2 ... pa\
+r1_ 1
+|Z(1, 3, m)\ =Jг-з'\2•3
+for m = 2 • p? 2 ...
+' г >p°
+L
+
+5-3r_1
+
+form = 2 a p a 2 . . . p ^ , a ^ 3 .
+
+Suppose that m is odd. Put Z, = {/, / - / , [1]}. Then the set of all solutions is
+given by Z = Zi • Z 2 . . . Zr. In the additive form these are the 3 r elements
+
+[fc.l/l + [falf a +... + [fcrl/r.
+where ft, run independently through the set {0,1, -1}. The modifications neces­
+sary in the case of m being even are evident.
+By the same method as we have proved Theorem 7,3 we may solve the question
+L
+M
+concerning the number of solutions of x = x in a given maximal subsemigroup
+P(e).
+By considering the decomposition P(e) = h ... LG,+i ... G- we obtain:
+Theorem 7,4. Let e = / i .../,; then the number of solutions of xL = xM
+( 1 ^ L < M ) in P(e) is given by the formula
+\Z(L, M, m, e)\ =p?-" Y ' ... p a ^ d s + i ... d r ,
+where y, and d, have the same meaning as in Theorem 7,3.
+Theorem 7,3 enables us to prove again some of the results of sections 5 and 6 in
+a somewhat stronger formulation.
+L
+M
+Example 7,1. Let us ask under what conditions x = x holds identically in Sm
+(i.e. for all x e Sm).
+This is the case iff
+(7,2)
+
+|Z(L,M,m)|=p?>...p;\
+
+If p, is odd, or p?'= 2 or pf'^ 4, we have pr*-y' + d, = p ^ Y ' + ( M - L , cp(pa')) -§
+pf' - (p?rl - p a '" Y '). H Y> ^ 2 , this term is < paMfpa< = 2 \ a S 3 , p r r « + d -=
+2 a '" Y ' + ( M - L , 2)2 a '" 2 ^ 20'".1 + 2a'"Y' and this is less than 2a« if y.g2.
+389
+
+If for at least one i the number y. were § 2 , then the product r i ( p a ' Yi + d.)
+i= l
+
+would be less than m. Therefore we necessarily have y, = 1 for all i = 1, 2,..., r, i.e.
+Li^a. for all i = 1, ..., r, hence/^max (ai, ..., a r ) = v(m).
+Write now (7,2) with y, = 1 in the form
+
+1=1
+
+pi
+
+Since each factor to the right is ^ 1 , we have necessarily p?' * + d, = p*\ d, =
+= p?> - p r 1 = <p(p?0. Hence ( M - L , cp(pa«)) = (p(pf')), i.e. A(pf«)|M-L,
+except the case pa< = 2 a , a^3. In this last case we have qp(2a) = 2 a _ 1 =
+= (M-L, 2) (M-L, 2 a " 2 ), hence 2 a _ 2 | M - L , i.e. again A ( 2 a ) | M - L . We have
+obtained: For i = 1, ..., r we have necessarily A ( p a , ) | M - L . Hence l.c.m [A(pa'),
+..., A(pa0] divides M-L.
+If conversely y, = 1 for all i (i.e. L ^ v(m)) and M - L is divisible by A(m), it is
+immediately obvious that |Z(L, M, m)| = m. We have
+Proposition7,1. 77ie relation xL = xM holds in Sm identically iff L^v(m) and
+X(m)\M-L.
+This is a stronger edition of Theorem 5,1.
+In particular we may ask under what conditions xL is an idempotent e Sm, i.e. the
+relation xL = x2L holds identically in Sm. Proposition 7,1 implies that this is the case
+iff L^v(m) and A(m)|L. Taking account of Lemma 5,3 we have:
+Proposition 7,2. If m± 8, m ^ 24, then xL is an idempotent for any xeSm iff
+A(m) | L. If m = 8 or m = 24, thenxL is an idempotent (forany x) iffL^A andL is
+even.
+Example 7,2. Let us ask under what conditions JCL = JCM holds identically in
+P(e).
+This is the case iff \Z (L, M, N, e)\ = \P(e)\, i.e.
+(7,3)
+
+p?'"Y' ... pa'-y*d-+I ... dr = pTx ... pa'"1(p(psVi1 ... p?0.
+
+This implies yi = ... = ys = l, hence Li^max(ai, ..., a-) and (for i = s + l, ..., r)
+di = <p(pa0- The relation d, = qp(pa') implies analogously as above A(pa')1M - L for
+i = 5 + l, ..., r, and since l.c.m [A(pa4-Y), ..., A(pa/)] = A(m/p?* ... psa*), we have
+necessarily k(mlp"x ...
+p"')/M-L.
+Conversely if yi = ... = y$ = 1 and A(m/p a ' ... p°>)/M-L, then (7,3) holds. We
+have:
+Proposition7,3. Let be e = fi ...fs. Then xL = xM ( 1 ^ L < M ) holds for all
+xeP(e) iff Li^max (ai, ..., a5) and A(m/p?! ... p°s) divides M-L.
+Theorem 5,2 is a relation of this form with the smallest possible exponents.
+390
+
+8. New extensions of a classical result
+There is an old result of Gauss stating that
+
+Пи-Í
+uєG(l)
+
+if m = 4, or m=pa,
+(podd, a.= l)
+in all other cases.
+
+[-1]
+[1]
+
+or m = 2p a ,
+
+We extend this result by considering the products TIe = \\ u and IK = II u
+ueG(e)
+
+ueP(e)
+
+for a given idempotent eeSm. We may exclude the case e = [0], since then
+ne = Ue = [0] and the case e = [1] given by Gauss (though this last one will follow
+from our considerations).
+We suppose in the following again m = p°l ... pa\
+The relation between TIe and IIe is given by the following.
+Lemma8,1. If e = fi ... fs = [pa*... pa>a], [ a ] e G ( l ) , 0<s<r,
+= (ne)v, where v=pa1*-1 ...pa>-\
+
+then ITe =
+
+Proof. Since e e P(e), we may write IK = ( n u)e = \\ (ue). We have seen
+ueP(e)
+
+ueP(e)
+
+(see Section 7) that the homomorphismtye:P(e)-»G(e) defined by u*->ue sends
+always p? 1 " 1 ... p? s _ 1 different elements eP(e) into the same element ue e G(e).
+Hence HJ = (n«)Pl0-~,"-p-V1> which proves Lemma 8,1.
+If e = /i... /,, then by Lemma 4,3 we have G(e) = G,+i... G r • e and for xed
+(i = s +1,..., r) the mapping xi-»jte, is an isomorphism of G< onto G,e. Hence for
+s + 1 S i^ r\[u = (Y\u) • e. Denote ft = i - ^ J = - 9 ? J ^ ^ ^ ) . W e then have
+ueGte
+
+(8,1)
+
+<PlP.')
+
+ueGi
+
+n,= n «=[
+
+n
+
+u6G,+i,..Gr
+
+ueG(e)
+
+^(PiJ
+
+u] e -[ n «i'-...in«!''•«•
+ueG,+ i
+
+ueGr
+
+It follows that the problem reduces (in essential) to find the values of I I "•
+ueG.
+
+Lemma 8,2. For i = i, 2, ..., r we have
+
+«U,
+
+=
+
+Pi>2, o.s-51, or p a ' = 4,
+l[i] if př«2, or p f ' = 2 \ a , S 3 .
+ffi~fi
+
+if
+
+Proof. By the definition
+G = {/«+ [fc]/i 10§ft < p f., (ft, P i ) = i},
+391
+
+n«=n(/+[fc]/.)=/.+M/.,
+ueGj
+
+h
+
+where e is the product of (p(p°0 positive integers less than and prime to pa>. Denote
+this set by l/(p a ').
+1. Suppose p , > 2 ; then l/(pa<) is a cyclic group of order v = (p(pa<) with
+a generating element, say g<, so that e = gig] ... gv = g?/2(v+l) ((mod p?*). Since
+glv/2 = - 1 (mod pa') and u + 1 is odd, we have e = - 1 (mod p?-). Hence I I " =
+ueGj
+=
+
+/ « - / « •
+
+2. If p a = 2, G, is a one point group and I I M = [1].
+ueGi
+
+3. If pf' = 4, then ! ! " = (/< + /<) (/< + [3]/.) = /.-/••
+U€Gi
+
+4. If p?'=2 a , a = 3 , we use the known fact that {±5, ±5 2 , ... ±5 V }, where
+v = 2 a - 2 constitutes the set of all odd residue classes (mod 2 a ). Hence
+£ = (-l)
+
+v
+
+(5 • 52 ... 5v)2 = (52a_1 • 5"1)2 = l(mod 2 a ).
+
+Therefore n " = / + / = [1]. This proves Lemma 8,2.
+ueGi
+
+Remark. If r = l , i.e. m-pa, G(l) = Gi, we may write /i = [l], /i = [0] and
+Lemma 8,2 implies
+T-T
+__ f [-1] if m is odd or m = 4,
+uMi) M ~l[l] ifm = 2 o r m = 2 a , a = 3.
+(This constitutes a part of the statement of Gauss.)
+Henceforth we may suppose r = 2.
+We prove:
+Theorem 8,1. Let m = p°l ... p?r and r = 2. Let e±[l] be an idempotent eSm
+and He = \\
+
+u. We have:
+
+ueG(e)
+
+1. Tie = —e for any primitive idempotent, with the exception that m = 2ap?2 ...
+p?r, a ^ 2, a > 0 and e is the (primitive) idempotent e = U^r a , [a] e G(l). In this
+exceptional case IIe = e.
+2. ne=e for any non-primitive idempotent e Sm, with the exception of the case
+when m = 2p° 2 ... p°r and e is any of the r- 1 (non-primitive) idempotents of the
+form e = I -r—--r a, I, [a,]eG(l). In these exceptional cases we have 11*=-e.
+Proof. Let e = / i . . . / s , l . _ s < r , ri=2. We shall use Lemma 8,2 and the
+formula (8,1). We have to consider several cases.
+A. Suppose first that r - s _ ; 2 (i.e. e is a non-primitive idempotent eS m ).
+392
+
+If all primes p,+i,..., pr are odd, or r - $ ^ 3 , then all j3,+i,..., 0r are even. Since
+(fi-fi)2 = [l], formula (8,1) implies IL=e.
+There remains the case of r — s = 2, i.e. e = / i ... / r - 2 , hence p$+i = pr-i, p*+2
+= pr, where one of the primes, say p r -i, is even and pr is odd. In this case G(e)
+= Gr-, • Gre and by (8,1)
+
+n.=[ n
+ueGr-i
+
+uY-iUuf-e
+ueGr
+
+Here |3r-i = q)(p°r) is even, while |3r = g?(2arl) is equal to 1 for a r -i = 1 and even for
+ar-i^2.
+
+We shall now distinguish three cases, namely that p?--!1 • p°r is either 2p?r or 4p?r
+or 2ar-'-par, a r - i ^ 3 .
+a) If pa---i, = 2, then (by Lemma 8,2)
+ne=[ir--(/r-/r)«e.
+We shall show that this product is - e . By definition of e and fr there are elements
+[a'], [a\]e G(l) such that e = [a' • m/2p°r], fr = [a| • p?r]. Hence
+(/r-/r)e = ([2]/ r -[l])e = [2][p a r -a|][aW2p a 1-e = - e .
+Thus JT e =-e.
+b) If paii1 = 4, we have
+
+JIe=[ II MlMll "I" ^ = (/-!- fr-rY<<fr-fr)2e = e.
+c) If paiY = 2 a r - a r - i S 3 , t h e n l l , = [ l l M / r - / ^ ' e = e.
+B. Suppose next that r-s = \, i.e. e = /i ... /r-i =s /r, where fT is a primitive
+idempotent eS m . In this case we have II* = [ II U]e = [ II w]/r.
+U 6 Gr
+
+J
+
+tt
+
+e Gr
+
+a) If p r >2, then (by Lemma 8,2) TIe = (fr-fr)*ff = -/r = - e .
+b) If p?r= 2, then n*= [l]/ r = e.
+c) If p?r = 4, then n e = (/r-/r)/r = - e .
+d) If p ar =2° r , ar^3, then JTe = [l]/ r = e.
+The proof of Theorem 8,1 is complete.
+393
+
+Remark. The formula (8,1) can be extended also to the case e = [1], r S 2 . It
+has then the form
+
+n «=[n<*...[\iup
+ueG(l)
+
+ueGi
+
+ueGr
+
+and the same calculations show that the product is [1] with the exception of the case
+m = 2pa, in which case it has the value [-1]. (This is the remaining part of the
+statement of Gauss.)
+To find the value of ITe we use Lemma 8,1.
+If Ue=e, then ne = e, so that we have to consider only the cases in which
+Ue=-e.
+
+A. Suppose that e is a primitive idempotent.
+a) If all pi (i = \, ..., r) are odd, then ne = (-e)v, where v=p°1'1
+s = r- 1, hence 211 = - 6 .
+
+... p?-"1,
+
+b) If m =4p? 2 ... pa' and e is the primitive idempotent e = -j- a , [a] e G(l),
+then Ue = (-e)v, where v=p°2'1 ... pa~x, hence 211 = - e .
+B. If m = 2p°2... p°r and e is a (non-primitive) idempotent of the form, say,
+e = [a • m/2p°2], [ a ] e G ( l ) , then IK = ( - e ) v , where v=pp~1 ... p a '~\ hence
+
+m=-e.
+Combining these results with Theorem 8,1 we obtain finally (including e = [l]
+and e = [0]):
+Theorem 8,2. For any idempotent eeSm we have f l u = Yl "- The comueP(e)
+
+ueG(e)
+
+mon value of these products is specified in Theorem 8,1.
+REFERENCES
+[1] CORDES, C M.: Peгmutations mod m in the foгm ť . Ameг. Math. Monthly 83,1976,32—33.
+[2] HEWПT, E—ZUCKERMAN,H. S.: Themultiplicativesemigroupof integeгs(mod m). Pacific
+J. Math. 10, 1960, 1291—1308.
+[3] HEWПT, E.: Ceгtain congгuences that hold identically. Ameг. Math. Monthly 83, 1976,
+270—271.
+[4] KOWOL, G.—MГГSCH, H.: Polynomial functions oveг commutative semigгoups. Semigroup
+Foruml2, 1976, 109—118.
+[5] LIVINGSTON, A. E.—LГVTNGSTON, M. L.: The congruence аr+s = аa (mod m). Ameг. Math..
+Monthly 85, 1978, 97—100.
+[6] MORGADO, J.: A pгoperty of the Euler ф-function concerning the integeгs which aгe regular
+(mod m). Poгtugal. Math. 33, 1974, 185—191.
+[7] OSBORN, R.: A "good" generalization of the Euleг—Fermat thèoгem. Math. Mag. 47, 1974,
+28—31.
+394
+
+[8] PARÍZEK, B.—SCHWARZ, Š.: O multiplikatívnej pologгupe zvyškov ch tried (mod m).
+Mat.-Fyz. Časop. 8, 1958, 136—150.
+[9] PARÍZEK, B.: O rozklade pologrupy zvyškov (mod m) na diгektný súčin. Mat.-Fyz. Časop. 10,
+1960, 18—29.
+[10] SINGMASTER, D.: A maximal generalization of Feгmaťs theoгem. Math. Mag. 39, 1966,
+103—107.
+[11] SMALL, CH.: Powers mod m. Math. Mag. 50, 1977, 84—86.
+[12] VANDIVER,H.S—WEAVER,H. W.: Intгoductiontoarithmeticfactorizationandcongгuences
+fгom the standpoint of abstгact algebгa. H. E. Slaught Memorial Papers, no. 7,1958, Math. Assoc.
+of America.
+[13] ZANE, B.: Uniform distribution (mod m) of monomials. Ameг. Math. Monthly 71, 1964,
+162—164.
+[14] BUCHŠTAB, A. A.: Teorija čisel. Gos. uč.-ped. izd., Moskva, 1960.
+[15] DICKSON, L. E—BODEWIG, E.: Intгoduction to the Theoгy of Numbeгs. (German edition.)
+Teubneг, Leipzig, 1931.
+Received Octobeг 12, 1979
+MaгematickýűstavSAV
+Obгancov mieгu 49
+886 25 Bгatislava
+
+РОЛЬ ПОЛУГРУПП В ЭЛЕМЕНТАРНОЙ ТЕОРИИ ЧИСЕЛ
+Штефан Шварц
+Резюме
+Пусть 5т-мултипликативная полугруппа классов вычетов по составному модулю т. Изучается
+структура 5 т , в частности описиватся множество идемпотентов, строение максимальных групп
+и максималшных полугрупп, принадлежащих к данному идемпотенту.
+Цель этой работы показать, что многие различные теоремы, касающиеся сравнений по
+модулю т , легче понять, применяя методы известные из теории конечных коммутативных
+полугрупп (в том числе получаются и некоторые результаты, которые нельзя назвать общеиз­
+вестными). Эта точка зрения ведёт даже к результатам, которые (по всей вероятности) никогда
+небылы опубликованы. (См., например, Теоремы 5,2 и 5,3 или 8,1 и 8,2.)
+
+395
+
+

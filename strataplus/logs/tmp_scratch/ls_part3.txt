@@ -1,0 +1,508 @@
+=== sections/06_certificates.tex
+1: % ---------------------------------------------------------------------------
+2: %  §7 Certificates — the last three records, and the credit §6 took.
+3: %  Condensed 2026-10-31 (referee report 2026-10-30, §7): the checker, the
+4: %  exponentiation lemma and the certificate data moved to app_certificate_check.
+5: %  The seven values and the seven triples stay in the body.
+6: % ---------------------------------------------------------------------------
+7: 
+8: \section{Certificates}
+9: \label{sec:least-safe-certificates}
+10: 
+11: \Cref{sec:least-safe-record_ladder} stated four records, those at $\ell = 8$, $11$ and $13$ assuming
+12: that each member is a product of three primes; $\ell(N)$ is read off $G(N)$, which depends
+13: on the factorisation. This section proves the primality of the factors and states
+14: the records at $\ell = 17$, $19$ and $23$. The instrument is a Pratt certificate
+15: and a checker the kernel runs; both are set out in
+16: \cref{app:least-safe-certificates}, with the certificate data, and all that the
+17: body needs of them is one line: a certificate the checker accepts names a prime
+18: (\cref{thm:least-safe-pratt-sound}).
+19: 
+20: For the records at $\ell = 8$, $11$ and $13$ that line is applied in the block
+21: of \cref{app:least-safe-certificates}, which carries the checker's verdict and
+22: the primality of each of the nine factors: \lean{prattOK\_lsm8\_P},
+23: \lean{prattOK\_lsm8\_Q}, \lean{prattOK\_lsm8\_R} with \lean{prime\_lsm8\_P},
+24: \lean{prime\_lsm8\_Q} and \lean{prime\_lsm8\_R} at $m = 209$;
+25: \lean{prattOK\_lsm11\_P}, \lean{prattOK\_lsm11\_Q}, \lean{prattOK\_lsm11\_R}
+26: with \lean{prime\_lsm11\_P}, \lean{prime\_lsm11\_Q} and \lean{prime\_lsm11\_R}
+27: at $m = 419$; and \lean{prattOK\_lsm13\_P}, \lean{prattOK\_lsm13\_Q},
+28: \lean{prattOK\_lsm13\_R} with \lean{prime\_lsm13\_P}, \lean{prime\_lsm13\_Q}
+29: and \lean{prime\_lsm13\_R} at $m = 4619$. The first record is the exception: its three factors are settled inside the kernel by direct evaluation, in the computation of $G(N) = 60$ (\cref{app:least-safe-certificates}).
+30: 
+31: The records at $\ell = 17$, $19$ and $23$ follow, each read off the closed form of
+32: \cref{thm:least-safe-consec-closed-form} exactly as the four records of \cref{sec:least-safe-record_ladder}.
+33: 
+34: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_seventeen}
+35: \label{thm:least-safe-exists-seventeen}
+36: There is an odd composite $N$ with $\ell(N) = 17$.
+37: \end{theorem}
+38: \begin{proof}
+39: Take the fifth row of \cref{tab:least-safe-ladder}: the member $N$ of the
+40: consecutive family (\cite{Companion-monograph}) at $m = 360359$ and
+41: $K = 28475431726698356400$, whose three factors are
+42: \[
+43:   \begin{gathered}
+44:     P = 10261378101601293013947601, \\
+45:     Q = 10261406577033019712304001, \\
+46:     R = 10261435052464746410660401 .
+47:   \end{gathered}
+48: \]
+49: 
+50: The three factors are prime. Each of them carries a certificate, and the checker
+51: accepts all three (\lean{prattOK\_lsm17\_P}, \lean{prattOK\_lsm17\_Q},
+52: \lean{prattOK\_lsm17\_R}); by \cref{thm:least-safe-pratt-sound} the number each
+53: certificate names is prime (\lean{prime\_lsm17\_P}, \lean{prime\_lsm17\_Q},
+54: \lean{prime\_lsm17\_R}).
+55: 
+56: The invariant of the member is the value stated for the record. The closed form
+57: of \cref{thm:least-safe-consec-closed-form}
+58: (\lean{consec\_dvd\_residueGcd\_iff}) reads, on a member of the family whose
+59: three factors are prime, $M \mid G(N)$ exactly when $M \mid (m+1)^2$,
+60: $2M \mid P - m^2$ and $2M \mid R - (m+2)^2$. Both hypotheses hold here: the three
+61: factors are prime, as just shown, and the Korselt divisibilities $P - 1 = mK$,
+62: $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide $N - 1$, being part of the family's
+63: data (\cite{Companion-monograph}). The divisors of $G(N)$ are therefore the
+64: divisors of the gcd of $(m+1)^2$, $(P - m^2)/2$ and $(R - (m+2)^2)/2$, and that
+65: gcd is $G(N) = 6486480$, as the value theorem
+66: \lean{residueGcd\_consec\_record\_eq\_six\_four\_eight\_six\_four\_eight\_zero}
+67: records.
+68: 
+69: The member is composite. Were $N$ prime, its invariant would be $0$
+70: (\cref{thm:least-safe-zero-iff-prime}, \lean{residueGcd\_eq\_zero\_iff\_prime}),
+71: against the value just read; so $G(N) = 6486480$ is positive, which is what makes
+72: $\ell(N)$ defined at that value, and $\ell(N)$ is the least non-divisor of
+73: $6486480$. Each of $2, \ldots, 16$ divides $6486480$ and $17$ does not, so
+74: $\ell(N) = 17$, as the value theorem
+75: \lean{leastSafeModulus\_six\_four\_eight\_six\_four\_eight\_zero} records.
+76: \end{proof}
+77: 
+78: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_nineteen}
+79: \label{thm:least-safe-exists-nineteen}
+80: There is an odd composite $N$ with $\ell(N) = 19$.
+81: \end{theorem}
+82: \begin{proof}
+83: Take the sixth row of \cref{tab:least-safe-ladder}: its member $N$, at
+84: $m = 12252239$ and $K = 5985917979608424412114560$, with the three factors
+85: \[
+86:   \begin{gathered}
+87:     P = 73340897720559542310662084499841, \\
+88:     Q = 73340903706477521919086496614401, \\
+89:     R = 73340909692395501527510908728961 .
+90:   \end{gathered}
+91: \]
+92: Every step of the preceding proof has its counterpart here. The three factors
+93: are prime: each carries a certificate the checker accepts
+94: (\lean{prattOK\_lsm19\_P}, \lean{prattOK\_lsm19\_Q}, \lean{prattOK\_lsm19\_R}),
+95: and \cref{thm:least-safe-pratt-sound} turns the three verdicts into the three
+96: primalities (\lean{prime\_lsm19\_P}, \lean{prime\_lsm19\_Q},
+97: \lean{prime\_lsm19\_R}). The Korselt divisibilities $P - 1 = mK$, $Q - 1 = (m+1)K$
+98: and $R - 1 = (m+2)K$ divide $N - 1$, so the closed form of
+99: \cref{thm:least-safe-consec-closed-form} (\lean{consec\_dvd\_residueGcd\_iff})
+100: applies and gives the value $G(N) = 110270160$
+101: (\lean{residueGcd\_consec\_record\_eq\_one\_one\_zero\_two\_seven\_zero\_one\_six\_zero}).
+102: The member is composite, since its invariant is not $0$
+103: (\cref{thm:least-safe-zero-iff-prime}, \lean{residueGcd\_eq\_zero\_iff\_prime}); so
+104: $\ell(N)$ is defined at that value, and $110270160$ is divisible by each of
+105: $2, \ldots, 18$ and not by $19$, so $\ell(N) = 19$, as
+106: \lean{leastSafeModulus\_one\_one\_zero\_two\_seven\_zero\_one\_six\_zero} records.
+107: \end{proof}
+108: 
+109: \begin{theorem}\lv\lean{exists\_leastSafeModulus\_eq\_twenty\_three}
+110: \label{thm:least-safe-exists-twenty-three}
+111: There is an odd composite $N$ with $\ell(N) = 23$.
+112: \end{theorem}
+113: \begin{proof}
+114: Take the seventh row of \cref{tab:least-safe-ladder}: its member $N$, at
+115: $m = 232792559$ and $K = 27104577797036681065696572000$, with the three factors
+116: \[
+117:   \begin{gathered}
+118:     P = 6309744025986751602150352113407748001, \\
+119:     Q = 6309744053091329399187033179104320001, \\
+120:     R = 6309744080195907196223714244800892001 .
+121:   \end{gathered}
+122: \]
+123: The preceding proof supplies the pattern again, with this row's data in its
+124: place. The three factors are prime, each by a certificate the checker accepts
+125: (\lean{prattOK\_lsm23\_P}, \lean{prattOK\_lsm23\_Q},
+126: \lean{prattOK\_lsm23\_R}) and then by
+127: \cref{thm:least-safe-pratt-sound} (\lean{prime\_lsm23\_P},
+128: \lean{prime\_lsm23\_Q}, \lean{prime\_lsm23\_R}). The three Korselt divisibilities
+129: divide $N - 1$, so the closed form (\cref{thm:least-safe-consec-closed-form},
+130: \lean{consec\_dvd\_residueGcd\_iff}) applies and gives $G(N) = 931170240$
+131: (\lean{residueGcd\_consec\_record\_eq\_nine\_three\_one\_one\_seven\_zero\_two\_four\_zero}).
+132: The member is composite, since its invariant is not $0$
+133: (\cref{thm:least-safe-zero-iff-prime}, \lean{residueGcd\_eq\_zero\_iff\_prime}).
+134: Hence $\ell(N)$ is defined at $G(N) = 931170240$, which is divisible by each of
+135: $2, \ldots, 22$ and not by $23$; so $\ell(N) = 23$, as
+136: \lean{leastSafeModulus\_nine\_three\_one\_one\_seven\_zero\_two\_four\_zero}
+137: records.
+138: \end{proof}
+=== sections/07_conditional_ladder.tex
+1: \section{The conditional lower bound}
+2: \label{sec:least-safe-conditional_ladder}
+3: 
+4: \Cref{thm:least-safe-modulus-le} bounded $\ell(N)$ above, with no hypothesis
+5: anywhere, and every value of $\ell$ that the two preceding sections exhibited
+6: sits far below that bound at its own $N$. The question that is left is the other
+7: direction: whether, for every $B$, some $N$ has all of $1, 2, \ldots, B$ among the divisors of
+8: $G(N)$. Nothing in this paper settles that question without a hypothesis. By
+9: \cref{thm:least-safe-lt-of-icc-dvd} the forcing is the single divisibility
+10: $\operatorname{lcm}(1,\ldots,B) \mid G(N)$, and this section shows that the
+11: divisibility holds at the consecutive class at $m = 2\operatorname{lcm}(1,\ldots,B) - 1$:
+12: an admissible $K$ there (one satisfying the floor $m + 3 \le K$ and the congruences of the class,
+13: with $mK+1$, $(m+1)K+1$ and $(m+2)K+1$ prime)
+14: yields a composite $N$ with $\ell(N) > B$, and a bound on the size of $K$ gives $\log_2 N$ at
+15: most a constant times $B$. The hypothesis is that such a $K$ exists, with that size bound;
+16: everything else below is elementary, including the one estimate that the sharpest
+17: form of the bound spends, $\log_2 \operatorname{lcm}(1,\ldots,B) \le 4B$, which is
+18: proved here rather than assumed. The hypothesis is stated once, and every result
+19: that consumes it names it in its header.
+20: 
+21: The mechanism of that construction is Erdős's, and it is worth naming as such.
+22: Instead of asking which primes $p$ satisfy $p - 1 \mid N - 1$, it fixes the conductor
+23: $L$ first, takes primes $p \equiv 1 \pmod{L}$ and looks for a subset product
+24: $\equiv 1 \pmod{L}$: this is the device described in \S1 and carried out in \S3 of
+25: \cite{GranvillePomerance2002}, and at a single conductor the three forms are those of
+26: \cite{Chernick1939} at $m = 1$. What the hypothesis below is spent on is the reading
+27: $\ell(N) > B$, that is $L \mid G(N)$ in place of $L \mid N - 1$, together with the size
+28: bound on $K$.
+29: 
+30: \begin{definition}\lean{DicksonConsecLcmSize}
+31: \label{def:least-safe-dickson-consec-lcm-size}
+32: Let $C \ge 1$, and let $B \ge 2$. Write $L = \operatorname{lcm}(1,\ldots,B)$ and
+33: $m = 2L - 1$. The size hypothesis \lean{DicksonConsecLcmSize}\ $C$ asks that at
+34: this conductor there be an integer $K$ which satisfies the size bound (the first
+35: inequality below) and is \emph{admissible}, that is, satisfies the floor and the congruences
+36: \[
+37: \begin{gathered}
+38:   K \le \bigl(m(m+1)(m+2)\bigr)^C, \qquad m + 3 \le K, \\
+39:   (m+1) \mid K, \qquad m \mid 2K + 3, \qquad (m+2) \mid 2K + 2m + 1,
+40: \end{gathered}
+41: \]
+42: and that its three factors $P = mK + 1$, $Q = (m+1)K + 1$ and $R = (m+2)K + 1$ be
+43: prime. It does so for every $B \ge 2$.
+44: \end{definition}
+45: 
+46: The bound in that hypothesis is a power of the crude conductor of the Korselt
+47: class at $m$, the product $m(m+1)(m+2)$ (\lean{consecAtStep}); the size-free part
+48: of an admissible $K$, which is the form the core lemma consumes, is
+49: \lean{ConsecAdm}, and \lean{DicksonConsecAtSize} is the same list of conditions
+50: with the bound attached at a general conductor $m$. The choice $m = 2L - 1$ is
+51: the one that matters here, because it makes $m + 1 = 2L$, so the congruence
+52: $(m+1) \mid K$ becomes $2L \mid K$: the divisibility by half the class that the
+53: invariant takes below. Nothing in this paper proves \lean{DicksonConsecLcmSize};
+54: its two consequences here are marked conditional in their headers.
+55: 
+56: The construction rests on a size-free core.
+57: 
+58: \begin{lemma}\lv\lean{exists\_blind\_core}
+59: \label{lem:least-safe-exists-blind-core}
+60: Let $L \ge 2$ and let $K$ be admissible at $m = 2L - 1$. Then there is an odd
+61: composite $N$ with $G(N) \ge 1$, with $L \mid G(N)$, and with
+62: $N = PQR$ at the three factors of $K$ at this $m$.
+63: \end{lemma}
+64: \begin{proof}
+65: Unpack the admissibility: the floor $m + 3 \le K$, the three congruences
+66: $(m+1) \mid K$, $m \mid 2K + 3$ and $(m+2) \mid 2K + 2m + 1$, and the primality of
+67: $P = mK + 1$, $Q = (m+1)K + 1$ and $R = (m+2)K + 1$.
+68: 
+69: Those three congruences are exactly Korselt's condition on the consecutive
+70: family (\cref{lem:least-safe-consec-korselt}, \lean{consec\_korselt}): they are what makes
+71: each of $P - 1 = mK$, $Q - 1 = (m+1)K$ and $R - 1 = (m+2)K$ divide
+72: $N - 1 = PQR - 1$.
+73: 
+74: The product $N = PQR$ is odd, and at least $3$. Here $m = 2L - 1$ is odd while
+75: $m + 1 = 2L$ is even, and $(m+1) \mid K$ then forces $K$ to be even; with $m$ odd
+76: and $K$ even each of the three factors is odd, and a product of odd integers is
+77: odd. Each factor is greater than $1$, so the product is at least $3$; the members
+78: of the family are the odd integers at least $3$, so the value $PQR$ is the member
+79: $N$ of the statement, and it is the member the divisibilities above are about.
+80: 
+81: The member is composite. Its product form is a product of two integers greater
+82: than $1$, namely $P \cdot Q$ and $R$, and a product of two integers greater than
+83: $1$ is not prime.
+84: 
+85: It remains to read $L \mid G(N)$ off the family. The half-class part of the
+86: invariant's closed form on the consecutive family
+87: (\cref{lem:least-safe-consec-half}, \lean{consec\_dvd\_residueGcd\_half}) says that a
+88: member at $m = 2M - 1$ has $M \mid G(N)$ as soon as its three factors are prime,
+89: the three Korselt divisibilities $mK \mid N - 1$, $(m+1)K \mid N - 1$ and
+90: $(m+2)K \mid N - 1$ hold, $2M \mid K$, and $K \ge 2M + 2$. At $M = L$ every hypothesis is in hand:
+91: $m = 2L - 1$; the three factors are prime; the three divisibilities are the ones
+92: obtained above; $2L \mid K$ because $m + 1 = 2L$ divides $K$; and $K \ge m + 3 = 2L + 2$, the floor of the admissibility. Explicitly, with
+93: $K = 2L \cdot K'$ the divisibilities it asks for read
+94: \[
+95: \begin{gathered}
+96:   L \mid (m+1)^2 = 4L^2, \qquad
+97:   2L \mid P - m^2 = 2L\,(mK' - m + 1), \\
+98:   2L \mid R - (m+2)^2 = 2L\,((m+2)K' - (m+3)),
+99: \end{gathered}
+100: \]
+101: each visibly satisfied. Hence $L \mid G(N)$.
+102: 
+103: Finally $G(N) \ge 1$: the invariant is $0$ exactly at the primes
+104: (\cref{thm:least-safe-zero-iff-prime}, \lean{residueGcd\_eq\_zero\_iff\_prime}), and $N$ is
+105: composite, so it is not $0$. The oddness and the compositeness just established,
+106: with that positivity, the divisibility $L \mid G(N)$ and the identity
+107: $N = PQR$, are the statement.
+108: \end{proof}
+109: 
+110: The size form is one line further, and it is the shape both bounds below consume.
+111: 
+112: \begin{proposition}\lvCond\lean{exists\_blind\_of\_lcm\_size}
+113: \label{prop:least-safe-exists-blind-lcm-size}
+114: Let $C \ge 1$ and $L \ge 2$, and assume the size hypothesis
+115: \lean{DicksonConsecAtSize}\ $C$ at the conductor $m = 2L - 1$: an admissible $K$
+116: at $m$ with $K \le \bigl(m(m+1)(m+2)\bigr)^C$ exists. Then there is an odd
+117: composite $N$ with
+118: \[
+119:   L \mid G(N), \qquad
+120:   \log_2 N \;\le\; 10 + 21C + (3 + 9C)\log_2 L .
+121: \]
+122: \end{proposition}
+123: \begin{proof}
+124: The hypothesis is the admissibility of the core lemma together with the bound on
+125: $K$, so an admissible $K$ at $m = 2L - 1$ with $K \le \operatorname{consecAtStep}(m)^C$
+126: is available, and \cref{lem:least-safe-exists-blind-core} applies: there is an odd
+127: composite $N$ with $L \mid G(N)$ and $N = PQR$.
+128: 
+129: For the size, the three factors are bounded by the conductor and $K$ together:
+130: $PQR \le 2(m+2)^3K^3$ (\lean{consec\_at\_N\_le}). Here $m + 2 = 2L + 1 \le 4L$, and
+131: $\operatorname{consecAtStep}(2L-1) \le 16L^3$
+132: (\lean{consecAtStep\_le\_of\_lcm}), so $K \le (16L^3)^C$ and each factor of the
+133: product is below a power of two built from $L$ and $C$; multiplying the bounds and
+134: taking $\log_2$ gives
+135: \[
+136:   \log_2 N \;\le\; 10 + 21C + (3 + 9C)\log_2 L
+137: \]
+138: (\lean{log2\_N\_le\_of\_lcm\_size}), which is the displayed bound read at the
+139: identity $N = PQR$ above; those constants are the formal statement's and are not optimised.
+140: \end{proof}
+141: 
+142: \begin{theorem}\lvCond\lean{leastSafeModulus\_gt\_conditional}
+143: \label{thm:least-safe-modulus-gt-conditional}
+144: Assume the size hypothesis \lean{DicksonConsecLcmSize}\ $C$ of
+145: \cref{def:least-safe-dickson-consec-lcm-size}, for some $C \ge 1$. Then for
+146: every $B \ge 2$ there is an odd composite $N$ with
+147: \[
+148:   \ell(N) > B, \qquad
+149:   \log_2 N \;\le\; (13 + 30C)\,B\,(\log_2 B + 1).
+150: \]
+151: \end{theorem}
+152: \begin{proof}
+153: Fix $B \ge 2$ and put $L = \operatorname{lcm}(1,\ldots,B)$. Then $L \ge 2$: the
+154: integer $2$ lies in $[1,B]$ for $B \ge 2$, so it divides $L$, and $L$ is not $0$
+155: (\lean{two\_le\_lcm\_Icc}). This is the criterion's hypothesis made concrete ---
+156: the bound about to be forced is the least common multiple itself.
+157: 
+158: The size hypothesis is used here for the first time, at the conductor this $B$
+159: determines: \lean{DicksonConsecLcmSize}\ $C$ is, at $B$, the statement that an
+160: admissible $K$ with $K \le \operatorname{consecAtStep}(2L-1)^C$ exists.
+161: 
+162: By \cref{prop:least-safe-exists-blind-lcm-size} there is an odd composite $N$
+163: with $L \mid G(N)$ and $\log_2 N \le 10 + 21C + (3+9C)\log_2 L$.
+164: 
+165: Every $m$ with $1 \le m \le B$ divides $L$ --- that is the defining property of a
+166: least common multiple --- hence divides $G(N)$ by transitivity. So
+167: \cref{thm:least-safe-lt-of-icc-dvd} (\lean{lt\_leastSafeModulus\_of\_Icc\_dvd})
+168: applies and gives $B < \ell(N)$. The construction forces
+169: the one divisibility that the criterion reads as the absence of a witness below $B$.
+170: 
+171: It remains to bound $\log_2 L$ by $B$ alone. The least common multiple of
+172: $1, \ldots, B$ divides $B!$ (\lean{lcm\_Icc\_dvd\_factorial}), and $B!$ is at most
+173: $B^B$ for every $B$ (\cite{Mathlib2020}, \lean{Nat.factorial\_le\_pow}); so $L \le B^B$, which
+174: is the same pair of facts read at $L$ (\lean{lcm\_Icc\_le\_factorial}). As
+175: $B < 2^{\log_2 B + 1}$, raising to the $B$-th power gives
+176: $B^B < 2^{B(\log_2 B + 1)}$, hence
+177: $\log_2 L \le B(\log_2 B + 1)$ (\lean{log2\_lcm\_Icc\_lt},
+178: \lean{log2\_lcm\_Icc\_le\_mul}). The two exponents of this section are named here:
+179: the factorial form above carries the exponent \lean{lsmFacExponent}, which at the
+180: hypothesis's constant $C$ is $13 + 30C$, and the linear form stated below carries
+181: \lean{lsmLinExponent}, the same $13 + 30C$ scaled by the comparison of $4$ against $\log_2 B + 1$. The named class
+182: \lean{LcmLogBound}\ $\kappa$ is the statement
+183: $\log_2 \operatorname{lcm}(1,\ldots,B) \le \kappa B$ at every $B \ge 1$, and its
+184: $\kappa = 4$ case is discharged a few paragraphs on.
+185: 
+186: The constants absorb. Since $B(\log_2 B + 1) \ge 1$, the term
+187: $10 + 21C$ is at most $(10+21C) \cdot B(\log_2 B + 1)$, and adding
+188: $(3+9C) \cdot B(\log_2 B + 1)$ to it gives
+189: $(13 + 30C) \cdot B(\log_2 B + 1)$. So there is an odd composite $N$ with
+190: $\ell(N) > B$ and $\log_2 N \le (13+30C)B(\log_2 B + 1)$.
+191: \end{proof}
+192: 
+193: The linear form of that bound needs one estimate about the least common multiple
+194: of an initial segment, and the estimate is proved here rather than assumed.
+195: 
+196: \begin{lemma}\lv\lean{lcm\_Icc\_le\_four\_pow\_two\_mul}
+197: \label{lem:least-safe-lcm-le-four-pow-two-mul}
+198: For every $n \ge 0$, $\operatorname{lcm}(1,\ldots,n) \le 4^{2n}$.
+199: \end{lemma}
+200: \begin{proof}
+201: At $n = 0$ the empty least common multiple is $1$ and $4^0 = 1$.
+202: 
+203: For $n \ge 1$ the estimate is proved through the primorials, the products of the
+204: primes below a bound. The argument has four parts, all machine-checked. First, the
+205: least common multiple is the product of the primorials at the integer roots:
+206: \[
+207:   \operatorname{lcm}(1,\ldots,n) \;=\; \prod_{k \le \log_2 n}
+208:     \operatorname{primorial}\bigl(\lfloor n^{1/k}\rfloor\bigr)
+209:   \qquad (\lean{lcm\_Icc\_eq\_prod\_primorial}).
+210: \]
+211: Second, that identity is prime by prime. At a prime $p$ the exponent of $p$ in
+212: $\operatorname{lcm}(1,\ldots,n)$ is $\log_p n$, which counts the $k$ with
+213: $p^k \le n$ (\lean{factorization\_lcm\_Icc}, \lean{log\_eq\_card\_pow\_le}), and
+214: those $k$ all lie below $\log_2 n$, since $\log_p n \le \log_2 n$
+215: (\lean{log\_le\_log2}); on the right, the exponent of $p$ in the product counts
+216: the $k$ with $p \le \lfloor n^{1/k}\rfloor$ (\lean{factorization\_primorial}, with
+217: \lean{factorization\_finset\_lcm} and \lean{factorization\_le\_log} supplying the
+218: factorization of a least common multiple and the bound on one exponent of it), and
+219: $p \le n^{1/k}$ is the same condition as $p^k \le n$. Third, each primorial is at
+220: most $4$ raised to its argument (\cite{Mathlib2020}, \lean{primorial\_le\_4\_pow}), so
+221: the least common multiple is at most
+222: $4^{\sum_{k \le \log_2 n} \lfloor n^{1/k}\rfloor}$. Fourth, that root sum is at
+223: most $2n$: the term at $k = 1$ is $n$ itself, and each of the terms from $k = 2$ on
+224: is at most $\sqrt n$ (\lean{nthRoot\_le\_sqrt}), while there are at most
+225: $\sqrt n$ of them, because the indices run over $2, \ldots, \lfloor \log_2 n \rfloor$ and
+226: $\log_2 n - 1 \le \sqrt n$
+227: (\lean{sum\_nthRoot\_le\_two\_mul}, \lean{log2\_le\_sqrt\_succ}, the last from
+228: $(s+1)^2 < 2^{s+2}$, \lean{sq\_succ\_lt\_two\_pow}).
+229: 
+230: Hence $\operatorname{lcm}(1,\ldots,n) \le 4^{2n}$ for every $n$, and no
+231: hypothesis was used anywhere in the argument.
+232: \end{proof}
+233: 
+234: \begin{theorem}\lv\lean{lcmLogBound\_four}
+235: \label{thm:least-safe-lcm-log-bound-four}
+236: For every $B \ge 1$,
+237: $\log_2 \operatorname{lcm}(1,\ldots,B) \le 4B$: the hypothesis class
+238: \lean{LcmLogBound} holds at $\kappa = 4$.
+239: \end{theorem}
+240: \begin{proof}
+241: In base two, \cref{lem:least-safe-lcm-le-four-pow-two-mul} reads
+242: $\operatorname{lcm}(1,\ldots,B) \le 4^{2B} = 2^{4B}$
+243: (\lean{lcm\_Icc\_le\_two\_pow\_four\_mul}, the same estimate with the base
+244: changed). A power-of-two bound inverts into a logarithmic one: $n \le 2^k$ gives
+245: $\log_2 n \le k$ (\lean{log2\_le\_of\_le\_pow}). At $k = 4B$ and
+246: $n = \operatorname{lcm}(1,\ldots,B)$ the two give
+247: $\log_2 \operatorname{lcm}(1,\ldots,B) \le 4B$ for every $B \ge 1$. So the
+248: $\kappa = 4$ case of the named class is a theorem, proved from the estimate alone,
+249: and the bound below spends nothing beyond it.
+250: \end{proof}
+251: 
+252: \begin{theorem}\lvCond\lean{leastSafeModulus\_gt\_linear\_conditional}
+253: \label{thm:least-safe-modulus-gt-linear-conditional}
+254: Assume the size hypothesis \lean{DicksonConsecLcmSize}\ $C$ of
+255: \cref{def:least-safe-dickson-consec-lcm-size}, for some $C \ge 1$. Then for
+256: every $B \ge 2$ there is an odd composite $N$ with
+257: \[
+258:   \ell(N) > B, \qquad \log_2 N \;\le\; (52 + 120C)\,B .
+259: \]
+260: \end{theorem}
+261: \begin{proof}
+262: Fix $B \ge 2$ and put $L = \operatorname{lcm}(1,\ldots,B)$, so that $L \ge 2$
+263: (\lean{two\_le\_lcm\_Icc}). The size hypothesis at this $B$ gives an admissible $K$
+264: at $m = 2L - 1$ with $K \le \operatorname{consecAtStep}(2L-1)^C$, and
+265: \cref{prop:least-safe-exists-blind-lcm-size} yields an odd composite $N$ with
+266: $L \mid G(N)$ and $\log_2 N \le 10 + 21C + (3+9C)\log_2 L$.
+267: 
+268: Every $m$ with $1 \le m \le B$ divides $L$, hence $G(N)$, so
+269: \cref{thm:least-safe-lt-of-icc-dvd} (\lean{lt\_leastSafeModulus\_of\_Icc\_dvd})
+270: gives $B < \ell(N)$, exactly as at the factorial form above; only the bound on
+271: $\log_2 N$ changes.
+272: 
+273: The discharge of \cref{thm:least-safe-lcm-log-bound-four} replaces the factorial
+274: bound: $\log_2 L \le 4B$, so
+275: $\log_2 N \le 10 + 21C + (3+9C) \cdot 4B$. The constants absorb again, now against
+276: a multiple of $B$: $10 + 21C \le (10+21C)B$ because $B \ge 2$, and the two terms
+277: add to $10 + 21C + (12 + 36C)B \le (52 + 120C)B$, which is
+278: \lean{lsmLinExponent}\ $C \cdot B$, that exponent's value being $52 + 120C$.
+279: 
+280: So for every $B \ge 2$ there is an odd composite $N$ with $\ell(N) > B$ and
+281: $\log_2 N \le (52+120C)B$.
+282: \end{proof}
+283: 
+284: The two bounds can now be compared. \Cref{thm:least-safe-modulus-le} sees every odd
+285: composite by a modulus of size at most $2\log_2(N(N-1)) + 3$, with no hypothesis;
+286: \cref{thm:least-safe-modulus-gt-linear-conditional} exhibits, under
+287: \lean{DicksonConsecLcmSize}\ $C$ and only under it, composites whose least safe
+288: modulus exceeds $B$ while $\log_2 N$ stays below a constant multiple of $B$.
+289: Along those members and under that hypothesis, $\ell$ and $\log N$ grow at the
+290: same rate; neither inequality alone says anything about the growth of $\ell$ at an
+291: arbitrary composite. The two constants are related: the linear constant $52 + 120C$ is $4 \cdot (13 + 30C)$, so the two
+292: forms differ only in the factor $4B$ of the linear form against $B(\log_2 B + 1)$ of the
+293: factorial form. With $\log_2$ the integer part, $\log_2 B + 1 > 4$ exactly when $B \ge 16$, so
+294: the linear form is the sharper of the two from $B = 16$ on, at every $C$.
+295: 
+296: The smallest bound the records exhibit makes the shape of those inequalities
+297: visible by hand. At the second row of \cref{tab:least-safe-ladder} the invariant
+298: is $420$, each of $2, \ldots, 7$ divides it and $8$ does not, and the member has
+299: $2^{126} \le N < 2^{127}$; the criterion's divisibility holds at $B = 7$, where
+300: $\operatorname{lcm}(1,\ldots,7) = 420$ divides $420$, and fails at $B = 8$, where
+301: $\operatorname{lcm}(1,\ldots,8) = 840$ does not. So $B = 7$ is the largest bound
+302: at which the divisibility holds at that row, its $\ell$ is $B + 1$, and its
+303: $\log_2 N$ is $126$, far below the linear bound
+304: $(52 + 120C) \cdot 7 = 1204$ at $C = 1$ (the factorial form allows $(13 + 30) \cdot 7 \cdot (\log_2 7 + 1) = 43 \cdot 7 \cdot 3 = 903$ there).
+305: The row is not the construction's member: the member the theorem builds sits at
+306: $m = 2 \cdot 420 - 1 = 839$, the row at $m = 209$. The hypothesis is not
+307: discharged by any row.
+308: 
+309: One modulus at a time, and under a hypothesis at that single modulus, the same construction says that
+310: no fixed modulus has a witness at every odd composite.
+311: 
+312: \begin{theorem}\lvCond\lean{constant\_modulus\_fails\_size\_conditional}
+313: \label{thm:least-safe-constant-modulus-fails}
+314: Let $C \ge 1$ and let $M \ge 2$ be a modulus, and assume the size hypothesis
+315: \lean{DicksonConsecAtSizeMod}\ $C$ $M$: at the conductor $m = 2M - 1$ there is an
+316: admissible $K$ with $K \le \bigl(m(m+1)(m+2)\bigr)^C$. Then there is an odd
+317: composite $N$ such that no base makes $M$ a witness for $N$, with
+318: \[
+319:   \log_2 N \;\le\; 10 + 21C + (3 + 9C)\log_2 M .
+320: \]
+321: \end{theorem}
+322: \begin{proof}
+323: By its definition \lean{DicksonConsecAtSizeMod}\ $C$ $M$ is the size hypothesis
+324: at the conductor $2M - 1$, that is, it is
+325: \lean{DicksonConsecAtSize}\ $C$ $(2M-1)$: the same construction as the two bounds
+326: above, with $M$ in place of $L = \operatorname{lcm}(1,\ldots,B)$.
+327: 
+328: So \cref{prop:least-safe-exists-blind-lcm-size} applies at $L = M$, and there is
+329: an odd composite $N$ with $M \mid G(N)$ and
+330: $\log_2 N \le 10 + 21C + (3+9C)\log_2 M$.
+331: 
+332: The divisibility is the absence of a witness: by \cref{thm:least-safe-criterion}
+333: (\lean{noWitnessMod\_iff\_dvd\_residueGcd}) a modulus $M$ divides $G(N)$ exactly
+334: when no base makes it a witness, so $M \mid G(N)$ is the statement that $N$ is a
+335: $C_M$-pseudoprime (\cref{def:least-safe-pseudoprime}). That, with the bound, is
+336: the theorem.
+337: \end{proof}
+338: 
+339: \Cref{def:least-safe-dickson-consec-lcm-size} is the only unproved input of the
+340: two bounds of this section. The core \cref{lem:least-safe-exists-blind-core},
+341: the estimate \cref{lem:least-safe-lcm-le-four-pow-two-mul} and its discharge
+342: \cref{thm:least-safe-lcm-log-bound-four} carry no hypothesis at all, so the linear
+343: form uses no hypothesis besides the one in its header.
+344: 
+345: The Lean development also contains a second form of the construction, in the same file as the
+346: bounds above; the paragraph records it only to locate its names, and nothing in the paper uses
+347: it. It rests on a different hypothesis, which is not a consequence of the first. There the
+348: conductor is the crude one $\lean{consecStep}\ t$ at the power of two $m = 2^t - 1$
+349: rather than at a least common multiple, and it stays below $2^{4t+1}$
+350: (\lean{consecStep\_lt\_pow}); the size hypothesis is \lean{DicksonConsecSize}\ $C$,
+351: which asks for an admissible $K$ of size at most $\lean{consecStep}\ t$ raised to
+352: $C$ at every $t \ge 1$. What
+353: follows from it is the same reading of the one number, at the modulus $2^{2t}$
+354: and with the rate expressed through the denominator
+355: \lean{sizeExponent}\ $C = 2 + 8C$: the doubling
+356: $2 \cdot 2^t K = 2^{t+1}K$ (\lean{two\_mul\_pow\_eq}), the bounds on the three
+357: factors (\lean{consec\_factor\_le}) and on their product
+358: (\lean{consec\_N\_le}), the logarithmic form
+359: $\log_2 N \le (3 + 12C)t + 3C + 2$ under $K \le \lean{consecStep}\ t ^ C$
+360: (\lean{log2\_N\_le\_of\_size}), and the arithmetic that
+361: $(2 + 8C) \cdot 2t$ dominates that expression
+362: (\lean{sizeExponent\_covers\_bound}). Its two conditional conclusions, which are the same statement with the exponent
+363: read off, are in the Lean development: a $C_{2^{2t}}$-pseudoprime $N$ with $\log_2 N$ at most
+364: $\lean{sizeExponent}\ C \cdot 2t$ (\lean{ladder\_lower\_size\_conditional}), and
+365: the same data read as $2t \le v_2(G(N))$ together with that size bound
+366: (\lean{j\_ge\_c\_log\_conditional}). The bounds above never use this second
+367: packaging, and their conclusions are of the form $B < \ell(N)$ and not of the form
+368: $2t \le v_2(G(N))$.

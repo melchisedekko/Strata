@@ -1,0 +1,974 @@
+
+\section{Problem P-W: the Counterexamples with the Criterion Removed}
+\label{sec:pw}
+
+The previous section ended on an identification. The members of the family of
+2009 are the rows of the Demjanenko matrix read modulo two, their character sums
+are the generalised Bernoulli numbers $B_{1,\xi}$, and the formula was computing
+a classical object. That identification says what the formula reads; it does not
+say where the criterion has no witness.
+
+At some Carmichael numbers the criterion is zero at every base. On a squarefree
+$N \equiv 1 \pmod 4$ that is Korselt --- $p-1 \mid N-1$ for every prime $p \mid N$
+--- with at least
+two prime factors, it happens at some and not at others, and whether it happens at
+infinitely many is not a question about the criterion at all. This section takes
+the criterion out of its own question. On that locus the vanishing is an arithmetic
+condition on the numerators of one congruence: every
+$v_p \equiv -(N/p)^{-1} \pmod p$ divisible by four, and their Egyptian sum
+carrying nothing. Written that way the question names no residue, no base and no
+modulus, and it is open; nothing in this section decides it.
+
+The section proves that the two forms of the question are the same statement; it certifies
+eight members with kernel-checked data; and it proves that a
+member propagates along its residue class and that one whole family ---
+$\bigl((b-1)m+1,\; bm+1,\; (b+1)m+1\bigr)$ for even $b$ --- is decided by three
+ divisibilities once its three forms are prime. Each of those is a theorem in the strict sense, unconditional and
+marked $\lv$ alone; the hypothesised form of the question is one subsection at the
+end, where every statement carries its hypothesis in its signature.
+
+The same problem is stated in \cite{Companion-korselt-misses} layer by layer: the
+unconditional reduction to at most five factors and the certified instances, then what a
+Dickson-type hypothesis adds. Here the order is
+the question first, then the certified evidence, then the hypothesis. The eight
+members of
+\S\ref{sec:pw-members} are what this development certifies and not a census: no
+count of members, and no claim that the table is complete, appears anywhere
+below.
+
+The section reads as its argument runs. \S\ref{sec:pw-condition} writes the vanishing
+as an arithmetic condition and gives the carry its floor;
+\S\ref{sec:pw-problem} states the problem in its two forms and proves them the
+same statement; \S\ref{sec:pw-members} certifies eight members, by size;
+\S\ref{sec:pw-propagate} proves that a member propagates along its class and
+checks that the classes of this development are admissible;
+\S\ref{sec:pw-evenb} decides one family in full; \S\ref{sec:pw-hypothesis} says
+what a hypothesis would add and stops; \S\ref{sec:pw-close} says what is not
+decided.
+
+\subsection{The vanishing is an arithmetic condition}
+\label{sec:pw-condition}
+
+Throughout, $x \ge 2$ and $N = N(x) = 2x-1$. The locus is the one on which the criterion
+is zero at every base: $N$ squarefree, $N \equiv 1 \pmod 4$, at least two prime factors,
+and $p-1 \mid N-1$ for every prime $p \mid N$, which is Korselt's criterion
+\cite{Korselt1899} read at $N$. The criterion's own value at $N$ and the base $m$
+is $\ffn{x}{m} = \Efn{x}{m} \bmod 4$, and the criterion \emph{vanishes identically}
+at $N$ when $\ffn{x}{m} = 0$ at every base $m$, that is when $\lean{AllZero}\, x$ holds
+(\S\ref{sec:definitions}). For $p \mid N$ the \emph{cofactor} of $p$ in $N$ is
+$\lean{cof}$ of \S\ref{sec:wrap}; at a prime factor of a squarefree number it is
+the quotient $N/p$, and the prose writes $N/p$ from here on.
+
+A \emph{numerator} at $p$ is an integer $v_p$ with
+\[
+  0 < v_p < p,
+  \qquad
+  p \;\Big|\; v_p\,\frac{N}{p} + 1 .
+\]
+One exists at every prime of every finite set of primes, and the reason is a
+unit. For a finite set $S$ of primes and $p \in S$, the cofactor
+$\lean{cof}(S,p)$ is not divisible by $p$: if it were, $p$ would divide a product
+of primes none of which is $p$. So $\lean{cof}(S,p)$ is invertible modulo $p$,
+$-\lean{cof}(S,p)^{-1}$ is a class modulo $p$, its least non-negative
+representative is non-zero and below $p$, and the divisibility holds by
+construction:
+\[
+  \exists v : \N \to \Z,\ \forall p \in S,\
+  0 < v_p < p \ \wedge\ p \mid v_p\,\lean{cof}(S,p) + 1
+  \qquad
+  (\lv\ \lean{exists\_numerators}).
+\]
+The numerator is moreover unique: two integers in $(0,p)$ with $p \mid v\,c+1$
+coincide, because their difference is a multiple of $p$ of absolute value below
+$p$ ($\lv$ \lean{resid\_unique}). So ``the numerator at $p$'' is a property of $N$
+and not of a choice, and a condition on the numerators is a condition on $N$.
+
+That is what makes the next display a statement about arithmetic.
+
+\begin{theorem}[The vanishing is an arithmetic condition]
+\label{thm:pw-at}
+\lv{} \lean{allZero\_iff\_pw\_at}
+Let $x \ge 2$ and $N = N(x)$. Suppose that $N \equiv 1 \pmod 4$, that $N$ is
+squarefree, that $\omega(N) \ge 2$, and that $p-1 \mid N-1$ for every prime
+$p \mid N$. Then the criterion vanishes identically at $N$ if and only if there
+are integers $v_p$, indexed
+by the primes $p \mid N$, with
+\[
+  0 < v_p < p, \qquad p \;\Big|\; v_p\,\frac{N}{p} + 1, \qquad 4 \mid v_p
+  \qquad (p \mid N),
+\]
+and
+\begin{equation}
+\label{eq:pw-at}
+  \sum_{p \mid N} v_p\,\frac{N}{p} \;=\; N-1 .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+All three ingredients are \S\ref{sec:korselt}'s, and the hypothesis $N \equiv 1
+\pmod 4$ is what lets them be read here. First, $x$ is odd: $N = 2x-1 \equiv 1$
+modulo four gives $2x \equiv 2$, hence $x \equiv 1$ modulo two. Second, the prime
+factors of $N$ are prime, their product is $N$ because $N$ is squarefree, and
+$p-1 \mid 2x-2 = N-1$ is the Korselt hypothesis, so the set
+$S = \lean{primeFactors}\, N$ carries the data the earlier section's statements
+ask for. Third, on a squarefree Korselt number the criterion passes at every base
+exactly when $4 \mid G(N)$ (Theorem~\ref{thm:criterion-four} of
+\S\ref{sec:korselt}); and at a fixed set of numerators, $M \mid G(N)$ is
+equivalent to $M \mid v_p$ for every $p$ once the numerators do not carry
+($\lv$ \lean{korselt\_dvd\_residueGcd\_iff\_numerators}), while if they do carry
+then $G(N) = 1$ ($\lv$ \lean{korselt\_residueGcd\_noCarry}, second conjunct).
+
+Suppose first that the criterion vanishes identically at $N$, so $4 \mid G(N)$.
+Take the canonical numerators
+$v_p = -(N/p)^{-1}$ of the display above. If they satisfy \eqref{eq:pw-at}, the
+numerator criterion at $M = 4$ turns $4 \mid G(N)$ into $4 \mid v_p$ for every
+$p$, which is the second clause. If they do not, the no-carry theorem's second
+conjunct gives $G(N) = 1$, contradicting $4 \mid G(N)$; so that case does not
+arise, and the two clauses hold as stated.
+
+Conversely, let $v_p$ be integers with the three properties of the display and
+with the sum \eqref{eq:pw-at}. The numerator criterion at $M = 4$ reads them back
+as $4 \mid G(N)$, and Theorem~\ref{thm:criterion-four} turns that divisibility
+into a pass at every base.
+\end{proof}
+
+The two clauses are the traces of the two objects the criterion reads.
+$4 \mid v_p$ is the trace of the coefficient and of the report modulo four: the
+coefficient of 2009 is $2^{-1}$ modulo $N$ up to sign, and the value it produces
+is a residue modulo four, so what survives of it on the Korselt locus is a
+divisibility of the numerators by four. Equation~\eqref{eq:pw-at} is the trace of
+the residue: divided by $N$ it reads $\sum_{p \mid N} v_p/p = 1 - 1/N$, so the
+numerators are the coefficients of a partial-fraction expansion of $1 - 1/N$ whose
+denominators are the primes of $N$. Neither clause mentions $f$,
+$E$, a base or a modulus; both are statements about $N$ and its prime factors.
+That is the whole content of the phrase in the title.
+
+The second clause deserves the name the book already gave it. The \emph{carry} of
+\S\ref{sec:korselt} is the integer $C$ with
+$\lean{egyptianSum}(S,v) = (C+1)N-1$ (\eqref{eq:carry} there, $\lv$
+\lean{egyptianSum\_eq\_carry\_mul}), and \eqref{eq:pw-at} says $C = 0$. The form
+in which the condition is handed over is a floor. Since
+$p \cdot \lean{cof}(S,p) = \prod_{q \in S} q$ ($\lv$ \lean{mul\_cof}), each term
+of the sum is $v_q/q = v_q \lean{cof}(S,q)/N$, so the sum of the fractions
+$v_q/q$ over $q \in S$ is $C+1-1/N$; omitting one term $v_p/p$ leaves
+\[
+  \sum_{q \in S,\ q \ne p} \frac{v_q}{q}
+  \;=\; C + \Bigl(1 - \frac{1}{N} - \frac{v_p}{p}\Bigr),
+\]
+and the bracket lies strictly between $0$ and $1$ because $0 < v_p < p$ and
+$p < N$. Hence
+\begin{equation}
+\label{eq:pw-carry}
+  C \;=\; \Bigl\lfloor \sum_{q \in S,\ q \ne p} \frac{v_q}{q} \Bigr\rfloor
+  \qquad
+  (\lv\ \lean{carry\_eq\_floor}),
+\end{equation}
+for every $p \in S$, and in particular
+\[
+  C = 0 \iff \sum_{q \in S,\ q \ne p} \frac{v_q}{q} < 1
+  \qquad
+  (\lv\ \lean{carry\_eq\_zero\_iff\_sum\_lt\_one}).
+\]
+So ``carries nothing'' is not a bookkeeping condition but an inequality between
+fractions, for any one omitted prime. That is the form in which the condition is
+a statement about numbers and not about a filter, and the reason the problem can
+be handed to a reader who has never seen the criterion.
+
+One number shows what a member is not. A Korselt number
+congruent to $1$ modulo four is not automatically one at which the criterion
+vanishes identically: at $N = 188461$ the
+invariant is $1$ ($\lv$ \lean{residueGcd\_188461\_eq\_one},
+\S\ref{sec:korselt}), hence $4 \nmid G$ and the criterion has a witness at it. The members
+of P-W are not what a Korselt number usually is, and the sentence is worth its
+space because the opposite reading --- that the criterion has no witness at
+Carmichael numbers --- is
+the first one a reader forms, and it is false.
+
+\subsection{The problem, and its two forms}
+\label{sec:pw-problem}
+
+\begin{definition}[Problem P-W]
+\label{def:pw-problem}
+\lean{PWProblem}
+For every bound $n_0$ there is a natural number $n > n_0$ such that
+$n \equiv 1 \pmod 4$, $n$ is squarefree, $\omega(n) \ge 2$, $p-1 \mid n-1$ for
+every prime $p \mid n$, and there are integers $v_p$ with $0 < v_p < p$,
+$p \mid v_p\,(n/p) + 1$ and $4 \mid v_p$ for every $p \mid n$, whose Egyptian sum
+is exactly one less than the number:
+\[
+  \sum_{p \mid n} v_p\,\frac{n}{p} \;=\; n-1 .
+\]
+\end{definition}
+
+Read clause by clause, the definition has six clauses, and not one mentions the
+criterion. The congruence $n \equiv 1$ modulo four is the class on which the
+criterion is decided by a divisibility; squarefreeness and $\omega(n) \ge 2$ are
+the shape of a Korselt number above the semiprimes; $p-1 \mid n-1$ is Korselt's
+criterion itself, which is a statement about $n$ alone; and the last two clauses
+are the arithmetic condition of Theorem~\ref{thm:pw-at}, which
+Theorem~\ref{thm:pw-nocarry} states in the criterion's own letters, the second of
+them being $C = 0$, that is \eqref{eq:pw-carry} read with the floor at zero. The
+letter $n$ is not
+the $N(x)$ of the rest of the book: it is any natural number, and the parameter
+$x$ comes back only in the second form.
+
+A \emph{member} is a number with the six clauses and without the bound. Write
+$\lean{PWData}(n)$ for that predicate; then P-W says that for every $n_0$ there is
+$n > n_0$ with $\lean{PWData}(n)$, and the two predicates are the same statement
+($\lv$ \lean{pwProblem\_of\_pwData}, which is the definition read). The section
+writes ``$n$ carries P-W data'' from here on, and every member of
+\S\ref{sec:pw-members} is certified in that form.
+
+\begin{definition}[The criterion zero at infinitely many Korselt numbers]
+\label{def:korselt-miss-infinite}
+\lean{KorseltMissInfinite}
+For every bound $n_0$ there is an $x \ge 2$ with $N(x) > n_0$ such that
+$N(x) \equiv 1 \pmod 4$, $N(x)$ is squarefree, $\omega(N(x)) \ge 2$,
+$p-1 \mid N(x)-1$ for every prime $p \mid N(x)$, and $\lean{AllZero}\, x$.
+\end{definition}
+
+The two definitions have the same five arithmetic clauses; they differ in the
+letter of the number and in the last clause, which the second compresses into
+$\lean{AllZero}\, x$. That is the criterion's own form of the question: the
+parameter is $x$, the number is $N = 2x-1$, and the condition on the numerators
+is the predicate the earlier Parts were about.
+
+Between the two forms sits one identity, and it is the one the earlier sections
+state in their own letters: for an arbitrary finite set $S$ of primes with
+product $N$ and an arbitrary vector of numerators, a pass at $N$ is exactly the
+arithmetic condition.
+
+\begin{theorem}[The criterion's own form of the condition]
+\label{thm:pw-nocarry}
+\lv{} \lean{korselt\_allZero\_iff\_noCarry\_four\_dvd}
+Let $x \ge 2$ be odd, put $N = N(x)$, and let $S$ be a finite set of primes with
+$\prod_{p \in S} p = N$, $|S| \ge 2$ and $p-1 \mid 2x-2$ for every $p \in S$.
+Let $v_p \in (0,p)$ be integers with $p \mid v_p\,\lean{cof}(S,p)+1$ for every
+$p \in S$. Then the criterion vanishes identically at $N$ if and only if
+\[
+  \sum_{p \in S} v_p\,\lean{cof}(S,p) \;=\; N-1
+  \qquad\text{and}\qquad
+  4 \mid v_p \quad (p \in S).
+\]
+\end{theorem}
+
+\begin{proof}
+The product over a finite set of primes is squarefree, and $x$ odd makes
+ $N \equiv 1 \pmod 4$, so the hypotheses of Theorem~\ref{thm:criterion-four} are
+ met: on the Korselt locus the pass is the divisibility $4 \mid G(N)$, and it
+ suffices to determine when four divides the invariant. Split on the sum.
+
+If the sum is $N-1$, the numerator criterion at $M = 4$
+($\lv$ \lean{korselt\_dvd\_residueGcd\_iff\_numerators}) gives that $4 \mid G(N)$
+holds exactly when $4 \mid v_p$ for every $p \in S$, which is the second clause.
+
+If the sum is not $N-1$, the second conjunct of the no-carry theorem
+($\lv$ \lean{korselt\_residueGcd\_noCarry}) gives $G(N) = 1$, so $4 \mid G(N)$
+fails and the right-hand side fails with it, its first clause being false.
+
+Composing the two cases, the pass is equivalent to the conjunction of the display
+in both directions.
+\end{proof}
+
+Now the two definitions are the same statement, and the proof is a change of
+letter.
+
+\begin{theorem}[The problem is the question with the criterion removed]
+\label{thm:pw-iff}
+\lv{} \lean{pwProblem\_iff}
+Problem~\ref{def:pw-problem} holds if and only if
+Definition~\ref{def:korselt-miss-infinite} does.
+\end{theorem}
+
+\begin{proof}
+Let P-W hold and let $n_0$ be a bound. Take $n > n_0$ with the six clauses. The
+number is odd, since $n \equiv 1 \pmod 4$, and $n \ge 2$ --- indeed $n \ge 6$,
+since $n$ has at least two prime factors. Put $x = (n+1)/2$; then $x \ge 2$ and
+$N(x) = 2x-1 = n$.
+
+The five arithmetic clauses rewrite along that equality: $N(x) \equiv 1$ modulo
+four, $N(x)$ squarefree, $\omega(N(x)) \ge 2$, and $p-1 \mid N(x)-1$ at every
+prime factor. For the last clause, apply Theorem~\ref{thm:pw-at} in the direction
+from the arithmetic condition to the pass, at this $x$, to the numerators the
+first definition provides: the hypotheses of that theorem are the five clauses
+just transported, and its conclusion is $\lean{AllZero}\, x$.
+
+Conversely, let Definition~\ref{def:korselt-miss-infinite} hold and let $n_0$ be a
+bound. Take $x$ with $N(x) > n_0$ and the five clauses, $\lean{AllZero}\, x$
+among them, and put $n = N(x)$. The same five rewrites give the five arithmetic
+clauses for $n$, and Theorem~\ref{thm:pw-at} in the other direction turns the
+pass into the existence of numerators with the two last properties.
+
+Hence each statement implies the other, and they differ by nothing but the letter
+of the parameter.
+\end{proof}
+
+The theorem is short and it is not a formality. Problem~\ref{def:pw-problem}
+quantifies over $n$ and never over $x$; Definition~\ref{def:korselt-miss-infinite}
+quantifies over $x$ and carries the criterion's own predicate. That the two are
+the same statement is exactly the claim that the problem \emph{is} the question
+with the criterion removed, and the proof is nothing but the change of letter,
+which is the point. In one clause: this is where the criterion of 2009 leaves the
+book. The object it defined is gone from the statement, the arithmetic it was
+reading is not.
+
+\subsection{The certified members}
+\label{sec:pw-members}
+
+Eight numbers carry kernel-checked P-W data, and the first of them is proved from
+scratch, clause by clause, so that the pattern the others repeat is visible once.
+
+\begin{theorem}[The member at $m = 22\,146$]
+\label{thm:pw-instance-12510}
+\lv{} \lean{pw\_instance\_1\_2\_5\_10}
+The number
+\[
+  n \;=\; 24\,055\,615\,898\,561\,844\,361
+  \;=\; 22\,147 \cdot 44\,293 \cdot 110\,731 \cdot 221\,461
+\]
+is a member: $n \equiv 1 \pmod 4$, $n$ is squarefree, $\omega(n) = 4$, $p-1 \mid
+n-1$ at its four primes, and the numerators
+\[
+  v \;=\; (3\,076,\ 14\,764,\ 46\,140,\ 24\,604)
+\]
+lie in $(0,p)$, are divisible by four, and satisfy \eqref{eq:pw-at}.
+\end{theorem}
+
+\begin{proof}
+The number is its primes. The four factors are the primes $22\,147$, $44\,293$,
+$110\,731$ and $221\,461$ ($\lv$ \lean{S\_1\_2\_5\_10\_primes}), the finite set
+$S = \lean{S\_1\_2\_5\_10} = \{22\,147,\,44\,293,\,110\,731,\,221\,461\}$ they
+form has cardinal four ($\lv$ \lean{S\_1\_2\_5\_10\_card}), its product
+is $n$ ($\lv$ \lean{S\_1\_2\_5\_10\_prod}) and $n$ is defined as that product
+($\lv$ \lean{n\_1\_2\_5\_10}, $\lv$ \lean{n\_1\_2\_5\_10\_factorization}); so
+$S = \lean{primeFactors}\, n$ ($\lv$ \lean{primeFactors\_n\_1\_2\_5\_10}).
+
+The three shape clauses are computations. The number is $1$ modulo four
+($\lv$ \lean{n\_1\_2\_5\_10\_mod\_four}); it is squarefree, being a product of
+four distinct primes ($\lv$ \lean{n\_1\_2\_5\_10\_squarefree}); and its length is
+four, which is at least two.
+
+Korselt holds at the four primes ($\lv$ \lean{n\_1\_2\_5\_10\_korselt}). Here
+$n-1 = 22\,146 \cdot Q$ with $Q = 1\,086\,228\,479\,118\,660 = 20 \cdot
+54\,311\,423\,955\,933$, and the four numbers $p-1$ are $a_i \cdot 22\,146$ for
+$a = (1,2,5,10)$, the four entries of the family. The four divisibilities are
+therefore $1 \mid Q$, $2 \mid Q$, $5 \mid Q$ and $10 \mid Q$: the first is the
+empty statement and the other three follow from the single fact that $Q$ is a
+multiple of $20$.
+
+The numerators are the four numbers of the display ($\lv$ \lean{v\_1\_2\_5\_10}):
+each is positive ($\lv$ \lean{v\_1\_2\_5\_10\_pos}), each is below its prime
+($\lv$ \lean{v\_1\_2\_5\_10\_lt}), and each is a multiple of four
+($\lv$ \lean{v\_1\_2\_5\_10\_four\_dvd}).
+
+The four congruences are the four cofactors
+\begin{gather*}
+  \lean{cof}(S, 22\,147) = 1\,086\,179\,432\,815\,363, \qquad
+  \lean{cof}(S, 44\,293) = 543\,101\,977\,706\,677, \\
+  \lean{cof}(S, 110\,731) = 217\,243\,733\,900\,731, \qquad
+  \lean{cof}(S, 221\,461) = 108\,622\,357\,428\,901
+\end{gather*}
+($\lv$ \lean{cof\_22147}, $\lv$ \lean{cof\_44293}, $\lv$ \lean{cof\_110731},
+$\lv$ \lean{cof\_221461}), each the product of the other three primes, and the
+four products $v_p \lean{cof}(S,p) + 1$ are
+\begin{gather*}
+  3\,341\,087\,935\,340\,056\,589, \qquad 8\,018\,357\,598\,861\,379\,229, \\
+  10\,023\,625\,882\,179\,728\,341, \qquad 2\,672\,544\,482\,180\,680\,205,
+\end{gather*}
+with the four quotients exhibited at each prime ($\lv$
+\lean{v\_1\_2\_5\_10\_dvd}).
+
+The Egyptian sum is exactly one less than the number,
+\begin{equation}
+\label{eq:pw-egyptian}
+  \sum_{p \in S} v_p\,\lean{cof}(S,p)
+  \;=\; 24\,055\,615\,898\,561\,844\,360 \;=\; n-1
+\end{equation}
+($\lv$ \lean{v\_1\_2\_5\_10\_sum}). The six clauses are then one statement
+($\lv$ \lean{pw\_instance\_1\_2\_5\_10}), and the same number is a member in the
+predicate's own form ($\lv$ \lean{pwData\_1\_2\_5\_10}).
+\end{proof}
+
+\begin{example}[The member at $m = 22\,146$, in full]
+\label{ex:pw-member}
+The arithmetic of the theorem is four divisibilities, one per prime,
+\[
+  22\,147 \mid 3\,076 \cdot 1\,086\,179\,432\,815\,363 + 1, \qquad
+  44\,293 \mid 14\,764 \cdot 543\,101\,977\,706\,677 + 1,
+\]
+\[
+  110\,731 \mid 46\,140 \cdot 217\,243\,733\,900\,731 + 1, \qquad
+  221\,461 \mid 24\,604 \cdot 108\,622\,357\,428\,901 + 1,
+\]
+whose quotients, in the order of the primes, are
+\[
+  150\,859\,616\,893\,487, \qquad 181\,029\,905\,376\,953,
+\]
+\[
+  90\,522\,309\,761\,311, \qquad 12\,067\,788\,378\,905 ;
+\]
+and the four numerators divide by four as $769$, $3\,691$, $11\,535$ and
+$6\,151$. Every clause is a finite check, and the two that matter are the last
+two: all four numerators are multiples of four, and their Egyptian sum does not
+carry. That is the pattern the rest of the section repeats at scale.
+\end{example}
+
+The remaining seven members are collected in one table, ordered by the size of
+$N$ --- which is the one thing the problem's other telling does not do, and the
+reason the table is not a list of families. Each row is one number, its length,
+the family and the parameter that produce it, and the entry that carries it. The
+second row is the member of Theorem~\ref{thm:pw-instance-12510}, whose arithmetic
+Example~\ref{ex:pw-member} records; the third is the seven-factor member that
+Example~\ref{ex:pw-seven} of \S\ref{sec:pw-evenb} returns to. Every row satisfies
+ the identity \eqref{eq:pw-at} at its own primes, which is what the last column
+ certifies.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{The members certified in this development, in increasing $N$: the
+number, its number of prime factors, the family and the parameter that produce
+it, and the entry that carries the row. The last column is the kernel-checked
+statement; the table is ordered by size and not by family, and it is not a
+census.}
+\label{tab:pw-members}
+\begin{tabular}{@{}r c >{\raggedright\arraybackslash}p{3.9cm}
+                  >{\raggedright\arraybackslash}p{2.9cm}@{}}
+\toprule
+$n$ & $\omega$ & family, parameter & entry\\
+\midrule
+$9\,085\,838\,517\,557\,761$ & $5$ & $(1,24,115,384,480)$, $m = 28$ &
+  \lean{pw\_instance\_k5}\\
+$24\,055\,615\,898\,561\,844\,361$ & $4$ & $(1,2,5,10)$, $m = 22\,146$ &
+  \lean{pw\_instance\_1\_2\_5\_10}\\
+$718\,132\,609\,376\,191\,497\,601$ & $7$ &
+  $17 \cdot 61 \cdot 113 \cdot 1\,009 \cdot 2\,017 \cdot 8\,677 \cdot 347\,041$ &
+  \lean{pw\_instance\_d7}\\
+$15\,952\,585\,018\,644\,172\,593\,910\,441$ & $4$ & $(1,2,5,10)$,
+  $m = 631\,986$ & \lean{pw\_instance\_1\_2\_5\_10\_m631986}\\
+$20\,255\,561\,818\,039\,774\,459\,636\,201$ & $4$ & $(1,2,5,10)$,
+  $m = 670\,866$ & \lean{pw\_instance\_1\_2\_5\_10\_m670866}\\
+$24\,638\,461\,220\,793\,765\,442\,114\,081$ & $4$ & $(1,2,6,9)$,
+  $m = 691\,110$ & \lean{pw\_instance\_1\_2\_6\_9}\\
+$21\,825\,241\,302\,354\,798\,940\,900\,884\,725\,761$ & $4$ & $(5,7,15,21)$,
+  $m = 6\,670\,296$ & \lean{pw\_instance\_5\_7\_15\_21}\\
+$27\,224\,159\,871\,922\,604\,904\,217\,687\,612\,666\,423\,201$ & $5$ &
+  $(2,3,10,15,30)$, $m = 3\,987\,660$ &
+  \lean{pw\_instance\_2\_3\_10\_15\_30\_m3987660}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each row's proof has the same three steps, and they are given once.
+
+First, the number is its primes. For the two further members of $(1,2,5,10)$ the
+number is the family's value at its parameter --- $\lean{n\_m631986}$ at
+$m = 631\,986$ and $\lean{n\_m670866}$ at $m = 670\,866$ ($\lv$
+\lean{n\_m631986\_eq}, $\lv$ \lean{n\_m670866\_eq}) ---, the primes are
+exhibited by their certificates, and the data are checked directly, with
+$v = (87\,776,\, 421\,324,\, 1\,316\,640,\, 702\,204)$ at $m = 631\,986$ and
+$v = (93\,176,\, 447\,244,\, 1\,397\,640,\, 745\,404)$ at $m = 670\,866$
+($\lv$ \lean{pw\_instance\_1\_2\_5\_10\_m631986}, $\lv$
+\lean{pw\_instance\_1\_2\_5\_10\_m670866}). The seven-factor member is
+$\lean{P\_d7} = (17, 61, 113, 1\,009, 2\,017, 8\,677, 347\,041)$ with
+$\lean{v\_d7} = (4, 4, 12, 388, 140, 1\,196, 400)$, its number is the product of
+the seven ($\lv$ \lean{n\_d7}, $\lv$ \lean{n\_d7\_eq}) and the data are checked
+directly at the seven primes ($\lv$ \lean{pw\_instance\_d7}).
+
+Second, the numbers are prime, and each is certified by a Pratt certificate
+\cite{Pratt1975}. A certificate is a finite object and the kernel checks it; the
+soundness is \S\ref{sec:least-safe}'s theorem, that a certificate the checker
+accepts has a prime value ($\lv$ \lean{prattOK\_prime},
+Theorem~\ref{thm:pratt-sound}). The chains are short and they are named once. The
+four primes of the first member rest on $3\,691$, which rests on $41$:
+$\lean{cert\_22147}$ ($22\,146 = 2 \cdot 3 \cdot 3\,691$), $\lean{cert\_44293}$
+($2^2 \cdot 3 \cdot 3\,691$), $\lean{cert\_110731}$
+($2 \cdot 3 \cdot 5 \cdot 3\,691$) and $\lean{cert\_221461}$
+($2^2 \cdot 3 \cdot 5 \cdot 3\,691$) on $\lean{cert\_3691}$
+($3\,690 = 2 \cdot 3^2 \cdot 5 \cdot 41$) on $\lean{cert\_41'}$, and the
+corresponding primality theorems are $\lean{prime\_22147}$,
+$\lean{prime\_44293}$, $\lean{prime\_110731}$, $\lean{prime\_221461}$,
+$\lean{prime\_3691}$ and $\lean{prime\_41}$. The second and third members of the
+family rest on $\lean{cert\_105331}$ on $\lean{cert\_3511}$: the four primes
+$631\,987$, $1\,263\,973$, $3\,159\,931$, $6\,319\,861$ by
+$\lean{cert\_631987}$, $\lean{cert\_1263973}$, $\lean{cert\_3159931}$,
+$\lean{cert\_6319861}$ and the theorems $\lean{prime\_631987}$,
+$\lean{prime\_1263973}$, $\lean{prime\_3159931}$, $\lean{prime\_6319861}$; and
+the four primes $670\,867$, $1\,341\,733$, $3\,354\,331$, $6\,708\,661$ on
+$\lean{cert\_15973}$, with $\lean{cert\_670867}$, $\lean{cert\_1341733}$,
+$\lean{cert\_3354331}$, $\lean{cert\_6708661}$ and $\lean{prime\_670867}$,
+$\lean{prime\_1341733}$, $\lean{prime\_3354331}$, $\lean{prime\_6708661}$. The
+$(1,2,6,9)$ member rests on $\lean{cert\_1097}$ on $\lean{cert\_137}$:
+$\lean{cert\_691111}$, $\lean{cert\_1382221}$, $\lean{cert\_4146661}$,
+$\lean{cert\_6219991}$ with $\lean{prime\_691111}$, $\lean{prime\_1382221}$,
+$\lean{prime\_4146661}$, $\lean{prime\_6219991}$. The $(5,7,15,21)$ member rests
+on $\lean{cert\_30881}$ on $\lean{cert\_193}$: $\lean{cert\_33351481}$,
+$\lean{cert\_46692073}$, $\lean{cert\_100054441}$, $\lean{cert\_140076217}$ with
+$\lean{prime\_33351481}$, $\lean{prime\_46692073}$, $\lean{prime\_100054441}$,
+$\lean{prime\_140076217}$. The five primes of the first member's neighbour
+$29$, $673$, $3\,221$, $10\,753$, $13\,441$ are certified by
+$\lean{cert\_673}$, $\lean{cert\_3221}$, $\lean{cert\_10753}$,
+$\lean{cert\_13441}$ and the primality theorems $\lean{prime\_29}$,
+$\lean{prime\_673}$, $\lean{prime\_3221}$, $\lean{prime\_10753}$,
+$\lean{prime\_13441}$. The seven primes of the one row without a family are
+certified by $\lean{cert\_113}$, $\lean{cert\_241}$, $\lean{cert\_1009}$,
+$\lean{cert\_2017}$, $\lean{cert\_8677}$ and $\lean{cert\_347041}$ --- the last
+two on $\lean{cert\_241}$, which rests on $2$, $3$ and $5$ --- with
+$\lean{prime\_17}$, $\lean{prime\_61}$, $\lean{prime\_113}$,
+$\lean{prime\_1009}$, $\lean{prime\_2017}$, $\lean{prime\_8677}$,
+$\lean{prime\_347041}$. The five primes of the largest member rest on
+$\lean{cert\_41}$ and $\lean{cert\_1621}$: $\lean{cert\_7975321}$,
+$\lean{cert\_11962981}$, $\lean{cert\_39876601}$, $\lean{cert\_59814901}$,
+$\lean{cert\_119629801}$ with $\lean{prime\_7975321}$,
+$\lean{prime\_11962981}$, $\lean{prime\_39876601}$, $\lean{prime\_59814901}$,
+$\lean{prime\_119629801}$. Each of the forty-six certificates is a Pratt
+certificate \S\ref{sec:least-safe} defines, and none of them is a claim about a
+family.
+
+Third, the data hold, either directly or through the propagation lemma of
+\S\ref{sec:pw-propagate}. Three rows are cross-checked both ways, which is what
+makes the propagation lemma credible on the instances it certifies:
+$\lean{pw\_instance\_1\_2\_5\_10\_via\_family}$ reproduces the first member from
+the class $m \equiv 546 \pmod{720}$, and the two further members are reproduced
+from the same class ($\lv$ \lean{pw\_instance\_1\_2\_5\_10\_m631986\_via\_family},
+$\lv$ \lean{pw\_instance\_1\_2\_5\_10\_m670866\_via\_family}). The
+$(1,2,6,9)$ and $(5,7,15,21)$ rows are proved through the lemma at their own
+classes and parameters ($\lv$ \lean{pw\_instance\_1\_2\_6\_9}, $\lv$
+\lean{pw\_instance\_5\_7\_15\_21}), and the largest is the class theorem of
+$(2,3,10,15,30)$ at $m = 3\,987\,660$: the number is
+$\lean{n\_m3987660}$ ($\lv$ \lean{n\_m3987660\_eq}) and it carries P-W data
+($\lv$ \lean{pw\_instance\_2\_3\_10\_15\_30\_m3987660}, through
+\lean{pwData\_2\_3\_10\_15\_30}).
+
+Two clauses of the table have to be read as clauses and not as claims. The
+five-factor member $\lean{pw\_instance\_k5}$ is certified at the single point
+$m = 28$ of the family $a = (1,24,115,384,480)$ ($\lv$ \lean{a\_k5}: the lemma of
+\S\ref{sec:pw-propagate} is applied with $m_0 = m = 28$ and modulus
+$759\,176\,170\,223\,816\,217\,600$, and that modulus is the lemma's device for
+the divisibility hypotheses, not a minimal period of the family; nothing about
+the family beyond that one point is claimed. And no row has $\omega = 3$ although
+the $\omega = 3$ family is treated in \S\ref{sec:pw-evenb}, because the table is
+ ordered
+by size and a Chernick member needs $4 \mid k$ (\S\ref{sec:pw-evenb}), which no
+small member satisfies; and $\omega = 2$ is excluded outright, since no squarefree
+number with two distinct prime factors is Korselt ($\lv$
+\lean{not\_korselt\_two\_primes}, \S\ref{sec:census}), so every member has at
+least three.
+
+\subsection{What propagates along a class}
+\label{sec:pw-propagate}
+
+A family is a tuple $a = (a_1,\dots,a_k)$ of distinct positive integers, and its
+numbers at $m$ are the products
+\[
+  \lean{famNk}(a,m) \;=\; \prod_{i} (a_i m + 1),
+  \qquad
+  \lean{famQk}(a,m) \;=\; \frac{\lean{famNk}(a,m) - 1}{m},
+\]
+the second written as a telescoping sum $\sum_i a_i \prod_{j<i} (a_j m + 1)$, an
+integer by construction ($\lv$ \lean{prod\_range\_telescope}, $\lv$
+\lean{famNk\_eq}); the module also has the extension $\lean{famExt}$ of a
+$k$-tuple by zero, so that a $k$-term family is a function on $\N$. At $k = 4$ the
+section writes $\lean{famN}$ and $\lean{famQ}$ for the same two functions
+($\lv$ \lean{famN\_eq}, $\lv$ \lean{famQ\_eq\_famQk}), and both are congruent
+along a class: $m \equiv m_0 \pmod M$ implies
+$\lean{famNk}(a,m) \equiv \lean{famNk}(a,m_0)$ and the same for the quotients
+($\lv$ \lean{famNk\_modEq}, $\lv$ \lean{famQk\_modEq}, and $\lv$
+\lean{famN\_modEq}, $\lv$ \lean{famQ\_modEq} at $k = 4$). A number of the family
+also dominates its parameter: $m < \lean{famNk}(a,m)$ as soon as one $a_i$ is
+positive ($\lv$ \lean{lt\_famNk}, $\lv$ \lean{lt\_famN}), which is what makes a
+family with arbitrarily large prime members produce arbitrarily large members of
+P-W.
+
+The point of a class is that the data of one point propagate to all of it.
+
+\begin{theorem}[A member propagates along its class]
+\label{thm:pw-propagate}
+\lv{} \lean{pwData\_family\_propagate\_k}
+Let $k \ge 2$, let $a_1,\dots,a_k$ be distinct positive integers, let
+$m \equiv m_0 \pmod M$ with $m \ge m_0$, and suppose that integers $w_i > 0$,
+$\alpha_i$, $\beta_i$, $u_i$ and $L \ne 0$ satisfy
+\[
+  u_i w_i = L, \qquad 4 w_i \mid M, \qquad a_i \mid M, \qquad 4 \mid M ,
+\]
+and, at the base point $m_0$,
+\begin{equation}
+\label{eq:pw-data}
+  \prod_i (a_i m_0+1) \equiv 1 \pmod 4, \qquad
+  a_i \mid \lean{famQk}(a,m_0), \qquad
+  4 w_i \mid \alpha_i m_0 + \beta_i ,
+\end{equation}
+\[
+  0 \le \alpha_i \le w_i a_i, \qquad
+  0 < \alpha_i m_0 + \beta_i < w_i\,(a_i m_0 + 1),
+\]
+together with the polynomial identity
+\[
+  \sum_i u_i\,(\alpha_i X + \beta_i) \prod_{j \ne i} (a_j X + 1)
+  \;=\; L\,\Bigl( \prod_i (a_i X + 1) - 1 \Bigr)
+  \qquad (X \in \Z).
+\]
+Then, if all the numbers $a_i m + 1$ are prime, $n = \lean{famNk}(a,m)$ carries
+P-W data.
+\end{theorem}
+
+\begin{proof}
+The class is a translation, and every arithmetic condition of the display is
+stable under it. Write $m = m_0 + M j$ with $j \ge 0$; then
+$\alpha_i m + \beta_i = (\alpha_i m_0 + \beta_i) + \alpha_i M j$, which is still
+divisible by $4 w_i$ because $4 w_i \mid M$.
+
+The numerators are the quotients $v_i = (\alpha_i m + \beta_i)/w_i$. They are
+integers, because $w_i$ divides $\alpha_i m + \beta_i$; each is a multiple of
+four, because $4 w_i$ divides that number; each is positive, because
+$\alpha_i m_0 + \beta_i > 0$ and $\alpha_i M j \ge 0$; and each is below
+$a_i m + 1$, because $\alpha_i \le w_i a_i$ together with
+$\alpha_i m_0 + \beta_i < w_i (a_i m_0+1)$ gives
+$\alpha_i m + \beta_i < w_i (a_i m + 1)$.
+
+The class modulo four is the base point's, since $4 \mid M$ divides $m - m_0$ and
+$\lean{famNk}$ is congruent along the class; so the product is $1$ modulo four.
+
+Korselt holds at every $a_i m + 1$. For $a_i \mid M$ divides $m - m_0$, so
+$\lean{famQk}(a,m) \equiv \lean{famQk}(a,m_0)$ modulo $a_i$, and the base point's
+divisibility gives $a_i \mid \lean{famQk}(a,m)$; multiplying by $m$ and using
+$\lean{famNk}(a,m) - 1 = m\,\lean{famQk}(a,m)$ gives
+$a_i m \mid \lean{famNk}(a,m) - 1$, which is $p - 1 \mid n - 1$ at
+$p = a_i m + 1$.
+
+The Egyptian sum is the polynomial identity at $X = m$. Since
+$u_i(\alpha_i m + \beta_i) = L v_i$, the left side is
+$L \sum_i v_i \prod_{j \ne i}(a_j m+1)$, the right side is $L(n-1)$, and $L \ne 0$
+cancels.
+
+It remains to assemble. Apply the generic lemma below to the $k$ primes
+$a_i m + 1$: they are distinct, since $a$ is injective and $m > 0$ --- and
+$m > 0$ because $a_i m + 1$ would be $1$ at $m = 0$, which is not prime --- and
+the divisibility, the bounds, the class modulo four, Korselt and the sum are the
+five steps above.
+\end{proof}
+
+The generic lemma is where the divisibility $p \mid v_p \lean{cof}(S,p) + 1$ is
+shown not to be a hypothesis but a consequence of the sum, and it is the reason
+the section needs a lemma about $k$ primes at all.
+
+Let $k \ge 2$, let $P_1,\dots,P_k$ be distinct primes, and let $v_i \in (0,P_i)$
+be multiples of four with $\sum_i v_i \prod_{j \ne i} P_j = \prod_i P_i - 1$.
+Then the product carries P-W data ($\lv$ \lean{pwData\_of\_fin}), and the proof
+is five readings of one sum.
+
+First, the prime factors of the product are the $P_i$: the product over the image
+of $P$ is the product over the index set, so
+$\lean{primeFactors}(\prod_i P_i)$ is the image of $P$ ($\lv$
+\lean{primeFactors\_prod\_fin}), and the cofactor at $P_i$ is the product of the
+others ($\lv$ \lean{cof\_image\_fin}), the two erase products being the ones the
+module writes out at $k = 4$ and $k = 3$ ($\lv$ \lean{prod\_erase\_fin4}, $\lv$
+\lean{prod\_erase\_fin3}).
+
+Second, the divisibility is not assumed. Split the sum at the index $i$: the term
+$v_i \prod_{j \ne i} P_j$ equals the whole product minus the other terms minus
+one, and both subtracted groups are multiples of $P_i$, the first because $P_i$
+is a factor of the product and the second because every one of its summands
+contains a factor $P_i$. Hence $P_i \mid v_i \prod_{j\ne i}P_j + 1$.
+
+Third, the product is squarefree, being a product of pairwise coprime
+squarefree numbers. Fourth, its length is $k \ge 2$, and its class modulo four is
+the hypothesis. Fifth, Korselt and the Egyptian sum transport along the identity
+of prime factors. The four clauses are then P-W data.
+
+At $k = 4$ the theorem above is stated in the same hypotheses with
+$\lean{famN}$ and $\lean{famQ}$ (\lv \lean{pwData\_family\_propagate}), and that
+form is a corollary of the general one (\lv
+\lean{pwData\_family\_propagate\_of\_k}), which is what the rest of the section
+uses. The polynomial identity is written with the erase products as
+if-then products ($\lv$ \lean{prod\_erase\_eq\_prod\_ite}) when a machine
+evaluates it, and by hand it is the partial-fraction identity the data encode.
+
+Five classes carry the section's families, and the data of each are the tuple of
+\eqref{eq:pw-data} read at its own base point.
+
+For $a = (1,2,5,10)$ the class is $m \equiv 546 \pmod{720}$
+($\lean{a\_1\_2\_5\_10}$), the data are $w = (36,3,12,9)$,
+$\alpha = (5,2,25,10)$, $\beta = (6,0,30,-24)$, $u = (1,12,3,4)$ and $L = 36$,
+and they reproduce the member of \S\ref{sec:pw-members} at $m = 22\,146$ ($\lv$
+\lean{pw\_instance\_1\_2\_5\_10\_via\_family}). For $a = (1,2,6,9)$ the class is
+$m \equiv 5\,670 \pmod{10\,080}$ ($\lean{a\_1\_2\_6\_9}$), with $w = (40,7,5,56)$,
+$\alpha = (9,4,12,45)$, $\beta = (10,0,20,-238)$, $u = (7,40,56,5)$ and
+$L = 280$. For $a = (5,7,15,21)$ the class is $m \equiv 4\,056 \pmod{26\,880}$
+($\lean{a\_5\_7\_15\_21}$), with $w = (64,32,32,64)$, $\alpha = (155,63,105,21)$,
+$\beta = (56,-40,232,-440)$, $u = (1,2,2,1)$ and $L = 64$. For
+$a = (2,3,10,15,30)$ the class is the whole residue class $m \equiv 12\,780
+\pmod{21\,840}$ ($\lean{a\_2\_3\_10\_15\_30}$), with $w = (182,28,14,52,7)$,
+$\alpha = (18,9,90,45,30)$, $\beta = (8,4,-16,228,-24)$, $u = (2,13,26,7,52)$,
+$L = 364$ and the identity $\lean{hpoly\_2\_3\_10\_15\_30}$; the class theorem is
+$\lean{pwData\_2\_3\_10\_15\_30}$, which is a statement about every member of the
+class and not a sample of it. And $a = (1,24,115,384,480)$ is used at the single
+point $m = 28$ ($\lean{a\_k5}$), through the lemma with
+$m_0 = m$, as \S\ref{sec:pw-members} records.
+
+A family that is not admissible cannot have infinitely many prime members, and
+admissibility is the local condition a Dickson-type hypothesis needs. The
+restricted forms of the class are $f_i(t) = a_i (Mt + m_0) + 1$, and
+$\lean{AdmissibleProg}(a, m_0, M)$ says that for every prime $p$ there is a $t$
+with $p \nmid \prod_i f_i(t)$.
+
+The criterion for it is a counting argument in $\Z/p\Z$. Suppose $a_i \mid M$,
+$\gcd(M, \lean{famNk}(a,m_0)) = 1$, and every prime $p \le k$ divides $M$. Then
+the tuple is admissible ($\lv$ \lean{admissibleProg\_of}), and the proof has two
+halves. If $p \mid M$ then every form is congruent to $a_i m_0 + 1$ modulo $p$, so
+at $t = 0$ the product is $\lean{famNk}(a,m_0)$, which is coprime to $M$ and
+hence to $p$. If $p \nmid M$ then $p > k$, since otherwise $p \le k$ would put
+$p \mid M$; each form is affine in $t$ with slope $a_i M \not\equiv 0$ modulo $p$,
+so it has exactly one root modulo $p$; the roots are at most $k$ in number, and
+$k < p$, so together they cannot cover $\Z/p\Z$; a $t$ outside them makes no form
+vanish. One $t$ for each prime is the definition.
+
+The four classes of this development are admissible, and the checks are finite.
+The hypothesis of the criterion is supplied by $30 \mid M$ and the fact that every
+prime $p \le 5$ divides $30$ ($\lv$ \lean{small\_primes\_dvd}); then
+$m \equiv 546 \pmod{720}$ ($\lv$ \lean{admissible\_1\_2\_5\_10}),
+$m \equiv 5\,670 \pmod{10\,080}$ ($\lv$ \lean{admissible\_1\_2\_6\_9}),
+$m \equiv 4\,056 \pmod{26\,880}$ ($\lv$ \lean{admissible\_5\_7\_15\_21}) and
+$m \equiv 12\,780 \pmod{21\,840}$ ($\lv$ \lean{admissible\_2\_3\_10\_15\_30})
+are admissible, each by one computation. What admissibility is for is exactly
+this and no more: it is the local condition a hypothesis of Dickson type needs,
+and a family that fails it has a fixed prime dividing every member of the class,
+so its members are prime at most where one of them equals that prime. The
+hypothesis itself is not proved anywhere in the book, and
+\S\ref{sec:pw-hypothesis} is where it is assumed.
+
+\subsection{One family in full}
+\label{sec:pw-evenb}
+
+The families above are four isolated tuples. One family of them is infinite in
+its parameter and decided exactly, and it is the one whose three forms are
+consecutive: for even $b \ge 2$ put
+\[
+  p_1 = (b-1)m+1, \qquad p_2 = bm+1, \qquad p_3 = (b+1)m+1,
+  \qquad n = p_1 p_2 p_3 ,
+\]
+and ask when $n$ carries P-W data. Write $b = c+1$, so that $c \ge 1$ is odd, and
+$c = 2e+1$.
+
+\begin{theorem}[The even-$b$ family]
+\label{thm:pw-even-b}
+\lv{} \lean{pwData\_even\_b\_iff}
+Let $b \ge 2$ be even and $m \ge 1$, and suppose that $p_1$, $p_2$ and $p_3$ are
+prime. Then $n = p_1p_2p_3$ carries P-W data if and only if
+\begin{equation}
+\label{eq:evenb-class}
+  \operatorname{lcm}(8,b) \mid m, \qquad
+  2m \equiv -3 \pmod{b-1}, \qquad
+  2m \equiv 3 \pmod{b+1} .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The two directions are separate theorems, and the second is the one with content:
+the first says that the class is sufficient, the second that it is necessary.
+
+\emph{The class is sufficient} ($\lv$ \lean{pwData\_even\_b}). Assume
+ \eqref{eq:evenb-class}; it forces $b < m$ ($\lv$ \lean{evenB\_lt\_of\_class}). From the lcm both $8 \mid m$ and $b \mid m$;
+write $m = 8r$ and $m = (c+1)q$, so that $m > b \ge 2$ gives $m \ge c+2$. The
+three candidates
+\[
+  v_1 = \frac{p_1 - c^2}{2}, \qquad v_2 = (c+1)^2, \qquad
+  v_3 = \frac{p_3 - (c+2)^2}{2}
+\]
+are integers: $p_1 - c^2 = 8K_1$ with $K_1 = (2e+1)r - e(e+1)/2$ and
+$p_3 - (c+2)^2 = 8K_3$ with $K_3 = (2e+3)r - (e+1)(e+2)/2$, using $m = 8r$,
+$c = 2e+1$ and the fact that $e(e+1)$ is even. Each lies in the interval it
+must: $K_1, K_3 > 0$ is $m > c+2$, so $v_1$ and $v_3$ are positive, $v_2$ is
+positive, $v_1 < p_1$ and $v_3 < p_3$ because $c^2$ and $(c+2)^2$ are positive,
+and $v_2 < p_2$ because $(c+1)^2 < (c+1)m+1$. They are all multiples of four:
+$v_1 = 4K_1$, $v_3 = 4K_3$, and $v_2$ is the square of the even number $c+1$.
+Korselt is a polynomial identity in the parameter: $n-1 = m Q$ with
+\[
+  Q = 3c+3 + (3c^2+6c+2)\,m + c(c+1)(c+2)\,m^2 ,
+\]
+read in the three ways
+\begin{gather*}
+  Q = c\bigl(3 + (3c+6)m + (c+1)(c+2)m^2\bigr) + (2m+3), \\
+  Q = (c+1)\bigl(3 + (3c+3)m + c(c+2)m^2\bigr) - m, \\
+  Q = (c+2)\bigl(3 + 3cm + c(c+1)m^2\bigr) + (2m-3),
+\end{gather*}
+so the three divisibilities of \eqref{eq:evenb-class} are exactly
+$p_i - 1 \mid n-1$ at $c$, $c+1$ and $c+2$. Every factor is $8r$ times something
+plus one, hence $1$ modulo four, and so is the product. The Egyptian sum is the
+polynomial identity
+\[
+  \bigl(p_1-(b-1)^2\bigr)p_2p_3 + 2b^2 p_1p_3 + \bigl(p_3-(b+1)^2\bigr)p_1p_2
+  \;=\; 2\,(n-1)
+  \qquad
+  (\lv\ \lean{evenB\_egyptian}),
+\]
+which holds for every $b$ and $m$ and is twice the sum
+$v_1p_2p_3 + v_2p_1p_3 + v_3p_1p_2$. The generic lemma at the three primes then
+packages the data.
+
+\emph{The numerators are forced} ($\lv$ \lean{evenB\_forced\_core}). In the class,
+with $c+1 \mid m$ and $m > 0$, any integers $v_1 \in (0,p_1)$, $v_2 \in (0,p_2)$
+and $v_3 \in (0,p_3)$ with $p_i$ dividing $v_i$ times the product of the other two
+factors plus one satisfy
+\[
+  2v_1 = p_1 - c^2, \qquad v_2 = (c+1)^2, \qquad
+  2v_3 = p_3 - (c+2)^2 \ \ \text{if} \ \ c+1 < m .
+\]
+Write
+$m = (c+1)q$, so $m \ge c+1$ and $m$ is even, and put
+$V_1 = c(e+1)q - 2e(e+1)$ and $V_3 = (c+2)(e+1)q - 2(e+1)(e+2)$; then
+$2V_1 = p_1 - c^2$ and $2V_3 = p_3 - (c+2)^2$. The number $V_1$ lies in
+$(0,p_1)$ and $p_1 \mid V_1 p_2p_3 + 1$, because $2(V_1p_2p_3+1)$ is an explicit
+multiple of $p_1$ and $p_1$ is odd, so the factor $2$ cancels in a divisibility by
+an odd prime ($\lv$ \lean{dvd\_of\_dvd\_two\_mul}); and the numerator in $(0,p)$
+is unique ($\lv$ \lean{resid\_unique}). Hence $v_1 = V_1$, $v_2 = (c+1)^2$, and
+$v_3 = V_3$ once $m > c+1$.
+
+\emph{The class is necessary} ($\lv$ \lean{evenB\_class\_of\_pwData}). Assume the
+P-W data, extract Korselt at the three primes and the numerators $v$, and write
+$b = c+1$. Since $n-1 = mQ$ with the $Q$ above and $p_i - 1 = c, c+1, c+2$ times
+$m$, Korselt at the three primes gives $c \mid Q$, $c+1 \mid Q$ and $c+2 \mid Q$;
+the three readings of $Q$ turn those into $c \mid 2m+3$, $c+1 \mid m$ and
+$c+2 \mid 2m-3$, which is \eqref{eq:evenb-class} with $b$ in place of $c+1$. The
+numerators are the forced ones, by the previous paragraph, and its third
+conclusion needs $m > c+1$: if $m = c+1$ then $c+2 \mid 2m-3 = 2c-1$ and
+$c+2 \mid 2(c+2)-5$ give $c+2 \mid 5$, which no odd $c \ge 1$ allows. Finally
+$4 \mid v_1$: with $c = 2e+1$ and $m = 2s$ one has $v_1 = cs - 2e(e+1)$, and
+$4 \mid 2e(e+1)$ because $e(e+1)$ is even, so $4 \mid cs$ with $c$ odd, that is
+$4 \mid s$ and $8 \mid m$. Together with $b = c+1 \mid m$ this is
+$\operatorname{lcm}(8,b) \mid m$.
+
+The equivalence is the two directions composed. Its side condition $b < m$ is not
+an extra hypothesis: the class forces it, since $m = b$ would give $b+1 \mid 5$
+and $8 \mid b$ at once, and no even $b \ge 2$ satisfies both ($\lv$
+\lean{evenB\_lt\_of\_class}). In the class the witnesses are moreover unique:
+every vector of numerators at the three primes equals
+\begin{equation}
+\label{eq:evenb-witness}
+  \Bigl(\frac{p_1-(b-1)^2}{2},\;\; b^2,\;\; \frac{p_3-(b+1)^2}{2}\Bigr)
+\end{equation}
+($\lv$ \lean{evenB\_v\_forced}), which is the previous paragraph read with the
+cofactors of $n$ at its three prime factors identified ($\lv$ \lean{evenB\_cof},
+$\lv$ \lean{evenB\_mem}).
+\end{proof}
+
+A member's numerators are determined by a cofactor's class and by nothing else,
+and the coordinate is the one Chernick's family already used in Part~III. Let
+$n = p m$ with $p$ prime, $p \nmid m$, $m > 1$, $p-1 \mid n-1$, and let
+$v \in (0,p)$ satisfy $p \mid vm+1$; put $j = (m-1)/(p-1)$, the cofactor's $j$
+and not $(n-1)/(p-1)$. Then $j \ge 2$, $p \nmid j-1$, and
+$v(j-1) = 1 + sp$ with $0 \le s \le j-2$ ($\lv$ \lean{jp\_lemma}). The proof is
+three congruences: $p-1 \mid m-1$ follows from $p-1 \mid pm-1$, so $j$ is an
+integer and $m = 1+j(p-1) \equiv 1-j$ modulo $p$; $j \equiv 1$ would make $m \equiv
+0$, against $p \nmid m$; and $vm \equiv -1$ with $m \equiv 1-j$ gives
+$v(j-1) \equiv 1$, the bounds on $s$ coming from $1 \le v \le p-1$ and $j \ge 2$.
+On P-W data the cofactor of $p$ is $n/p$, so every member's numerator at every
+prime obeys those conclusions ($\lv$ \lean{jp\_of\_pwData}). The lemma is stated
+here and not used below: its content is that a member's numerators are pinned by
+the cofactors, which is what makes the forced formula of \eqref{eq:evenb-witness}
+a formula and not a choice.
+
+The family meets the Chernick numbers of Part~III at $b = 2$. There the three
+forms are $m+1$, $2m+1$, $3m+1$, which at $m = 6k$ are
+$\lean{Chernick.P}\,k$, $\lean{Chernick.Q}\,k$ and $\lean{Chernick.R}\,k$, and
+their product is $N(\lean{Chernick.xk}\, k)$
+($\lv$ \lean{evenB\_two\_chernick}, $\lv$ \lean{Chernick.N\_xk} of
+\S\ref{sec:chernick}); and the class \eqref{eq:evenb-class} at $b = 2$ is exactly
+$m = 6k$ with $4 \mid k$ ($\lv$ \lean{evenB\_two\_class}), which is the
+hypothesis of \S\ref{sec:chernick}'s classification of the Chernick numbers at
+which the criterion has no witness. Hence, for $4 \mid k$ and the three primes,
+the Chernick number carries
+P-W data ($\lv$ \lean{pwData\_chernick}). Read with \S\ref{sec:chernick}, the two
+sections say the same thing from opposite sides: there $4 \mid k$ is what makes the
+criterion vanish identically at a
+Chernick number, here $4 \mid k$ is what puts it in the class whose members
+are P-W members. The middle numerator of the family has the same reading: with
+$j_2 = (p_1p_3-1)/(p_2-1)$ one has $(j_2-1)b^2 \equiv 1 \pmod{p_2}$, that is
+$v_2 = b^2$ is $(j_2-1)^{-1}$ at $p_2$ ($\lv$ \lean{evenB\_j2\_crosscheck}).
+
+\begin{example}[The member with seven prime factors]
+\label{ex:pw-seven}
+The row of the table without a family is also the one member with more than five
+prime factors:
+\[
+  718\,132\,609\,376\,191\,497\,601
+  \;=\; 17 \cdot 61 \cdot 113 \cdot 1\,009 \cdot 2\,017 \cdot 8\,677 \cdot 347\,041,
+\]
+with numerators $(4,4,12,388,140,1\,196,400)$ at the seven primes, all divisible
+by four. It is certified directly, not through a class
+($\lv$ \lean{pw\_instance\_d7}), and it is the row that shows the members are not
+confined to the four- and five-term families of
+\S\ref{sec:pw-propagate}. Its size is in the band $(10^{18}, 10^{21}]$, and no
+minimality is claimed for it.
+\end{example}
+
+\subsection{What a hypothesis would add}
+\label{sec:pw-hypothesis}
+
+Nothing above decides P-W. What a hypothesis would buy is stated here in the form
+of corollaries that carry the hypothesis in their signature, and this is the form
+alone: what the hypothesis \emph{is}, and what the problem reduces to under it, is
+the next section's subject.
+
+For a four-tuple $a$ and a class $m \equiv m_0 \pmod M$,
+$\lean{DicksonFor}(a,m_0,M)$ says that for every bound $B$ there is $m > B$ in the
+class with all four $a_i m + 1$ prime, and $\lean{DicksonForK}$ says the same for
+$k$ forms. Both are definitions of a proposition, neither is proved anywhere in
+the book, and the conjecture behind them is Dickson's \cite{Dickson1904}, refined
+by Bateman--Horn \cite{BatemanHorn1962}.
+
+With the data of a class the problem follows: if $\lean{DicksonFor}$ holds for a
+class whose propagation data are those of \eqref{eq:pw-data}, then P-W holds
+($\lvCond$ \lean{pwProblem\_of\_dicksonFor}), because for a bound $n_0$ one takes
+$m$ in the class with $m > \max(n_0, m_0)$ and all four forms prime, and the
+product $\lean{famNk}(a,m)$ exceeds $m$, hence $n_0$, and carries P-W data by
+\S\ref{sec:pw-propagate}.
+
+The four classes of \S\ref{sec:pw-propagate} are instances, one line each:
+$m \equiv 546 \pmod{720}$ ($\lvCond$ \lean{pwProblem\_of\_dickson\_1\_2\_5\_10}),
+$m \equiv 5\,670 \pmod{10\,080}$ ($\lvCond$
+\lean{pwProblem\_of\_dickson\_1\_2\_6\_9}), $m \equiv 4\,056 \pmod{26\,880}$
+($\lvCond$ \lean{pwProblem\_of\_dickson\_5\_7\_15\_21}), and the same first
+statement re-derived through the general-$k$ lemma ($\lvCond$
+\lean{pwProblem\_of\_dickson\_1\_2\_5\_10\_via\_k}), plus the five-term family
+$m \equiv 12\,780 \pmod{21\,840}$ with $\lean{DicksonForK}$ in the signature
+($\lvCond$ \lean{pwProblem\_of\_dickson\_2\_3\_10\_15\_30}, through
+$\lean{lt\_famNk}$). Each of the six is a conditional statement and none of them
+is $\lv$: the hypothesis is in the signature, and the unconditional problem is
+untouched by them.
+
+One corollary needs no class at all: from P-W itself, for every $n_0$ there is
+$x \ge 2$ with $N(x) > n_0$, $N(x)$ composite and $\lean{AllZero}\, x$ ($\lvCond$
+\lean{infinitely\_many\_counterexamples\_of\_pw}), by Theorem~\ref{thm:pw-iff} and
+the fact that $\omega(N(x)) \ge 2$ forbids primality, the prime factors of a prime
+being a single one. That is what P-W would be worth to the criterion --- the
+statement that its counterexamples are not a finite accident --- and it is the
+last sentence of the section that assumes anything.
+
+\subsection{What is certified, and what is not decided}
+\label{sec:pw-close}
+
+What the section has certified is a list and not a theory. The vanishing on the Korselt
+locus is the arithmetic condition of Theorem~\ref{thm:pw-at}; the two forms of
+the question are the same statement (Theorem~\ref{thm:pw-iff}); eight members
+carry kernel-checked data, and Table~\ref{tab:pw-members} is what this
+development certifies and not a census; a member propagates along its class
+(Theorem~\ref{thm:pw-propagate}); the four classes of the development are
+admissible; and the even-$b$ family, at prime $p_1$, $p_2$ and $p_3$, is decided exactly by
+ the three divisibilities of \eqref{eq:evenb-class}
+ (Theorem~\ref{thm:pw-even-b}).
+
+What the section has not decided is whether P-W holds. No statement of it says
+that there are infinitely many numbers of that kind; the seven corollaries of
+\S\ref{sec:pw-hypothesis} all carry a hypothesis in their signature, and
+$\lean{PWProblem}$ itself is a definition, not a claim. The table is finite, and
+the one infinite family the section treats does not settle the problem either: it
+characterises each Chernick-class member, and it does not say that the class
+contains infinitely many prime triples, which is Dickson's conjecture at
+$b = 2$ and not a theorem.
+
+So the counterexamples of Parts~III--VI reduce to one problem, stated without
+the criterion --- six clauses about a squarefree number, its numerators and an
+Egyptian sum --- and the problem is open. It names none of the parameters of the
+formula of 2009.

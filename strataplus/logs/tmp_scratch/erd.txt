@@ -1,0 +1,229 @@
+194
+
+
+
+
+         Beweis eines Satzes von Tschebyschef .
+                         Von P . E RDŐS in Budapest .
+
+
+
+      Für den zuerst von T SCHEBYSCHEF bewiesenen Satz, laut
+dessen es zwischen einer natürlichen Zahl und ihrer zweifachen
+stets wenigstens eine Primzahl gibt, liegen in der Literatur mehrere
+Beweise vor . Als einfachsten kann man ohne Zweifel den Beweis
+von RAMANUJAN 1 ) bezeichnen . In seinem Werk Vorlesungen über
+Zahlentheorie (Leipzig, 1927), Band I, S . 66-68 gibt Herr L ANDAU
+einen besonders einfachen Beweis für einen Satz über die Anzahl
+der Primzahlen unter einer gegebenen Grenze, aus welchem un-
+mittelbar folgt, daß für ein geeignetes q zwischen einer natürlichen
+Zahl und ihrer q-fachen stets eine Primzahl liegt . Für die augen-
+blicklichen Zwecken des Herrn L ANDAU kommt es nicht auf die
+numerische Bestimmung der im Beweis auftretenden Konstanten
+an ; man überzeugt sich aber durch eine numerische Verfolgung
+des Beweises leicht, daß q jedenfalls größer als 2 ausfällt .
+      In den folgenden Zeilen werde ich zeigen, daß man durch
+eine Verschärfung der dem L ANDAU schen Beweis zugrunde liegen-
+den Ideen zu einem Beweis des oben erwähnten T SCHEBYSCHEF-
+schen Satzes gelangen kann, der - wie mir scheint - an Ein-
+fachkeit nicht hinter dem R AMANUJAN schen Beweis steht . Griechische
+Buchstaben sollen im Folgenden durchwegs positive, lateinische
+Buchstaben natürliche Zahlen ;    bezeichnen
+                                     die Bezeichnung p ist
+für Primzahlen vorbehalten .
+      1 . Der Binomialkoeffizient
+                                  2a _- (2a)!
+                              ( a)(a!)2
+       1) SR . RAMANUJAN , A Proof of Bertrand's Postulate, Journal of the In-
+dian Mathemalical Society, 11 (1919), S . 181-182 .= Colletted Papers of
+S RINIVASA R AMANUJAN (Cambridge, 1927), S. 208-209 .
+                       P . Erdős : Satz von Tschebyschef.                                       1 95
+
+
+
+ist durch die Primzahlen p mit a < p = 2 a teilbar, da dieselben
+den Zähler teilen, den Nenner aber nicht ; also ist
+
+                                        1/ p-_- ~ 2          r1 .
+                                      - V 2„
+Nun ist aber für a          5
+
+                            I a)    4„ -1 ;
+
+in der Tat gilt diese Ungleichung für a =5 und, falls dieselbe
+für ein gewisses a erfüllt ist, so gilt wegen
+            I2(a~      1)'i_(2a)!(2a                    1)(2a-~2)                     2a
+                                                                                 4
+            I a-{-I                                   (a+ 1) 2               `       i a)
+
+das gleiche auch für a + 1 . Daher ist
+                                                              )
+(1)                              1l p < 22(" - ' .
+                                 p 2a
+
+     2 . Es sei b - 10 ; bezeichnen wir allgemein die kleinste ganze
+Zahl - ; mit { ~ und es sei
+                       b'                    b    1                      j   b   l
+              a, =              a - ~                         a _
+
+
+Dann ist a1, -_ - al _          r,; _ ... ; ferner
+
+                 a < 2'- 1 - 2 -,b
+                   k    v
+                                2''
+                                    ,-r 1 ~ =                       2 a h.-1 -}- 1
+
+
+also, da a k und 2 ak +1 ganze Zahlen sind,
+(2)                                    ar;        2 ar,+, •
+Es sei m die größte Zahl, für welche am > 5 ist ; dann ist a m +1 < 5 ,
+also wegen (2) a m < 10 . Ferner ist 2 a1 > b ; daher überdecken
+wegen (2) die Intervalle
+           a„,< i;, ---2a„„ a„,-, < ti--2a„,- .1, . . . , a, < ii = =- 2a,
+lückenlos das Intervall 10 < ,j ' b .
+      Wir wenden nun die Ungleichung (1) der Reihe nach für
+a = a l, a      a an . Durch Multiplikation erhalten wir
+
+                            p . . .          //             . 2"-<<~~-~+~,-~+ . .,          <
+      //     p     ~/                                   p
+
+
+
+                                                                  2` ,
+also, nach den oben gesagten, a fortiori
+(3)                                   1/      p<2
+
+                                                                                                13"
+1 96                                 P. Erdfis
+
+
+     3 . Nach einem bekannten Satz von                     LEGENDRE`)      enthält n !
+den Primfaktor p mit der Multiplizität
+
+
+
+wobei, wie üblich, [-]           die größte ganze Zahl ---': bezeichnet .
+Daher wird p in
+(4)
+mit der Multiplizität
+
+(5)
+
+als Primfaktor enthalten . Hierbei ist jedes Glied                     1 ; in der Tat
+ist die ganze Zahl
+
+
+
+Nun verschwinden aber in (5) die Glieder mit p' > 211 ; daher
+kann die Multiplizität (5) nicht größer sein, als die größte ganze
+Zahl r mit p° - 2n . D . h . ist die Potenz der Primzahl p, mit der
+sie in der Primfaktorenzerlegung von                 2n'J figuriert,    --2n . Hieraus
+                                                 (
+folgt auch, daß die Primzahlen p > !'2n in der Primfaktorenzerle-
+gung von ( 2 ! höchstens auf der ersten Potenz vorkommen .
+     Wir bemerken nun - und dies ist der springende Punkt
+des vorliegenden Beweises - daß für n _ 3 die Primzahlen mit
+ 2     n <p- - n n   den Binomialkoeffizient (4) nicht teilen . In der Tat
+
+sind dann wegen 3p > 2n nur die beiden Faktoren p, 2p des
+Zählers von (4) durch p (und zwar wegen p>2 nur durch die
+erste Potenz desselben) teilbar ; und der Nenner ist auch teilbar
+durch p°- .
+      Diese Überlegungen ergeben für n 3 die Ungleichung
+
+
+
+
+       °) A . M . LEGENDRE, Zahlentheorie (Übersetzung von 1-í . MASER ; Leipzig,
+1886), Bd . 1, S . 11 ; oder E . LANDAU, Handbuch der Lehre von der Verteilung
+der Primzahlen (Leipzig und Berlin, 1909), Bd . 1, S . 75-76.
+                          Satz von Tschebyschef .              197
+
+
+
+also, da das erste Produkt rechts höchstens ~ 211 Faktoren besitzt
+und da allgemein
+
+
+
+gilt, die Ungleichung
+
+(6)
+
+
+     4. Es sei nun n > 50 und setzen wir voraus, daß es zwischen
+n und 211 keine Primzahl gibt . Dann ist das zweite Produkt in
+(6) leer ; für den ersten gilt wegen l'2n > 10 und (3)
+
+
+
+
+also geht (6) in
+
+(7)
+über, was für hinreichend große n unmöglich ist .
+      Um eine nicht allzu hohe Schranke zu gewinnen, von wel-
+cher ab (7 ), d . h .
+
+(8)
+nicht mehr gültig ist, schätzen wir wie folgt ab . Wegen der Un-
+gleichung a<2' - ' (was man etwa durch vollständige Induktion
+leicht zeigen kann) ist
+
+
+
+also folgt aus (8) (falls immer n > 50 vorausgesetzt wird)
+
+
+
+
+d . h . (2n) ; <20, n <  .20 3 = 4000 .
+                       2
+     Daher gibt es für n>4000 wenigstens eine Primzahl p mit
+n<p‹- 2n .
+     5 . Um hiervon zu dem TSCHEBYSCHEFschen Satz : für n > 1
+gibt es wenigstens eine Primzahl p mit n < p < 2n zu gelangen,
+1 98                      P . Erdős : Satz von Tschebyschef .
+
+
+
+braucht man nach einer Bemerkung des Herrn LANDAUS) nicht
+für n = 1, 2, . . ., 3999 je eine Primzahl p mit n <p < 2n aufzu-
+weisen . Es genügt zu bemerken, daß von den Primzahlen
+(9)       2, 3, 5, 7, 13, 23, 43, 83, 163, 317, 631, 1259, 2503, 4001
+jede größer als die vorangehende und kleiner als die doppelte
+derselben ist, und daß die letzte 4000 übertrifft . In der Tat, ist
+1 - n < 4000 und ist p das erste Glied > n der Folge (9), so ist,
+falls p' das vorangehende Glied (und im Falle p=2 die Zahl 1)
+bezeichnet,
+                         n <p_<_2p' <2n .
+     6 . Mit Hilfe der Ungleichung (6) gelangt man auch leicht
+zu einer unteren Abschätzung der Anzahl der Primzahlen zwischen
+n und 2n . In der Tat ergibt sich aus (6) und (3) durch eine der
+obigen analoge Überlegung für n > 4000
+
+
+
+
+also, da jeder Faktor des Produktes <211 ist, so ist die Anzahl
+der Faktoren desselben (in der üblicher Bezeichnung)
+
+
+
+also
+
+(10)
+
+für eine geeignete positive Zahl ce .
+      Nach dem TSCHEBYSCHEFSChen Satz gilt daher (10) auch für
+2 < n < 4000, sofern a hinreichend klein gewählt wurde .
+
+
+                       (Eingegangen am 24 . November 1931 .)
+
+
+
+
+       3) E . LANDAU, 1 . c ., Bd . 1, S . 92 .
+
