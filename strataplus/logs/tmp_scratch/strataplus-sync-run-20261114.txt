@@ -1,0 +1,5 @@
+AVVISO: 6 file di dati nuovi in quarantena (non pubblicati, da revisionare)
+AVVISO: 14 file esclusi per licenza rimossi dalla copia (non pubblicati)
+Commit: dae91b30
+Push OK: refs/heads/strataplus-research refs/heads/strataplus-policy-local refs/heads/strataplus-pt12-measure -> https://github.com/melchisedekko/Strata.git
+OK: HEAD dae91b300ee8e63f80854f17350af9d8878a42af
