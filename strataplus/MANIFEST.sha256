@@ -788,6 +788,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scr
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-err.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-out.txt
 c151c479999dde2a004a17802234200135220f44b680f4b27f53953b8f7111f7  ./logs/tmp_scratch/strataplus-sync-run-20261114.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-run.out
 db56cda746599fe8a3c6f702b69c560fb1607fa453ce4375b61d57a97157c281  ./logs/tmp_scratch/summary_part1.md
 5ed9b8cdd0bc992cbde608b09835a5ae77be5f52aec175a349af73c58b182fe0  ./logs/tmp_scratch/summary_part2.md
 29af64d21ea90f1cfd54980d30264f2ee023d1b52b1a5ab378e5f68ab49a98ec  ./logs/tmp_scratch/sv.py
