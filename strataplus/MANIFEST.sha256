@@ -785,6 +785,8 @@ e6f5d9dd8299beb3f931ab59e2b009999a1f29f28d0941db54b7ee6675938dfc  ./logs/tmp_scr
 6c1aedc30a64f68466f100ce5a2df703089b08d7863e3d43fd582f8808a8f813  ./logs/tmp_scratch/smk/p4x.err
 668f540ac87fa19ae15acc4a9c9247e4481ac060cf034a3d96d1138dc7230810  ./logs/tmp_scratch/smk/p4x.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-20261114-2013.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-20261115-0419-retry.out
+28e0b6c03708b42a5cad96928e23b674051a54ee5f40ff607aa736178cab99a7  ./logs/tmp_scratch/strataplus-sync-20261115-0419.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-err.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-out.txt
 c151c479999dde2a004a17802234200135220f44b680f4b27f53953b8f7111f7  ./logs/tmp_scratch/strataplus-sync-run-20261114.txt
