@@ -756,6 +756,7 @@ ace9a743d8ee3000f8a8e314142fb8eede4c014acb0766d6d3543742f60f93f4  ./logs/tmp_scr
 fb17e4a8398e76bdabfebbd84794ebd231a0aa0c63f580bc622cd39bdd0313ae  ./logs/tmp_scratch/rss.err
 3503ac14d1d152f32240d6e99bda6ed98cf33ef2dc5de7167139d3a98d779483  ./logs/tmp_scratch/rss.jsonl
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/rss.out
+df0894eecd53d8782fa1da4bad0aee0b664d2798b4485b88fb3f9e887bbd6d18  ./logs/tmp_scratch/run_sync_redacted.py
 21d528f96c2a7033347bc90809d9b1f373042166f9f140d9725d6215270c64d7  ./logs/tmp_scratch/run_v2.bak
 bc17422fea7cbc0f49ec0493245c83473f94c624a95ab942558c7548976f489e  ./logs/tmp_scratch/s10/new.md
 ef7f0559878102e83165c0e7b504db1cb20ea54cffe0e5400f5fed83d645c51d  ./logs/tmp_scratch/s2_a.txt
