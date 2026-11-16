@@ -788,7 +788,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scr
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-20261115-0419-retry.out
 28e0b6c03708b42a5cad96928e23b674051a54ee5f40ff607aa736178cab99a7  ./logs/tmp_scratch/strataplus-sync-20261115-0419.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-20261116-0420.err
-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-20261116-0420.out
+60100f5ea6f40253f747252a1f0028f24ba4ab410f6bd5fcf07135ecd4df6a4b  ./logs/tmp_scratch/strataplus-sync-20261116-0420.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/strataplus-sync-err.txt
 9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./logs/tmp_scratch/strataplus-sync-exit.txt
 770538f7312238d399f9960b1c7f3e850779cc867a441307dc1ef2941966d4ef  ./logs/tmp_scratch/strataplus-sync-out.safe.txt
