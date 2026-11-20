@@ -594,6 +594,7 @@ afb606498d104d5c3054f2fac0700d3850fe9adb18950b0e8c1e1b55b7825cdf  ./logs/tmp_scr
 488dd4670a8a904741abd6e95e432e190d9ad705b2d6a0c1506d5c43f9bb9293  ./logs/tmp_scratch/cf-main.txt
 184107acac34d5dafdc0b6fde40f55ff7344573aca3b00ab61669f8e9ee6bc21  ./logs/tmp_scratch/cf.txt
 e44d8f8c32cbc0687e3e03bf0facab530f751c115b541c998e155ef9f6b3a786  ./logs/tmp_scratch/cf3.txt
+809589a575bef1f92ec031f770f760de96590d742876f03602e059d92771f2c3  ./logs/tmp_scratch/check_sync_coverage.py
 ca13bd9bfcaf740fe79638684f8a74e8e7a3dfdc402b225de0b571b1d57e85e5  ./logs/tmp_scratch/checks.py
 1c24a658b8ed7bb0a592b00219ddb819794d78fe6b365a822d40e7156c7a37b8  ./logs/tmp_scratch/clampal.py
 0fb9093fb8e5a90ce1a9402b47ee5b4577fd51c65fe81ec72e0e235c4815c6de  ./logs/tmp_scratch/dbg_ceiling.py
