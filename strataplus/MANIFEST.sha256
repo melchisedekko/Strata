@@ -771,6 +771,7 @@ bd1db6a3cbadbf527f3af008a9f03e91935ee4e4df9057288c7fbba2b22d37a0  ./logs/tmp_scr
 479df3ec7ecb433e7fb635ea8d6650de687fce616ccdb9490acd345d5330db9e  ./logs/tmp_scratch/sc_lean.txt
 479df3ec7ecb433e7fb635ea8d6650de687fce616ccdb9490acd345d5330db9e  ./logs/tmp_scratch/sc_names.txt
 b68f8cf936d6d058fe241498e46db43de87bb16379ef7465c28f53da45cc197c  ./logs/tmp_scratch/sc_nums.txt
+106f0ba4ae0253bfbed00fec64ac25d608f92985b3866ae145770b81e31025f1  ./logs/tmp_scratch/scan_branches.py
 5e40b133e1d73763e2c63b44f8b740c89003d2f90813ef52c6ee65774006b1c0  ./logs/tmp_scratch/sch.txt
 bf0b96007c2c72b5d9a846582fd419f65c1ac8fa9470850718be49fd6378d407  ./logs/tmp_scratch/scout_patch_support.md.bak
 1fea5e1a648886f3b3b121707a483b4005a2e8ce90a0d5d7c03d434513114d6b  ./logs/tmp_scratch/scout_patch_support.md.bak2
