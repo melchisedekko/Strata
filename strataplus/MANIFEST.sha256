@@ -727,6 +727,7 @@ e0499a5f98a58f6d0c9851914341436e84511f5ffdc3c9f551f0d6eaa301bfe9  ./logs/tmp_scr
 468c754ea8c15689f312727af56cfd0da9a70b4f8109dd15d5450879148721e1  ./logs/tmp_scratch/ls_part2.txt
 4edfa84e365c8e4c80e3818a7796f82b1d616e147b928021d6085708b036614a  ./logs/tmp_scratch/ls_part3.txt
 49bc400a7c6be9d95396156ec2c97604ad0eaca39a6f8b93e0fece06dcac9573  ./logs/tmp_scratch/ls_part4.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/lsremote.err
 ebc74c8d77d311bac6ae9bed2c711bcaadfcea0b9b9954aeadcf7fbbd50fd037  ./logs/tmp_scratch/m_new.txt
 4c688d12e0cca1460260096507c40a0912dbb984137084278001b3a7e73f8cd7  ./logs/tmp_scratch/m_old.txt
 219c87f1c53070ba8c2a0a8c4bbd0d65ea2ebdef4f798d2a0937918461c684b7  ./logs/tmp_scratch/mono_nums.txt
