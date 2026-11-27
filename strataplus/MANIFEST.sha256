@@ -621,6 +621,8 @@ cc1651a3b86537efa2636a2c8038d306915f5ab3dbae99af31d854da6393f5fe  ./logs/tmp_scr
 fe95bac719451eb67d0219361ee4201269431873ecf3e66b4b273dda9f09d5b8  ./logs/tmp_scratch/i25618.json
 a1d2905e41a833a986a6e295307f3ea094b45cd9f0a5cd0e8d15e1c7c494439f  ./logs/tmp_scratch/i27407.json
 78051fff23d51082cf19e150e2593b2eb268cfad8acfdb70379bf480863a40ec  ./logs/tmp_scratch/im.txt
+a2a2e4b4cd704329a7a3611c4682e668492285a12acb219a7b29233036542bf7  ./logs/tmp_scratch/inspect_sync.py
+e6fb174be95e806735f06faf2fbc2ba219a87d27f5c6d7e1ceae93c67a1d6ee1  ./logs/tmp_scratch/inspect_sync2.py
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/iq_kernels-gfx1100-331684.out
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/iq_kernels-gfx1201-dd0ebd.out
 0cbcbe18c2177eb17b28fb8c9f8abc477bbbc255a799089130515f4bd54fa1e1  ./logs/tmp_scratch/jg/canon.json
