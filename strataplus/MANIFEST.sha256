@@ -722,6 +722,8 @@ eb3ca0d88acd0a2e4863b924270bb4ebd16862b0f227947517fca52207726cca  ./logs/tmp_scr
 33571429e3d4fe3f58313dd8f8ff7912cfcbcb683fc4cc5081cdc7537e3b0f79  ./logs/tmp_scratch/kw.txt
 fca68d191d367dce9975c05120fd3fed7c23c7cc05246a0c9e288c8ecb58ce49  ./logs/tmp_scratch/lk_out.txt
 93506b1638f49af87d4f7c02d0e82dcdd5cc79dda812d6b009040bfaf5258ed4  ./logs/tmp_scratch/log_format.bak
+957411debe9b623d7541c14c850461934da857e7170f92b1b4596e6d9decca86  ./logs/tmp_scratch/ls-remote-err.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/tmp_scratch/ls-remote-heads.txt
 375d3c2675082da4fc1b94c227d4c82a0e49cc3c72dcdc093fbe9084181b7501  ./logs/tmp_scratch/ls_check.py
 e0499a5f98a58f6d0c9851914341436e84511f5ffdc3c9f551f0d6eaa301bfe9  ./logs/tmp_scratch/ls_names.txt
 468c754ea8c15689f312727af56cfd0da9a70b4f8109dd15d5450879148721e1  ./logs/tmp_scratch/ls_part2.txt
