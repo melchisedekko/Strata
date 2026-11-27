@@ -1,0 +1,5 @@
+AVVISO: 6 file di dati nuovi in quarantena (non pubblicati, da revisionare)
+AVVISO: 14 file esclusi per licenza rimossi dalla copia (non pubblicati)
+Nessun cambiamento da committare.
+Push OK: refs/heads/strataplus-research refs/heads/strataplus-policy-local refs/heads/strataplus-pt12-measure -> https://github.com/melchisedekko/Strata.git
+OK: HEAD ffc3f47876066766543a3316cdc6d3c205250212
